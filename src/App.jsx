@@ -649,10 +649,35 @@ export default function OyuncuKantinimApp() {
     );
   };
 
-  // 6. KULLANICI PROFİL SAYFASI
+// 6. KULLANICI PROFİL SAYFASI
   const ProfilePage = () => {
-    const [activeTab, setActiveTab] = useState('listings'); // listings, orders, settings
-    
+    const [activeTab, setActiveTab] = useState('listings');
+    // BURADAN BAŞLA: editUsername state'ini ve handleUpdateProfile fonksiyonunu buraya koyuyoruz.
+    const [editUsername, setEditUsername] = useState(currentUser?.username || "");
+
+    const handleUpdateProfile = async () => {
+      try {
+        const response = await fetch(`${API_URL}?action=update_profile`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user_id: currentUser.id,
+            new_username: editUsername
+          })
+        });
+        const result = await response.json();
+        if (result.status === 'success') {
+          setCurrentUser({ ...currentUser, username: editUsername });
+          showToast("Kullanıcı adın başarıyla güncellendi! ✨");
+        } else {
+          alert(result.message);
+        }
+      } catch (err) {
+        alert("Güncelleme hatası!");
+      }
+    };
+    // BURADA BİTİR.
+
     if (!currentUser) {
       navigateTo('login');
       return null;
