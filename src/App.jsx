@@ -718,25 +718,6 @@ const handleUpdateProfile = async () => {
                   <ShieldCheck size={16} className="text-green-500"/> Doğrulanmış Satıcı • {currentUser.joinDate}'den beri üye
                 </p>
               </div>
-
-
-
-
-{/* XP Bar ve Seviye Kısmı */}
-<div className="flex justify-between text-xs font-bold mb-2">
-  <span className="text-slate-600">Seviye {currentUser?.level ?? 1}</span>
-  <span className="text-purple-600">{currentUser?.xp ?? 0}% XP</span>
-</div>
-<div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-  <div 
-    className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" 
-    style={{ width: `${currentUser?.xp ?? 0}%` }}
-  ></div>
-</div>
-
-
-
-
             </div>
 
 
