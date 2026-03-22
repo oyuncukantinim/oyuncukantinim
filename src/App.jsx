@@ -551,7 +551,7 @@ const handleAuth = async (e) => {
     const username = !isLogin ? e.target.querySelector('input[type="text"]').value : null;
 
     const action = isLogin ? 'login' : 'register';
-    const payload = isLogin ? { email, password, username };
+    const payload = isLogin ? { email, password } : { username, email, password };
 
     try {
       const response = await fetch(`${API_URL}?action=${action}`, {
