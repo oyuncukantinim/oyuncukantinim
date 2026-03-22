@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Create from './pages/create'; 
 import { 
   Gamepad2, ShoppingBag, Store, User, Search, Heart, 
   Star, ChevronRight, Menu, X, ShieldCheck, Zap, 
