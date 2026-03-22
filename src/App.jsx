@@ -1,3 +1,4 @@
+import Create from './pages/create';
 import React, { useState, useEffect } from 'react';
 import { 
   Gamepad2, ShoppingBag, Store, User, Search, Heart, 
