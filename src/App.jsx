@@ -1375,9 +1375,7 @@ if (result.status === 'success') {
                   </div>
                   <div className="text-left">
                     <div className="text-[10px] font-bold text-slate-400 leading-none">Cüzdan</div>
-                    <div className="text-sm font-extrabold text-purple-700 leading-tight">
-                      {currentUser.balance.toFixed(2)} ₺
-                    </div>
+                    <div className="text-sm font-extrabold text-purple-700 leading-tight"> {currentUser.balance.toFixed(2)}</div>
                   </div>
                 </button>
               ) : (
