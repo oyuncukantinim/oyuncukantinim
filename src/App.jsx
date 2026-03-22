@@ -719,25 +719,26 @@ const handleUpdateProfile = async () => {
                 </p>
               </div>
 
+
 {/* Bakiye Kartı */}
-<div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 w-full sm:w-auto">
-  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
-    <Wallet size={24} />
-  </div>
-  <div>
-    <div className="text-xs font-bold text-slate-500">Cüzdan Bakiyesi</div>
-    <div className="text-xl font-extrabold text-slate-800">
-      {/* GÜVENLİ YAZIM: 
-         1. currentUser?.balance var mı bak.
-         2. Varsa Number() ile sayıya çevir. 
-         3. Yoksa 0 kabul et.
-      */}
-      {Number(currentUser?.balance || 0).toFixed(2)} ₺
-    </div>
-  </div>
-  <button className="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
-    Yükle
-  </button>
+<div className="text-xl font-extrabold text-slate-800">
+  {/* 1. currentUser?.balance: Kullanıcı veya bakiye yoksa dur, hata verme.
+      2. ?? 0: Eğer veri gelmediyse sayı olarak 0 kabul et.
+      3. Number(...): Gelen veri metin olsa bile sayıya çevir ki toFixed çalışsın.
+  */}
+  {Number(currentUser?.balance ?? 0).toFixed(2)} ₺
+</div>
+
+{/* XP Bar ve Seviye Kısmı */}
+<div className="flex justify-between text-xs font-bold mb-2">
+  <span className="text-slate-600">Seviye {currentUser?.level ?? 1}</span>
+  <span className="text-purple-600">{currentUser?.xp ?? 0}% XP</span>
+</div>
+<div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+  <div 
+    className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" 
+    style={{ width: `${currentUser?.xp ?? 0}%` }}
+  ></div>
 </div>
 
 
