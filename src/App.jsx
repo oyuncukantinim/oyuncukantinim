@@ -75,7 +75,10 @@ export default function OyuncuKantinimApp() {
   const [viewedListing, setViewedListing] = useState(null); // Detay sayfası için eklendi
 
   // KULLANICI STATE'İ (Yeni)
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+  const savedUser = localStorage.getItem('user');
+  return savedUser ? JSON.parse(savedUser) : null;
+});
 
   // KANTİNBOT STATE'LERİ
   const [isBotOpen, setIsBotOpen] = useState(false);
@@ -110,6 +113,14 @@ export default function OyuncuKantinimApp() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+// --- 3. ADIM: ÇIKIŞ YAPMA FONKSİYONU ---
+  const handleLogout = () => {
+    localStorage.removeItem('user'); // Tarayıcıdaki oturum kaydını siler
+    setCurrentUser(null);           // Uygulama içindeki kullanıcıyı temizler
+    navigateTo('home');             // Ana sayfaya yönlendirir
+    showToast("Başarıyla çıkış yapıldı. 🐾");
+  };
+  
   // İlan Ekleme Fonksiyonu
   const handleAddListing = (newListing) => {
     const sellerName = currentUser ? currentUser.username : "Misafir";
@@ -769,16 +780,12 @@ const handleUpdateProfile = async () => {
             >
               <Settings size={20} /> Hesap Ayarları
             </button>
-            <button 
-              onClick={() => {
-                setCurrentUser(null);
-                navigateTo('home');
-                showToast("Çıkış yapıldı. Görüşürüz! 👋");
-              }}
-              className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all mt-4"
-            >
-              <LogOut size={20} /> Çıkış Yap
-            </button>
+
+            
+{/* Profil sayfasındaki butonlar listesinde "Çıkış Yap" butonunu bul ve bu hale getir: */}
+<button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all mt-4">
+  <LogOut size={20} /> Çıkış Yap
+</button>
           </div>
 
           {/* Sağ İçerik Alanı */}
