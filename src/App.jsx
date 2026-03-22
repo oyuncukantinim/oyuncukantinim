@@ -533,6 +533,7 @@ export default function OyuncuKantinimApp() {
     const [isLoginMode, setIsLoginMode] = useState(true);
 
     const handleAuth = async (e) => {
+      localStorage.setItem('user', JSON.stringify(result.user));
       e.preventDefault();
       
       // Formdaki verileri alalım
