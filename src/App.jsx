@@ -720,14 +720,7 @@ const handleUpdateProfile = async () => {
               </div>
 
 
-{/* Bakiye Kartı */}
-<div className="text-xl font-extrabold text-slate-800">
-  {/* 1. currentUser?.balance: Kullanıcı veya bakiye yoksa dur, hata verme.
-      2. ?? 0: Eğer veri gelmediyse sayı olarak 0 kabul et.
-      3. Number(...): Gelen veri metin olsa bile sayıya çevir ki toFixed çalışsın.
-  */}
-  {Number(currentUser?.balance ?? 0).toFixed(2)} ₺
-</div>
+
 
 {/* XP Bar ve Seviye Kısmı */}
 <div className="flex justify-between text-xs font-bold mb-2">
@@ -1375,7 +1368,7 @@ if (result.status === 'success') {
                   </div>
                   <div className="text-left">
                     <div className="text-[10px] font-bold text-slate-400 leading-none">Cüzdan</div>
-                    
+                   <div className="text-xl font-extrabold text-slate-800">{Number(currentUser?.balance ?? 0).toFixed(2)} ₺</div>
                   </div>
                 </button>
               ) : (
