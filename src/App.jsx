@@ -719,37 +719,39 @@ const handleUpdateProfile = async () => {
                 </p>
               </div>
 
-              {/* Bakiye Kartı */}
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 w-full sm:w-auto">
-                <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
-                  <Wallet size={24} />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-500">Cüzdan Bakiyesi</div>
-                  <div className="text-xl font-extrabold text-slate-800">{currentUser.balance.toFixed(2)} ₺</div>
-                </div>
-                <button className="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
-                  Yükle
-                </button>
-              </div>
-            </div>
+{/* Bakiye Kartı */}
+<div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 w-full sm:w-auto">
+  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
+    <Wallet size={24} />
+  </div>
+  <div>
+    <div className="text-xs font-bold text-slate-500">Cüzdan Bakiyesi</div>
+    {/* GÜNCELLEME: parseFloat ve ?? 0 ekledik */}
+    <div className="text-xl font-extrabold text-slate-800">
+      {parseFloat(currentUser?.balance ?? 0).toFixed(2)} ₺
+    </div>
+  </div>
+  <button className="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
+    Yükle
+  </button>
+</div>
 
-            {/* XP Bar */}
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-              <div className="flex justify-between text-xs font-bold mb-2">
-                <span className="text-slate-600">Seviye {currentUser.level}</span>
-                <span className="text-purple-600">{currentUser.xp}% XP</span>
-              </div>
-              <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" 
-                  style={{ width: `${currentUser.xp}%` }}
-                ></div>
-              </div>
-              <p className="text-[10px] text-slate-400 text-center mt-2 font-medium">Bir sonraki seviyeye ulaşmak için pazarda aktif olmaya devam et!</p>
-            </div>
-          </div>
-        </div>
+{/* XP Bar */}
+<div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+  <div className="flex justify-between text-xs font-bold mb-2">
+    {/* GÜNCELLEME: Opsiyonel zincirleme (?.) ve varsayılan değerler */}
+    <span className="text-slate-600">Seviye {currentUser?.level ?? 1}</span>
+    <span className="text-purple-600">{currentUser?.xp ?? 0}% XP</span>
+  </div>
+  <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+    <div 
+      className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full" 
+      {/* GÜNCELLEME: Genişlik hesabı için güvenli erişim */}
+      style={{ width: `${currentUser?.xp ?? 0}%` }}
+    ></div>
+  </div>
+  <p className="text-[10px] text-slate-400 text-center mt-2 font-medium">Bir sonraki seviyeye ulaşmak için pazarda aktif olmaya devam et!</p>
+</div>
 
         {/* Profil Alt Sekmeleri */}
         <div className="flex flex-col md:flex-row gap-8">
