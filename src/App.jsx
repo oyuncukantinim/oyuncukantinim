@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 
 // --- SAHTE VERİLER (MOCK DATA) ---
-const API_URL = "https://beta.oyuncukantinim.com.tr/api/api.php";
+
 const GAMES = [
   { id: 1, name: "Valorant", color: "from-red-400 to-rose-500", emoji: "🔫", subcategories: [{name: "Hesap", commission: 10}, {name: "Boost", commission: 15}, {name: "VP (E-Pin)", commission: 3}] },
   { id: 2, name: "League of Legends", color: "from-blue-400 to-cyan-500", emoji: "⚔️", subcategories: [{name: "Hesap", commission: 10}, {name: "Koçluk", commission: 12}, {name: "RP (E-Pin)", commission: 3}] },
@@ -82,19 +82,6 @@ export default function OyuncuKantinimApp() {
   const [botMessages, setBotMessages] = useState([{ sender: 'bot', text: 'Merhaba! Ben KantinBot 🐾 Sana pazarda nasıl yardımcı olabilirim?' }]);
   const [userMessage, setUserMessage] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
-
-useEffect(() => {
-  // E-Pinleri Çek
-  fetch(`${API_URL}?action=get_epins`)
-    .then(res => res.json())
-    .then(res => { if(res.status === 'success') /* setEpinsData(res.data) */ });
-
-  // İlanları Çek
-  fetch(`${API_URL}?action=get_listings`)
-    .then(res => res.json())
-    .then(res => { if(res.status === 'success') setListingsData(res.data) });
-}, []);
-
 
   // Sepete ekleme fonksiyonu
   const addToCart = (item, isListing = false) => {
@@ -545,25 +532,21 @@ useEffect(() => {
   const LoginPage = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
 
-const handleAuth = async (e) => {
-  e.preventDefault();
-  const email = e.target.querySelector('input[type="email"]').value;
-  const password = e.target.querySelector('input[type="password"]').value;
-
-  const response = await fetch(`${API_URL}?action=login`, {
-    method: 'POST',
-    body: JSON.stringify({ email, password })
-  });
-  const result = await response.json();
-
-  if (result.status === 'success') {
-    setCurrentUser(result.user);
-    showToast("Tekrar hoş geldin! 🐾");
-    navigateTo('profile');
-  } else {
-    alert(result.message);
-  }
-};
+    const handleAuth = (e) => {
+      e.preventDefault();
+      // Simüle edilmiş giriş/kayıt işlemi
+      setCurrentUser({ 
+        username: "ŞirinGamer", 
+        avatar: "🦊", 
+        balance: 1250.00, 
+        level: 42, 
+        xp: 75,
+        email: "siringamer@oyuncukantinim.com",
+        joinDate: "Ekim 2025"
+      });
+      showToast(isLoginMode ? "Tekrar hoş geldin! 🐾" : "Aramıza hoş geldin! 🎉");
+      navigateTo('profile');
+    };
 
     return (
       <div className="max-w-md mx-auto py-12 animate-in fade-in zoom-in-95 duration-300">
