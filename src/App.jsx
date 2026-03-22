@@ -122,15 +122,6 @@ const handleLogout = () => {
   showToast("Yine bekleriz! 👋");
 };
   
-  // İlan Ekleme Fonksiyonu
-  const handleAddListing = (newListing) => {
-    const sellerName = currentUser ? currentUser.username : "Misafir";
-    const sellerAvatar = currentUser ? currentUser.avatar : "👤";
-    
-    setListingsData([{ ...newListing, id: Date.now(), seller: sellerName, rating: 5.0, avatar: sellerAvatar }, ...listingsData]);
-    setIsAddModalOpen(false);
-    showToast("İlanın başarıyla pazara eklendi! 🚀");
-  };
 
   // --- ALT SAYFA BİLEŞENLERİ ---
 
@@ -1194,7 +1185,24 @@ const handleUpdateProfile = async () => {
       </footer>
 
       {/* Modallar ve Bildirimler */}
-      {isAddModalOpen && <AddListingModalContent />}
+      {/* Modallar ve Bildirimler */}
+      {isAddModalOpen && (
+        <Create 
+          currentUser={currentUser} 
+          isModal={true} 
+          onClose={() => setIsAddModalOpen(false)} 
+          onSuccess={() => {
+            showToast("Harika! İlanın başarıyla eklendi.");
+            setIsAddModalOpen(false);
+            // Burada API'den güncel ilanları tekrar çeken bir kod yazabilirsin
+            fetch(`${API_URL}?action=get_listings`)
+              .then(res => res.json())
+              .then(res => {
+                if(res.status === 'success') setListingsData(res.data);
+              });
+          }}
+        />
+      )}
       {selectedListing && <ListingDetailModal />}
 
       {/* PatiBot Asistan */}
