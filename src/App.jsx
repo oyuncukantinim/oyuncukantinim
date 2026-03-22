@@ -528,24 +528,50 @@ export default function OyuncuKantinimApp() {
 
   // --- YENİ SAYFALAR (LOGIN VE PROFIL) ---
 
-  // 5. GİRİŞ YAP / KAYIT OL SAYFASI
+// 5. GİRİŞ YAP / KAYIT OL SAYFASI
   const LoginPage = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
 
-    const handleAuth = (e) => {
+    const handleAuth = async (e) => {
       e.preventDefault();
-      // Simüle edilmiş giriş/kayıt işlemi
-      setCurrentUser({ 
-        username: "ŞirinGamer", 
-        avatar: "🦊", 
-        balance: 1250.00, 
-        level: 42, 
-        xp: 75,
-        email: "siringamer@oyuncukantinim.com",
-        joinDate: "Ekim 2025"
-      });
-      showToast(isLoginMode ? "Tekrar hoş geldin! 🐾" : "Aramıza hoş geldin! 🎉");
-      navigateTo('profile');
+      
+      // Formdaki verileri alalım
+      const email = e.target.querySelector('input[type="email"]').value;
+      const password = e.target.querySelector('input[type="password"]').value;
+      // Eğer kayıt modundaysak kullanıcı adını da alalım
+      const username = !isLoginMode ? e.target.querySelector('input[type="text"]').value : null;
+
+      // Hangi API işlemine gideceğimizi seçelim
+      const action = isLoginMode ? 'login' : 'register';
+      const payload = isLoginMode ? { email, password } : { username, email, password };
+
+      try {
+        const response = await fetch(`${API_URL}?action=${action}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          if (isLoginMode) {
+            // GİRİŞ BAŞARILI: Kullanıcı verisini state'e kaydet
+            setCurrentUser(result.user);
+            showToast("Tekrar hoş geldin! 🐾");
+            navigateTo('profile');
+          } else {
+            // KAYIT BAŞARILI: Giriş moduna at ve bilgi ver
+            alert("Kayıt başarılı! Şimdi aynı bilgilerle giriş yapabilirsin.");
+            setIsLoginMode(true);
+          }
+        } else {
+          // HATA: Şifre yanlış, kullanıcı yok veya e-posta kullanımda
+          alert(result.message);
+        }
+      } catch (err) {
+        alert("Bağlantı hatası! API adresini kontrol edin.");
+      }
     };
 
     return (
