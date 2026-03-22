@@ -544,45 +544,40 @@ const handleLogout = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
 
 const handleAuth = async (e) => {
-  e.preventDefault();
-  
-  // Form verilerini çekiyoruz
-  const email = e.target.querySelector('input[type="email"]').value;
-  const password = e.target.querySelector('input[type="password"]').value;
-  const isLogin = e.target.closest('.max-w-md').querySelector('h1').innerText === "Giriş Yap";
-  const username = !isLogin ? e.target.querySelector('input[type="text"]').value : null;
+    e.preventDefault();
+    const isLogin = e.target.closest('.max-w-md').querySelector('h1').innerText === "Giriş Yap";
+    const email = e.target.querySelector('input[type="email"]').value;
+    const password = e.target.querySelector('input[type="password"]').value;
+    const username = !isLogin ? e.target.querySelector('input[type="text"]').value : null;
 
-  const action = isLogin ? 'login' : 'register';
-  const payload = isLogin ? { email, password } : { username, email, password };
+    const action = isLogin ? 'login' : 'register';
+    const payload = isLogin ? { email, password, username };
 
-  try {
-    const response = await fetch(`${API_URL}?action=${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    
-    const result = await response.json();
+    try {
+      const response = await fetch(`${API_URL}?action=${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
 
-    if (result.status === 'success') {
-      if (isLogin) {
-        // GİRİŞ BAŞARILI: Veritabanından gelen kullanıcıyı kaydet
-        setCurrentUser(result.user);
-        localStorage.setItem('user', JSON.stringify(result.user)); // Oturumu kalıcı yap
-        showToast("Hoş geldin! 🐾");
-        navigateTo('profile');
+      if (result.status === 'success') {
+        if (isLogin) {
+          setCurrentUser(result.user);
+          localStorage.setItem('user', JSON.stringify(result.user)); // Kalıcı oturum
+          showToast("Hoş geldin! 🐾");
+          navigateTo('profile');
+        } else {
+          alert("Kayıt başarılı! Şimdi giriş yapabilirsin.");
+          // Kayıt sonrası otomatik giriş moduna geçirebiliriz
+        }
       } else {
-        // KAYIT BAŞARILI
-        alert("Kayıt başarılı! Şimdi giriş yapabilirsin.");
-        // Kullanıcıyı giriş moduna geçirebilirsin
+        alert(result.message);
       }
-    } else {
-      alert(result.message); // Hata mesajını (Şifre yanlış vb.) göster
+    } catch (err) {
+      alert("API hatası! api.php dosyanızı kontrol edin.");
     }
-  } catch (err) {
-    alert("Bağlantı hatası! Sunucuya ulaşılamıyor.");
-  }
-};
+  };
 
     return (
       <div className="max-w-md mx-auto py-12 animate-in fade-in zoom-in-95 duration-300">
