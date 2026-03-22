@@ -912,7 +912,7 @@ const handleUpdateProfile = async () => {
 
 
     
-const handleSubmit = async (e) => {
+const handleSubmit = async (e) => { // Buraya async eklemeyi unutma
       e.preventDefault();
       
       if (!title || !price || photos.length === 0) {
@@ -920,7 +920,7 @@ const handleSubmit = async (e) => {
         return;
       }
 
-      const listingData = {
+const listingData = {
         seller_id: currentUser.id, 
         game_name: game,
         category: subCategory || "Diğer",
@@ -930,7 +930,7 @@ const handleSubmit = async (e) => {
         images: photos 
       };
 
-      try {
+try {
         const response = await fetch(`${API_URL}?action=add_listing`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -939,11 +939,10 @@ const handleSubmit = async (e) => {
 
         const result = await response.json();
 
-        if (result.status === 'success') {
+if (result.status === 'success') {
           setIsAddModalOpen(false);
-          showToast("İlanın veritabanına başarıyla kaydedildi! 🚀");
+          showToast("İlanın başarıyla kaydedildi! 🚀");
           
-          // Listeyi güncellemek için ilanları tekrar çekiyoruz
           fetch(`${API_URL}?action=get_listings`)
             .then(res => res.json())
             .then(res => {
