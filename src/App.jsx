@@ -11,25 +11,10 @@ import {
 const API_URL = "https://api.oyuncukantinim.com.tr/api.php";
 // --- SAHTE VERİLER (MOCK DATA) ---
 
-const [listingsData, setListingsData] = useState([]); // INITIAL_LISTINGS yerine başlangıcı boş dizi yapabilirsin
 
-  // SAYFA YÜKLENDİĞİNDE VERİTABANINDAN İLANLARI ÇEK
-  useEffect(() => {
-    const fetchListings = async () => {
-      try {
-        const response = await fetch(`${API_URL}?action=get_listings`);
-        const result = await response.json();
-        
-        if (result.status === 'success') {
-          setListingsData(result.data); // Veritabanından gelen veriyi ekrana bas
-        }
-      } catch (error) {
-        console.error("İlanlar çekilirken hata:", error);
-      }
-    };
 
-    fetchListings(); // Fonksiyonu çalıştır
-  }, []); // Sonda bulunan [] çok önemlidir! Bu kodun sadece sayfa ilk yüklendiğinde 1 kez çalışmasını sağlar.
+
+
 
 
 
@@ -86,31 +71,49 @@ const callGeminiApi = async (prompt) => {
 // --- ANA UYGULAMA BİLEŞENİ ---
 
 export default function OyuncuKantinimApp() {
+  // 1. Genel Sayfa Durumları (States)
   const [currentPage, setCurrentPage] = useState('home'); // home, store, market, cart, profile, login, listing-detail
   const [cart, setCart] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   
-  // YENİ EKLENEN STATE'LER
-  const [listingsData, setListingsData] = useState(INITIAL_LISTINGS);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedListing, setSelectedListing] = useState(null);
-  const [viewedListing, setViewedListing] = useState(null); // Detay sayfası için eklendi
+  // 2. İlanlar ve Modal Durumları
+  const [listingsData, setListingsData] = useState([]); // F5 atıldığında boş başlar, useEffect ile dolar
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Yeni ilan ekleme modalını kontrol eder
+  const [selectedListing, setSelectedListing] = useState(null); // İlan fotoğraf galerisi için
+  const [viewedListing, setViewedListing] = useState(null); // İlan detay sayfası için
 
-  // KULLANICI STATE'İ (Yeni)
+  // 3. Kullanıcı Oturum Durumu (Local Storage Destekli)
   const [currentUser, setCurrentUser] = useState(() => {
-  const savedUser = localStorage.getItem('user');
-  return savedUser ? JSON.parse(savedUser) : null;
-});
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  // KANTİNBOT STATE'LERİ
+  // 4. KantinBot State'leri
   const [isBotOpen, setIsBotOpen] = useState(false);
   const [botMessages, setBotMessages] = useState([{ sender: 'bot', text: 'Merhaba! Ben KantinBot 🐾 Sana pazarda nasıl yardımcı olabilirim?' }]);
   const [userMessage, setUserMessage] = useState('');
   const [isBotTyping, setIsBotTyping] = useState(false);
 
-  // Sepete ekleme fonksiyonu
+  // 5. SAYFA İLK YÜKLENDİĞİNDE İLANLARI VERİTABANINDAN ÇEK (YENİ EKLENDİ)
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await fetch(`${API_URL}?action=get_listings`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setListingsData(result.data); // Veritabanından gelen veriyi ekrana bas
+        }
+      } catch (error) {
+        console.error("İlanlar çekilirken hata oluştu:", error);
+      }
+    };
+
+    fetchListings(); // Fonksiyonu çalıştır
+  }, []); // [] sayesinde bu işlem sadece sayfa açıldığında 1 kez yapılır
+
+  // 6. Sepete ekleme fonksiyonu
   const addToCart = (item, isListing = false) => {
     setCart([...cart, { ...item, cartId: Math.random().toString(), isListing }]);
     showToast(`${item.title} sepete eklendi! 💖`);
