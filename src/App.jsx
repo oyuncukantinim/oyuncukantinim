@@ -11,6 +11,28 @@ import {
 const API_URL = "https://api.oyuncukantinim.com.tr/api.php";
 // --- SAHTE VERİLER (MOCK DATA) ---
 
+const [listingsData, setListingsData] = useState([]); // INITIAL_LISTINGS yerine başlangıcı boş dizi yapabilirsin
+
+  // SAYFA YÜKLENDİĞİNDE VERİTABANINDAN İLANLARI ÇEK
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await fetch(`${API_URL}?action=get_listings`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setListingsData(result.data); // Veritabanından gelen veriyi ekrana bas
+        }
+      } catch (error) {
+        console.error("İlanlar çekilirken hata:", error);
+      }
+    };
+
+    fetchListings(); // Fonksiyonu çalıştır
+  }, []); // Sonda bulunan [] çok önemlidir! Bu kodun sadece sayfa ilk yüklendiğinde 1 kez çalışmasını sağlar.
+
+
+
 const GAMES = [
   { id: 1, name: "Valorant", color: "from-red-400 to-rose-500", emoji: "🔫", subcategories: [{name: "Hesap", commission: 10}, {name: "Boost", commission: 15}, {name: "VP (E-Pin)", commission: 3}] },
   { id: 2, name: "League of Legends", color: "from-blue-400 to-cyan-500", emoji: "⚔️", subcategories: [{name: "Hesap", commission: 10}, {name: "Koçluk", commission: 12}, {name: "RP (E-Pin)", commission: 3}] },
