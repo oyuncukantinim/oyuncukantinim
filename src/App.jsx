@@ -914,23 +914,57 @@ export default function OyuncuKantinimApp() {
       else if (coverIndex > index) setCoverIndex(coverIndex - 1);
     };
 
-    const handleSubmit = (e) => {
+
+
+    
+const handleSubmit = async (e) => {
       e.preventDefault();
+      
       if (!title || !price || photos.length === 0) {
         alert("Lütfen başlık, fiyat gir ve en az 1 fotoğraf ekle!");
         return;
       }
-      handleAddListing({
-        title,
+
+      const listingData = {
+        seller_id: currentUser.id, 
+        game_name: game,
+        category: subCategory || "Diğer",
+        title: title,
         price: parseFloat(price),
-        game,
-        type: subCategory || "Diğer",
-        images: photos,
-        coverIndex,
-        description: description || "Yeni ilan eklendi."
-      });
+        description: description || "Yeni ilan eklendi.",
+        images: photos 
+      };
+
+      try {
+        const response = await fetch(`${API_URL}?action=add_listing`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(listingData)
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          setIsAddModalOpen(false);
+          showToast("İlanın veritabanına başarıyla kaydedildi! 🚀");
+          
+          // Listeyi güncellemek için ilanları tekrar çekiyoruz
+          fetch(`${API_URL}?action=get_listings`)
+            .then(res => res.json())
+            .then(res => {
+              if(res.status === 'success') setListingsData(res.data);
+            });
+            
+        } else {
+          alert("Hata: " + result.message);
+        }
+      } catch (err) {
+        alert("Bağlantı hatası! API çalışıyor mu kontrol et.");
+      }
     };
 
+
+    
     const handleGenerateDescription = async () => {
       if (!title || !game) {
         alert("Lütfen önce oyun seçip başlık girin! Ben de ona göre yazabileyim.");
