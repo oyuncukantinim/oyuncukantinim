@@ -719,32 +719,29 @@ const handleUpdateProfile = async () => {
                 </p>
               </div>
 
- {/* Bakiye Kartı */}
+{/* Bakiye Kartı */}
+<div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 w-full sm:w-auto">
+  <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
+    <Wallet size={24} />
+  </div>
+  <div>
+    <div className="text-xs font-bold text-slate-500">Cüzdan Bakiyesi</div>
+    <div className="text-xl font-extrabold text-slate-800">
+      {/* GÜVENLİ YAZIM: 
+         1. currentUser?.balance var mı bak.
+         2. Varsa Number() ile sayıya çevir. 
+         3. Yoksa 0 kabul et.
+      */}
+      {Number(currentUser?.balance || 0).toFixed(2)} ₺
+    </div>
+  </div>
+  <button className="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
+    Yükle
+  </button>
+</div>
 
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-4 w-full sm:w-auto">
 
-                <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
 
-                  <Wallet size={24} />
-
-                </div>
-
-                <div>
-
-                  <div className="text-xs font-bold text-slate-500">Cüzdan Bakiyesi</div>
-                  {/* GÜNCELLEME: parseFloat ve ?? 0 ekledik */}
-                  
-                  <div className="text-xl font-extrabold text-slate-800">{parseFloat(currentUser?.balance ?? 0).toFixed(2)} ₺</div>
-
-                </div>
-
-                <button className="ml-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md transition-colors">
-
-                  Yükle
-
-                </button>
-
-              </div>
 
             </div>
 
