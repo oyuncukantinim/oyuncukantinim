@@ -114,12 +114,12 @@ export default function OyuncuKantinimApp() {
   };
 
 // --- 3. ADIM: ÇIKIŞ YAPMA FONKSİYONU ---
-  const handleLogout = () => {
-    localStorage.removeItem('user'); // Tarayıcıdaki oturum kaydını siler
-    setCurrentUser(null);           // Uygulama içindeki kullanıcıyı temizler
-    navigateTo('home');             // Ana sayfaya yönlendirir
-    showToast("Başarıyla çıkış yapıldı. 🐾");
-  };
+const handleLogout = () => {
+  localStorage.removeItem('user'); // Hafızayı sil
+  setCurrentUser(null);           // State'i boşalt
+  navigateTo('home');             // Eve dön
+  showToast("Yine bekleriz! 👋");
+};
   
   // İlan Ekleme Fonksiyonu
   const handleAddListing = (newListing) => {
@@ -543,48 +543,46 @@ export default function OyuncuKantinimApp() {
   const LoginPage = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
 
-    const handleAuth = async (e) => {
-      localStorage.setItem('user', JSON.stringify(result.user));
-      e.preventDefault();
-      
-      // Formdaki verileri alalım
-      const email = e.target.querySelector('input[type="email"]').value;
-      const password = e.target.querySelector('input[type="password"]').value;
-      // Eğer kayıt modundaysak kullanıcı adını da alalım
-      const username = !isLoginMode ? e.target.querySelector('input[type="text"]').value : null;
+const handleAuth = async (e) => {
+  e.preventDefault();
+  
+  // Form verilerini çekiyoruz
+  const email = e.target.querySelector('input[type="email"]').value;
+  const password = e.target.querySelector('input[type="password"]').value;
+  const isLogin = e.target.closest('.max-w-md').querySelector('h1').innerText === "Giriş Yap";
+  const username = !isLogin ? e.target.querySelector('input[type="text"]').value : null;
 
-      // Hangi API işlemine gideceğimizi seçelim
-      const action = isLoginMode ? 'login' : 'register';
-      const payload = isLoginMode ? { email, password } : { username, email, password };
+  const action = isLogin ? 'login' : 'register';
+  const payload = isLogin ? { email, password } : { username, email, password };
 
-      try {
-        const response = await fetch(`${API_URL}?action=${action}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
+  try {
+    const response = await fetch(`${API_URL}?action=${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    
+    const result = await response.json();
 
-        if (result.status === 'success') {
-          if (isLoginMode) {
-            // GİRİŞ BAŞARILI: Kullanıcı verisini state'e kaydet
-            setCurrentUser(result.user);
-            showToast("Tekrar hoş geldin! 🐾");
-            navigateTo('profile');
-          } else {
-            // KAYIT BAŞARILI: Giriş moduna at ve bilgi ver
-            alert("Kayıt başarılı! Şimdi aynı bilgilerle giriş yapabilirsin.");
-            setIsLoginMode(true);
-          }
-        } else {
-          // HATA: Şifre yanlış, kullanıcı yok veya e-posta kullanımda
-          alert(result.message);
-        }
-      } catch (err) {
-        alert("Bağlantı hatası! API adresini kontrol edin.");
+    if (result.status === 'success') {
+      if (isLogin) {
+        // GİRİŞ BAŞARILI: Veritabanından gelen kullanıcıyı kaydet
+        setCurrentUser(result.user);
+        localStorage.setItem('user', JSON.stringify(result.user)); // Oturumu kalıcı yap
+        showToast("Hoş geldin! 🐾");
+        navigateTo('profile');
+      } else {
+        // KAYIT BAŞARILI
+        alert("Kayıt başarılı! Şimdi giriş yapabilirsin.");
+        // Kullanıcıyı giriş moduna geçirebilirsin
       }
-    };
+    } else {
+      alert(result.message); // Hata mesajını (Şifre yanlış vb.) göster
+    }
+  } catch (err) {
+    alert("Bağlantı hatası! Sunucuya ulaşılamıyor.");
+  }
+};
 
     return (
       <div className="max-w-md mx-auto py-12 animate-in fade-in zoom-in-95 duration-300">
