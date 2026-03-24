@@ -41,15 +41,36 @@ export default function Create({ currentUser, isModal = false, onClose, onSucces
   const commissionFee = parsedPrice * (commissionRate / 100);
   const netEarnings = parsedPrice - commissionFee;
 
-  // Fotoğraf yükleme (Geçici URL - İleride Base64 veya FormData'ya çevrilecek)
+  // Fotoğraf yükleme — base64'e çevirerek backend'e gönderilebilir hale getirir
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files);
     if (photos.length + files.length > 5) {
       alert("En fazla 5 fotoğraf ekleyebilirsin!");
       return;
     }
-    const newPhotos = files.map(file => URL.createObjectURL(file));
-    setPhotos([...photos, ...newPhotos]);
+
+    // Boyut kontrolü: her fotoğraf max 2MB
+    const oversized = files.find(f => f.size > 2 * 1024 * 1024);
+    if (oversized) {
+      alert(`"${oversized.name}" dosyası 2MB'dan büyük. Lütfen daha küçük bir fotoğraf seç.`);
+      return;
+    }
+
+    // Her dosyayı base64'e çevir
+    const readerPromises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result); // "data:image/jpeg;base64,..." formatı
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readerPromises).then(base64Array => {
+      setPhotos(prev => [...prev, ...base64Array]);
+    }).catch(() => {
+      alert("Fotoğraf okunurken bir hata oluştu, tekrar dene.");
+    });
   };
 
   const removePhoto = (index) => {
