@@ -79,7 +79,7 @@ export default function OyuncuKantinimApp() {
   
   // 2. İlanlar ve Modal Durumları
   const [listingsData, setListingsData] = useState([]); // F5 atıldığında boş başlar, useEffect ile dolar
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false); // Yeni ilan ekleme modalını kontrol eder
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false); // Yeni ilan ekleme modalını kontrol eder
   const [selectedListing, setSelectedListing] = useState(null); // İlan fotoğraf galerisi için
   const [viewedListing, setViewedListing] = useState(null); // İlan detay sayfası için
 
@@ -353,10 +353,17 @@ const handleLogout = () => {
               </div>
               <button 
                 onClick={() => {
-                  setCart([]);
-                  if (currentUser) {
-                     setCurrentUser({...currentUser, balance: currentUser.balance - cartTotal});
+                  if (!currentUser) {
+                    showToast("Ödeme yapmak için giriş yapmalısın! 🔐");
+                    navigateTo('login');
+                    return;
                   }
+                  if (currentUser.balance < cartTotal) {
+                    showToast("Yetersiz bakiye! Lütfen bakiye yükle. 💸");
+                    return;
+                  }
+                  setCart([]);
+                  setCurrentUser({...currentUser, balance: currentUser.balance - cartTotal});
                   showToast("Siparişin başarıyla tamamlandı! 🎉");
                   navigateTo('home');
                 }}
@@ -856,7 +863,12 @@ const handleUpdateProfile = async () => {
                 
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">Görünür İsim (Kullanıcı Adı)</label>
-                  <input type="text" defaultValue={currentUser.username} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-400 focus:bg-white outline-none font-medium" />
+                  <input
+                    type="text"
+                    value={editUsername}
+                    onChange={e => setEditUsername(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-400 focus:bg-white outline-none font-medium"
+                  />
                 </div>
                 
                 <div>
@@ -870,7 +882,10 @@ const handleUpdateProfile = async () => {
                   <input type="password" placeholder="••••••••" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-400 focus:bg-white outline-none font-medium" />
                 </div>
 
-                <button className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700 transition-all w-full sm:w-auto shadow-md">
+                <button
+                  onClick={handleUpdateProfile}
+                  className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700 transition-all w-full sm:w-auto shadow-md"
+                >
                   Değişiklikleri Kaydet
                 </button>
               </div>
@@ -1148,7 +1163,7 @@ const handleUpdateProfile = async () => {
               >
                 <ShoppingCart size={24} />
                 {cart.length > 0 && (
-                  <span className="absolute 0 right-0 bg-pink-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-pink-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
                     {cart.length}
                   </span>
                 )}
