@@ -19,30 +19,34 @@ export default function Home() {
     <div className="space-y-16">
 
       {/* HERO */}
-      <section className="relative flex flex-col items-center justify-center text-center py-20 px-4 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-neon-purple/10 blur-[150px] rounded-full pointer-events-none" />
-        <div className="absolute top-1/4 right-1/4 w-[300px] h-[300px] bg-neon-cyan/8 blur-[120px] rounded-full pointer-events-none" />
+      <section className="relative flex flex-col items-center justify-center text-center py-20 px-6 overflow-hidden rounded-3xl bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 shadow-xl">
+        {/* Dekoratif parlama efektleri */}
+        <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-white/10 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-cyan-400/20 blur-[80px] rounded-full pointer-events-none" />
+        <div className="absolute top-10 right-10 opacity-10 pointer-events-none">
+          <Gamepad2 size={200} className="text-white" />
+        </div>
 
-        <div className="animate-float mb-6">
-          <div className="bg-gradient-to-tr from-neon-purple to-neon-cyan p-4 rounded-2xl shadow-neon-purple inline-block">
+        <div className="animate-float mb-6 relative z-10">
+          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-2xl inline-block border border-white/20">
             <Gamepad2 className="text-white" size={48} />
           </div>
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 relative z-10 text-gray-900">
+        <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 relative z-10 text-white">
           Oyun Dunyasinin <br />
-          <span className="glow-text">Yeni Kantini</span>
+          <span className="text-cyan-200">Yeni Kantini</span>
         </h1>
 
-        <p className="text-gray-500 text-lg md:text-xl max-w-2xl mb-10 relative z-10">
+        <p className="text-purple-100 text-lg md:text-xl max-w-2xl mb-10 relative z-10">
           En uygun fiyatli E-Pinler, guvenilir oyuncu pazari ve aninda teslimat garantisiyle oyun deneyimini bir ust seviyeye tasi.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 relative z-10">
-          <Link to="/store" className="btn-primary text-lg py-4 px-8 shadow-neon-purple">
+          <Link to="/store" className="bg-white text-purple-700 font-bold text-lg py-4 px-8 rounded-xl hover:bg-purple-50 transition-all hover:scale-105 active:scale-95 shadow-lg">
             Magazaya Goz At
           </Link>
-          <Link to="/market" className="btn-secondary text-lg py-4 px-8">
+          <Link to="/market" className="bg-white/15 backdrop-blur-sm border border-white/25 text-white font-bold text-lg py-4 px-8 rounded-xl hover:bg-white/25 transition-all hover:scale-105 active:scale-95">
             Oyuncu Pazari
           </Link>
         </div>
