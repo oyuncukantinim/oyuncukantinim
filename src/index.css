@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-dark-900 text-gray-100 antialiased;
+    @apply bg-surface-50 text-gray-800 antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
@@ -12,26 +12,26 @@
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-dark-800;
+    @apply bg-surface-100;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-dark-500 rounded-full;
+    @apply bg-surface-300 rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-neon-purple;
   }
 
   ::selection {
-    @apply bg-neon-purple/30 text-white;
+    @apply bg-neon-purple/20 text-neon-purple;
   }
 }
 
 @layer components {
   .card {
-    @apply bg-dark-700 border border-white/5 rounded-2xl transition-all duration-300;
+    @apply bg-white border border-gray-100 rounded-2xl shadow-sm transition-all duration-300;
   }
   .card:hover {
-    @apply border-neon-purple/30 shadow-neon-purple;
+    @apply shadow-lg border-neon-purple/20;
   }
 
   .btn-primary {
@@ -39,15 +39,15 @@
   }
 
   .btn-secondary {
-    @apply bg-white/5 border border-white/10 text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-white/10 hover:border-neon-purple/30 active:scale-95;
+    @apply bg-gray-100 border border-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-gray-200 hover:border-neon-purple/30 active:scale-95;
   }
 
   .btn-danger {
-    @apply bg-red-500/10 border border-red-500/20 text-red-400 font-bold py-3 px-6 rounded-xl transition-all hover:bg-red-500/20;
+    @apply bg-red-50 border border-red-200 text-red-600 font-bold py-3 px-6 rounded-xl transition-all hover:bg-red-100;
   }
 
   .input-field {
-    @apply w-full bg-dark-600 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-neon-purple/50 focus:ring-1 focus:ring-neon-purple/30 transition-all;
+    @apply w-full bg-surface-100 border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-neon-purple focus:ring-2 focus:ring-neon-purple/20 transition-all;
   }
 
   .badge {
