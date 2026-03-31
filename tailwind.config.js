@@ -7,24 +7,24 @@ export default {
   theme: {
     extend: {
       colors: {
-        dark: {
-          900: '#050507',
-          800: '#0a0a0f',
-          700: '#111118',
-          600: '#1a1a24',
-          500: '#24243a',
+        surface: {
+          50: '#fafafa',
+          100: '#f5f5f5',
+          200: '#eeeeee',
+          300: '#e0e0e0',
         },
         neon: {
-          purple: '#a855f7',
+          purple: '#8b5cf6',
           cyan: '#06b6d4',
           pink: '#ec4899',
-          green: '#22c55e',
+          green: '#10b981',
         },
       },
       boxShadow: {
-        'neon-purple': '0 0 20px rgba(168,85,247,0.3), 0 0 60px rgba(168,85,247,0.1)',
-        'neon-cyan': '0 0 20px rgba(6,182,212,0.3), 0 0 60px rgba(6,182,212,0.1)',
-        'neon-pink': '0 0 20px rgba(236,72,153,0.3), 0 0 60px rgba(236,72,153,0.1)',
+        'neon-purple': '0 0 20px rgba(139,92,246,0.15), 0 4px 20px rgba(139,92,246,0.1)',
+        'neon-cyan': '0 0 20px rgba(6,182,212,0.15), 0 4px 20px rgba(6,182,212,0.1)',
+        'neon-pink': '0 0 20px rgba(236,72,153,0.15), 0 4px 20px rgba(236,72,153,0.1)',
+        'neon-green': '0 0 20px rgba(16,185,129,0.15), 0 4px 20px rgba(16,185,129,0.1)',
       },
       animation: {
         'glow': 'glow 2s ease-in-out infinite alternate',
@@ -32,8 +32,8 @@ export default {
       },
       keyframes: {
         glow: {
-          '0%': { boxShadow: '0 0 5px rgba(168,85,247,0.2), 0 0 20px rgba(168,85,247,0.1)' },
-          '100%': { boxShadow: '0 0 20px rgba(168,85,247,0.4), 0 0 60px rgba(168,85,247,0.2)' },
+          '0%': { boxShadow: '0 0 5px rgba(139,92,246,0.1)' },
+          '100%': { boxShadow: '0 0 25px rgba(139,92,246,0.25)' },
         },
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
