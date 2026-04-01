@@ -18,6 +18,7 @@ import MessagesPage from './pages/messages';
 import NotificationsPage from './pages/notifications';
 import SellerPage from './pages/seller';
 import CategoriesPage from './pages/categories';
+import CategoryListingsPage from './pages/category-listings';
 
 // Admin pages
 import AdminLogin from './pages/admin/Login';
@@ -31,6 +32,7 @@ import AdminEpins from './pages/admin/Epins';
 import AdminAnnouncements from './pages/admin/Announcements';
 import AdminMessages from './pages/admin/Messages';
 import AdminSettings from './pages/admin/Settings';
+import AdminPopularGames from './pages/admin/PopularGames';
 
 function AdminRoute({ children }) {
   const token = localStorage.getItem('admin_token');
@@ -56,6 +58,7 @@ function SiteLayout() {
           <Route path="/messages/:userId" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
           <Route path="/p/:username" element={<SellerPage />} />
         </Routes>
       </main>
@@ -84,6 +87,7 @@ export default function App() {
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+            <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
 
             {/* Site — Navbar + Footer */}
             <Route path="/*" element={<SiteLayout />} />

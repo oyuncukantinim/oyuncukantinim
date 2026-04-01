@@ -100,6 +100,10 @@ export const adminBroadcast = (body) =>
 export const adminGetConversations = (params = {}) =>
   adminRequest('admin_get_conversations', { query: params });
 
+// Categories Reorder
+export const adminReorderCategories = (orders) =>
+  adminRequest('admin_reorder_categories', { method: 'POST', body: { orders } });
+
 // Image Upload
 export async function adminUploadImage(file, folder = 'misc') {
   const url = new URL(API_URL);

@@ -2,17 +2,21 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Zap, ChevronRight, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { getListings, getEpins } from '../lib/api';
-import { GAMES } from '../data/catalog';
 import ListingCard from '../components/ListingCard';
 import EPinCard from '../components/EPinCard';
 
 export default function Home() {
   const [listings, setListings] = useState([]);
   const [epins, setEpins] = useState([]);
+  const [popularGames, setPopularGames] = useState([]);
 
   useEffect(() => {
     getListings().then(r => setListings(r.data || [])).catch(() => {});
     getEpins().then(r => setEpins(r.data || [])).catch(() => {});
+    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_popular_games')
+      .then(r => r.json())
+      .then(j => setPopularGames(j.data || []))
+      .catch(() => {});
   }, []);
 
   return (
@@ -68,30 +72,32 @@ export default function Home() {
       </section>
 
       {/* POPULER OYUNLAR */}
-      <section>
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-red-500 rounded-full" />
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <Flame className="text-orange-500" /> Populer Oyunlar
-            </h2>
+      {popularGames.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-red-500 rounded-full" />
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Flame className="text-orange-500" /> Populer Oyunlar
+              </h2>
+            </div>
           </div>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {GAMES.map(game => (
-            <Link
-              key={game.id}
-              to={`/market?game=${encodeURIComponent(game.name)}`}
-              className={`bg-gradient-to-br ${game.color} p-[2px] rounded-2xl hover:scale-105 transition-transform shadow-md`}
-            >
-              <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl p-5 flex flex-col items-center justify-center text-center">
-                <span className="text-4xl mb-2">{game.emoji}</span>
-                <span className="text-gray-800 font-bold text-sm">{game.name}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+            {popularGames.map(game => (
+              <Link
+                key={game.id}
+                to={`/market?game=${encodeURIComponent(game.name)}`}
+                className={`bg-gradient-to-br ${game.color} p-[2px] rounded-2xl hover:scale-105 transition-transform shadow-md`}
+              >
+                <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl p-5 flex flex-col items-center justify-center text-center">
+                  <span className="text-4xl mb-2">{game.emoji}</span>
+                  <span className="text-gray-800 font-bold text-sm">{game.name}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* INDIRIMLI E-PINLER */}
       {epins.length > 0 && (

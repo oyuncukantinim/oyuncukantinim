@@ -54,14 +54,14 @@ export default function ListingDetailPage() {
         </div>
         <div className="w-full lg:w-1/2 flex flex-col">
           <div className="flex items-center gap-2 mb-4">
-            <span className="badge-cyan">{listing.category}</span>
+            <Link to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'} className="badge-cyan hover:opacity-80 transition-opacity">{listing.category}</Link>
             <span className="text-gray-400 text-sm font-bold flex items-center gap-1"><Gamepad2 size={14} /> {listing.game_name}</span>
           </div>
           <h1 className="text-3xl font-extrabold text-gray-800 mb-4 leading-tight">{listing.title}</h1>
           <div className="flex items-center gap-4 mb-6 bg-surface-100 p-4 rounded-2xl border border-gray-100">
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl shadow-sm border border-gray-100">{listing.avatar || '👤'}</div>
             <div className="flex-1">
-              <div className="text-sm font-bold text-gray-700">Satici: {listing.seller}</div>
+              <Link to={`/p/${listing.seller}`} className="text-sm font-bold text-gray-700 hover:text-violet-600 transition-colors">🏪 {listing.seller}</Link>
               <div className="flex items-center text-xs font-bold text-yellow-500 mt-1"><Star size={12} className="fill-current mr-1" /> {listing.rating || 5.0} / 5.0</div>
             </div>
             {user && !isSeller && (

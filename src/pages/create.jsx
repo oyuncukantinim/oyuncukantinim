@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { addListing } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
-import { GAMES } from '../data/catalog';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -72,7 +71,6 @@ export default function CreatePage() {
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
-  const [gameName, setGameName] = useState('');
   const [images, setImages] = useState(['']);
   const [coverIndex, setCoverIndex] = useState(0);
 
@@ -99,7 +97,7 @@ export default function CreatePage() {
   const effectiveCommission = selectedCategory?.commission_rate ?? null;
   const effectiveMinPrice   = selectedCategory?.min_price ?? null;
   const priceNum   = parseFloat(price) || 0;
-  const commission = priceNum * ((effectiveCommission ?? 10) / 100);
+  const commission = priceNum * ((selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10) / 100);
   const earnings   = priceNum - commission;
 
   const canNext = () => {
@@ -130,7 +128,6 @@ export default function CreatePage() {
         title,
         price: priceNum,
         description,
-        game_name: gameName,
         category:    selectedCategory?.slug || '',
         category_id: selectedCategory?.id   || null,
         images:      images.filter(Boolean),
@@ -180,7 +177,7 @@ export default function CreatePage() {
               <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 text-sm space-y-1">
                 <div className="font-bold text-violet-800">{selectedCategory.icon} {selectedCategory.name} seçildi</div>
                 <div className="text-violet-600 flex gap-4 text-xs">
-                  <span>Komisyon: <strong>%{effectiveCommission ?? 10}</strong></span>
+                  <span>Komisyon: <strong>%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10}</strong></span>
                   {effectiveMinPrice && <span>Min fiyat: <strong>{effectiveMinPrice}₺</strong></span>}
                 </div>
               </div>
@@ -197,14 +194,6 @@ export default function CreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Oyun</label>
-              <input value={gameName} onChange={e => setGameName(e.target.value)} placeholder="Valorant, League of Legends..." list="games-list" className="input-field" />
-              <datalist id="games-list">
-                {(GAMES || []).map(g => <option key={g} value={g} />)}
-              </datalist>
-            </div>
-
-            <div>
               <label className="block text-sm font-bold text-gray-700 mb-1.5">
                 Fiyat (₺) *
                 {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Min: {effectiveMinPrice}₺</span>}
@@ -212,7 +201,7 @@ export default function CreatePage() {
               <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" min={effectiveMinPrice || 1} step="0.01" className="input-field" />
               {priceNum > 0 && (
                 <div className="mt-2 flex gap-4 text-xs text-gray-500">
-                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{effectiveCommission ?? 10})</span>
+                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10})</span>
                   <span>Kazancınız: <strong className="text-emerald-600">{earnings.toFixed(2)}₺</strong></span>
                 </div>
               )}

@@ -1,50 +1,41 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, ChevronRight, Tag, X } from 'lucide-react';
+import { Search, X, Tag } from 'lucide-react';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
-async function fetchPublic(action, params = {}) {
-  const url = new URL(API_URL);
-  url.searchParams.set('action', action);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
-  const json = await res.json();
-  return json.data;
+function buildCatSlug(cat) {
+  return `${cat.slug}-${cat.id}`;
 }
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [expanded, setExpanded] = useState({});
+  const [activeRoot, setActiveRoot] = useState(null); // null = Tümü
 
   useEffect(() => {
-    fetchPublic('get_categories_tree')
-      .then(d => setCategories(d || []))
+    fetch(`${API_URL}?action=get_categories_tree`)
+      .then(r => r.json())
+      .then(j => setCategories(j.data || []))
       .finally(() => setLoading(false));
   }, []);
 
   const roots = useMemo(() => categories.filter(c => !c.parent_id), [categories]);
   const childrenOf = (id) => categories.filter(c => c.parent_id == id);
 
-  const searchResults = useMemo(() => {
-    if (!search.trim()) return [];
-    const q = search.toLowerCase();
-    return categories.filter(c =>
-      c.name.toLowerCase().includes(q) || c.slug.includes(q)
-    );
-  }, [search, categories]);
-
-  const getPath = (catId) => {
-    const parts = [];
-    let cur = categories.find(c => c.id === catId);
-    while (cur) {
-      parts.unshift(cur.name);
-      cur = cur.parent_id ? categories.find(c => c.id === cur.parent_id) : null;
+  // Displayed categories based on filter + search
+  const displayed = useMemo(() => {
+    let list = categories;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = categories.filter(c => c.name.toLowerCase().includes(q));
+    } else if (activeRoot !== null) {
+      // show the root + its children
+      list = categories.filter(c => c.id === activeRoot || c.parent_id === activeRoot);
     }
-    return parts.join(' › ');
-  };
+    return list;
+  }, [categories, search, activeRoot]);
 
   if (loading) return (
     <div className="flex justify-center items-center py-32">
@@ -53,151 +44,126 @@ export default function CategoriesPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Header */}
-      <div className="text-center space-y-3">
-        <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-700 text-xs font-bold px-3 py-1.5 rounded-full">
-          <Tag size={12} /> Tüm Kategoriler
+      <div className="flex items-center gap-3">
+        <div className="w-1 h-8 bg-gradient-to-b from-violet-500 to-purple-600 rounded-full" />
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900">Kategoriler</h1>
+          <p className="text-sm text-gray-500">{categories.length} kategori listeleniyor</p>
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900">Kategorilere Göz At</h1>
-        <p className="text-gray-500 text-sm max-w-md mx-auto">İstediğin kategoriyi seç, binlerce ilan seni bekliyor.</p>
       </div>
 
       {/* Search */}
-      <div className="max-w-lg mx-auto relative">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+      <div className="relative max-w-sm">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setActiveRoot(null); }}
           placeholder="Kategori ara..."
-          className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm shadow-sm focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          className="w-full pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl text-sm shadow-sm focus:outline-none focus:border-violet-400"
         />
         {search && (
-          <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg">
-            <X size={14} className="text-gray-400" />
+          <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+            <X size={13} className="text-gray-400" />
           </button>
         )}
       </div>
 
-      {/* Search Results */}
-      {search && (
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
-          {searchResults.length === 0 ? (
-            <div className="py-12 text-center text-gray-400 text-sm">Sonuç bulunamadı.</div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {searchResults.map(cat => {
-                const kids = childrenOf(cat.id);
-                return (
-                  <Link
-                    key={cat.id}
-                    to={`/store?category=${cat.id}`}
-                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-violet-50 transition-colors group"
-                  >
-                    <span className="text-2xl w-8 text-center flex-shrink-0">{cat.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-gray-800 group-hover:text-violet-700">{cat.name}</div>
-                      <div className="text-xs text-gray-400">{getPath(cat.id)}</div>
-                    </div>
-                    {kids.length > 0 && (
-                      <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{kids.length} alt kategori</span>
-                    )}
-                    <ChevronRight size={14} className="text-gray-300 group-hover:text-violet-400 flex-shrink-0" />
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+      {/* Filter chips */}
+      {!search && (
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <button
+            onClick={() => setActiveRoot(null)}
+            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+              activeRoot === null
+                ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300'
+            }`}
+          >
+            Tümü
+          </button>
+          {roots.map(r => (
+            <button
+              key={r.id}
+              onClick={() => setActiveRoot(activeRoot === r.id ? null : r.id)}
+              className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                activeRoot === r.id
+                  ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300'
+              }`}
+            >
+              <span>{r.icon}</span> {r.name}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Category Grid */}
-      {!search && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {roots.map(root => {
-            const kids = childrenOf(root.id);
-            const isExpanded = expanded[root.id];
-            const visibleKids = isExpanded ? kids : kids.slice(0, 6);
-
+      {/* Category grid */}
+      {displayed.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <Tag size={40} className="mx-auto mb-3 opacity-20" />
+          <p className="font-semibold">Kategori bulunamadı.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {displayed.map(cat => {
+            const kids = childrenOf(cat.id);
+            const isRoot = !cat.parent_id;
             return (
-              <div key={root.id} className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                {/* Root category header */}
-                <Link
-                  to={`/store?category=${root.id}`}
-                  className="block relative overflow-hidden group"
-                >
-                  {root.image ? (
-                    <div className="relative h-32">
-                      <img src={root.image} alt={root.name} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end gap-3">
-                        <span className="text-3xl drop-shadow">{root.icon}</span>
-                        <div>
-                          <div className="font-extrabold text-white text-lg leading-tight">{root.name}</div>
-                          {kids.length > 0 && <div className="text-white/70 text-xs">{kids.length} alt kategori</div>}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="h-28 bg-gradient-to-br from-violet-50 to-indigo-50 flex items-center gap-4 px-5 group-hover:from-violet-100 group-hover:to-indigo-100 transition-colors">
-                      <span className="text-4xl">{root.icon}</span>
-                      <div>
-                        <div className="font-extrabold text-gray-800 text-lg">{root.name}</div>
-                        {kids.length > 0 && <div className="text-gray-400 text-xs mt-0.5">{kids.length} alt kategori</div>}
-                      </div>
-                      <ChevronRight size={16} className="ml-auto text-gray-300 group-hover:text-violet-500 transition-colors" />
-                    </div>
-                  )}
-                </Link>
+              <Link
+                key={cat.id}
+                to={`/categories/${buildCatSlug(cat)}`}
+                className="group relative flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-white"
+                style={{ height: '250px' }}
+              >
+                {/* Image / Gradient background */}
+                {cat.image ? (
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className={`absolute inset-0 bg-gradient-to-br ${
+                    isRoot
+                      ? 'from-violet-500 to-purple-700'
+                      : 'from-indigo-400 to-violet-500'
+                  } flex items-center justify-center`}>
+                    <span className="text-6xl opacity-40">{cat.icon}</span>
+                  </div>
+                )}
 
-                {/* Sub-categories */}
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent group-hover:from-black/85 transition-all" />
+
+                {/* Root badge */}
+                {isRoot && (
+                  <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/30">
+                    Ana
+                  </div>
+                )}
                 {kids.length > 0 && (
-                  <div className="p-3 border-t border-gray-50">
-                    <div className="flex flex-wrap gap-1.5">
-                      {visibleKids.map(kid => (
-                        <Link
-                          key={kid.id}
-                          to={`/store?category=${kid.id}`}
-                          className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 hover:bg-violet-50 hover:text-violet-700 text-gray-600 text-xs font-semibold rounded-xl border border-gray-100 hover:border-violet-200 transition-all"
-                        >
-                          <span>{kid.icon}</span>
-                          {kid.name}
-                          {childrenOf(kid.id).length > 0 && <ChevronRight size={10} className="text-gray-300" />}
-                        </Link>
-                      ))}
+                  <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {kids.length} alt
+                  </div>
+                )}
+
+                {/* Bottom content */}
+                <div className="absolute bottom-0 left-0 right-0 p-3">
+                  <div className="flex items-end gap-2">
+                    <span className="text-2xl drop-shadow flex-shrink-0">{cat.icon}</span>
+                    <div className="min-w-0">
+                      <div className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.name}</div>
+                      {cat.effective_commission !== null && cat.effective_commission !== undefined && (
+                        <div className="text-white/60 text-[10px] mt-0.5">%{cat.effective_commission} komisyon</div>
+                      )}
                     </div>
-
-                    {kids.length > 6 && (
-                      <button
-                        onClick={() => setExpanded(e => ({ ...e, [root.id]: !e[root.id] }))}
-                        className="mt-2 w-full text-xs text-violet-600 hover:text-violet-500 font-bold py-1 text-center hover:bg-violet-50 rounded-lg transition-colors"
-                      >
-                        {isExpanded ? 'Daha az göster ▲' : `+${kids.length - 6} daha göster ▼`}
-                      </button>
-                    )}
                   </div>
-                )}
-
-                {kids.length === 0 && (
-                  <div className="px-4 pb-3">
-                    <Link
-                      to={`/store?category=${root.id}`}
-                      className="flex items-center justify-center gap-1.5 w-full py-1.5 text-xs text-violet-600 font-bold hover:bg-violet-50 rounded-xl transition-colors"
-                    >
-                      İlanları Gör <ChevronRight size={12} />
-                    </Link>
-                  </div>
-                )}
-              </div>
+                </div>
+              </Link>
             );
           })}
-        </div>
-      )}
-
-      {!search && roots.length === 0 && (
-        <div className="text-center py-20 text-gray-400">
-          <Tag size={40} className="mx-auto mb-4 opacity-20" />
-          <p className="font-semibold">Henüz kategori eklenmemiş.</p>
         </div>
       )}
     </div>

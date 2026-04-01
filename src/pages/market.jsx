@@ -14,6 +14,8 @@ export default function MarketPage() {
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState(searchParams.get('game') || '');
   const [sort, setSort] = useState('newest');
+  const initialCategoryId = searchParams.get('category_id') || '';
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId);
 
   useEffect(() => {
     setLoading(true);
@@ -21,12 +23,13 @@ export default function MarketPage() {
     if (selectedGame) query.game = selectedGame;
     if (sort) query.sort = sort;
     if (search) query.search = search;
+    if (selectedCategoryId) query.category_id = selectedCategoryId;
 
     getListings(query)
       .then(r => setListings(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [selectedGame, sort, search]);
+  }, [selectedGame, sort, search, selectedCategoryId]);
 
   return (
     <div className="space-y-8">

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, ShoppingBag, Package,
   Star, Tag, CreditCard, Megaphone, Settings,
-  LogOut, Menu, X, ChevronRight, Shield, MessageSquare
+  LogOut, Menu, X, ChevronRight, Shield, MessageSquare, Gamepad2
 } from 'lucide-react';
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { path: '/admin/epins',       label: 'E-Pinler',        icon: CreditCard },
   { path: '/admin/messages',    label: 'Mesajlar',        icon: MessageSquare },
   { path: '/admin/announcements', label: 'Duyurular',     icon: Megaphone },
+  { path: '/admin/popular-games', label: 'Popüler Oyunlar', icon: Gamepad2 },
   { path: '/admin/settings',    label: 'Site Ayarları',   icon: Settings },
 ];
 

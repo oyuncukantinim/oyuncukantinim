@@ -9,7 +9,7 @@ import AdminLayout from '../../components/AdminLayout';
 import {
   adminGetCategories, adminSaveCategory, adminDeleteCategory,
   adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute,
-  adminUploadImage
+  adminUploadImage, adminReorderCategories
 } from '../../lib/adminApi';
 
 const ATTR_TYPES = [
@@ -64,6 +64,9 @@ export default function AdminCategories() {
   const [attrForm, setAttrForm] = useState({ name:'', slug:'', type:'text', options:'', range_min:'', range_max:'', is_required:0, is_filterable:1, sort_order:0 });
   const [attrSaving, setAttrSaving] = useState(false);
 
+  const [dragId, setDragId] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null);
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const loadCategories = () => {
@@ -74,6 +77,31 @@ export default function AdminCategories() {
 
   const loadAttrs = (catId) => {
     adminGetCategoryAttributes(catId).then(r => setAttrs(r.data)).catch(() => setAttrs([]));
+  };
+
+  const handleDrop = (targetCat) => {
+    if (!dragId || dragId === targetCat.id) return;
+    const dragCat = categories.find(c => c.id === dragId);
+    if (!dragCat) return;
+    // Only allow reorder within same parent group
+    if ((dragCat.parent_id || null) !== (targetCat.parent_id || null)) return;
+
+    const siblings = categories
+      .filter(c => (c.parent_id || null) === (dragCat.parent_id || null))
+      .sort((a, b) => a.sort_order - b.sort_order);
+
+    const fromIdx = siblings.findIndex(c => c.id === dragId);
+    const toIdx = siblings.findIndex(c => c.id === targetCat.id);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    const reordered = [...siblings];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    const orders = reordered.map((c, i) => ({ id: c.id, sort_order: i }));
+    adminReorderCategories(orders)
+      .then(() => { showToast('Sıralama güncellendi.'); loadCategories(); })
+      .catch(e => showToast(e.message));
   };
 
   // Build tree
@@ -167,7 +195,19 @@ export default function AdminCategories() {
     const isExpanded = expanded[cat.id];
     return (
       <div>
-        <div className={`flex items-center gap-2 py-2.5 px-4 hover:bg-gray-50 group border-b border-gray-50 ${depth > 0 ? 'bg-gray-50/50' : ''}`} style={{ paddingLeft: `${16 + depth * 24}px` }}>
+        <div
+          draggable={true}
+          onDragStart={() => setDragId(cat.id)}
+          onDragEnd={() => { setDragId(null); setDropTarget(null); }}
+          onDragOver={e => { e.preventDefault(); setDropTarget(cat.id); }}
+          onDragLeave={() => setDropTarget(null)}
+          onDrop={() => { handleDrop(cat); setDropTarget(null); }}
+          className={`flex items-center gap-2 py-2.5 px-4 hover:bg-gray-50 group border-b border-gray-50 cursor-default transition-all ${depth > 0 ? 'bg-gray-50/50' : ''} ${dragId === cat.id ? 'opacity-40' : ''} ${dropTarget === cat.id && dragId !== cat.id ? 'border-l-4 border-l-violet-400 bg-violet-50/30' : ''}`}
+          style={{ paddingLeft: `${16 + depth * 24}px` }}
+        >
+          <button className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 flex-shrink-0 p-0.5">
+            <GripVertical size={14} />
+          </button>
           <div className="w-4 flex-shrink-0">
             {kids.length > 0 && (
               <button onClick={() => setExpanded(e => ({ ...e, [cat.id]: !e[cat.id] }))} className="text-gray-400 hover:text-gray-700">

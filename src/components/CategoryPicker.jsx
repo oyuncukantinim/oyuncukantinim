@@ -146,11 +146,6 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
         ) : (
           // Normal navigasyon
           <>
-            {path.length > 0 && (
-              <button onClick={goBack} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 border-b border-gray-50">
-                <ChevronRight size={14} className="rotate-180" /> Geri
-              </button>
-            )}
             {currentLevel.map(cat => {
               const kids = childrenOf(cat.id);
               const isSelected = value === cat.id;
