@@ -18,8 +18,8 @@ export default function Home() {
   return (
     <div className="space-y-16">
 
-      {/* HERO - tam genislik icin negatif margin ile container disina tasiyoruz */}
-      <section className="relative flex flex-col items-center justify-center text-center py-20 px-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 -mx-4 sm:-mx-6 lg:-mx-8 -mt-8">
+      {/* HERO - w-screen + translate ile gercek tam genislik */}
+      <section className="relative flex flex-col items-center justify-center text-center py-20 px-6 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 w-screen left-1/2 -translate-x-1/2 -mt-8">
         {/* Dekoratif parlama efektleri */}
         <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-white/10 blur-[100px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-cyan-400/20 blur-[80px] rounded-full pointer-events-none" />
