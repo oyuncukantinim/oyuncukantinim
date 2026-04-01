@@ -3,6 +3,9 @@ const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 // /listing/minecraft-hesabi-123 formatında slug üretir
 export function listingSlug(title, id) {
   const slug = title
+    .replace(/İ/g, 'i').replace(/I/g, 'i')
+    .replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's')
+    .replace(/Ö/g, 'o').replace(/Ç/g, 'c')
     .toLowerCase()
     .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
     .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
