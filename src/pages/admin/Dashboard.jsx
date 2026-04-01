@@ -109,7 +109,7 @@ export default function AdminDashboard() {
                 <Link to={`/admin/users`} className="font-bold text-gray-800 hover:text-violet-600">{r.username}</Link>
               )},
               { key: 'email', label: 'E-posta', render: r => <span className="text-gray-500 text-xs">{r.email}</span> },
-              { key: 'is_banned', label: 'Durum', render: r => r.is_banned
+              { key: 'is_banned', label: 'Durum', render: r => Number(r.is_banned) === 1
                 ? <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">Banlı</span>
                 : <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Aktif</span>
               },
