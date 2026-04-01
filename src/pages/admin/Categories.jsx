@@ -48,7 +48,7 @@ export default function AdminCategories() {
   // Category modal
   const [catModal, setCatModal] = useState(false);
   const [editCat, setEditCat] = useState(null);
-  const [catForm, setCatForm] = useState({ name:'', slug:'', parent_id:'', icon:'🎮', sort_order:0, is_active:1 });
+  const [catForm, setCatForm] = useState({ name:'', slug:'', parent_id:'', icon:'🎮', sort_order:0, is_active:1, commission_rate:'', min_price:'', image:'' });
   const [catSaving, setCatSaving] = useState(false);
 
   // Attribute panel
@@ -83,7 +83,7 @@ export default function AdminCategories() {
 
   const openEditCat = (cat) => {
     setEditCat(cat);
-    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active });
+    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active, commission_rate: cat.commission_rate ?? '', min_price: cat.min_price ?? '', image: cat.image || '' });
     setCatModal(true);
   };
 
@@ -177,6 +177,8 @@ export default function AdminCategories() {
               {!cat.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
               {kids.length > 0 && <span className="text-[10px] text-gray-400">{kids.length} alt kategori</span>}
               {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
+              {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
+              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
             </div>
             <div className="text-xs text-gray-400">{cat.slug}</div>
           </div>
@@ -305,6 +307,25 @@ export default function AdminCategories() {
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon Oranı (%)</label>
+                <input type="number" step="0.01" min="0" max="100" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Site geneli" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
+                <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Görsel URL (WebP)</label>
+              <input value={catForm.image} onChange={e => setCatForm(f => ({...f, image: e.target.value}))} placeholder="https://..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              {catForm.image && (
+                <img src={catForm.image} alt="" className="mt-2 w-full h-24 object-cover rounded-xl border border-gray-200" onError={e => e.target.style.display='none'} />
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">

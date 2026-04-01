@@ -17,6 +17,7 @@ import CreatePage from './pages/create';
 import MessagesPage from './pages/messages';
 import NotificationsPage from './pages/notifications';
 import SellerPage from './pages/seller';
+import CategoriesPage from './pages/categories';
 
 // Admin pages
 import AdminLogin from './pages/admin/Login';
@@ -54,6 +55,7 @@ function SiteLayout() {
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/messages/:userId" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/p/:username" element={<SellerPage />} />
         </Routes>
       </main>

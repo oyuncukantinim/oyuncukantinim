@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
   { to: '/store', label: 'E-Pin', icon: Store },
   { to: '/market', label: 'Pazar', icon: Users },
+  { to: '/categories', label: 'Kategoriler' },
 ];
 
 export default function Navbar() {
