@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
-  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight
+  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight,
+  Upload, Image as ImageIcon, Loader2
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminGetCategories, adminSaveCategory, adminDeleteCategory,
-  adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute
+  adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute,
+  adminUploadImage
 } from '../../lib/adminApi';
 
 const ATTR_TYPES = [
@@ -44,6 +47,8 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [toast, setToast] = useState('');
+  const [imageUploading, setImageUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Category modal
   const [catModal, setCatModal] = useState(false);
@@ -321,10 +326,69 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Görsel URL (WebP)</label>
-              <input value={catForm.image} onChange={e => setCatForm(f => ({...f, image: e.target.value}))} placeholder="https://..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
-              {catForm.image && (
-                <img src={catForm.image} alt="" className="mt-2 w-full h-24 object-cover rounded-xl border border-gray-200" onError={e => e.target.style.display='none'} />
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Görsel</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setImageUploading(true);
+                  try {
+                    const url = await adminUploadImage(file, 'categories');
+                    setCatForm(f => ({ ...f, image: url }));
+                    showToast('Görsel yüklendi.');
+                  } catch (err) {
+                    showToast(err.message);
+                  } finally {
+                    setImageUploading(false);
+                    e.target.value = '';
+                  }
+                }}
+              />
+
+              {catForm.image ? (
+                <div className="relative rounded-xl overflow-hidden border border-gray-200 group">
+                  <img src={catForm.image} alt="" className="w-full h-32 object-cover" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
+                    >
+                      <Upload size={12} /> Değiştir
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCatForm(f => ({ ...f, image: '' }))}
+                      className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
+                    >
+                      <X size={12} /> Kaldır
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imageUploading}
+                  className="w-full h-28 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
+                >
+                  {imageUploading ? (
+                    <>
+                      <Loader2 size={22} className="text-violet-500 animate-spin" />
+                      <span className="text-xs text-gray-500 font-semibold">Yükleniyor...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ImageIcon size={22} className="text-gray-400" />
+                      <span className="text-xs text-gray-500 font-semibold">Görsel seç veya sürükle</span>
+                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF → otomatik WebP</span>
+                    </>
+                  )}
+                </button>
               )}
             </div>
 

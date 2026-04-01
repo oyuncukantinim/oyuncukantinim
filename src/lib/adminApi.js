@@ -93,3 +93,22 @@ export const adminBroadcast = (body) =>
 // Conversations
 export const adminGetConversations = (params = {}) =>
   adminRequest('admin_get_conversations', { query: params });
+
+// Image Upload
+export async function adminUploadImage(file, folder = 'misc') {
+  const url = new URL(API_URL);
+  url.searchParams.set('action', 'admin_upload_image');
+  url.searchParams.set('folder', folder);
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${getAdminToken()}` },
+    body: formData,
+  });
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.message || 'Yükleme hatası');
+  return json.data.url;
+}
