@@ -207,11 +207,16 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="font-bold text-neon-green">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex gap-2 mt-2 items-center justify-end flex-wrap">
+                          {listing.status === 'active' && (
+                            <Link to={`/edit-listing/${listing.id}`} className="text-neon-cyan hover:text-neon-purple p-1" title="Duzenle">
+                              <Edit3 size={14} />
+                            </Link>
+                          )}
                           <span className={`text-xs font-bold ${listing.status === 'active' ? 'text-neon-green' : 'text-gray-500'}`}>
                             {listing.status === 'active' ? 'Aktif' : listing.status === 'sold' ? 'Satildi' : listing.status}
                           </span>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="text-red-400 hover:text-red-300">
+                          <button type="button" onClick={() => handleDeleteListing(listing.id)} className="text-red-400 hover:text-red-300 p-1">
                             <Trash2 size={14} />
                           </button>
                         </div>
@@ -243,6 +248,19 @@ export default function ProfilePage() {
                       <div className="flex-1 min-w-0">
                         <div className="font-bold text-gray-800 truncate">{order.item_title || 'Urun'}</div>
                         <div className="text-xs text-gray-500 mt-1">{order.game_name} {order.seller_name ? `• Satici: ${order.seller_name}` : ''}</div>
+                        {order.item_type === 'listing' && order.delivery_type && (
+                          <div className="text-[11px] text-gray-600 mt-1.5 font-medium">
+                            {order.delivery_type === 'stock'
+                              ? 'Teslimat: Stoklu (otomatik)'
+                              : `Teslimat: Manuel — ${order.delivery_hours} saat hedefi`}
+                          </div>
+                        )}
+                        {order.item_type === 'listing' && order.delivered_content && (
+                          <details className="mt-2 text-xs">
+                            <summary className="cursor-pointer text-neon-purple font-bold select-none">Teslimat icerigi</summary>
+                            <pre className="mt-2 p-3 bg-surface-100 rounded-lg text-[11px] whitespace-pre-wrap break-all text-gray-700 max-h-40 overflow-y-auto border border-gray-100">{order.delivered_content}</pre>
+                          </details>
+                        )}
                       </div>
                       <div className="text-right flex-shrink-0">
                         <div className="font-bold text-neon-green">{Number(order.amount).toFixed(2)} ₺</div>

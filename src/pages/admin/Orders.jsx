@@ -4,11 +4,18 @@ import AdminLayout from '../../components/AdminLayout';
 import { adminGetOrders, adminUpdateOrder } from '../../lib/adminApi';
 
 const STATUS_MAP = {
-  completed: { label: 'Tamamlandı', color: 'emerald' },
-  pending:   { label: 'Bekliyor',   color: 'yellow' },
-  refunded:  { label: 'İade',       color: 'red' },
-  cancelled: { label: 'İptal',      color: 'gray' },
+  completed: { label: 'Tamamlandı', badge: 'text-emerald-600 bg-emerald-50' },
+  pending:   { label: 'Bekliyor',   badge: 'text-amber-600 bg-amber-50' },
+  refunded:  { label: 'İade',       badge: 'text-red-600 bg-red-50' },
+  cancelled: { label: 'İptal',      badge: 'text-gray-600 bg-gray-100' },
 };
+
+function deliveryLabel(o) {
+  if (o.item_type !== 'listing' || !o.listing_delivery_type) return null;
+  if (o.listing_delivery_type === 'stock') return 'Stoklu';
+  const h = o.listing_delivery_hours;
+  return h ? `Manuel · ${h} saat` : 'Manuel';
+}
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
@@ -72,6 +79,7 @@ export default function AdminOrders() {
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">Alıcı</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">Satıcı</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tutar</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden xl:table-cell">Teslimat</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">Tarih</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Durum</th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">İşlem</th>
@@ -79,11 +87,12 @@ export default function AdminOrders() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Yükleniyor...</td></tr>
                 ) : orders.length === 0 ? (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Sipariş bulunamadı.</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Sipariş bulunamadı.</td></tr>
                 ) : orders.map(o => {
-                  const { label, color } = STATUS_MAP[o.status] || { label: o.status, color: 'gray' };
+                  const st = STATUS_MAP[o.status] || { label: o.status, badge: 'text-gray-600 bg-gray-100' };
+                  const d = deliveryLabel(o);
                   return (
                     <tr key={o.id} className="border-t border-gray-50 hover:bg-gray-50/50">
                       <td className="px-4 py-3 text-gray-400 text-xs font-mono">#{o.id}</td>
@@ -94,9 +103,15 @@ export default function AdminOrders() {
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{o.buyer || '—'}</td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell">{o.seller || '—'}</td>
                       <td className="px-4 py-3 font-bold text-emerald-600">{fmtMoney(o.amount)}</td>
+                      <td className="px-4 py-3 text-gray-500 text-xs hidden xl:table-cell">
+                        {d ? <span className="font-semibold">{d}</span> : '—'}
+                        {o.delivered_content && (
+                          <div className="text-[10px] text-gray-400 truncate max-w-[120px] mt-0.5" title={o.delivered_content}>İçerik kayıtlı</div>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-gray-400 text-xs hidden lg:table-cell">{fmtDate(o.created_at)}</td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs font-bold text-${color}-600 bg-${color}-50 px-2 py-1 rounded-full`}>{label}</span>
+                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${st.badge}`}>{st.label}</span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         {o.status === 'completed' && (

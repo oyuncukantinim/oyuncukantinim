@@ -25,6 +25,13 @@ const SETTINGS_SCHEMA = [
       { key: 'max_listings_per_user', label: 'Kullanıcı Başına Max İlan', type: 'number', placeholder: '50' },
       { key: 'min_listing_price',     label: 'Min İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
       { key: 'max_listing_price',     label: 'Max İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
+      {
+        key: 'manual_delivery_hours',
+        label: 'Manuel teslimat süreleri (saat)',
+        type: 'text',
+        placeholder: '1,2,4,6,12,24,48,72',
+        desc: 'Virgül veya boşlukla ayırın. İlan oluştururken satıcı yalnızca bu değerleri seçebilir.',
+      },
     ],
   },
   {
@@ -100,6 +107,7 @@ export default function AdminSettings() {
                   ) : (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label}</label>
+                      {field.desc && <p className="text-xs text-gray-500 mb-1.5">{field.desc}</p>}
                       <input
                         type={field.type === 'number' ? 'number' : 'text'}
                         value={settings[field.key] || ''}

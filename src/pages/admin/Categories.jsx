@@ -1,11 +1,46 @@
 import { useState, useEffect } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
-  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight
+  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight, ImageIcon
 } from 'lucide-react';
+
+const CAT_COVER_W = 543;
+const CAT_COVER_H = 745;
+const WEBP_QUALITY = 0.82;
+
+/** 543×745 kapak; önce WebP, destek yoksa JPEG */
+function fileToCategoryCoverDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = CAT_COVER_W;
+      canvas.height = CAT_COVER_H;
+      const ctx = canvas.getContext('2d');
+      const scale = Math.max(CAT_COVER_W / img.width, CAT_COVER_H / img.height);
+      const dw = img.width * scale;
+      const dh = img.height * scale;
+      const x = (CAT_COVER_W - dw) / 2;
+      const y = (CAT_COVER_H - dh) / 2;
+      ctx.drawImage(img, x, y, dw, dh);
+      let dataUrl = canvas.toDataURL('image/webp', WEBP_QUALITY);
+      if (!dataUrl.startsWith('data:image/webp')) {
+        dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      }
+      resolve(dataUrl);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Görsel okunamadı'));
+    };
+    img.src = url;
+  });
+}
 import AdminLayout from '../../components/AdminLayout';
 import {
-  adminGetCategories, adminSaveCategory, adminDeleteCategory,
+  adminGetCategories, adminSaveCategory, adminDeleteCategory, adminUploadCategoryCover,
   adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute
 } from '../../lib/adminApi';
 
@@ -48,7 +83,11 @@ export default function AdminCategories() {
   // Category modal
   const [catModal, setCatModal] = useState(false);
   const [editCat, setEditCat] = useState(null);
-  const [catForm, setCatForm] = useState({ name:'', slug:'', parent_id:'', icon:'🎮', sort_order:0, is_active:1 });
+  const [catForm, setCatForm] = useState({
+    name:'', slug:'', parent_id:'', icon:'🎮', sort_order:0, is_active:1,
+    commission_rate:'', min_price:'', image:'',
+  });
+  const [catImageBusy, setCatImageBusy] = useState(false);
   const [catSaving, setCatSaving] = useState(false);
 
   // Attribute panel
@@ -77,13 +116,22 @@ export default function AdminCategories() {
 
   const openNewCat = (parentId = null) => {
     setEditCat(null);
-    setCatForm({ name:'', slug:'', parent_id: parentId || '', icon:'🎮', sort_order:0, is_active:1 });
+    setCatForm({
+      name:'', slug:'', parent_id: parentId || '', icon:'🎮', sort_order:0, is_active:1,
+      commission_rate:'', min_price:'', image:'',
+    });
     setCatModal(true);
   };
 
   const openEditCat = (cat) => {
     setEditCat(cat);
-    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active });
+    setCatForm({
+      name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon || '🎮',
+      sort_order: cat.sort_order, is_active: cat.is_active,
+      commission_rate: cat.commission_rate != null ? String(cat.commission_rate) : '',
+      min_price: cat.min_price != null ? String(cat.min_price) : '',
+      image: cat.image || '',
+    });
     setCatModal(true);
   };
 
@@ -91,7 +139,15 @@ export default function AdminCategories() {
     if (!catForm.name) { showToast('İsim gerekli.'); return; }
     setCatSaving(true);
     try {
-      await adminSaveCategory({ ...catForm, id: editCat?.id || null, parent_id: catForm.parent_id || null });
+      const payload = {
+        ...catForm,
+        id: editCat?.id || null,
+        parent_id: catForm.parent_id || null,
+        commission_rate: catForm.commission_rate === '' ? null : parseFloat(catForm.commission_rate),
+        min_price: catForm.min_price === '' ? null : parseFloat(catForm.min_price),
+        image: catForm.image || null,
+      };
+      await adminSaveCategory(payload);
       showToast(editCat ? 'Kategori güncellendi.' : 'Kategori oluşturuldu.');
       setCatModal(false); loadCategories();
     } catch (e) { showToast(e.message); }
@@ -170,7 +226,11 @@ export default function AdminCategories() {
               </button>
             )}
           </div>
-          <span className="text-lg w-6 text-center flex-shrink-0">{cat.icon}</span>
+          {cat.image ? (
+            <img src={cat.image} alt="" className="w-10 h-[52px] rounded-lg object-cover flex-shrink-0 border border-gray-100" />
+          ) : (
+            <span className="text-lg w-10 text-center flex-shrink-0">{cat.icon}</span>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
@@ -301,10 +361,69 @@ export default function AdminCategories() {
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Üst Kategori</label>
               <select value={catForm.parent_id} onChange={e => setCatForm(f => ({...f, parent_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
                 <option value="">— Ana Kategori —</option>
-                {categories.filter(c => !c.parent_id && c.id !== editCat?.id).map(c => (
-                  <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-                ))}
+                {categories.filter(c => c.id !== editCat?.id).map(c => {
+                  let depth = 0;
+                  let pid = c.parent_id;
+                  while (pid) {
+                    depth++;
+                    const p = categories.find(x => x.id == pid);
+                    pid = p?.parent_id;
+                    if (depth > 20) break;
+                  }
+                  const pad = `${'—'.repeat(depth)} `;
+                  return (
+                    <option key={c.id} value={c.id}>{pad}{c.icon} {c.name}</option>
+                  );
+                })}
               </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon (%)</label>
+                <input type="number" step="0.01" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Boş = site varsayılanı" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min ilan fiyatı (₺)</label>
+                <input type="number" step="0.01" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Boş = site min." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kapak görseli (543×745, WebP)</label>
+              <p className="text-[11px] text-gray-500 mb-2">Önce sunucuya yüklenir (URL); başarısızsa görsel base64 olarak kaydedilir. Sunucuda api.php yanında uploads/categories klasörü yazılabilir olmalı.</p>
+              <div className="flex flex-wrap items-start gap-3">
+                {catForm.image && (
+                  <div className="relative">
+                    <img src={catForm.image} alt="" className="h-24 w-[calc(24px*543/745)] rounded-lg object-cover border border-gray-200" />
+                    <button type="button" onClick={() => setCatForm(f => ({...f, image: ''}))} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"><X size={12} /></button>
+                  </div>
+                )}
+                <label className="flex items-center gap-2 px-3 py-2 border-2 border-dashed border-violet-200 rounded-xl cursor-pointer hover:bg-violet-50 text-sm font-semibold text-violet-700">
+                  <ImageIcon size={16} />
+                  {catImageBusy ? 'İşleniyor...' : 'Dosya seç'}
+                  <input type="file" accept="image/*" className="hidden" disabled={catImageBusy} onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!f) return;
+                    setCatImageBusy(true);
+                    try {
+                      const dataUrl = await fileToCategoryCoverDataUrl(f);
+                      try {
+                        const res = await adminUploadCategoryCover({ data_url: dataUrl });
+                        const url = res.data?.url;
+                        if (url) setCatForm(prev => ({ ...prev, image: url }));
+                        else setCatForm(prev => ({ ...prev, image: dataUrl }));
+                      } catch {
+                        showToast('Sunucuya yüklenemedi; görsel kayıtta base64 olarak saklanacak (DB alanı geniş olmalı).');
+                        setCatForm(prev => ({ ...prev, image: dataUrl }));
+                      }
+                    } catch (err) { showToast(err.message || 'Dosya işlenemedi'); }
+                    finally { setCatImageBusy(false); }
+                  }} />
+                </label>
+              </div>
+              <input value={catForm.image?.startsWith('data:') ? '' : (catForm.image || '')} onChange={e => setCatForm(f => ({...f, image: e.target.value}))} placeholder="Veya görsel URL’si yapıştırın" className="w-full mt-2 border border-gray-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-violet-400" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">

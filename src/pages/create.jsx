@@ -1,194 +1,410 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Calculator, XCircle, ImagePlus } from 'lucide-react';
-import { GAMES } from '../data/catalog';
-import { addListing } from '../lib/api';
+import {
+  ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2,
+  Clock, Package, Layers, Info, Tag, Truck, Check
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { addListing, getPublicSettings } from '../lib/api';
+import CategoryPicker from '../components/CategoryPicker';
+import { GAMES } from '../data/catalog';
+
+const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+
+async function fetchPublic(action, params = {}) {
+  const url = new URL(API_URL);
+  url.searchParams.set('action', action);
+  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+  const res = await fetch(url.toString());
+  const json = await res.json();
+  return json.data;
+}
+
+const DEFAULT_DELIVERY_HOURS = [1, 2, 4, 6, 12, 24, 48, 72];
+
+const STEPS = [
+  { id: 1, label: 'Kategori & özellikler', icon: Tag },
+  { id: 2, label: 'İlan bilgileri',       icon: Info },
+  { id: 3, label: 'Teslimat',             icon: Truck },
+];
+
+function StepBar({ current }) {
+  return (
+    <div className="flex items-center justify-between mb-8">
+      {STEPS.map((step, i) => {
+        const done   = current > step.id;
+        const active = current === step.id;
+        return (
+          <div key={step.id} className="flex-1 flex items-center">
+            <div className="flex flex-col items-center gap-1">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${done ? 'bg-emerald-500 text-white' : active ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'bg-gray-100 text-gray-400'}`}>
+                {done ? <Check size={16} /> : <step.icon size={16} />}
+              </div>
+              <span className={`text-xs font-bold hidden sm:block ${active ? 'text-violet-600' : done ? 'text-emerald-600' : 'text-gray-400'}`}>
+                {step.label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-2 mb-5 rounded-full ${done ? 'bg-emerald-400' : 'bg-gray-200'}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function CreatePage() {
   const { user } = useAuth();
   const { showToast } = useCart();
   const navigate = useNavigate();
 
+  const [step, setStep] = useState(1);
+  const [saving, setSaving] = useState(false);
+
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [catAttrs, setCatAttrs] = useState([]);
+  const [attrValues, setAttrValues] = useState({});
+
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
-  const [game, setGame] = useState(GAMES[0].name);
-  const [subCategory, setSubCategory] = useState(GAMES[0].subcategories[0].name);
-  const [photos, setPhotos] = useState([]);
-  const [coverIndex, setCoverIndex] = useState(0);
   const [description, setDescription] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [gameName, setGameName] = useState('');
+  const [images, setImages] = useState(['']);
+  const [coverIndex, setCoverIndex] = useState(0);
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  const [deliveryType, setDeliveryType] = useState('manual');
+  const [deliveryHours, setDeliveryHours] = useState(24);
+  const [deliveryHourOptions, setDeliveryHourOptions] = useState(DEFAULT_DELIVERY_HOURS);
+  const [stocks, setStocks] = useState([{ content: '', label: '' }]);
 
-  const handleGameChange = (e) => {
-    const newGame = e.target.value;
-    setGame(newGame);
-    const gameObj = GAMES.find(g => g.name === newGame);
-    setSubCategory(gameObj?.subcategories?.[0]?.name || 'Diger');
-  };
+  useEffect(() => {
+    if (!user) { navigate('/login'); return; }
+    fetchPublic('get_categories_tree').then(d => setCategories(d || []));
+    getPublicSettings()
+      .then(r => {
+        const raw = r.data?.manual_delivery_hours || '';
+        const nums = raw.split(/[,;\s]+/).map(s => parseInt(s, 10)).filter(n => n > 0);
+        setDeliveryHourOptions(nums.length ? [...new Set(nums)].sort((a, b) => a - b) : DEFAULT_DELIVERY_HOURS);
+      })
+      .catch(() => setDeliveryHourOptions(DEFAULT_DELIVERY_HOURS));
+  }, [user, navigate]);
 
-  const currentGameObj = GAMES.find(g => g.name === game);
-  const currentSubObj = currentGameObj?.subcategories?.find(s => s.name === subCategory);
-  const commissionRate = currentSubObj?.commission || 10;
-  const parsedPrice = parseFloat(price) || 0;
-  const commissionFee = parsedPrice * (commissionRate / 100);
-  const netEarnings = parsedPrice - commissionFee;
-
-  const handlePhotoChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (photos.length + files.length > 5) {
-      showToast('En fazla 5 fotograf ekleyebilirsin!');
-      return;
+  useEffect(() => {
+    if (deliveryHourOptions.length && !deliveryHourOptions.includes(deliveryHours)) {
+      setDeliveryHours(deliveryHourOptions[0]);
     }
+  }, [deliveryHourOptions, deliveryHours]);
 
-    const oversized = files.find(f => f.size > 2 * 1024 * 1024);
-    if (oversized) {
-      showToast(`${oversized.name} 2MB'dan buyuk!`);
-      return;
-    }
-
-    const readerPromises = files.map(file => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+  useEffect(() => {
+    if (!selectedCategory) { setCatAttrs([]); setAttrValues({}); return; }
+    fetchPublic('get_category_attributes', { category_id: selectedCategory.id })
+      .then(d => {
+        setCatAttrs(d || []);
+        const def = {};
+        (d || []).forEach(a => { def[a.slug] = a.type === 'multiselect' ? [] : ''; });
+        setAttrValues(def);
       });
-    });
+  }, [selectedCategory]);
 
-    Promise.all(readerPromises).then(base64Array => {
-      setPhotos(prev => [...prev, ...base64Array]);
-    }).catch(() => showToast('Fotograf okunurken hata olustu.'));
+  const effectiveCommission = selectedCategory?.commission_rate ?? null;
+  const effectiveMinPrice   = selectedCategory?.min_price ?? null;
+  const priceNum   = parseFloat(price) || 0;
+  const commission = priceNum * ((effectiveCommission ?? 10) / 100);
+  const earnings   = priceNum - commission;
+
+  const canNext = () => {
+    if (step === 1) {
+      if (!selectedCategory) return false;
+      return catAttrs.filter(a => a.is_required).every(a => {
+        const v = attrValues[a.slug];
+        return v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0);
+      });
+    }
+    if (step === 2) {
+      if (!title.trim() || !price || priceNum <= 0) return false;
+      if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
+      return true;
+    }
+    if (step === 3) {
+      if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
+      return true;
+    }
+    return true;
   };
 
-  const removePhoto = (index) => {
-    setPhotos(prev => prev.filter((_, i) => i !== index));
-    if (coverIndex === index) setCoverIndex(0);
-    else if (coverIndex > index) setCoverIndex(coverIndex - 1);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!title || !price) { showToast('Baslik ve fiyat zorunlu!'); return; }
-
-    setIsLoading(true);
+  const handleSubmit = async () => {
+    setSaving(true);
     try {
+      const validStocks = stocks.filter(s => s.content.trim() !== '');
       await addListing({
-        game_name: game,
-        category: subCategory,
         title,
-        price: parseFloat(price),
-        description: description || 'Yeni ilan.',
-        images: photos,
+        price: priceNum,
+        description,
+        game_name: gameName,
+        category:    selectedCategory?.slug || '',
+        category_id: selectedCategory?.id   || null,
+        images:      images.filter(Boolean),
         cover_index: coverIndex,
+        delivery_type:  deliveryType,
+        delivery_hours: deliveryHours,
+        attributes:     attrValues,
+        stocks: deliveryType === 'stock' ? validStocks : [],
       });
-      showToast('Ilan basariyla eklendi!');
+      showToast('İlan başarıyla yayınlandı!');
       navigate('/profile');
     } catch (err) {
       showToast(err.message);
     } finally {
-      setIsLoading(false);
+      setSaving(false);
     }
   };
 
+  const addImage    = () => setImages(i => [...i, '']);
+  const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
+  const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+
+  const addStock       = () => setStocks(s => [...s, { content: '', label: '' }]);
+  const removeStock    = (idx) => setStocks(s => s.filter((_, j) => j !== idx));
+  const setStockField  = (idx, field, val) => setStocks(s => s.map((x, j) => j === idx ? { ...x, [field]: val } : x));
+
+  const setAttr     = (slug, val) => setAttrValues(v => ({ ...v, [slug]: val }));
+  const toggleMulti = (slug, opt) => {
+    const cur = attrValues[slug] || [];
+    setAttrValues(v => ({ ...v, [slug]: cur.includes(opt) ? cur.filter(x => x !== opt) : [...cur, opt] }));
+  };
+
+  if (!user) return null;
+
   return (
-    <div className="max-w-2xl mx-auto py-8">
+    <div className="max-w-2xl mx-auto">
       <div className="card p-6 sm:p-8">
-        <h2 className="text-2xl font-extrabold mb-6">Yeni Ilan Ekle</h2>
+        <h1 className="text-2xl font-extrabold text-gray-900 mb-6">Yeni İlan Oluştur</h1>
+        <StepBar current={step} />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-bold text-gray-400 mb-1">Ilan Basligi</label>
-            <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Orn: Yagmaci Vandal Hesap" className="input-field" />
-          </div>
-
-          {/* Game & Category */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-bold text-gray-400 mb-1">Oyun</label>
-              <select value={game} onChange={handleGameChange} className="input-field">
-                {GAMES.map(g => <option key={g.id} value={g.name}>{g.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-gray-400 mb-1">Kategori</label>
-              <select value={subCategory} onChange={e => setSubCategory(e.target.value)} className="input-field">
-                {currentGameObj?.subcategories?.map((sub, idx) => (
-                  <option key={idx} value={sub.name}>{sub.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Price & Commission */}
-          <div>
-            <label className="block text-sm font-bold text-gray-400 mb-1">Fiyat (₺)</label>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" className="input-field" />
-
-            {parsedPrice > 0 && (
-              <div className="mt-3 bg-surface-100/50 rounded-xl p-3 border border-gray-100 space-y-2">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-400 flex items-center gap-1">
-                    <Calculator size={14} className="text-neon-purple" /> Komisyon (%{commissionRate})
-                  </span>
-                  <span className="text-red-400 font-bold">-{commissionFee.toFixed(2)} ₺</span>
+        {/* ── ADIM 1: KATEGORİ ── */}
+        {step === 1 && (
+          <div className="space-y-6">
+            <p className="text-sm text-gray-500">Kategori seçin; alt kategoriler varsa <strong className="text-gray-700">&gt;</strong> ile ilerleyin. Üstteki arama ile tüm ağaçta arama yapabilirsiniz.</p>
+            <CategoryPicker categories={categories} value={selectedCategory?.id ?? null} onChange={setSelectedCategory} />
+            {selectedCategory && (
+              <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 text-sm space-y-1">
+                <div className="font-bold text-violet-800">{selectedCategory.icon} {selectedCategory.name} seçildi</div>
+                <div className="text-violet-600 flex flex-wrap gap-4 text-xs">
+                  <span>Komisyon: <strong>%{effectiveCommission ?? 10}</strong>{selectedCategory.commission_rate == null && <span className="text-violet-400 font-normal"> (site varsayılanı)</span>}</span>
+                  {effectiveMinPrice != null && <span>Min ilan fiyatı: <strong>{effectiveMinPrice}₺</strong></span>}
                 </div>
-                <div className="flex justify-between items-center border-t border-gray-100 pt-2">
-                  <span className="text-white font-extrabold text-sm">Net Kazancin</span>
-                  <span className="text-neon-green font-extrabold text-lg">{netEarnings.toFixed(2)} ₺</span>
+              </div>
+            )}
+            {selectedCategory && catAttrs.length === 0 && (
+              <p className="text-xs text-gray-400">Bu kategori için ek özellik tanımlı değil; doğrudan devam edebilirsiniz.</p>
+            )}
+            {selectedCategory && catAttrs.length > 0 && (
+              <div className="space-y-5 pt-2 border-t border-gray-100">
+                <h3 className="text-sm font-extrabold text-gray-800 flex items-center gap-2">
+                  <Layers size={16} className="text-violet-600" /> Kategoriye özel alanlar
+                </h3>
+                {catAttrs.map(attr => (
+                  <div key={attr.slug}>
+                    <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                      {attr.name}
+                      {attr.is_required ? <span className="text-red-500 ml-1">*</span> : <span className="text-gray-400 text-xs font-normal ml-1">(opsiyonel)</span>}
+                    </label>
+                    {attr.type === 'text' && (
+                      <input value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
+                    )}
+                    {attr.type === 'number' && (
+                      <input type="number" value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
+                    )}
+                    {attr.type === 'boolean' && (
+                      <div className="flex gap-3">
+                        {['Evet', 'Hayır'].map(opt => (
+                          <button key={opt} type="button" onClick={() => setAttr(attr.slug, opt)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {attr.type === 'select' && Array.isArray(attr.options) && (
+                      <div className="flex flex-wrap gap-2">
+                        {attr.options.map(opt => (
+                          <button key={opt} type="button" onClick={() => setAttr(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {attr.type === 'multiselect' && Array.isArray(attr.options) && (
+                      <div className="flex flex-wrap gap-2">
+                        {attr.options.map(opt => {
+                          const sel = (attrValues[attr.slug] || []).includes(opt);
+                          return (
+                            <button key={opt} type="button" onClick={() => toggleMulti(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${sel ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                              {sel && <Check size={11} className="inline mr-1" />}{opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {attr.type === 'range' && (
+                      <div className="flex items-center gap-3">
+                        <input type="number" value={(attrValues[attr.slug] || {}).min || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), min: e.target.value })} placeholder={`Min${attr.options?.min !== undefined ? ` (${attr.options.min})` : ''}`} className="input-field flex-1" />
+                        <span className="text-gray-400 font-bold">—</span>
+                        <input type="number" value={(attrValues[attr.slug] || {}).max || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), max: e.target.value })} placeholder={`Max${attr.options?.max !== undefined ? ` (${attr.options.max})` : ''}`} className="input-field flex-1" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── ADIM 2: İLAN BİLGİLERİ ── */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">İlan Başlığı *</label>
+              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Örn: Platin Rank Valorant Hesabı" className="input-field" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Oyun</label>
+              <input value={gameName} onChange={e => setGameName(e.target.value)} placeholder="Valorant, League of Legends..." list="games-list" className="input-field" />
+              <datalist id="games-list">
+                {(GAMES || []).map(g => <option key={g.id} value={g.name} />)}
+              </datalist>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                Fiyat (₺) *
+                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Min: {effectiveMinPrice}₺</span>}
+              </label>
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" min={effectiveMinPrice || 1} step="0.01" className="input-field" />
+              {priceNum > 0 && (
+                <div className="mt-2 flex gap-4 text-xs text-gray-500">
+                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{effectiveCommission ?? 10})</span>
+                  <span>Kazancınız: <strong className="text-emerald-600">{earnings.toFixed(2)}₺</strong></span>
+                </div>
+              )}
+              {effectiveMinPrice !== null && priceNum > 0 && priceNum < effectiveMinPrice && (
+                <div className="mt-2 text-xs text-red-500 font-semibold">⚠ Bu kategorinin minimum fiyatı {effectiveMinPrice}₺'dir.</div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Açıklama</label>
+              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="İlanınızı detaylıca açıklayın..." className="input-field resize-none" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Görseller (URL)</label>
+              <div className="space-y-2">
+                {images.map((img, idx) => (
+                  <div key={idx} className="flex gap-2 items-center">
+                    <button onClick={() => setCoverIndex(idx)} title="Kapak yap" className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
+                      <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
+                    </button>
+                    <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className="input-field flex-1 text-sm" />
+                    {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
+                  </div>
+                ))}
+                {images.length < 8 && (
+                  <button onClick={addImage} className="text-sm text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
+                    <Plus size={14} /> Görsel Ekle
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
+            </div>
+          </div>
+        )}
+
+        {/* ── ADIM 3: TESLİMAT ── */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { id: 'manual', icon: Clock,   title: 'Manuel Teslimat', desc: 'Alıcı ödedikten sonra belirttiğin sürede teslim edersin' },
+                { id: 'stock',  icon: Package, title: 'Stoklu (Otomatik)', desc: 'Ödeme anında sistem otomatik teslim eder' },
+              ].map(opt => (
+                <button key={opt.id} type="button" onClick={() => setDeliveryType(opt.id)} className={`p-4 rounded-2xl border-2 text-left transition-all ${deliveryType === opt.id ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-200'}`}>
+                  <opt.icon size={22} className={`mb-2 ${deliveryType === opt.id ? 'text-violet-600' : 'text-gray-400'}`} />
+                  <div className={`font-bold text-sm ${deliveryType === opt.id ? 'text-violet-800' : 'text-gray-700'}`}>{opt.title}</div>
+                  <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{opt.desc}</div>
+                </button>
+              ))}
+            </div>
+
+            {deliveryType === 'manual' && (
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Teslimat süresi (site yönetiminden tanımlanan seçenekler)</label>
+                <div className="flex flex-wrap gap-2">
+                  {deliveryHourOptions.map(h => (
+                    <button key={h} type="button" onClick={() => setDeliveryHours(h)} className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                      {h < 24 ? `${h} saat` : h % 24 === 0 ? `${h / 24} gün` : `${h} saat`}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700 font-medium">
+                  Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir.
+                </div>
+              </div>
+            )}
+
+            {deliveryType === 'stock' && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{stocks.filter(s => s.content.trim()).length} adet</span>
+                </div>
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                  {stocks.map((stock, idx) => (
+                    <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-gray-500">Stok #{idx + 1}</span>
+                        {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400"><Trash2 size={13} /></button>}
+                      </div>
+                      <input value={stock.label} onChange={e => setStockField(idx, 'label', e.target.value)} placeholder="Etiket (opsiyonel)" className="input-field text-xs mb-2" />
+                      <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={addStock} className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-300 rounded-xl text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors">
+                  <Plus size={16} /> Stok Ekle
+                </button>
+                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 font-medium">
+                  💡 Stok bitince ilan otomatik kapanır. Yeni stok ekleyerek tekrar aktifleştirebilirsiniz.
                 </div>
               </div>
             )}
           </div>
+        )}
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-bold text-gray-400 mb-1">Aciklama</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Ilan detaylari, teslimat sureci vb." className="input-field min-h-[100px] resize-y" />
-          </div>
-
-          {/* Photos */}
-          <div className="bg-surface-100/30 p-5 rounded-2xl border border-gray-100">
-            <label className="block text-sm font-bold text-gray-400 mb-3">Fotograflar ({photos.length}/5)</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {photos.map((photo, index) => (
-                <div key={index} className={`relative aspect-video rounded-xl overflow-hidden border-2 group ${coverIndex === index ? 'border-neon-purple shadow-neon-purple' : 'border-transparent'}`}>
-                  <img src={photo} alt="Preview" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2">
-                    <button type="button" onClick={() => removePhoto(index)} className="self-end text-white hover:text-red-400">
-                      <XCircle size={18} />
-                    </button>
-                    {coverIndex !== index && (
-                      <button type="button" onClick={() => setCoverIndex(index)} className="bg-white/90 text-gray-800 text-xs font-bold py-1 px-2 rounded-lg hover:bg-neon-purple hover:text-white transition-colors self-center">Kapak Yap</button>
-                    )}
-                  </div>
-                </div>
-              ))}
-              {photos.length < 5 && (
-                <label className="aspect-video bg-surface-100 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:text-neon-purple hover:border-neon-purple/30 cursor-pointer transition-all">
-                  <ImagePlus size={24} className="mb-1" />
-                  <span className="text-xs font-bold">Fotograf Ekle</span>
-                  <input type="file" accept="image/*" multiple onChange={handlePhotoChange} className="hidden" />
-                </label>
-              )}
-            </div>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Ilani Yayinla'}
-          </button>
-        </form>
+        {/* Alt butonlar */}
+        <div className="flex gap-3 mt-8 pt-6 border-t border-gray-100">
+          {step > 1 && (
+            <button onClick={() => setStep(s => s - 1)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 font-bold text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+              <ChevronLeft size={16} /> Geri
+            </button>
+          )}
+          <div className="flex-1" />
+          {step < STEPS.length ? (
+            <button onClick={() => setStep(s => s + 1)} disabled={!canNext()} className="flex items-center gap-2 btn-primary py-2.5 px-6 disabled:opacity-40 disabled:cursor-not-allowed">
+              Devam <ChevronRight size={16} />
+            </button>
+          ) : (
+            <button onClick={handleSubmit} disabled={saving || !canNext()} className="flex items-center gap-2 btn-primary py-2.5 px-6 disabled:opacity-40 disabled:cursor-not-allowed">
+              {saving
+                ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <><Check size={16} /> İlanı Yayınla</>
+              }
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

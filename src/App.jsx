@@ -9,11 +9,13 @@ import KantinBot from './components/KantinBot';
 import Home from './pages/home';
 import StorePage from './pages/store';
 import MarketPage from './pages/market';
+import CategoriesPage from './pages/categories';
 import ListingDetailPage from './pages/listing-detail';
 import CartPage from './pages/cart';
 import LoginPage from './pages/login';
 import ProfilePage from './pages/profile';
 import CreatePage from './pages/create';
+import EditListingPage from './pages/edit-listing';
 import MessagesPage from './pages/messages';
 import NotificationsPage from './pages/notifications';
 import SellerPage from './pages/seller';
@@ -45,12 +47,14 @@ function SiteLayout() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/store" element={<StorePage />} />
+          <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/market" element={<MarketPage />} />
           <Route path="/listing/:slug" element={<ListingDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/create" element={<CreatePage />} />
+          <Route path="/edit-listing/:id" element={<EditListingPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/messages/:userId" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

@@ -63,6 +63,8 @@ export const adminDeleteReview = (review_id) =>
 export const adminGetCategories = () => adminRequest('admin_get_categories');
 export const adminSaveCategory = (body) =>
   adminRequest('admin_save_category', { method: 'POST', body });
+export const adminUploadCategoryCover = (body) =>
+  adminRequest('admin_upload_category_cover', { method: 'POST', body });
 export const adminDeleteCategory = (category_id) =>
   adminRequest('admin_delete_category', { method: 'POST', body: { category_id } });
 

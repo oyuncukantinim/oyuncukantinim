@@ -89,6 +89,11 @@ export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
 }
 
+// --- PUBLIC CONFIG ---
+export function getPublicSettings() {
+  return request('get_public_settings');
+}
+
 // --- LISTINGS ---
 export function getListings(query = {}) {
   return request('get_listings', { query });
@@ -102,6 +107,10 @@ export function getMyListings() {
   return request('get_my_listings', { auth: true });
 }
 
+export function getMyListing(id) {
+  return request('get_my_listing', { query: { id }, auth: true });
+}
+
 export function addListing(payload) {
   return request('add_listing', { method: 'POST', body: payload, auth: true });
 }
@@ -112,6 +121,14 @@ export function updateListing(payload) {
 
 export function deleteListing(payload) {
   return request('delete_listing', { method: 'POST', body: payload, auth: true });
+}
+
+export function appendListingStocks(payload) {
+  return request('append_listing_stocks', { method: 'POST', body: payload, auth: true });
+}
+
+export function deleteListingStock(stock_id) {
+  return request('delete_listing_stock', { method: 'POST', body: { stock_id }, auth: true });
 }
 
 // --- EPINS ---

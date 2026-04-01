@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle } from 'lucide-react';
+import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle, LayoutGrid } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
+  { to: '/categories', label: 'Kategoriler', icon: LayoutGrid },
   { to: '/store', label: 'E-Pin', icon: Store },
   { to: '/market', label: 'Pazar', icon: Users },
 ];

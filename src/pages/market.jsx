@@ -5,6 +5,20 @@ import { getListings } from '../lib/api';
 import { GAMES, SORT_OPTIONS } from '../data/catalog';
 import { useAuth } from '../context/AuthContext';
 import ListingCard from '../components/ListingCard';
+import { setPageSeo, clearPageSeoJsonLd } from '../lib/seo';
+
+const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+
+async function fetchCategoryName(categoryId) {
+  if (!categoryId) return null;
+  const url = new URL(API_URL);
+  url.searchParams.set('action', 'get_categories_tree');
+  const res = await fetch(url.toString());
+  const json = await res.json();
+  const all = json.data || [];
+  const c = all.find(x => String(x.id) === String(categoryId));
+  return c ? c.name : null;
+}
 
 export default function MarketPage() {
   const { user } = useAuth();
@@ -13,12 +27,19 @@ export default function MarketPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState(searchParams.get('game') || '');
+  const [categoryId, setCategoryId] = useState(searchParams.get('category_id') || '');
   const [sort, setSort] = useState('newest');
+
+  useEffect(() => {
+    const cid = searchParams.get('category_id') || '';
+    setCategoryId(cid);
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
     const query = {};
     if (selectedGame) query.game = selectedGame;
+    if (categoryId) query.category_id = categoryId;
     if (sort) query.sort = sort;
     if (search) query.search = search;
 
@@ -26,7 +47,43 @@ export default function MarketPage() {
       .then(r => setListings(r.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [selectedGame, sort, search]);
+  }, [selectedGame, categoryId, sort, search]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!categoryId) {
+        setPageSeo({
+          title: 'Pazar',
+          description: 'Oyuncu Kantinim pazarı: hesap, eşya ve hizmet ilanları. Güvenli alışveriş.',
+          jsonLd: {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: 'Oyuncu Pazarı',
+            description: 'Oyuncu ilanları ve pazar yeri',
+          },
+        });
+        return;
+      }
+      const name = await fetchCategoryName(categoryId);
+      if (cancelled) return;
+      const label = name || 'Kategori';
+      setPageSeo({
+        title: `${label} ilanları`,
+        description: `${label} kategorisindeki oyuncu ilanları — Oyuncu Kantinim pazarı.`,
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: `${label} ilanları`,
+          description: `Oyuncu Kantinim — ${label} kategorisi`,
+        },
+      });
+    })();
+    return () => {
+      cancelled = true;
+      clearPageSeoJsonLd();
+    };
+  }, [categoryId]);
 
   return (
     <div className="space-y-8">
@@ -56,12 +113,20 @@ export default function MarketPage() {
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setSelectedGame('')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${!selectedGame ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+        <div className="flex gap-2 flex-wrap items-center">
+          {categoryId && (
+            <Link
+              to="/market"
+              className="px-4 py-2 rounded-xl text-sm font-bold bg-violet-100 text-violet-800 hover:bg-violet-200 transition-all"
+            >
+              Kategori filtresini kaldır
+            </Link>
+          )}
+          <button type="button" onClick={() => setSelectedGame('')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${!selectedGame ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
             Tum Oyunlar
           </button>
           {GAMES.map(g => (
-            <button key={g.id} onClick={() => setSelectedGame(g.name === selectedGame ? '' : g.name)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1 ${selectedGame === g.name ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
+            <button type="button" key={g.id} onClick={() => setSelectedGame(g.name === selectedGame ? '' : g.name)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-1 ${selectedGame === g.name ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>
               {g.emoji} {g.name}
             </button>
           ))}
