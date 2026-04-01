@@ -19,7 +19,13 @@ async function adminRequest(action, { method = 'GET', body = null, query = {} } 
   if (body && method !== 'GET') options.body = JSON.stringify(body);
 
   const res = await fetch(url.toString(), options);
-  const json = await res.json();
+  let json;
+  try {
+    json = await res.json();
+  } catch {
+    const text = await res.text().catch(() => '');
+    throw new Error('Sunucu geçersiz yanıt döndürdü: ' + (text.slice(0, 200) || '(boş)'));
+  }
   if (json.status !== 'success') throw new Error(json.message || 'Hata');
   return json;
 }
