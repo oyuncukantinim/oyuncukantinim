@@ -37,13 +37,40 @@ function AdminRoute({ children }) {
   return children;
 }
 
+function SiteLayout() {
+  return (
+    <div className="min-h-screen bg-surface-50 font-sans">
+      <Navbar />
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/store" element={<StorePage />} />
+          <Route path="/market" element={<MarketPage />} />
+          <Route path="/listing/:slug" element={<ListingDetailPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/create" element={<CreatePage />} />
+          <Route path="/messages" element={<MessagesPage />} />
+          <Route path="/messages/:userId" element={<MessagesPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/p/:username" element={<SellerPage />} />
+        </Routes>
+      </main>
+      <Footer />
+      <KantinBot />
+      <Toast />
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
           <Routes>
-            {/* Admin routes — kendi layout'u var, Navbar/Footer yok */}
+            {/* Admin — kendi layout'u var */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
@@ -56,31 +83,8 @@ export default function App() {
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
 
-            {/* Site routes */}
-            <Route path="/*" element={
-              <div className="min-h-screen bg-surface-50 font-sans">
-                <Navbar />
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/store" element={<StorePage />} />
-                    <Route path="/market" element={<MarketPage />} />
-                    <Route path="/listing/:slug" element={<ListingDetailPage />} />
-                    <Route path="/cart" element={<CartPage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route path="/create" element={<CreatePage />} />
-                    <Route path="/messages" element={<MessagesPage />} />
-                    <Route path="/messages/:userId" element={<MessagesPage />} />
-                    <Route path="/notifications" element={<NotificationsPage />} />
-                    <Route path="/p/:username" element={<SellerPage />} />
-                  </Routes>
-                </main>
-                <Footer />
-                <KantinBot />
-                <Toast />
-              </div>
-            } />
+            {/* Site — Navbar + Footer */}
+            <Route path="/*" element={<SiteLayout />} />
           </Routes>
         </CartProvider>
       </AuthProvider>
