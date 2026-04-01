@@ -37,7 +37,7 @@ export default function ListingCard({ listing }) {
           {listing.avatar || '👤'}
         </div>
         <div>
-          <div className="text-xs font-bold text-gray-700">{listing.seller || 'Satici'}</div>
+          <Link to={`/p/${listing.seller}`} onClick={e => e.stopPropagation()} className="text-xs font-bold text-gray-700 hover:text-neon-purple transition-colors">{listing.seller || 'Satici'}</Link>
           <div className="flex items-center text-[10px] text-yellow-500 font-bold">
             <Star size={10} className="fill-current mr-1" /> {listing.rating || 5.0}
           </div>

@@ -16,6 +16,7 @@ import ProfilePage from './pages/profile';
 import CreatePage from './pages/create';
 import MessagesPage from './pages/messages';
 import NotificationsPage from './pages/notifications';
+import SellerPage from './pages/seller';
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
                 <Route path="/messages" element={<MessagesPage />} />
                 <Route path="/messages/:userId" element={<MessagesPage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/p/:username" element={<SellerPage />} />
               </Routes>
             </main>
             <Footer />

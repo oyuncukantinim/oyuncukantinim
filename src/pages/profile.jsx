@@ -126,9 +126,14 @@ export default function ProfilePage() {
                 <ShieldCheck size={14} className="text-neon-green" /> Dogrulanmis Uye
               </p>
             </div>
-            <div className="text-center sm:text-right">
-              <div className="text-xs text-gray-500">Bakiye</div>
-              <div className="text-2xl font-extrabold text-neon-green">{Number(user.balance || 0).toFixed(2)} ₺</div>
+            <div className="text-center sm:text-right space-y-2">
+              <div>
+                <div className="text-xs text-gray-500">Bakiye</div>
+                <div className="text-2xl font-extrabold text-neon-green">{Number(user.balance || 0).toFixed(2)} ₺</div>
+              </div>
+              <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1 justify-center">
+                🏪 Mağazamı Gör
+              </Link>
             </div>
           </div>
 

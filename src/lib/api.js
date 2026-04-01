@@ -143,3 +143,28 @@ export function markNotificationsRead() {
 export function getUnreadNotificationsCount() {
   return request('unread_notifications_count', { auth: true });
 }
+
+// --- SELLER PROFILE ---
+export function getSellerProfile(username) {
+  return request('get_seller_profile', { query: { username } });
+}
+
+export function getSellerListings(sellerId) {
+  return request('get_seller_listings', { query: { seller_id: sellerId } });
+}
+
+export function getSellerReviews(sellerId) {
+  return request('get_seller_reviews', { query: { seller_id: sellerId } });
+}
+
+export function addReview(payload) {
+  return request('add_review', { method: 'POST', body: payload, auth: true });
+}
+
+export function followSeller(sellerId) {
+  return request('follow_seller', { method: 'POST', body: { seller_id: sellerId }, auth: true });
+}
+
+export function unfollowSeller(sellerId) {
+  return request('unfollow_seller', { method: 'POST', body: { seller_id: sellerId }, auth: true });
+}
