@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Star, MessageCircle, UserPlus, UserCheck, ShieldCheck,
   Package, ThumbsUp, Clock, ChevronRight, Image as ImageIcon,
-  Flame, Award, Zap, Diamond, Trophy, Medal
+  Flame, Award, Zap, Diamond, Trophy, Medal, Edit3
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -151,66 +151,80 @@ export default function SellerPage() {
       {/* KAPAK + PROFİL */}
       <div className="card overflow-hidden">
         {/* Kapak */}
-        <div className="h-44 bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative">
+        <div className="h-40 bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative">
           <div className="absolute inset-0 bg-black/10" />
-          {/* Dekoratif */}
           <div className="absolute bottom-0 right-8 opacity-10 pointer-events-none">
             <Trophy size={120} className="text-white" />
           </div>
         </div>
 
+        {/* Profil içeriği */}
         <div className="px-6 sm:px-8 pb-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-14 mb-4">
-            {/* Avatar */}
-            <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-lg flex-shrink-0 z-10">
+          {/* Avatar + butonlar satırı */}
+          <div className="flex items-end justify-between -mt-12 mb-4">
+            <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl flex-shrink-0 z-10">
               {seller.avatar || '👤'}
             </div>
 
-            {/* İsim + bio */}
-            <div className="flex-1 pt-2 sm:pt-0">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
-                <h1 className="text-2xl font-extrabold text-gray-800">{seller.username}</h1>
-                <span className="text-xs text-gray-400 font-medium">@{seller.username}</span>
-              </div>
-              {seller.bio && <p className="text-gray-500 text-sm">{seller.bio}</p>}
-              <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                <Clock size={12} /> Son görülme: {seller.last_seen || 'Çok önce değil'}
-              </p>
-            </div>
-
-            {/* Aksiyon Butonları */}
-            {!isOwnProfile && (
-              <div className="flex gap-2 flex-shrink-0">
-                <Link to={`/messages/${seller.id}`} className="btn-secondary py-2 px-4 text-sm flex items-center gap-1">
-                  <MessageCircle size={16} /> Mesaj
+            <div className="flex gap-2 pb-1">
+              {!isOwnProfile && (
+                <>
+                  <Link to={`/messages/${seller.id}`} className="btn-secondary py-2 px-4 text-sm flex items-center gap-1.5">
+                    <MessageCircle size={15} /> Mesaj
+                  </Link>
+                  <button
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                    className={`py-2 px-4 text-sm font-bold rounded-xl flex items-center gap-1.5 transition-all disabled:opacity-50 ${
+                      isFollowing
+                        ? 'bg-neon-purple/10 text-neon-purple border border-neon-purple/20 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                        : 'btn-primary'
+                    }`}
+                  >
+                    {isFollowing
+                      ? <><UserCheck size={15} /> Takip Ediliyor</>
+                      : <><UserPlus size={15} /> Takip Et</>
+                    }
+                  </button>
+                </>
+              )}
+              {isOwnProfile && (
+                <Link to="/profile" className="btn-secondary py-2 px-4 text-sm flex items-center gap-1.5">
+                  <Edit3 size={15} /> Profili Düzenle
                 </Link>
-                <button
-                  onClick={handleFollow}
-                  disabled={followLoading}
-                  className={`py-2 px-4 text-sm font-bold rounded-xl flex items-center gap-1 transition-all disabled:opacity-50 ${
-                    isFollowing
-                      ? 'bg-neon-purple/10 text-neon-purple border border-neon-purple/20 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
-                      : 'btn-primary'
-                  }`}
-                >
-                  {isFollowing ? <><UserCheck size={16} /> Takip Ediliyor</> : <><UserPlus size={16} /> Takip Et</>}
-                </button>
-              </div>
-            )}
-            {isOwnProfile && (
-              <Link to="/profile" className="btn-secondary py-2 px-4 text-sm">Profili Düzenle</Link>
-            )}
+              )}
+            </div>
           </div>
+
+          {/* İsim + kullanıcı adı */}
+          <div className="mb-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-extrabold text-gray-900">{seller.username}</h1>
+              <span className="text-sm text-gray-400 font-medium">@{seller.username}</span>
+            </div>
+            {seller.bio && (
+              <p className="text-gray-500 text-sm mt-1 leading-relaxed">{seller.bio}</p>
+            )}
+            <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
+              <Clock size={11} />
+              Son görülme: {seller.last_seen || 'Çok önce değil'}
+            </p>
+          </div>
+
+          {/* Takipçi */}
+          <p className="text-xs text-gray-400 mt-2 mb-4">
+            <span className="font-bold text-gray-700">{seller.follower_count ?? 0}</span> takipçi
+          </p>
 
           {/* Rozetler */}
           {badges.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mb-5">
               {badges.map(b => <Badge key={b} type={b} />)}
             </div>
           )}
 
           {/* İstatistik Kartları */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {stats.map((s, i) => (
               <div key={i} className="bg-surface-50 border border-gray-100 rounded-xl p-3 text-center">
                 <s.icon size={20} className={`mx-auto mb-1 ${s.color}`} />
@@ -219,11 +233,6 @@ export default function SellerPage() {
               </div>
             ))}
           </div>
-
-          {/* Takipçi sayısı */}
-          <p className="text-xs text-gray-400 mt-3">
-            <span className="font-bold text-gray-600">{seller.follower_count ?? 0}</span> takipçi
-          </p>
         </div>
       </div>
 
