@@ -70,9 +70,12 @@ export default function Home() {
       {/* POPULER OYUNLAR */}
       <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Flame className="text-orange-500" /> Populer Oyunlar
-          </h2>
+          <div className="flex items-center gap-3">
+            <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-red-500 rounded-full" />
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <Flame className="text-orange-500" /> Populer Oyunlar
+            </h2>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {GAMES.map(game => (
@@ -94,11 +97,14 @@ export default function Home() {
       {epins.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <Zap className="text-yellow-500" /> E-Pin Magazasi
-            </h2>
-            <Link to="/store" className="text-neon-purple font-semibold hover:text-neon-cyan flex items-center text-sm transition-colors">
-              Tumunu Gor <ChevronRight size={16} />
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-yellow-400 to-orange-400 rounded-full" />
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Zap className="text-yellow-500" /> E-Pin Magazasi
+              </h2>
+            </div>
+            <Link to="/store" className="flex items-center gap-1 text-sm font-bold text-neon-purple bg-neon-purple/10 hover:bg-neon-purple hover:text-white px-4 py-2 rounded-full transition-all">
+              Tumunu Gor <ChevronRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -113,11 +119,14 @@ export default function Home() {
       {listings.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              <ShieldCheck className="text-neon-green" /> Son Ilanlar
-            </h2>
-            <Link to="/market" className="text-neon-purple font-semibold hover:text-neon-cyan flex items-center text-sm transition-colors">
-              Tumunu Gor <ChevronRight size={16} />
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-neon-green to-emerald-400 rounded-full" />
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <ShieldCheck className="text-neon-green" /> Son Ilanlar
+              </h2>
+            </div>
+            <Link to="/market" className="flex items-center gap-1 text-sm font-bold text-neon-green bg-neon-green/10 hover:bg-neon-green hover:text-white px-4 py-2 rounded-full transition-all">
+              Tumunu Gor <ChevronRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
