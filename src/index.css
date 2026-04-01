@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-50 text-gray-800 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-300 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-neon-purple;
+  }
+
+  ::selection {
+    @apply bg-neon-purple/20 text-neon-purple;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white border border-gray-100 rounded-2xl shadow-sm transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-lg border-neon-purple/20;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-neon-purple to-neon-cyan text-white font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:shadow-neon-purple hover:scale-[1.02] active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-100 border border-gray-200 text-gray-700 font-bold py-3 px-6 rounded-xl transition-all duration-300 hover:bg-gray-200 hover:border-neon-purple/30 active:scale-95;
+  }
+
+  .btn-danger {
+    @apply bg-red-50 border border-red-200 text-red-600 font-bold py-3 px-6 rounded-xl transition-all hover:bg-red-100;
+  }
+
+  .input-field {
+    @apply w-full bg-surface-100 border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:border-neon-purple focus:ring-2 focus:ring-neon-purple/20 transition-all;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold;
+  }
+
+  .badge-purple {
+    @apply badge bg-neon-purple/10 text-neon-purple border border-neon-purple/20;
+  }
+
+  .badge-cyan {
+    @apply badge bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20;
+  }
+
+  .badge-pink {
+    @apply badge bg-neon-pink/10 text-neon-pink border border-neon-pink/20;
+  }
+
+  .badge-green {
+    @apply badge bg-neon-green/10 text-neon-green border border-neon-green/20;
+  }
+
+  .glow-text {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-neon-purple to-neon-cyan;
+  }
+}
