@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Star, Image as ImageIcon } from 'lucide-react';
+import { listingSlug } from '../lib/api';
 
 export default function ListingCard({ listing }) {
   const coverImg = listing.images?.[listing.cover_index || 0];
 
   return (
-    <Link to={`/listing/${listing.id}`} className="card p-4 flex flex-col h-full group block">
+    <Link to={listingSlug(listing.title, listing.id)} className="card p-4 flex flex-col h-full group block">
       {/* Cover */}
       <div className="w-full h-40 bg-surface-100 rounded-xl mb-4 overflow-hidden relative">
         {coverImg ? (

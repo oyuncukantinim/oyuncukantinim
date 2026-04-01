@@ -1,5 +1,21 @@
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
+// /listing/minecraft-hesabi-123 formatında slug üretir
+export function listingSlug(title, id) {
+  const slug = title
+    .toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `/listing/${slug}-${id}`;
+}
+
+// Slug'dan id'yi çıkarır: "minecraft-hesabi-123" → "123"
+export function idFromSlug(slug) {
+  return slug.split('-').pop();
+}
+
 function getToken() {
   return localStorage.getItem('token');
 }

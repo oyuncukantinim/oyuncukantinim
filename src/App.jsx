@@ -30,7 +30,7 @@ export default function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/store" element={<StorePage />} />
                 <Route path="/market" element={<MarketPage />} />
-                <Route path="/listing/:id" element={<ListingDetailPage />} />
+                <Route path="/listing/:slug" element={<ListingDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/profile" element={<ProfilePage />} />

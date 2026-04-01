@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, getOrders, updateProfile, addBalance, deleteListing } from '../lib/api';
+import { getMyListings, getOrders, updateProfile, addBalance, deleteListing, listingSlug } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 
 export default function ProfilePage() {
@@ -202,7 +202,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Link to={`/listing/${listing.id}`} className="font-bold text-gray-800 hover:text-neon-purple truncate block">{listing.title}</Link>
+                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-neon-purple truncate block">{listing.title}</Link>
                         <div className="text-xs text-gray-500 mt-1">{listing.game_name} &bull; {listing.category}</div>
                       </div>
                       <div className="text-right flex-shrink-0">

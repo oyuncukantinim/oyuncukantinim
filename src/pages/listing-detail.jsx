@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ChevronLeft, Gamepad2, Star, ShoppingCart, MessageCircle, Image as ImageIcon } from 'lucide-react';
-import { getListing } from '../lib/api';
+import { getListing, idFromSlug } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 export default function ListingDetailPage() {
-  const { id } = useParams();
+  const { slug } = useParams();
+  const id = idFromSlug(slug);
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
