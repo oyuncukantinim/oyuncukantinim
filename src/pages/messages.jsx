@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Send, ChevronLeft, MessageCircle, Search, Check } from 'lucide-react';
+import { Send, ChevronLeft, MessageCircle, Search, Check, Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, sendMessage } from '../lib/api';
 
@@ -247,7 +247,23 @@ function ChatView({ userId, currentUser }) {
           }
 
           const msg = item.data;
-          const isMine = String(msg.sender_id) === String(currentUser.id);
+          const isAdmin = msg.is_admin_msg == 1;
+          const isMine = !isAdmin && String(msg.sender_id) === String(currentUser.id);
+
+          if (isAdmin) {
+            return (
+              <div key={msg.id} className="flex justify-center py-1 px-1 mb-1">
+                <div className="max-w-[80%] bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-center">
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <Shield size={11} className="text-amber-600" />
+                    <span className="text-[10px] font-extrabold text-amber-600 uppercase tracking-wide">Yönetici Mesajı</span>
+                  </div>
+                  <p className="text-sm text-amber-900 font-medium">{msg.message}</p>
+                  <p className="text-[10px] text-amber-500 mt-1">{formatTime(msg.created_at)}</p>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} px-1 mb-1`}>
