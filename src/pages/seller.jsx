@@ -324,11 +324,11 @@ export default function SellerPage() {
 
                   {/* Orta: İlan Bilgisi */}
                   {(r.item_title || r.item_image) && (
-                    <div className="flex flex-col items-center gap-2 flex-shrink-0 w-28 border-x border-gray-100 px-3">
+                    <div className="flex items-center gap-2 flex-shrink-0 border-x border-gray-100 px-3">
                       {r.item_image && (
-                        <img src={r.item_image} alt="" className="w-full h-16 object-cover rounded-xl border border-gray-200" />
+                        <img src={r.item_image} alt="" className="w-14 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0" />
                       )}
-                      <p className="text-[11px] font-bold text-gray-600 line-clamp-2 text-center leading-tight">{r.item_title}</p>
+                      <p className="text-[11px] font-bold text-gray-600 line-clamp-2 leading-tight max-w-[80px]">{r.item_title}</p>
                     </div>
                   )}
 
