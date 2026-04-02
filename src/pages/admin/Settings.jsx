@@ -29,6 +29,9 @@ const SETTINGS_ROWS = [
         { key: 'max_listings_per_user', label: 'Max İlan / Kullanıcı', type: 'number', placeholder: '50' },
         { key: 'min_listing_price',     label: 'Min İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
         { key: 'max_listing_price',     label: 'Max İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
+        { key: 'max_listing_images',    label: 'Max Görsel / İlan', type: 'number', placeholder: '5' },
+        { key: 'listing_title_max',     label: 'Başlık Karakter Limiti', type: 'number', placeholder: '100' },
+        { key: 'listing_desc_max',      label: 'Açıklama Karakter Limiti', type: 'number', placeholder: '2000' },
       ],
     },
     {

@@ -809,30 +809,26 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
           )}
 
-          {/* Durum */}
-          <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
-            <div className="flex gap-2">
-              {[{ v: 'active', l: '✅ Aktif' }, { v: 'passive', l: '⏸ Pasif' }].map(opt => (
-                <button key={opt.v} onClick={() => setStatus(opt.v)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${status === opt.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                  {opt.l}
-                </button>
-              ))}
+          {/* Durum — sadece aktif ilanlar için göster */}
+          {listing.status !== 'passive' && (
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
+              <div className="flex gap-2">
+                {[{ v: 'active', l: '✅ Aktif' }, { v: 'passive', l: '⏸ Pasif' }].map(opt => (
+                  <button key={opt.v} onClick={() => setStatus(opt.v)}
+                    className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${status === opt.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                    {opt.l}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {listing.status === 'passive' ? (
-            <div className="flex gap-2">
-              <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-                {saving ? 'Kaydediliyor...' : 'Pasif Kaydet'}
-              </button>
-              <button onClick={() => handleSave('active')} disabled={saving || !title.trim() || !price}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-                {saving ? 'Kaydediliyor...' : '✅ Yayınla'}
-              </button>
-            </div>
+            <button onClick={() => handleSave('active')} disabled={saving || !title.trim() || !price}
+              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+              {saving ? 'Kaydediliyor...' : '✅ Kaydet ve Yayınla'}
+            </button>
           ) : (
             <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
               className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">

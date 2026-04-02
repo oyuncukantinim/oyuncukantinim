@@ -3,11 +3,12 @@ const ALLOWED_DOMAINS = [
   'postimages.org', 'postimg.cc',
   'flickr.com', 'staticflickr.com',
   'hizliresim.com',
+  'imgur.com', 'i.imgur.com',
 ];
 
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-export const ALLOWED_DOMAINS_LABEL = 'dropbox.com, postimages.org, flickr.com, hizliresim.com';
+export const ALLOWED_DOMAINS_LABEL = 'imgur.com, dropbox.com, postimages.org, flickr.com, hizliresim.com';
 
 /**
  * Returns true if url is empty (optional) or is a valid image URL from an allowed domain.
