@@ -6,7 +6,7 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, TrendingUp as FinanceIcon
 } from 'lucide-react';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { useAuth } from '../context/AuthContext';
@@ -205,6 +205,53 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
   );
 }
 
+function MyReviewViewModal({ orderId, token, onClose }) {
+  const [review, setReview] = useState(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_review_by_order&order_id=${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).then(j => setReview(j.data || null)).catch(() => {}).finally(() => setLoading(false));
+  }, [orderId, token]);
+
+  const avg = review ? Math.round((+review.reliability + +review.satisfaction + +review.speed + +review.service_quality) / 4) : 0;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-extrabold text-gray-800">Değerlendirmem</h3>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16}/></button>
+        </div>
+        {loading ? <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
+        : !review ? <p className="text-center text-gray-400 py-6 text-sm">Değerlendirme bulunamadı.</p>
+        : (
+          <div className="space-y-4">
+            {review.item_image && (
+              <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                <img src={review.item_image} alt="" className="w-12 h-9 object-cover rounded-lg flex-shrink-0"/>
+                <span className="text-sm font-bold text-gray-700 line-clamp-2">{review.item_title}</span>
+              </div>
+            )}
+            <div className="flex justify-center gap-0.5">
+              {[1,2,3,4,5].map(n => <Star key={n} size={22} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              {[{label:'Güvenilirlik',val:review.reliability},{label:'Memnuniyet',val:review.satisfaction},{label:'Hız',val:review.speed},{label:'Hizmet',val:review.service_quality}].map(c => (
+                <div key={c.label} className="bg-gray-50 rounded-xl px-3 py-2 flex items-center justify-between">
+                  <span className="text-gray-500 font-semibold">{c.label}</span>
+                  <span className="font-extrabold text-violet-700">{c.val}/5</span>
+                </div>
+              ))}
+            </div>
+            {review.comment && <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 italic">"{review.comment}"</div>}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -212,6 +259,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const [loading, setLoading] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [showMyReview, setShowMyReview] = useState(false);
 
   const act = async (action, body) => {
     setLoading(true);
@@ -230,6 +278,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
     <>
     {showLogs && <OrderLogsModal orderId={order.id} token={token} onClose={() => setShowLogs(false)} />}
     {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
+    {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -261,7 +310,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
         <div className="border-t border-gray-50 p-4 space-y-3 bg-gray-50/50">
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div><span className="text-gray-400">Sipariş #</span><div className="font-bold text-gray-700">{order.id}</div></div>
-            <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleDateString('tr-TR')}</div></div>
+            <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div></div>
             <div><span className="text-gray-400">Ödenen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} ₺</div></div>
             </div>
 
@@ -318,6 +367,12 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
               <MessageSquarePlus size={13}/> Değerlendir
             </button>
           )}
+          {!isSellerView && status === 2 && order.has_reviewed == 1 && (
+            <button onClick={() => setShowMyReview(true)}
+              className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+              <Star size={13} className="fill-yellow-500 text-yellow-500"/> Değerlendirmem
+            </button>
+          )}
 
           {/* Anlaşmazlık formu */}
           {disputeOpen && (
@@ -360,6 +415,8 @@ export default function ProfilePage() {
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [favorites, setFavorites] = useState([]);
   const [analyzeModal, setAnalyzeModal] = useState(null); // { listing_id, title }
+  const [myReviews, setMyReviews] = useState([]);
+  const [reviewStarFilter, setReviewStarFilter] = useState(0);
 
   const token = localStorage.getItem('token');
 
@@ -395,6 +452,9 @@ export default function ProfilePage() {
     else if (activeTab === 'sales') loadSales();
     else if (activeTab === 'favorites') {
       getFavorites().then(r => setFavorites(r.data || [])).catch(() => {});
+    }
+    else if (activeTab === 'reviews') {
+      apiAuth('get_my_reviews', null, token).then(data => setMyReviews(data || [])).catch(() => {});
     }
   }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
@@ -460,13 +520,15 @@ export default function ProfilePage() {
   };
 
   const tabs = [
-    { id: 'listings',  label: 'İlanlarım',        icon: List },
-    { id: 'orders',    label: 'Siparişlerim',      icon: Package },
-    { id: 'sales',     label: 'Satışlarım',        icon: Store },
-    { id: 'favorites', label: 'Favorilerim',       icon: Heart },
-    { id: 'balance',   label: 'Bakiye',            icon: Wallet },
-    { id: 'profile',   label: 'Profil',            icon: User },
-    { id: 'personal',  label: 'Kişisel Bilgiler',  icon: MapPin },
+    { id: 'listings',      label: 'İlanlarım',        icon: List },
+    { id: 'orders',        label: 'Siparişlerim',      icon: Package },
+    { id: 'sales',         label: 'Satışlarım',        icon: Store },
+    { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
+    { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
+    { id: 'balance',       label: 'Bakiye',            icon: Wallet },
+    { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
+    { id: 'profile',       label: 'Profil',            icon: User },
+    { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
 
   const filteredListings = myListings.filter(l => {
@@ -499,9 +561,16 @@ export default function ProfilePage() {
                 <ShieldCheck size={12} className="text-emerald-500" /> Doğrulanmış Üye
               </p>
             </div>
-            <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
-              🏪 Mağazamı Gör
-            </Link>
+            <div className="flex items-center gap-2">
+              {Number(user.is_admin) === 1 && (
+                <Link to="/admin" className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                  <Shield size={12}/> Admin Paneli
+                </Link>
+              )}
+              <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
+                🏪 Mağazamı Gör
+              </Link>
+            </div>
           </div>
           {/* XP Bar */}
           <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">

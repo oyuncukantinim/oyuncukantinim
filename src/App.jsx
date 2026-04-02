@@ -35,6 +35,7 @@ import AdminMessages from './pages/admin/Messages';
 import AdminSettings from './pages/admin/Settings';
 import AdminPopularGames from './pages/admin/PopularGames';
 import AdminFinance from './pages/admin/Finance';
+import AdminDevNotes from './pages/admin/DevNotes';
 import FinancePage from './pages/finance';
 
 function AdminRoute({ children }) {
@@ -147,6 +148,7 @@ export default function App() {
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
             <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+            <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
 
             {/* Site — Navbar + Footer */}
             <Route path="/*" element={<SiteLayout />} />
