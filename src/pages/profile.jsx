@@ -6,12 +6,14 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, TrendingUp as FinanceIcon
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield
 } from 'lucide-react';
+
+const FinanceIcon = TrendingUp;
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
@@ -888,16 +890,7 @@ export default function ProfilePage() {
           )}
 
           {/* FİNANSAL HAREKETLERİM */}
-          {activeTab === 'finance' && (
-            <div className="text-center py-12">
-              <FinanceIcon size={40} className="mx-auto mb-4 text-gray-200"/>
-              <p className="font-bold text-gray-500 mb-2">Finansal Hareketler</p>
-              <p className="text-sm text-gray-400 mb-5">Detaylı finansal hareketlerin için aşağıdaki sayfaya git.</p>
-              <Link to="/finance" className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">
-                <FinanceIcon size={15}/> Finansal Hareketler Sayfası
-              </Link>
-            </div>
-          )}
+          {activeTab === 'finance' && <FinanceTabContent token={token} />}
 
           {/* BAKİYE */}
           {activeTab === 'balance' && (
@@ -1095,6 +1088,103 @@ function PriceAnalyzeModal({ listing, onClose }) {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Finansal Hareketler (profil içi) ─────────────────────────
+const FINANCE_DELIVERY_LABELS = ['Bekliyor', 'Teslim Edildi', 'Tamamlandı', 'Anlaşmazlık', 'İptal'];
+const FINANCE_STATUS_COLORS   = ['text-gray-500', 'text-blue-500', 'text-emerald-600', 'text-red-500', 'text-gray-400'];
+
+function FinanceTabContent() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [typeFilter, setTypeFilter] = useState('all');
+
+  useEffect(() => {
+    setLoading(true);
+    getMyTransactions(typeFilter)
+      .then(r => setData(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [typeFilter]);
+
+  const transactions = data?.transactions || [];
+  const summary      = data?.summary || {};
+  const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+
+  return (
+    <div className="space-y-5">
+      <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2">
+        <FinanceIcon size={18} className="text-emerald-500"/> Finansal Hareketler
+      </h2>
+
+      {/* Özet */}
+      {!loading && (
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
+            <TrendingDown size={16} className="text-red-400 mx-auto mb-1"/>
+            <div className="font-extrabold text-red-600 text-lg">{Number(summary.total_spent || 0).toFixed(2)} ₺</div>
+            <div className="text-[11px] text-gray-400 font-semibold">Harcama</div>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
+            <TrendingUp size={16} className="text-emerald-500 mx-auto mb-1"/>
+            <div className="font-extrabold text-emerald-600 text-lg">{Number(summary.total_earned || 0).toFixed(2)} ₺</div>
+            <div className="text-[11px] text-gray-400 font-semibold">Kazanç</div>
+          </div>
+          <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 text-center">
+            <Clock size={16} className="text-yellow-500 mx-auto mb-1"/>
+            <div className="font-extrabold text-yellow-600 text-lg">{Number(summary.pending_earn || 0).toFixed(2)} ₺</div>
+            <div className="text-[11px] text-gray-400 font-semibold">Bekleyen</div>
+          </div>
+        </div>
+      )}
+
+      {/* Filtreler */}
+      <div className="flex gap-2">
+        {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'}].map(f => (
+          <button key={f.v} onClick={() => setTypeFilter(f.v)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${typeFilter === f.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+            {f.l}
+          </button>
+        ))}
+      </div>
+
+      {/* Liste */}
+      {loading ? (
+        <div className="flex justify-center py-10"><div className="w-7 h-7 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
+      ) : transactions.length === 0 ? (
+        <div className="text-center py-12 text-gray-400">
+          <FinanceIcon size={36} className="mx-auto mb-3 opacity-20"/>
+          <p className="font-semibold">Bu kategoride işlem yok.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {transactions.map((tx, i) => {
+            const isPurchase = tx.tx_type === 'purchase';
+            const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
+            const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
+            const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
+            return (
+              <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                  {isPurchase ? 'Alım' : 'Satış'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
+                  <p className="text-[10px] text-gray-400">{tx.counterparty || ''} · <span className={delivColor}>{delivLabel}</span></p>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className={`text-sm font-extrabold ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                    {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                  </div>
+                  <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

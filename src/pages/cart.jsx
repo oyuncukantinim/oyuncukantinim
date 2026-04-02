@@ -41,7 +41,12 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {cart.map(item => (
               <div key={item.cartId} className="card p-4 flex items-center gap-4">
-                <div className="w-14 h-14 bg-surface-100 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">{item.image || '📦'}</div>
+                <div className="w-14 h-14 bg-surface-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                  {item.image && typeof item.image === 'string' && item.image.startsWith('http')
+                    ? <img src={item.image} alt="" className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center text-2xl">{item.itemType === 'epin' ? '💎' : '🎮'}</div>
+                  }
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-bold text-neon-purple mb-1">{item.game}</div>
                   <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>

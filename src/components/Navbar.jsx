@@ -121,8 +121,11 @@ export default function Navbar() {
                   <div className="max-h-56 overflow-y-auto divide-y divide-gray-50">
                     {cart.map((item, i) => (
                       <div key={i} className="flex items-center gap-3 px-4 py-2.5">
-                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-base flex-shrink-0">
-                          {item.itemType === 'epin' ? '💎' : '🎮'}
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                          {item.image && typeof item.image === 'string' && item.image.startsWith('http')
+                            ? <img src={item.image} alt="" className="w-full h-full object-cover" />
+                            : <div className="w-full h-full flex items-center justify-center text-base">{item.itemType === 'epin' ? '💎' : '🎮'}</div>
+                          }
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold text-gray-700 truncate">{item.title}</p>

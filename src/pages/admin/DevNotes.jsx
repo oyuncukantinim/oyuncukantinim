@@ -40,7 +40,7 @@ function NoteModal({ note, onClose, onSave }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-extrabold text-gray-800 text-lg">{note?.id ? 'Notu Düzenle' : 'Yeni Not'}</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18} /></button>
@@ -57,8 +57,8 @@ function NoteModal({ note, onClose, onSave }) {
             value={content}
             onChange={e => setContent(e.target.value)}
             placeholder="Not içeriği..."
-            rows={6}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 resize-none"
+            rows={14}
+            className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400 resize-y min-h-[200px]"
           />
 
           <div className="flex items-center gap-3">
@@ -203,7 +203,9 @@ export default function AdminDevNotes() {
 
 function NoteCard({ note, onEdit, onDelete, onPin }) {
   const c = colorCfg(note.color);
+  const [expanded, setExpanded] = useState(false);
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+  const isLong = (note.content || '').split('\n').length > 8 || (note.content || '').length > 400;
 
   return (
     <div className={`${c.bg} ${c.border} border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col`}>
@@ -228,7 +230,15 @@ function NoteCard({ note, onEdit, onDelete, onPin }) {
       </div>
       {/* İçerik */}
       <div className="px-4 py-3 flex-1">
-        <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed line-clamp-6">{note.content || '—'}</p>
+        <p className={`text-sm text-gray-600 whitespace-pre-wrap leading-relaxed ${!expanded && isLong ? 'line-clamp-8' : ''}`}>
+          {note.content || '—'}
+        </p>
+        {isLong && (
+          <button onClick={() => setExpanded(e => !e)}
+            className="mt-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
+            {expanded ? '▲ Daha az göster' : '▼ Tamamını göster'}
+          </button>
+        )}
       </div>
       <div className="px-4 pb-3">
         <span className="text-[10px] text-gray-400">{fmtDate(note.updated_at)}</span>

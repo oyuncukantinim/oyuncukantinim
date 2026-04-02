@@ -42,7 +42,15 @@ export default function NotificationsPage() {
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     getNotifications()
-      .then(r => setNotifications(r.data || []))
+      .then(r => {
+        setNotifications(r.data || []);
+        // Auto-mark all as read when page is visited
+        const hasUnread = (r.data || []).some(n => !n.is_read);
+        if (hasUnread) {
+          markNotificationsRead().catch(() => {});
+          window.dispatchEvent(new CustomEvent('notifications-read'));
+        }
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user, navigate]);

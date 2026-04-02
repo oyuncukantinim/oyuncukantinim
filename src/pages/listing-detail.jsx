@@ -68,10 +68,11 @@ export default function ListingDetailPage() {
 
   const handleBuy = () => {
     if (isUnavailable) return;
+    const coverImg = listing.images?.[listing.cover_index || 0] || listing.images?.[0] || null;
     addToCart({
       id: listing.id, itemType: 'listing', title: listing.title,
       price: Number(listing.price), game: listing.game_name,
-      image: listing.avatar, listing_id: listing.id, seller: listing.seller,
+      image: coverImg || listing.avatar, listing_id: listing.id, seller: listing.seller,
     });
   };
 
