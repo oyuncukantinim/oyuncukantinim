@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import {
   getSellerProfile, getSellerListings, getSellerReviews,
-  followSeller, unfollowSeller, addReview
+  followSeller, unfollowSeller
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 
@@ -71,11 +71,6 @@ export default function SellerPage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
 
-  // Yorum formu
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewText, setReviewText] = useState('');
-  const [reviewLoading, setReviewLoading] = useState(false);
-
   useEffect(() => {
     setLoading(true);
     getSellerProfile(username)
@@ -110,21 +105,6 @@ export default function SellerPage() {
       setIsFollowing(!isFollowing);
     } catch (err) { showToast(err.message); }
     finally { setFollowLoading(false); }
-  };
-
-  const handleAddReview = async (e) => {
-    e.preventDefault();
-    if (!user) { showToast('Yorum yapmak için giriş yapın!'); navigate('/login'); return; }
-    setReviewLoading(true);
-    try {
-      await addReview({ seller_id: seller.id, rating: reviewRating, comment: reviewText });
-      showToast('Yorumun eklendi!');
-      setReviewText('');
-      setReviewRating(5);
-      getSellerReviews(seller.id).then(r => setReviews(r.data || []));
-      getSellerProfile(username).then(r => setSeller(r.data.seller));
-    } catch (err) { showToast(err.message); }
-    finally { setReviewLoading(false); }
   };
 
   if (loading) return (
@@ -277,54 +257,49 @@ export default function SellerPage() {
         <div className="space-y-6">
 
           {/* Özet kutusu */}
-          <div className="card p-6 flex flex-col sm:flex-row items-center gap-6">
-            <div className="text-center">
-              <div className="text-5xl font-extrabold text-gray-800">{Number(seller.avg_rating ?? 5).toFixed(1)}</div>
-              <StarRating value={Math.round(seller.avg_rating ?? 5)} readonly />
-              <div className="text-xs text-gray-400 mt-1">{seller.review_count ?? 0} değerlendirme</div>
-            </div>
-            {/* Dağılım barları */}
-            <div className="flex-1 w-full space-y-1.5">
-              {[5, 4, 3, 2, 1].map(star => {
-                const count = seller.rating_dist?.[star] ?? 0;
-                const total = seller.review_count || 1;
-                const pct = Math.round((count / total) * 100);
-                return (
-                  <div key={star} className="flex items-center gap-2 text-xs">
-                    <span className="w-4 text-gray-500 font-bold">{star}</span>
-                    <Star size={11} className="text-yellow-400 fill-yellow-400 flex-shrink-0" />
-                    <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
-                      <div className="bg-yellow-400 h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
+          <div className="card p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6 mb-5">
+              <div className="text-center flex-shrink-0">
+                <div className="text-5xl font-extrabold text-gray-800">{Number(seller.avg_rating ?? 5).toFixed(1)}</div>
+                <StarRating value={Math.round(seller.avg_rating ?? 5)} readonly />
+                <div className="text-xs text-gray-400 mt-1">{seller.review_count ?? 0} değerlendirme</div>
+              </div>
+              {/* Dağılım barları */}
+              <div className="flex-1 w-full space-y-1.5">
+                {[5, 4, 3, 2, 1].map(star => {
+                  const count = seller.rating_dist?.[star] ?? 0;
+                  const total = seller.review_count || 1;
+                  const pct = Math.round((count / total) * 100);
+                  return (
+                    <div key={star} className="flex items-center gap-2 text-xs">
+                      <span className="w-4 text-gray-500 font-bold">{star}</span>
+                      <Star size={11} className="text-yellow-400 fill-yellow-400 flex-shrink-0" />
+                      <div className="flex-1 bg-gray-100 rounded-full h-2 overflow-hidden">
+                        <div className="bg-yellow-400 h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                      <span className="text-gray-400 w-7 text-right">{count}</span>
                     </div>
-                    <span className="text-gray-400 w-7 text-right">{count}</span>
+                  );
+                })}
+              </div>
+            </div>
+            {/* Alt kriter ortalamaları */}
+            {(seller.avg_reliability || seller.avg_satisfaction || seller.avg_speed || seller.avg_service_quality) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-gray-100 pt-4">
+                {[
+                  { label: 'Güvenilirlik', value: seller.avg_reliability },
+                  { label: 'Memnuniyet',   value: seller.avg_satisfaction },
+                  { label: 'Hız',          value: seller.avg_speed },
+                  { label: 'Hizmet',       value: seller.avg_service_quality },
+                ].map(c => c.value != null && (
+                  <div key={c.label} className="text-center bg-surface-50 rounded-xl p-3">
+                    <div className="text-lg font-extrabold text-gray-800">{Number(c.value).toFixed(1)}</div>
+                    <div className="text-xs text-gray-400">{c.label}</div>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Yorum Formu */}
-          {user && !isOwnProfile && (
-            <div className="card p-6">
-              <h3 className="font-bold text-gray-800 mb-4">Değerlendirme Yap</h3>
-              <form onSubmit={handleAddReview} className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-500 mb-2 block">Puanın</label>
-                  <StarRating value={reviewRating} onChange={setReviewRating} />
-                </div>
-                <textarea
-                  value={reviewText}
-                  onChange={e => setReviewText(e.target.value)}
-                  placeholder="Deneyimini paylaş..."
-                  className="input-field min-h-[80px] resize-none"
-                  required
-                />
-                <button type="submit" disabled={reviewLoading} className="btn-primary py-2 px-6 disabled:opacity-50 flex items-center gap-2">
-                  {reviewLoading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Gönder'}
-                </button>
-              </form>
-            </div>
-          )}
 
           {/* Yorum Listesi */}
           {reviews.length === 0 ? (
@@ -347,6 +322,21 @@ export default function SellerPage() {
                       <span className="text-xs text-gray-400">{formatDate(r.created_at)}</span>
                     </div>
                     <StarRating value={r.rating} readonly />
+                    {(r.reliability || r.satisfaction || r.speed || r.service_quality) && (
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                        {[
+                          { label: 'Güvenilirlik', val: r.reliability },
+                          { label: 'Memnuniyet',   val: r.satisfaction },
+                          { label: 'Hız',          val: r.speed },
+                          { label: 'Hizmet',       val: r.service_quality },
+                        ].map(c => c.val != null && (
+                          <span key={c.label} className="text-xs text-gray-400">
+                            {c.label}: <span className="font-bold text-yellow-500">{c.val}</span>
+                            <Star size={9} className="inline ml-0.5 text-yellow-400 fill-yellow-400" />
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     {r.comment && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{r.comment}</p>}
                   </div>
                 </div>

@@ -79,9 +79,24 @@ export default function CreatePage() {
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '', label: '' }]);
 
+  // Admin tarafından belirlenen limitler
+  const [maxImages, setMaxImages] = useState(5);
+  const [titleMax, setTitleMax] = useState(100);
+  const [descMax, setDescMax] = useState(2000);
+
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     fetchPublic('get_categories_tree').then(d => setCategories(d || []));
+    fetch(`${API_URL}?action=get_site_settings`)
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'success') {
+          if (j.data.max_listing_images) setMaxImages(j.data.max_listing_images);
+          if (j.data.listing_title_max)  setTitleMax(j.data.listing_title_max);
+          if (j.data.listing_desc_max)   setDescMax(j.data.listing_desc_max);
+        }
+      })
+      .catch(() => {});
   }, [user, navigate]);
 
   useEffect(() => {
@@ -190,8 +205,16 @@ export default function CreatePage() {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">İlan Başlığı *</label>
-              <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Örn: Platin Rank Valorant Hesabı" className="input-field" />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-bold text-gray-700">İlan Başlığı *</label>
+                <span className={`text-xs font-semibold ${title.length > titleMax ? 'text-red-500' : 'text-gray-400'}`}>{title.length}/{titleMax}</span>
+              </div>
+              <input
+                value={title}
+                onChange={e => e.target.value.length <= titleMax && setTitle(e.target.value)}
+                placeholder="Örn: Platin Rank Valorant Hesabı"
+                className={`input-field ${title.length >= titleMax ? 'border-orange-300' : ''}`}
+              />
             </div>
 
             <div>
@@ -212,12 +235,24 @@ export default function CreatePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Açıklama</label>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder="İlanınızı detaylıca açıklayın..." className="input-field resize-none" />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-bold text-gray-700">Açıklama</label>
+                <span className={`text-xs font-semibold ${description.length > descMax ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/{descMax}</span>
+              </div>
+              <textarea
+                value={description}
+                onChange={e => e.target.value.length <= descMax && setDescription(e.target.value)}
+                rows={5}
+                placeholder="İlanınızı detaylıca açıklayın..."
+                className={`input-field resize-none ${description.length >= descMax ? 'border-orange-300' : ''}`}
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">Görseller (URL)</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-bold text-gray-700">Görseller (URL)</label>
+                <span className="text-xs text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
+              </div>
               <div className="space-y-2">
                 {images.map((img, idx) => (
                   <div key={idx} className="space-y-0.5">
@@ -233,7 +268,7 @@ export default function CreatePage() {
                     )}
                   </div>
                 ))}
-                {images.length < 8 && (
+                {images.length < maxImages && (
                   <button onClick={addImage} className="text-sm text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
                     <Plus size={14} /> Görsel Ekle
                   </button>

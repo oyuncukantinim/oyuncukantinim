@@ -5,7 +5,8 @@ import {
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
-  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList
+  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
+  MessageSquarePlus
 } from 'lucide-react';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { useAuth } from '../context/AuthContext';
@@ -108,12 +109,109 @@ function OrderLogsModal({ orderId, token, onClose }) {
   );
 }
 
+const REVIEW_CRITERIA = [
+  { key: 'reliability',     label: 'Güvenilirlik' },
+  { key: 'satisfaction',    label: 'Memnuniyet' },
+  { key: 'speed',           label: 'Hız' },
+  { key: 'service_quality', label: 'Hizmet Kalitesi' },
+];
+
+function StarPicker({ value, onChange, size = 22 }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map(n => (
+        <button
+          key={n} type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+        >
+          <Star
+            size={size}
+            className={`transition-colors ${n <= (hovered || value) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewModal({ order, token, onClose, onSuccess }) {
+  const [ratings, setRatings] = useState({ reliability: 5, satisfaction: 5, speed: 5, service_quality: 5 });
+  const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('https://api.oyuncukantinim.com.tr/api.php?action=add_review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ order_id: order.id, ...ratings, comment }),
+      });
+      const json = await res.json();
+      if (json.status !== 'success') throw new Error(json.message);
+      onSuccess();
+      onClose();
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 className="font-extrabold text-gray-800">Değerlendirme Yap</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Sipariş #{order.id} · {order.seller_name}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16} /></button>
+        </div>
+        {error && <p className="text-xs text-red-500 bg-red-50 rounded-xl px-3 py-2 mb-4">{error}</p>}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-3 bg-gray-50 rounded-xl p-4">
+            {REVIEW_CRITERIA.map(c => (
+              <div key={c.key} className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-gray-700 w-32 flex-shrink-0">{c.label}</span>
+                <StarPicker value={ratings[c.key]} onChange={v => setRatings(r => ({ ...r, [c.key]: v }))} />
+              </div>
+            ))}
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Yorum (isteğe bağlı)</label>
+            <textarea
+              value={comment}
+              onChange={e => setComment(e.target.value)}
+              placeholder="Deneyimini paylaş..."
+              rows={3}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-violet-400"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
   const [loading, setLoading] = useState(false);
   const [showLogs, setShowLogs] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   const act = async (action, body) => {
     setLoading(true);
@@ -131,6 +229,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   return (
     <>
     {showLogs && <OrderLogsModal orderId={order.id} token={token} onClose={() => setShowLogs(false)} />}
+    {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -212,6 +311,12 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
           {status === 2 && !order.seller_paid && (
             <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg">⏳ Ödeme bekleniyor (onay sürecinde)</div>
+          )}
+          {!isSellerView && status === 2 && !order.has_reviewed && (
+            <button onClick={() => setShowReview(true)}
+              className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
+              <MessageSquarePlus size={13}/> Değerlendir
+            </button>
           )}
 
           {/* Anlaşmazlık formu */}

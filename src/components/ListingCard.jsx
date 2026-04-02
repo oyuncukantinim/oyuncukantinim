@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Star, Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 
 export default function ListingCard({ listing }) {
@@ -33,16 +33,13 @@ export default function ListingCard({ listing }) {
       </h3>
 
       {/* Seller */}
-      <div className="flex items-center gap-3 mb-4 bg-surface-100 p-2.5 rounded-xl">
-        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg shadow-sm border border-gray-100">
+      <div className="flex items-center gap-2.5 mb-4 bg-surface-100 p-2.5 rounded-xl">
+        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg shadow-sm border border-gray-100 flex-shrink-0">
           {listing.avatar || '👤'}
         </div>
-        <div>
-          <Link to={`/p/${listing.seller}`} onClick={e => e.stopPropagation()} className="text-xs font-bold text-gray-700 hover:text-neon-purple transition-colors">{listing.seller || 'Satici'}</Link>
-          <div className="flex items-center text-[10px] text-yellow-500 font-bold">
-            <Star size={10} className="fill-current mr-1" /> {listing.rating || 5.0}
-          </div>
-        </div>
+        <Link to={`/p/${listing.seller}`} onClick={e => e.stopPropagation()} className="text-xs font-bold text-gray-700 hover:text-neon-purple transition-colors truncate">
+          {listing.seller || 'Satıcı'}
+        </Link>
       </div>
 
       {/* Price */}
