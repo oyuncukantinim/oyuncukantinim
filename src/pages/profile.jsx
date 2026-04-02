@@ -835,6 +835,70 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* DEĞERLENDİRMELERİM */}
+          {activeTab === 'reviews' && (
+            <div>
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><Star size={18} className="text-yellow-400 fill-yellow-400"/> Değerlendirmelerim</h2>
+                <div className="flex gap-1.5">
+                  {[0,1,2,3,4,5].map(n => (
+                    <button key={n} onClick={() => setReviewStarFilter(n)}
+                      className={`w-8 h-8 rounded-xl text-xs font-extrabold border transition-all ${reviewStarFilter === n ? 'bg-yellow-400 text-white border-yellow-400' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-yellow-300'}`}>
+                      {n === 0 ? '★' : n}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {myReviews.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                  <Star size={40} className="mx-auto mb-3 opacity-20"/>
+                  <p className="font-semibold">Henüz değerlendirme yapmadın.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {myReviews.filter(r => reviewStarFilter === 0 || Math.round((+r.reliability + +r.satisfaction + +r.speed + +r.service_quality) / 4) === reviewStarFilter).map(r => {
+                    const avg = Math.round((+r.reliability + +r.satisfaction + +r.speed + +r.service_quality) / 4);
+                    const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '';
+                    return (
+                      <div key={r.id} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex gap-3">
+                        {r.item_image && (
+                          <img src={r.item_image} alt="" className="w-14 h-11 rounded-xl object-cover flex-shrink-0 border border-gray-200"/>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <span className="text-sm font-bold text-gray-700 line-clamp-1">{r.item_title || 'İlan'}</span>
+                            <div className="flex gap-0.5 flex-shrink-0">
+                              {[1,2,3,4,5].map(n => <Star key={n} size={13} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-400 mb-1.5">Satıcı: <span className="font-semibold text-gray-600">{r.seller_username}</span> · {fmtDate(r.created_at)}</div>
+                          {r.comment && <p className="text-xs text-gray-500 italic line-clamp-2">"{r.comment}"</p>}
+                          <div className="flex gap-2 mt-2 flex-wrap">
+                            {[{l:'Güvenilirlik',v:r.reliability},{l:'Memnuniyet',v:r.satisfaction},{l:'Hız',v:r.speed},{l:'Hizmet',v:r.service_quality}].map(c => (
+                              <span key={c.l} className="text-[10px] bg-white border border-gray-200 rounded-lg px-2 py-0.5 font-semibold text-gray-500">{c.l}: <span className="text-violet-600 font-extrabold">{c.v}</span></span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* FİNANSAL HAREKETLERİM */}
+          {activeTab === 'finance' && (
+            <div className="text-center py-12">
+              <FinanceIcon size={40} className="mx-auto mb-4 text-gray-200"/>
+              <p className="font-bold text-gray-500 mb-2">Finansal Hareketler</p>
+              <p className="text-sm text-gray-400 mb-5">Detaylı finansal hareketlerin için aşağıdaki sayfaya git.</p>
+              <Link to="/finance" className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors">
+                <FinanceIcon size={15}/> Finansal Hareketler Sayfası
+              </Link>
+            </div>
+          )}
+
           {/* BAKİYE */}
           {activeTab === 'balance' && (
             <div className="max-w-md">

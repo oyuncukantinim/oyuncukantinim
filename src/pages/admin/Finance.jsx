@@ -111,6 +111,7 @@ export default function AdminFinance() {
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Satıcı</th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Tutar</th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Komisyon</th>
+                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Oran</th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">Satıcı Net</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Teslimat</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Ödendi</th>
@@ -119,11 +120,13 @@ export default function AdminFinance() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={10} className="px-4 py-10 text-center text-gray-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={11} className="px-4 py-10 text-center text-gray-400">Yükleniyor...</td></tr>
                 ) : transactions.length === 0 ? (
-                  <tr><td colSpan={10} className="px-4 py-10 text-center text-gray-400">Kayıt bulunamadı.</td></tr>
+                  <tr><td colSpan={11} className="px-4 py-10 text-center text-gray-400">Kayıt bulunamadı.</td></tr>
                 ) : transactions.map(tx => {
                   const comm = tx.amount - (tx.seller_amount ?? tx.amount);
+                  const rate = tx.amount > 0 && comm > 0 ? ((comm / tx.amount) * 100).toFixed(1) + '%' : '—';
+                  const isRefunded = tx.status === 'refunded';
                   return (
                     <tr key={tx.id} className="border-t border-gray-50 hover:bg-gray-50/50 text-xs">
                       <td className="px-4 py-3 text-gray-400 font-mono">{tx.id}</td>
@@ -135,14 +138,19 @@ export default function AdminFinance() {
                       <td className="px-4 py-3 text-gray-600 font-semibold">{tx.seller_username || '—'}</td>
                       <td className="px-4 py-3 text-right font-extrabold text-gray-800">{Number(tx.amount).toFixed(2)} ₺</td>
                       <td className="px-4 py-3 text-right font-bold text-violet-600">{comm > 0 ? comm.toFixed(2) + ' ₺' : '—'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-gray-400">{rate}</td>
                       <td className="px-4 py-3 text-right font-bold text-emerald-600">{tx.seller_amount != null ? Number(tx.seller_amount).toFixed(2) + ' ₺' : '—'}</td>
                       <td className={`px-4 py-3 font-bold ${DELIVERY_COLORS[tx.delivery_status] || 'text-gray-400'}`}>
                         {DELIVERY_LABELS[tx.delivery_status] || '—'}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tx.seller_paid ? 'bg-emerald-50 text-emerald-700' : 'bg-yellow-50 text-yellow-700'}`}>
-                          {tx.seller_paid ? 'Ödendi' : 'Bekliyor'}
-                        </span>
+                        {isRefunded ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700">İade Edildi</span>
+                        ) : (
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${tx.seller_paid ? 'bg-emerald-50 text-emerald-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                            {tx.seller_paid ? 'Ödendi' : 'Bekliyor'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{fmtDate(tx.created_at)}</td>
                     </tr>

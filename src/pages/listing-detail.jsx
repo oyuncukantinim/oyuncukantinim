@@ -64,8 +64,10 @@ export default function ListingDetailPage() {
 
   const images = listing.images?.length > 0 ? listing.images : [];
   const isSeller = user && user.id === listing.seller_id;
+  const isUnavailable = listing.status === 'sold' || listing.status === 'passive' || listing.status === 'expired' || listing.status === 'inactive';
 
   const handleBuy = () => {
+    if (isUnavailable) return;
     addToCart({
       id: listing.id, itemType: 'listing', title: listing.title,
       price: Number(listing.price), game: listing.game_name,
@@ -220,6 +222,10 @@ export default function ListingDetailPage() {
             {isSeller ? (
               <span className="w-full block text-center text-violet-200 font-bold text-sm py-3 bg-white/10 rounded-xl">
                 Kendi İlanın
+              </span>
+            ) : isUnavailable ? (
+              <span className="w-full block text-center text-white/60 font-bold text-sm py-3 bg-white/10 rounded-xl">
+                {listing.status === 'sold' ? '✅ Satıldı' : '⏸ Müsait Değil'}
               </span>
             ) : (
               <div className="flex gap-2">

@@ -164,6 +164,20 @@ export default function CategoryListingsPage() {
       {catAttrs.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {catAttrs.map(attr => {
+            if (attr.type === 'boolean') {
+              return (
+                <select
+                  key={attr.slug}
+                  value={attrFilters[attr.slug] || ''}
+                  onChange={e => setAttrFilters(f => ({ ...f, [attr.slug]: e.target.value }))}
+                  className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-violet-400"
+                >
+                  <option value="">{attr.name}: Tümü</option>
+                  <option value="Evet">Evet</option>
+                  <option value="Hayır">Hayır</option>
+                </select>
+              );
+            }
             if (attr.type === 'select' || attr.type === 'multiselect') {
               return (
                 <select

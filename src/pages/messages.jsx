@@ -60,7 +60,7 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto">
       <div className="flex bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 9rem)' }}>
 
         {/* ── LEFT: Conversation List ── */}
@@ -166,6 +166,7 @@ const ORDER_STATUS_COLORS = ['text-gray-500', 'text-blue-500', 'text-emerald-600
 function SharedOrdersPanel({ userId }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     setLoading(true);
@@ -179,28 +180,42 @@ function SharedOrdersPanel({ userId }) {
   if (!loading && orders.length === 0) return null;
 
   return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 border-l border-gray-100 bg-gray-50/50">
-      <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-2">
+    <div className="hidden xl:flex flex-col w-64 flex-shrink-0 border-l border-gray-100 bg-gray-50/30">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
         <ShoppingBag size={14} className="text-violet-500" />
         <span className="text-xs font-extrabold text-gray-700">Ortak Siparişler</span>
+        {!loading && <span className="ml-auto text-[10px] text-gray-400 font-semibold">{orders.length}</span>}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
         {loading ? (
           <div className="flex justify-center py-6">
             <div className="w-5 h-5 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
           </div>
-        ) : orders.map(o => (
-          <div key={o.id} className="bg-white border border-gray-100 rounded-xl p-2.5 shadow-sm">
-            <div className="text-[11px] font-bold text-gray-700 line-clamp-2 mb-1">{o.item_title || '—'}</div>
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-extrabold text-emerald-600">{Number(o.amount).toFixed(2)} ₺</span>
-              <span className={`text-[10px] font-bold ${ORDER_STATUS_COLORS[o.delivery_status] || 'text-gray-400'}`}>
-                {ORDER_STATUS[o.delivery_status] || '—'}
-              </span>
+        ) : orders.map(o => {
+          const isBuyer = String(o.buyer_id) === String(currentUser?.id);
+          return (
+            <div key={o.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
+              {o.item_image && (
+                <img src={o.item_image} alt="" className="w-full h-24 object-cover"/>
+              )}
+              <div className="p-2.5">
+                <div className="text-[11px] font-bold text-gray-700 line-clamp-2 mb-1.5">{o.item_title || '—'}</div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] font-extrabold text-emerald-600">{Number(o.amount).toFixed(2)} ₺</span>
+                  <span className={`text-[10px] font-bold ${ORDER_STATUS_COLORS[o.delivery_status] || 'text-gray-400'}`}>
+                    {ORDER_STATUS[o.delivery_status] || '—'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] text-gray-400">#{o.id}</span>
+                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${isBuyer ? 'bg-violet-50 text-violet-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                    {isBuyer ? 'Alıcı' : 'Satıcı'}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="text-[10px] text-gray-400 mt-0.5">#{o.id}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -18,19 +18,31 @@ export default function Navbar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotif, setUnreadNotif] = useState(0);
+  const [cartHover, setCartHover] = useState(false);
+  const cartTimeout = useRef(null);
 
   useEffect(() => {
     if (!user) { setUnreadNotif(0); return; }
-    getUnreadNotificationsCount()
-      .then(r => setUnreadNotif(r.data?.unread ?? 0))
-      .catch(() => {});
-    const interval = setInterval(() => {
+    const fetchCount = () => {
       getUnreadNotificationsCount()
         .then(r => setUnreadNotif(r.data?.unread ?? 0))
         .catch(() => {});
-    }, 60000);
-    return () => clearInterval(interval);
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 60000);
+    // Listen for notifications-read event (dispatched by notifications page)
+    const handler = () => setUnreadNotif(0);
+    window.addEventListener('notifications-read', handler);
+    return () => { clearInterval(interval); window.removeEventListener('notifications-read', handler); };
   }, [user]);
+
+  const handleCartEnter = () => {
+    clearTimeout(cartTimeout.current);
+    setCartHover(true);
+  };
+  const handleCartLeave = () => {
+    cartTimeout.current = setTimeout(() => setCartHover(false), 200);
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
@@ -90,14 +102,53 @@ export default function Navbar() {
               </>
             )}
 
-            <Link to="/cart" className="relative p-2 text-gray-400 hover:text-neon-purple transition-colors">
-              <ShoppingCart size={20} />
-              {cart.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-neon-pink text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
-                  {cart.length}
-                </span>
+            <div className="relative" onMouseEnter={handleCartEnter} onMouseLeave={handleCartLeave}>
+              <Link to="/cart" className="relative p-2 text-gray-400 hover:text-neon-purple transition-colors inline-flex">
+                <ShoppingCart size={20} />
+                {cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-neon-pink text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                    {cart.length}
+                  </span>
+                )}
+              </Link>
+              {/* Cart hover preview */}
+              {cartHover && cart.length > 0 && (
+                <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                    <span className="font-extrabold text-gray-800 text-sm">Sepet</span>
+                    <span className="text-xs text-gray-400">{cart.length} ürün</span>
+                  </div>
+                  <div className="max-h-56 overflow-y-auto divide-y divide-gray-50">
+                    {cart.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-base flex-shrink-0">
+                          {item.itemType === 'epin' ? '💎' : '🎮'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-gray-700 truncate">{item.title}</p>
+                          {item.game && <p className="text-[10px] text-gray-400 truncate">{item.game}</p>}
+                        </div>
+                        <span className="text-xs font-extrabold text-emerald-600 flex-shrink-0">{Number(item.price).toFixed(2)} ₺</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <span className="text-xs font-bold text-gray-600">
+                      Toplam: <span className="text-emerald-600">{cart.reduce((s, i) => s + Number(i.price), 0).toFixed(2)} ₺</span>
+                    </span>
+                    <Link to="/cart" className="text-xs bg-violet-600 hover:bg-violet-500 text-white font-bold px-3 py-1.5 rounded-xl transition-colors">
+                      Sepete Git
+                    </Link>
+                  </div>
+                </div>
               )}
-            </Link>
+              {cartHover && cart.length === 0 && (
+                <div className="absolute right-0 top-full mt-1 w-52 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 px-4 py-5 text-center">
+                  <ShoppingCart size={24} className="text-gray-200 mx-auto mb-2"/>
+                  <p className="text-xs text-gray-400 font-semibold">Sepet boş</p>
+                </div>
+              )}
+            </div>
 
             {user ? (
               <Link
