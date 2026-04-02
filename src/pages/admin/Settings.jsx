@@ -82,25 +82,25 @@ export default function AdminSettings() {
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {SETTINGS_SCHEMA.map(section => (
           <div key={section.section} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
               <SettingsIcon size={16} className="text-violet-600" />
               <h3 className="font-extrabold text-gray-800">{section.section}</h3>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {section.fields.map(field => (
-                <div key={field.key}>
+                <div key={field.key} className={field.type === 'text' && !field.placeholder?.length ? 'sm:col-span-2' : ''}>
                   {field.type === 'toggle' ? (
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 h-full">
                       <div>
                         <div className="font-semibold text-gray-800 text-sm">{field.label}</div>
                         {field.desc && <div className="text-xs text-gray-400 mt-0.5">{field.desc}</div>}
                       </div>
                       <button
                         onClick={() => set(field.key, settings[field.key] === '1' ? '0' : '1')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm border transition-all ${settings[field.key] === '1' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-500'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ml-3 ${settings[field.key] === '1' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-gray-200 text-gray-500'}`}
                       >
                         {settings[field.key] === '1' ? <><ToggleRight size={16} /> Açık</> : <><ToggleLeft size={16} /> Kapalı</>}
                       </button>

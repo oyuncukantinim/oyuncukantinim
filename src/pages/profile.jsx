@@ -4,7 +4,8 @@ import {
   List, Package, Settings, LogOut, Plus, ShieldCheck,
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
-  Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp
+  Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
+  MapPin
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -93,8 +94,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
             <div><span className="text-gray-400">Sipariş #</span><div className="font-bold text-gray-700">{order.id}</div></div>
             <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleDateString('tr-TR')}</div></div>
             <div><span className="text-gray-400">Ödenen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} ₺</div></div>
-            {order.seller_amount && <div><span className="text-gray-400">Satıcı Alır</span><div className="font-bold text-gray-700">{Number(order.seller_amount).toFixed(2)} ₺</div></div>}
-          </div>
+            </div>
 
           {/* Teslimat içeriği */}
           {order.delivery_content && (
@@ -180,6 +180,7 @@ export default function ProfilePage() {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
+  const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
 
   const token = localStorage.getItem('token');
 
@@ -187,6 +188,13 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setSelectedAvatar(user.avatar || '👤');
+    setPersonalInfo({
+      full_name: user.full_name || '',
+      country:   user.country   || '',
+      city:      user.city      || '',
+      district:  user.district  || '',
+      address:   user.address   || '',
+    });
   }, [user, navigate]);
 
   const loadListings = useCallback(() => {
@@ -259,12 +267,23 @@ export default function ProfilePage() {
 
   const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
 
+  const handleSavePersonalInfo = async () => {
+    setSaving(true);
+    try {
+      const res = await updateProfile(personalInfo);
+      updateUser(res.data);
+      showToast('Kişisel bilgiler güncellendi!');
+    } catch (err) { showToast(err.message); }
+    finally { setSaving(false); }
+  };
+
   const tabs = [
-    { id: 'listings', label: 'İlanlarım',         icon: List },
-    { id: 'orders',   label: 'Siparişlerim',       icon: Package },
-    { id: 'sales',    label: 'Satışlarım',         icon: Store },
-    { id: 'balance',  label: 'Bakiye',             icon: Wallet },
-    { id: 'profile',  label: 'Profil Bilgilerim',  icon: User },
+    { id: 'listings',  label: 'İlanlarım',        icon: List },
+    { id: 'orders',    label: 'Siparişlerim',      icon: Package },
+    { id: 'sales',     label: 'Satışlarım',        icon: Store },
+    { id: 'balance',   label: 'Bakiye',            icon: Wallet },
+    { id: 'profile',   label: 'Profil',            icon: User },
+    { id: 'personal',  label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
 
   const filteredListings = myListings.filter(l => {
@@ -501,6 +520,39 @@ export default function ProfilePage() {
               <button onClick={handleSaveProfile} disabled={saving}
                 className="btn-primary w-full disabled:opacity-50">
                 {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              </button>
+            </div>
+          )}
+
+          {/* KİŞİSEL BİLGİLER */}
+          {activeTab === 'personal' && (
+            <div className="max-w-md space-y-5">
+              <h2 className="text-lg font-extrabold text-gray-800">Kişisel Bilgiler</h2>
+              <p className="text-xs text-gray-400">Bu bilgiler sadece siz ve site yöneticisi tarafından görülür.</p>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
+                <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="Adınız Soyadınız" className="input-field" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1.5">Ülke</label>
+                  <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="Türkiye" className="input-field" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-600 mb-1.5">Şehir</label>
+                  <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="İstanbul" className="input-field" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">İlçe</label>
+                <input type="text" value={personalInfo.district} onChange={e => setPersonalInfo(f => ({...f, district: e.target.value}))} placeholder="Kadıköy" className="input-field" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
+                <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={3} placeholder="Açık adresiniz..." className="input-field resize-none" />
+              </div>
+              <button onClick={handleSavePersonalInfo} disabled={saving} className="btn-primary w-full disabled:opacity-50">
+                {saving ? 'Kaydediliyor...' : 'Kişisel Bilgileri Kaydet'}
               </button>
             </div>
           )}

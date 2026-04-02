@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, X, Tag } from 'lucide-react';
+import { Search, X, Tag, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -10,38 +10,48 @@ function buildCatSlug(cat) {
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
+  const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeRoot, setActiveRoot] = useState(null); // null = Tümü
+  const [activeType, setActiveType] = useState(null); // null = Tümü
+  const [activeRoot, setActiveRoot] = useState(null); // null = kök liste
 
   useEffect(() => {
-    fetch(`${API_URL}?action=get_categories_tree`)
-      .then(r => r.json())
-      .then(j => setCategories(j.data || []))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch(`${API_URL}?action=get_categories_tree`).then(r => r.json()),
+      fetch(`${API_URL}?action=get_category_types`).then(r => r.json()),
+    ]).then(([catJson, typeJson]) => {
+      setCategories(catJson.data || []);
+      setTypes(typeJson.data || []);
+    }).finally(() => setLoading(false));
   }, []);
 
   const roots = useMemo(() => categories.filter(c => !c.parent_id), [categories]);
-  const childrenOf = (id) => categories.filter(c => c.parent_id == id);
+  const childrenOf = (id) => categories.filter(c => String(c.parent_id) === String(id));
 
-  // Displayed categories based on filter + search
-  const displayed = useMemo(() => {
-    let list = categories;
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = categories.filter(c => c.name.toLowerCase().includes(q));
-    } else if (activeRoot !== null) {
-      // show the root + its children
-      list = categories.filter(c => c.id === activeRoot || c.parent_id === activeRoot);
-    }
-    return list;
-  }, [categories, search, activeRoot]);
+  // Arama aktifken tüm kategorilerde ara
+  const searchResults = useMemo(() => {
+    if (!search.trim()) return [];
+    const q = search.toLowerCase();
+    return categories.filter(c => c.name.toLowerCase().includes(q));
+  }, [categories, search]);
+
+  // Tür filtresine göre kök kategoriler
+  const filteredRoots = useMemo(() => {
+    if (!activeType) return roots;
+    return roots.filter(r => String(r.type_id) === String(activeType));
+  }, [roots, activeType]);
 
   if (loading) return (
     <div className="flex justify-center items-center py-32">
       <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
     </div>
   );
+
+  const isSearching = search.trim().length > 0;
+  const isInSubLevel = activeRoot !== null && !isSearching;
+  const subCats = isInSubLevel ? childrenOf(activeRoot.id) : [];
+  const rootCat = activeRoot;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -70,102 +80,182 @@ export default function CategoriesPage() {
         )}
       </div>
 
-      {/* Filter chips */}
-      {!search && (
+      {/* Tür filtre chipleri */}
+      {!isSearching && !isInSubLevel && types.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <button
-            onClick={() => setActiveRoot(null)}
+            onClick={() => setActiveType(null)}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-              activeRoot === null
+              activeType === null
                 ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
                 : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300'
             }`}
           >
             Tümü
           </button>
-          {roots.map(r => (
+          {types.map(t => (
             <button
-              key={r.id}
-              onClick={() => setActiveRoot(activeRoot === r.id ? null : r.id)}
+              key={t.id}
+              onClick={() => setActiveType(activeType === t.id ? null : t.id)}
               className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-                activeRoot === r.id
+                activeType === t.id
                   ? 'bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200'
                   : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300'
               }`}
             >
-              <span>{r.icon}</span> {r.name}
+              <span>{t.icon}</span> {t.name}
             </button>
           ))}
         </div>
       )}
 
-      {/* Category grid */}
-      {displayed.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <Tag size={40} className="mx-auto mb-3 opacity-20" />
-          <p className="font-semibold">Kategori bulunamadı.</p>
+      {/* Alt kategori başlığı */}
+      {isInSubLevel && (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setActiveRoot(null)}
+            className="flex items-center gap-1.5 text-sm font-bold text-violet-600 hover:text-violet-800 transition-colors"
+          >
+            <ChevronLeft size={16} /> Tüm Kategoriler
+          </button>
+          <ChevronRight size={14} className="text-gray-300" />
+          <span className="text-sm font-extrabold text-gray-800">
+            {rootCat.icon} {rootCat.name}
+          </span>
+          {subCats.length > 0 && (
+            <span className="text-xs text-gray-400">{subCats.length} alt kategori</span>
+          )}
         </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {displayed.map(cat => {
-            const kids = childrenOf(cat.id);
-            const isRoot = !cat.parent_id;
-            return (
-              <Link
-                key={cat.id}
-                to={`/categories/${buildCatSlug(cat)}`}
-                className="group relative flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-white"
-                style={{ height: '250px' }}
-              >
-                {/* Image / Gradient background */}
-                {cat.image ? (
-                  <img
-                    src={cat.image}
-                    alt={cat.name}
-                    className="absolute inset-0 w-full h-full object-cover"
+      )}
+
+      {/* Arama sonuçları */}
+      {isSearching && (
+        <>
+          {searchResults.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <Tag size={40} className="mx-auto mb-3 opacity-20" />
+              <p className="font-semibold">Kategori bulunamadı.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {searchResults.map(cat => (
+                <CategoryCard key={cat.id} cat={cat} isRoot={!cat.parent_id} kidCount={childrenOf(cat.id).length} onClick={null} />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Kök kategoriler */}
+      {!isSearching && !isInSubLevel && (
+        <>
+          {filteredRoots.length === 0 ? (
+            <div className="text-center py-20 text-gray-400">
+              <Tag size={40} className="mx-auto mb-3 opacity-20" />
+              <p className="font-semibold">Bu türde kategori bulunamadı.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              {filteredRoots.map(cat => {
+                const kids = childrenOf(cat.id);
+                return (
+                  <CategoryCard
+                    key={cat.id}
+                    cat={cat}
+                    isRoot={true}
+                    kidCount={kids.length}
+                    onClick={kids.length > 0 ? () => setActiveRoot(cat) : null}
                   />
-                ) : (
-                  <div className={`absolute inset-0 bg-gradient-to-br ${
-                    isRoot
-                      ? 'from-violet-500 to-purple-700'
-                      : 'from-indigo-400 to-violet-500'
-                  } flex items-center justify-center`}>
-                    <span className="text-6xl opacity-40">{cat.icon}</span>
-                  </div>
-                )}
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
 
-                {/* Dark overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent group-hover:from-black/85 transition-all" />
-
-                {/* Root badge */}
-                {isRoot && (
-                  <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/30">
-                    Ana
-                  </div>
-                )}
-                {kids.length > 0 && (
-                  <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    {kids.length} alt
-                  </div>
-                )}
-
-                {/* Bottom content */}
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <div className="flex items-end gap-2">
-                    <span className="text-2xl drop-shadow flex-shrink-0">{cat.icon}</span>
-                    <div className="min-w-0">
-                      <div className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.name}</div>
-                      {cat.effective_commission !== null && cat.effective_commission !== undefined && (
-                        <div className="text-white/60 text-[10px] mt-0.5">%{cat.effective_commission} komisyon</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+      {/* Alt kategoriler */}
+      {isInSubLevel && (
+        <>
+          {subCats.length === 0 ? (
+            /* Kök kategorinin kendisine giden link */
+            <div className="text-center py-12 text-gray-400">
+              <p className="text-sm">Alt kategori yok.</p>
+              <Link to={`/categories/${buildCatSlug(rootCat)}`} className="text-violet-600 font-bold hover:underline text-sm mt-2 inline-block">
+                {rootCat.name} ilanlarını gör →
               </Link>
-            );
-          })}
-        </div>
+            </div>
+          ) : (
+            <>
+              {/* Ana kategoriye giriş butonu */}
+              <Link
+                to={`/categories/${buildCatSlug(rootCat)}`}
+                className="flex items-center gap-3 px-4 py-3 bg-violet-50 border border-violet-200 rounded-2xl hover:bg-violet-100 transition-colors text-sm font-bold text-violet-700"
+              >
+                <span className="text-xl">{rootCat.icon}</span>
+                Tüm "{rootCat.name}" İlanlarını Gör
+                <ChevronRight size={15} className="ml-auto" />
+              </Link>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {subCats.map(cat => (
+                  <CategoryCard
+                    key={cat.id}
+                    cat={cat}
+                    isRoot={false}
+                    kidCount={childrenOf(cat.id).length}
+                    onClick={null}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </>
       )}
     </div>
   );
+}
+
+function CategoryCard({ cat, isRoot, kidCount, onClick }) {
+  const slug = `${cat.slug}-${cat.id}`;
+  const inner = (
+    <div
+      className="group relative flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 bg-white cursor-pointer"
+      style={{ height: '200px' }}
+    >
+      {/* Image / Gradient background */}
+      {cat.image ? (
+        <img src={cat.image} alt={cat.name} className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <div className={`absolute inset-0 bg-gradient-to-br ${
+          isRoot ? 'from-violet-500 to-purple-700' : 'from-indigo-400 to-violet-500'
+        } flex items-center justify-center`}>
+          <span className="text-6xl opacity-30">{cat.icon}</span>
+        </div>
+      )}
+
+      {/* Sadece alt kısımda hafif gradient */}
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
+
+      {/* Badge */}
+      {kidCount > 0 && (
+        <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          {kidCount} alt
+        </div>
+      )}
+
+      {/* Alt içerik */}
+      <div className="absolute bottom-0 left-0 right-0 p-3">
+        <div className="flex items-end gap-2">
+          <span className="text-2xl drop-shadow flex-shrink-0">{cat.icon}</span>
+          <div className="min-w-0">
+            <div className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.name}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (onClick) {
+    return <div onClick={onClick}>{inner}</div>;
+  }
+  return <Link to={`/categories/${slug}`}>{inner}</Link>;
 }

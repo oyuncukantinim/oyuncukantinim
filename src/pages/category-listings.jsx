@@ -41,7 +41,7 @@ export default function CategoryListingsPage() {
       fetchPublic('get_listings', { category_id: catId, sort }),
     ]).then(([cats, items]) => {
       setCategories(cats || []);
-      const found = (cats || []).find(c => c.id === catId);
+      const found = (cats || []).find(c => String(c.id) === String(catId));
       setCategory(found || null);
       setListings(items || []);
     }).finally(() => setLoading(false));
@@ -56,7 +56,7 @@ export default function CategoryListingsPage() {
     let cur = category;
     while (cur) {
       parts.unshift(cur);
-      cur = cur.parent_id ? categories.find(c => c.id === cur.parent_id) : null;
+      cur = cur.parent_id ? categories.find(c => String(c.id) === String(cur.parent_id)) : null;
     }
     return parts;
   }, [category, categories]);
