@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getUnreadNotificationsCount } from '../lib/api';
+import { getUnreadNotificationsCount, markNotificationsRead } from '../lib/api';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
@@ -36,12 +36,13 @@ export default function Navbar() {
     return () => { clearInterval(interval); window.removeEventListener('notifications-read', handler); };
   }, [user]);
 
-  // Bildirimler sayfasına gelindiğinde sayacı anında sıfırla (event'e ek güvence)
+  // Bildirimler sayfasına gelindiğinde sayacı sıfırla ve DB'de okundu olarak işaretle
   useEffect(() => {
-    if (location.pathname === '/notifications') {
+    if (location.pathname === '/notifications' && user) {
       setUnreadNotif(0);
+      markNotificationsRead().catch(() => {});
     }
-  }, [location.pathname]);
+  }, [location.pathname, user]);
 
   const handleCartEnter = () => {
     clearTimeout(cartTimeout.current);
