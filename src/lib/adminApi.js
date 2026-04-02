@@ -108,6 +108,12 @@ export const adminSendChat = (uid1, uid2, message) =>
 export const adminGetOrderLogs = (order_id) =>
   adminRequest('admin_get_order_logs', { query: { order_id } });
 
+// Financial Transactions
+export const adminGetAllTransactions = (params = {}) =>
+  adminRequest('admin_get_all_transactions', { query: params });
+export const adminGetUserTransactions = (user_id) =>
+  adminRequest('admin_get_user_transactions', { query: { user_id } });
+
 // Categories Reorder
 export const adminReorderCategories = (orders) =>
   adminRequest('admin_reorder_categories', { method: 'POST', body: { orders } });

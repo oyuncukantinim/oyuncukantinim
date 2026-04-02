@@ -34,6 +34,8 @@ import AdminAnnouncements from './pages/admin/Announcements';
 import AdminMessages from './pages/admin/Messages';
 import AdminSettings from './pages/admin/Settings';
 import AdminPopularGames from './pages/admin/PopularGames';
+import AdminFinance from './pages/admin/Finance';
+import FinancePage from './pages/finance';
 
 function AdminRoute({ children }) {
   const token = localStorage.getItem('admin_token');
@@ -115,6 +117,7 @@ function SiteLayout() {
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
           <Route path="/p/:username" element={<SellerPage />} />
+          <Route path="/finance" element={<FinancePage />} />
         </Routes>
       </main>
       <Footer />
@@ -143,6 +146,7 @@ export default function App() {
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
+            <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
 
             {/* Site — Navbar + Footer */}
             <Route path="/*" element={<SiteLayout />} />

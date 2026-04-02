@@ -187,3 +187,30 @@ export function followSeller(sellerId) {
 export function unfollowSeller(sellerId) {
   return request('unfollow_seller', { method: 'POST', body: { seller_id: sellerId }, auth: true });
 }
+
+// --- FAVORITES ---
+export function toggleFavorite(listingId) {
+  return request('toggle_favorite', { method: 'POST', body: { listing_id: listingId }, auth: true });
+}
+
+export function checkFavorite(listingId) {
+  return request('check_favorite', { query: { listing_id: listingId }, auth: true });
+}
+
+export function getFavorites() {
+  return request('get_favorites', { auth: true });
+}
+
+export function getListingPriceHistory(listingId) {
+  return request('get_listing_price_history', { query: { listing_id: listingId } });
+}
+
+// --- FINANCIAL TRANSACTIONS ---
+export function getMyTransactions(type = 'all') {
+  return request('get_my_transactions', { query: { type }, auth: true });
+}
+
+// --- SHARED ORDERS (for messages) ---
+export function getSharedOrders(otherUserId) {
+  return request('get_shared_orders', { query: { other_user_id: otherUserId }, auth: true });
+}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, Ban, ShieldCheck, Wallet, Key, ChevronLeft, ChevronRight, X, Eye } from 'lucide-react';
+import { Search, Ban, ShieldCheck, Wallet, Key, ChevronLeft, ChevronRight, X, Eye, TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetUsers, adminUpdateUser, adminGetUser } from '../../lib/adminApi';
+import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -31,6 +31,8 @@ export default function AdminUsers() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailUser, setDetailUser] = useState(null);
   const [modalType, setModalType] = useState(''); // 'ban'|'balance'|'password'|'detail'
+  const [detailTab, setDetailTab] = useState('info');
+  const [userTxns, setUserTxns] = useState(null);
 
   const [banReason, setBanReason] = useState('');
   const [balanceAction, setBalanceAction] = useState('add');
@@ -53,8 +55,16 @@ export default function AdminUsers() {
   const openDetail = async (user) => {
     setSelectedUser(user);
     setModalType('detail');
+    setDetailTab('info');
+    setUserTxns(null);
     const res = await adminGetUser(user.id).catch(() => null);
     if (res) setDetailUser(res.data);
+  };
+
+  const loadUserTxns = async (userId) => {
+    if (userTxns) return;
+    const res = await adminGetUserTransactions(userId).catch(() => null);
+    if (res) setUserTxns(res.data);
   };
 
   const handleBan = async () => {
@@ -260,37 +270,94 @@ export default function AdminUsers() {
 
       {/* Detail Modal */}
       {modalType === 'detail' && selectedUser && (
-        <Modal title={`${selectedUser.username} - Detay`} onClose={() => { setModalType(''); setDetailUser(null); }}>
-          {!detailUser ? (
-            <div className="py-8 text-center"><div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
-          ) : (
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                <span className="text-3xl">{detailUser.avatar}</span>
-                <div>
-                  <div className="font-extrabold text-gray-900">{detailUser.username}</div>
-                  <div className="text-gray-500">{detailUser.email}</div>
-                  <div className="text-xs text-gray-400">#{detailUser.id} · Seviye {detailUser.level} · {fmtDate(detailUser.created_at)}</div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50 rounded-xl p-3 text-center"><div className="font-extrabold text-emerald-700">{fmtMoney(detailUser.balance)}</div><div className="text-xs text-gray-500">Bakiye</div></div>
-                <div className="bg-violet-50 rounded-xl p-3 text-center"><div className="font-extrabold text-violet-700">{detailUser.listings?.length || 0}</div><div className="text-xs text-gray-500">İlan</div></div>
-              </div>
-              {detailUser.listings?.length > 0 && (
-                <div>
-                  <div className="font-bold text-gray-700 mb-2">Son İlanlar</div>
-                  <div className="space-y-1.5">
-                    {detailUser.listings.slice(0,5).map(l => (
-                      <div key={l.id} className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                        <span className="truncate flex-1 text-gray-700">{l.title}</span>
-                        <span className="font-bold text-emerald-600 ml-2">{fmtMoney(l.price)}</span>
-                      </div>
-                    ))}
+        <Modal title={`${selectedUser.username} - Detay`} onClose={() => { setModalType(''); setDetailUser(null); setUserTxns(null); }}>
+          {/* Tabs */}
+          <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1">
+            {[{ id: 'info', label: 'Genel' }, { id: 'finance', label: 'Finansal' }].map(t => (
+              <button key={t.id} onClick={() => { setDetailTab(t.id); if (t.id === 'finance') loadUserTxns(selectedUser.id); }}
+                className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${detailTab === t.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {detailTab === 'info' && (
+            !detailUser ? (
+              <div className="py-8 text-center"><div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
+            ) : (
+              <div className="space-y-4 text-sm">
+                <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
+                  <span className="text-3xl">{detailUser.avatar}</span>
+                  <div>
+                    <div className="font-extrabold text-gray-900">{detailUser.username}</div>
+                    <div className="text-gray-500">{detailUser.email}</div>
+                    <div className="text-xs text-gray-400">#{detailUser.id} · Seviye {detailUser.level} · {fmtDate(detailUser.created_at)}</div>
                   </div>
                 </div>
-              )}
-            </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-emerald-50 rounded-xl p-3 text-center"><div className="font-extrabold text-emerald-700">{fmtMoney(detailUser.balance)}</div><div className="text-xs text-gray-500">Bakiye</div></div>
+                  <div className="bg-violet-50 rounded-xl p-3 text-center"><div className="font-extrabold text-violet-700">{detailUser.listings?.length || 0}</div><div className="text-xs text-gray-500">İlan</div></div>
+                </div>
+                {detailUser.listings?.length > 0 && (
+                  <div>
+                    <div className="font-bold text-gray-700 mb-2">Son İlanlar</div>
+                    <div className="space-y-1.5">
+                      {detailUser.listings.slice(0,5).map(l => (
+                        <div key={l.id} className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
+                          <span className="truncate flex-1 text-gray-700">{l.title}</span>
+                          <span className="font-bold text-emerald-600 ml-2">{fmtMoney(l.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          )}
+
+          {detailTab === 'finance' && (
+            !userTxns ? (
+              <div className="py-8 text-center"><div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
+            ) : (
+              <div className="space-y-3 text-sm">
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-red-50 rounded-xl p-2.5 text-center">
+                    <TrendingDown size={14} className="text-red-500 mx-auto mb-1" />
+                    <div className="font-extrabold text-red-600 text-sm">{fmtMoney(userTxns.summary?.total_spent)}</div>
+                    <div className="text-[10px] text-gray-500">Harcama</div>
+                  </div>
+                  <div className="bg-emerald-50 rounded-xl p-2.5 text-center">
+                    <TrendingUp size={14} className="text-emerald-600 mx-auto mb-1" />
+                    <div className="font-extrabold text-emerald-600 text-sm">{fmtMoney(userTxns.summary?.total_earned)}</div>
+                    <div className="text-[10px] text-gray-500">Kazanç</div>
+                  </div>
+                  <div className="bg-yellow-50 rounded-xl p-2.5 text-center">
+                    <Clock size={14} className="text-yellow-600 mx-auto mb-1" />
+                    <div className="font-extrabold text-yellow-600 text-sm">{fmtMoney(userTxns.summary?.pending_earn)}</div>
+                    <div className="text-[10px] text-gray-500">Bekleyen</div>
+                  </div>
+                </div>
+                <div className="space-y-1.5 max-h-60 overflow-y-auto">
+                  {(userTxns.transactions || []).length === 0 ? (
+                    <div className="text-center text-gray-400 py-6 text-xs">İşlem bulunamadı.</div>
+                  ) : (userTxns.transactions || []).map((tx, i) => {
+                    const isPurchase = tx.tx_type === 'purchase';
+                    const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
+                    return (
+                      <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                          {isPurchase ? 'Alım' : 'Satış'}
+                        </span>
+                        <span className="flex-1 truncate text-xs text-gray-700">{tx.item_title || '—'}</span>
+                        <span className={`font-extrabold text-xs ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                          {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )
           )}
         </Modal>
       )}

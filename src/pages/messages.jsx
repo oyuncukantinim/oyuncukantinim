@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, MessageCircle, Search, Check, Shield, ArrowLeft } from 'lucide-react';
+import { Send, MessageCircle, Search, Check, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getConversations, getMessages, sendMessage } from '../lib/api';
+import { getConversations, getMessages, sendMessage, getSharedOrders } from '../lib/api';
 
 const AVATAR_COLORS = [
   'from-violet-400 to-purple-500',
@@ -135,22 +135,72 @@ export default function MessagesPage() {
         </div>
 
         {/* ── RIGHT: Chat ── */}
-        <div className={`flex-1 flex flex-col min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
-          {activeUserId
-            ? <ChatPanel userId={activeUserId} currentUser={user} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
-            : (
-              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
-                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
-                  <MessageCircle size={30} className="text-gray-200" />
+        <div className={`flex-1 flex min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
+          <div className="flex-1 flex flex-col min-w-0">
+            {activeUserId
+              ? <ChatPanel userId={activeUserId} currentUser={user} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
+              : (
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
+                  <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
+                    <MessageCircle size={30} className="text-gray-200" />
+                  </div>
+                  <div className="text-center">
+                    <p className="font-bold text-gray-500 mb-1">Sohbet Seçin</p>
+                    <p className="text-sm">Sol listeden bir konuşmaya tıklayın.</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="font-bold text-gray-500 mb-1">Sohbet Seçin</p>
-                  <p className="text-sm">Sol listeden bir konuşmaya tıklayın.</p>
-                </div>
-              </div>
-            )
-          }
+              )
+            }
+          </div>
+          {activeUserId && <SharedOrdersPanel userId={activeUserId} />}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Shared Orders Panel ─────────────────────────────────────── */
+const ORDER_STATUS = ['Bekliyor', 'Teslim Edildi', 'Tamamlandı', 'Anlaşmazlık', 'İptal'];
+const ORDER_STATUS_COLORS = ['text-gray-500', 'text-blue-500', 'text-emerald-600', 'text-red-500', 'text-gray-400'];
+
+function SharedOrdersPanel({ userId }) {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setOrders([]);
+    getSharedOrders(userId)
+      .then(r => setOrders(r.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  if (!loading && orders.length === 0) return null;
+
+  return (
+    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 border-l border-gray-100 bg-gray-50/50">
+      <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-2">
+        <ShoppingBag size={14} className="text-violet-500" />
+        <span className="text-xs font-extrabold text-gray-700">Ortak Siparişler</span>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        {loading ? (
+          <div className="flex justify-center py-6">
+            <div className="w-5 h-5 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+          </div>
+        ) : orders.map(o => (
+          <div key={o.id} className="bg-white border border-gray-100 rounded-xl p-2.5 shadow-sm">
+            <div className="text-[11px] font-bold text-gray-700 line-clamp-2 mb-1">{o.item_title || '—'}</div>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold text-emerald-600">{Number(o.amount).toFixed(2)} ₺</span>
+              <span className={`text-[10px] font-bold ${ORDER_STATUS_COLORS[o.delivery_status] || 'text-gray-400'}`}>
+                {ORDER_STATUS[o.delivery_status] || '—'}
+              </span>
+            </div>
+            <div className="text-[10px] text-gray-400 mt-0.5">#{o.id}</div>
+          </div>
+        ))}
       </div>
     </div>
   );

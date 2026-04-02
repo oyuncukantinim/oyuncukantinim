@@ -6,12 +6,12 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2
 } from 'lucide-react';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
@@ -358,6 +358,8 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
+  const [favorites, setFavorites] = useState([]);
+  const [analyzeModal, setAnalyzeModal] = useState(null); // { listing_id, title }
 
   const token = localStorage.getItem('token');
 
@@ -391,6 +393,9 @@ export default function ProfilePage() {
     if (activeTab === 'listings') loadListings();
     else if (activeTab === 'orders') loadOrders();
     else if (activeTab === 'sales') loadSales();
+    else if (activeTab === 'favorites') {
+      getFavorites().then(r => setFavorites(r.data || [])).catch(() => {});
+    }
   }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
   if (!user) return null;
@@ -458,6 +463,7 @@ export default function ProfilePage() {
     { id: 'listings',  label: 'İlanlarım',        icon: List },
     { id: 'orders',    label: 'Siparişlerim',      icon: Package },
     { id: 'sales',     label: 'Satışlarım',        icon: Store },
+    { id: 'favorites', label: 'Favorilerim',       icon: Heart },
     { id: 'balance',   label: 'Bakiye',            icon: Wallet },
     { id: 'profile',   label: 'Profil',            icon: User },
     { id: 'personal',  label: 'Kişisel Bilgiler',  icon: MapPin },
@@ -695,6 +701,71 @@ export default function ProfilePage() {
             </div>
           )}
 
+          {/* FAVORİLERİM */}
+          {activeTab === 'favorites' && (
+            <div>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2">
+                <Heart size={18} className="text-red-400 fill-red-400" /> Favorilerim
+              </h2>
+              {favorites.length === 0 ? (
+                <div className="text-center py-16 text-gray-400">
+                  <Heart size={40} className="mx-auto mb-3 opacity-20" />
+                  <p className="font-semibold">Henüz favori ilanın yok.</p>
+                  <p className="text-sm mt-1">İlan detay sayfasında ♡ butonuna bas.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {favorites.map(fav => {
+                    const coverImg = fav.images?.[fav.cover_index || 0];
+                    const dropped = fav.price_diff < -0.009;
+                    const risen   = fav.price_diff > 0.009;
+                    return (
+                      <div key={fav.fav_id} className="flex items-center gap-4 bg-gray-50 rounded-2xl p-3 border border-gray-100">
+                        {/* Kapak */}
+                        <div className="w-16 h-12 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
+                          {coverImg ? <img src={coverImg} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>}
+                        </div>
+                        {/* Bilgi */}
+                        <div className="flex-1 min-w-0">
+                          <Link to={listingSlug(fav.title, fav.listing_id)} className="font-bold text-gray-800 hover:text-neon-purple text-sm line-clamp-1 transition-colors">
+                            {fav.title}
+                          </Link>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-sm font-extrabold text-neon-green">{Number(fav.price).toFixed(2)} ₺</span>
+                            {dropped && <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg"><TrendingDown size={11}/> {Math.abs(fav.price_diff).toFixed(2)} ₺ düştü</span>}
+                            {risen  && <span className="flex items-center gap-0.5 text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-lg"><TrendingUp size={11}/> {fav.price_diff.toFixed(2)} ₺ arttı</span>}
+                          </div>
+                        </div>
+                        {/* Butonlar */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <button
+                            onClick={() => setAnalyzeModal({ listing_id: fav.listing_id, title: fav.title })}
+                            className="p-2 bg-violet-50 hover:bg-violet-100 text-violet-600 rounded-xl transition-colors"
+                            title="Fiyat Analizi"
+                          >
+                            <BarChart2 size={15} />
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await toggleFavorite(fav.listing_id).catch(() => {});
+                              setFavorites(prev => prev.filter(f => f.fav_id !== fav.fav_id));
+                            }}
+                            className="p-2 bg-red-50 hover:bg-red-100 text-red-400 rounded-xl transition-colors"
+                            title="Favorilerden çıkar"
+                          >
+                            <Heart size={15} className="fill-current" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              {/* Analiz Modal */}
+              {analyzeModal && <PriceAnalyzeModal listing={analyzeModal} onClose={() => setAnalyzeModal(null)} />}
+            </div>
+          )}
+
           {/* BAKİYE */}
           {activeTab === 'balance' && (
             <div className="max-w-md">
@@ -802,6 +873,95 @@ export default function ProfilePage() {
           saving={saving}
         />
       )}
+    </div>
+  );
+}
+
+// Fiyat analiz modalı
+function PriceAnalyzeModal({ listing, onClose }) {
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getListingPriceHistory(listing.listing_id)
+      .then(r => setHistory(r.data || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [listing.listing_id]);
+
+  const prices = history.map(h => h.price);
+  const minP = prices.length ? Math.min(...prices) : 0;
+  const maxP = prices.length ? Math.max(...prices) : 0;
+  const range = maxP - minP || 1;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-extrabold text-gray-800 flex items-center gap-2"><BarChart2 size={18} className="text-violet-500" /> Fiyat Analizi</h2>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18}/></button>
+        </div>
+        <p className="text-sm text-gray-500 mb-4 truncate">{listing.title}</p>
+        {loading ? (
+          <div className="flex justify-center py-10"><div className="w-8 h-8 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
+        ) : history.length < 2 ? (
+          <div className="text-center py-10 text-gray-400">
+            <p className="text-sm">Henüz yeterli fiyat geçmişi yok.</p>
+            <p className="text-xs mt-1">Fiyat değişikliklerinden sonra burada grafik oluşur.</p>
+          </div>
+        ) : (
+          <>
+            {/* Basit SVG grafik */}
+            <div className="bg-gray-50 rounded-2xl p-4 mb-4">
+              <svg viewBox={`0 0 ${history.length * 40} 100`} className="w-full h-32" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="priceGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#7c3aed" stopOpacity="0.3"/>
+                    <stop offset="100%" stopColor="#7c3aed" stopOpacity="0.02"/>
+                  </linearGradient>
+                </defs>
+                {history.length > 1 && (() => {
+                  const pts = history.map((h, i) => {
+                    const x = i * 40 + 20;
+                    const y = 90 - ((h.price - minP) / range) * 80;
+                    return `${x},${y}`;
+                  }).join(' ');
+                  const first = pts.split(' ')[0];
+                  const last  = pts.split(' ').slice(-1)[0];
+                  const [lx] = last.split(',');
+                  return (
+                    <>
+                      <polygon points={`20,90 ${pts} ${lx},90`} fill="url(#priceGrad)" />
+                      <polyline points={pts} fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                      {history.map((h, i) => {
+                        const x = i * 40 + 20;
+                        const y = 90 - ((h.price - minP) / range) * 80;
+                        return <circle key={i} cx={x} cy={y} r="3" fill="#7c3aed" />;
+                      })}
+                    </>
+                  );
+                })()}
+              </svg>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="text-center bg-emerald-50 rounded-xl p-3">
+                <div className="text-xs text-emerald-600 font-semibold">En Düşük</div>
+                <div className="font-extrabold text-emerald-700">{minP.toFixed(2)} ₺</div>
+              </div>
+              <div className="text-center bg-violet-50 rounded-xl p-3">
+                <div className="text-xs text-violet-600 font-semibold">Güncel</div>
+                <div className="font-extrabold text-violet-700">{prices[prices.length-1]?.toFixed(2)} ₺</div>
+              </div>
+              <div className="text-center bg-red-50 rounded-xl p-3">
+                <div className="text-xs text-red-600 font-semibold">En Yüksek</div>
+                <div className="font-extrabold text-red-700">{maxP.toFixed(2)} ₺</div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-3">Son 30 günlük fiyat hareketi</p>
+          </>
+        )}
+      </div>
     </div>
   );
 }

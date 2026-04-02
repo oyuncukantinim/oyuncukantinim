@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Gamepad2, Star, ShoppingCart,
-  MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag,
+  MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
 } from 'lucide-react';
-import { getListing, idFromSlug } from '../lib/api';
+import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -20,13 +20,14 @@ export default function ListingDetailPage() {
   const [catAttrs, setCatAttrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
+  const [favorited, setFavorited] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
 
   useEffect(() => {
     getListing(id)
       .then(r => {
         setListing(r.data);
         setActiveImg(r.data.cover_index || 0);
-        // Kategori özelliklerini çek
         if (r.data.category_id) {
           fetch(`${API_URL}?action=get_category_attributes&category_id=${r.data.category_id}`)
             .then(res => res.json())
@@ -37,6 +38,22 @@ export default function ListingDetailPage() {
       .catch(() => navigate('/market'))
       .finally(() => setLoading(false));
   }, [id, navigate]);
+
+  // Favori durumu kontrol
+  useEffect(() => {
+    if (!user || !id) return;
+    checkFavorite(id).then(r => setFavorited(r.data?.favorited ?? false)).catch(() => {});
+  }, [user, id]);
+
+  const handleToggleFavorite = async () => {
+    if (!user) { navigate('/login'); return; }
+    setFavLoading(true);
+    try {
+      const r = await toggleFavorite(listing.id);
+      setFavorited(r.data?.favorited ?? false);
+    } catch {}
+    finally { setFavLoading(false); }
+  };
 
   if (loading) return (
     <div className="flex justify-center py-40">
@@ -205,12 +222,24 @@ export default function ListingDetailPage() {
                 Kendi İlanın
               </span>
             ) : (
-              <button
-                onClick={handleBuy}
-                className="w-full flex items-center justify-center gap-2 bg-white text-violet-700 font-extrabold text-base py-3.5 rounded-xl hover:bg-violet-50 active:scale-95 transition-all shadow-md"
-              >
-                <ShoppingCart size={18} /> Sepete Ekle
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBuy}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white text-violet-700 font-extrabold text-base py-3.5 rounded-xl hover:bg-violet-50 active:scale-95 transition-all shadow-md"
+                >
+                  <ShoppingCart size={18} /> Sepete Ekle
+                </button>
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favLoading}
+                  title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  className={`w-14 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
+                    favorited ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  <Heart size={20} className={favorited ? 'fill-current' : ''} />
+                </button>
+              </div>
             )}
           </div>
 
