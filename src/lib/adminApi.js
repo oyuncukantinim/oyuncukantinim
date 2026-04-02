@@ -104,6 +104,13 @@ export const adminGetConversations = (params = {}) =>
 export const adminReorderCategories = (orders) =>
   adminRequest('admin_reorder_categories', { method: 'POST', body: { orders } });
 
+// Category Types
+export const adminGetCategoryTypes = () => adminRequest('admin_get_category_types');
+export const adminSaveCategoryType = (body) =>
+  adminRequest('admin_save_category_type', { method: 'POST', body });
+export const adminDeleteCategoryType = (type_id) =>
+  adminRequest('admin_delete_category_type', { method: 'POST', body: { type_id } });
+
 // Image Upload
 export async function adminUploadImage(file, folder = 'misc') {
   const url = new URL(API_URL);

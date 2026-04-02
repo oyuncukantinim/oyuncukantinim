@@ -9,7 +9,8 @@ import AdminLayout from '../../components/AdminLayout';
 import {
   adminGetCategories, adminSaveCategory, adminDeleteCategory,
   adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute,
-  adminUploadImage, adminReorderCategories
+  adminUploadImage, adminReorderCategories,
+  adminGetCategoryTypes, adminSaveCategoryType, adminDeleteCategoryType
 } from '../../lib/adminApi';
 
 const ATTR_TYPES = [
@@ -67,13 +68,24 @@ export default function AdminCategories() {
   const [dragId, setDragId] = useState(null);
   const [dropTarget, setDropTarget] = useState(null);
 
+  // Category Types
+  const [typesList, setTypesList] = useState([]);
+  const [typeModal, setTypeModal] = useState(false);
+  const [editType, setEditType] = useState(null);
+  const [typeForm, setTypeForm] = useState({ name: '', slug: '', icon: '🏷️', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
+  const [typeSaving, setTypeSaving] = useState(false);
+
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const loadCategories = () => {
     adminGetCategories().then(r => setCategories(r.data)).catch(() => {});
   };
 
-  useEffect(() => { loadCategories(); }, []);
+  const loadTypes = () => {
+    adminGetCategoryTypes().then(r => setTypesList(r.data || [])).catch(() => {});
+  };
+
+  useEffect(() => { loadCategories(); loadTypes(); }, []);
 
   const loadAttrs = (catId) => {
     adminGetCategoryAttributes(catId).then(r => setAttrs(r.data)).catch(() => setAttrs([]));
@@ -110,14 +122,43 @@ export default function AdminCategories() {
 
   const openNewCat = (parentId = null) => {
     setEditCat(null);
-    setCatForm({ name:'', slug:'', parent_id: parentId || '', icon:'🎮', sort_order:0, is_active:1 });
+    setCatForm({ name:'', slug:'', parent_id: parentId || '', icon:'🎮', sort_order:0, is_active:1, commission_rate:'', min_price:'', image:'', type_id:'' });
     setCatModal(true);
   };
 
   const openEditCat = (cat) => {
     setEditCat(cat);
-    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active, commission_rate: cat.commission_rate ?? '', min_price: cat.min_price ?? '', image: cat.image || '' });
+    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active, commission_rate: cat.commission_rate ?? '', min_price: cat.min_price ?? '', image: cat.image || '', type_id: cat.type_id || '' });
     setCatModal(true);
+  };
+
+  const openNewType = () => {
+    setEditType(null);
+    setTypeForm({ name: '', slug: '', icon: '🏷️', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
+    setTypeModal(true);
+  };
+
+  const openEditType = (type) => {
+    setEditType(type);
+    setTypeForm({ name: type.name, slug: type.slug, icon: type.icon, color: type.color, sort_order: type.sort_order, is_active: type.is_active });
+    setTypeModal(true);
+  };
+
+  const handleSaveType = async () => {
+    if (!typeForm.name || !typeForm.slug) { showToast('İsim ve slug gerekli.'); return; }
+    setTypeSaving(true);
+    try {
+      await adminSaveCategoryType({ ...typeForm, id: editType?.id || null });
+      showToast(editType ? 'Tür güncellendi.' : 'Tür oluşturuldu.');
+      setTypeModal(false); loadTypes();
+    } catch (e) { showToast(e.message); }
+    finally { setTypeSaving(false); }
+  };
+
+  const handleDeleteType = async (type) => {
+    if (!confirm(`"${type.name}" türünü sil? Bu türe bağlı kategorilerin türü kaldırılacak.`)) return;
+    try { await adminDeleteCategoryType(type.id); showToast('Tür silindi.'); loadTypes(); }
+    catch (e) { showToast(e.message); }
   };
 
   const handleSaveCat = async () => {
@@ -222,6 +263,7 @@ export default function AdminCategories() {
               {!cat.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
               {kids.length > 0 && <span className="text-[10px] text-gray-400">{kids.length} alt kategori</span>}
               {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
+              {cat.type_id && (() => { const t = typesList.find(x => x.id == cat.type_id); return t ? <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t.icon} {t.name}</span> : null; })()}
               {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
               {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
             </div>
@@ -324,6 +366,47 @@ export default function AdminCategories() {
         </div>
       </div>
 
+      {/* Kategori Türleri Paneli */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Tag size={18} className="text-purple-600" />
+            <div>
+              <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
+              <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
+            </div>
+          </div>
+          <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+            <Plus size={13} /> Yeni Tür
+          </button>
+        </div>
+        {typesList.length === 0 ? (
+          <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {typesList.map(type => (
+              <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
+                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
+                  {type.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
+                    {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
+                    <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
+                  </div>
+                  <div className="text-xs text-gray-400 font-mono">{type.slug} · {type.color}</div>
+                </div>
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
+                  <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Kategori Modal */}
       {catModal && (
         <Modal title={editCat ? 'Kategori Düzenle' : 'Yeni Kategori'} onClose={() => setCatModal(false)}>
@@ -350,6 +433,16 @@ export default function AdminCategories() {
                 <option value="">— Ana Kategori —</option>
                 {categories.filter(c => !c.parent_id && c.id !== editCat?.id).map(c => (
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Türü</label>
+              <select value={catForm.type_id} onChange={e => setCatForm(f => ({...f, type_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
+                <option value="">— Tür Yok —</option>
+                {typesList.map(t => (
+                  <option key={t.id} value={t.id}>{t.icon} {t.name}</option>
                 ))}
               </select>
             </div>
@@ -514,6 +607,54 @@ export default function AdminCategories() {
 
             <button onClick={handleSaveAttr} disabled={attrSaving} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
               {attrSaving ? 'Kaydediliyor...' : (editAttr ? 'Güncelle' : 'Özellik Ekle')}
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Kategori Türü Modal */}
+      {typeModal && (
+        <Modal title={editType ? 'Türü Düzenle' : 'Yeni Kategori Türü'} onClose={() => setTypeModal(false)}>
+          <div className="space-y-4">
+            <div className="grid grid-cols-4 gap-3">
+              <div className="col-span-1">
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">İkon</label>
+                <input value={typeForm.icon} onChange={e => setTypeForm(f => ({...f, icon: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-center text-2xl focus:outline-none focus:border-violet-400" />
+              </div>
+              <div className="col-span-3">
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Tür Adı *</label>
+                <input value={typeForm.name} onChange={e => setTypeForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Slug *</label>
+              <input value={typeForm.slug} onChange={e => setTypeForm(f => ({...f, slug: e.target.value}))} placeholder="hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Gradient Rengi (Tailwind)</label>
+              <input value={typeForm.color} onChange={e => setTypeForm(f => ({...f, color: e.target.value}))} placeholder="from-violet-500 to-purple-600" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
+              <div className={`mt-2 h-8 rounded-xl bg-gradient-to-br ${typeForm.color || 'from-gray-200 to-gray-300'} flex items-center justify-center text-white text-xs font-bold`}>
+                {typeForm.icon} {typeForm.name || 'Önizleme'}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Sıra</label>
+                <input type="number" value={typeForm.sort_order} onChange={e => setTypeForm(f => ({...f, sort_order: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
+                <button onClick={() => setTypeForm(f => ({...f, is_active: f.is_active ? 0 : 1}))} className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl font-bold text-sm transition-all border ${typeForm.is_active ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 bg-gray-50 text-gray-500'}`}>
+                  {typeForm.is_active ? <><ToggleRight size={16} /> Aktif</> : <><ToggleLeft size={16} /> Pasif</>}
+                </button>
+              </div>
+            </div>
+
+            <button onClick={handleSaveType} disabled={typeSaving} className="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
+              {typeSaving ? 'Kaydediliyor...' : (editType ? 'Güncelle' : 'Oluştur')}
             </button>
           </div>
         </Modal>

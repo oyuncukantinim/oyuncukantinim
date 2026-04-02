@@ -28,6 +28,14 @@ const SETTINGS_SCHEMA = [
     ],
   },
   {
+    section: 'Teslimat & Havuz',
+    fields: [
+      { key: 'escrow_enabled',        label: 'Emanet (Havuz) Sistemi', type: 'toggle', desc: 'Manuel ilanlar için para satıcıya onay sonrası geçer' },
+      { key: 'auto_confirm_days',     label: 'Otomatik Onay (gün)', type: 'number', placeholder: '3' },
+      { key: 'listing_duration_days', label: 'İlan Süresi (gün)', type: 'number', placeholder: '30' },
+    ],
+  },
+  {
     section: 'Duyuru Bandı',
     fields: [
       { key: 'announcement_active', label: 'Duyuru Bandı Aktif', type: 'toggle', desc: 'Site üstünde renkli bant gösterilir' },

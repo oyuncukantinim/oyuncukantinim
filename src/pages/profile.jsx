@@ -1,27 +1,187 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   List, Package, Settings, LogOut, Plus, ShieldCheck,
-  Wallet, Trash2, Edit3, Image as ImageIcon, Star
+  Wallet, Trash2, Edit3, Image as ImageIcon, Star,
+  Truck, CheckCircle, AlertTriangle, Clock, User,
+  Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, getOrders, updateProfile, addBalance, deleteListing, listingSlug } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 
+const API = 'https://api.oyuncukantinim.com.tr/api.php';
+
+async function apiAuth(action, body = null, token) {
+  const url = `${API}?action=${action}`;
+  const opts = {
+    method: body ? 'POST' : 'GET',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  const json = await res.json();
+  if (json.status !== 'success') throw new Error(json.message || 'Hata');
+  return json.data;
+}
+
+const DELIVERY_STATUS = {
+  0: { label: 'Teslimat Bekleniyor', color: 'bg-orange-100 text-orange-700', icon: Clock },
+  1: { label: 'Teslim Edildi', color: 'bg-blue-100 text-blue-700', icon: Truck },
+  2: { label: 'Tamamlandı', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
+  3: { label: 'Anlaşmazlık', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
+};
+
+function DeliveryBadge({ status }) {
+  const s = DELIVERY_STATUS[status] || DELIVERY_STATUS[0];
+  const Icon = s.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${s.color}`}>
+      <Icon size={11} /> {s.label}
+    </span>
+  );
+}
+
+function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
+  const [expanded, setExpanded] = useState(false);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const act = async (action, body) => {
+    setLoading(true);
+    try {
+      await apiAuth(action, body, token);
+      showToast('İşlem başarılı!');
+      onRefresh();
+    } catch (e) { showToast(e.message); }
+    finally { setLoading(false); }
+  };
+
+  const isManual = order.item_type === 'listing' && !order.delivery_content;
+  const status = (order.delivery_status ?? 0);
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+      <div className="p-4 flex items-center gap-3">
+        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
+          {order.item_type === 'epin' ? '💎' : '🎮'}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
+          <div className="text-xs text-gray-400 mt-0.5">
+            {isSellerView ? `Alıcı: ${order.buyer_username || '—'}` : (order.seller_name ? `Satıcı: ${order.seller_name}` : '')}
+            {order.game_name ? ` • ${order.game_name}` : ''}
+          </div>
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+            <DeliveryBadge status={status} />
+            {order.item_type === 'epin' && <span className="text-[10px] bg-yellow-100 text-yellow-700 font-bold px-2 py-0.5 rounded-lg">E-Pin</span>}
+          </div>
+        </div>
+        <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+          <div className="font-extrabold text-emerald-600">{Number(order.amount).toFixed(2)} ₺</div>
+          <button onClick={() => setExpanded(e => !e)} className="text-xs text-gray-400 hover:text-violet-600 flex items-center gap-1">
+            Detay {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-gray-50 p-4 space-y-3 bg-gray-50/50">
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div><span className="text-gray-400">Sipariş #</span><div className="font-bold text-gray-700">{order.id}</div></div>
+            <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleDateString('tr-TR')}</div></div>
+            <div><span className="text-gray-400">Ödenen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} ₺</div></div>
+            {order.seller_amount && <div><span className="text-gray-400">Satıcı Alır</span><div className="font-bold text-gray-700">{Number(order.seller_amount).toFixed(2)} ₺</div></div>}
+          </div>
+
+          {/* Teslimat içeriği */}
+          {order.delivery_content && (
+            <div>
+              <div className="text-xs font-bold text-gray-600 mb-1">📦 Teslimat İçeriği</div>
+              <div className="bg-white border border-emerald-200 rounded-xl p-3 text-sm font-mono text-gray-800 whitespace-pre-wrap break-all">{order.delivery_content}</div>
+            </div>
+          )}
+
+          {/* Aksiyon butonları */}
+          {!isSellerView && order.item_type === 'listing' && (
+            <div className="flex flex-wrap gap-2">
+              {status === 1 && (
+                <>
+                  <button onClick={() => act('confirm_delivery', { order_id: order.id })} disabled={loading}
+                    className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors disabled:opacity-50">
+                    <Check size={13}/> Teslimatı Onayla
+                  </button>
+                  <button onClick={() => setDisputeOpen(true)} disabled={loading}
+                    className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2 rounded-xl border border-red-200 transition-colors">
+                    <AlertTriangle size={13}/> Anlaşmazlık Bildir
+                  </button>
+                </>
+              )}
+              {status === 0 && (
+                <button onClick={() => setDisputeOpen(true)} disabled={loading}
+                  className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2 rounded-xl border border-red-200 transition-colors">
+                  <AlertTriangle size={13}/> Sorun Bildir
+                </button>
+              )}
+              {status === 0 && (
+                <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+                  <Clock size={11}/> Satıcı teslimat bildirince burada görünecek
+                </div>
+              )}
+            </div>
+          )}
+
+          {isSellerView && order.item_type === 'listing' && status === 0 && (
+            <button onClick={() => act('mark_delivered', { order_id: order.id })} disabled={loading}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-50">
+              <Truck size={13}/> Teslim Ettim
+            </button>
+          )}
+
+          {status === 2 && !order.seller_paid && (
+            <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg">⏳ Ödeme bekleniyor (onay sürecinde)</div>
+          )}
+
+          {/* Anlaşmazlık formu */}
+          {disputeOpen && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
+              <div className="text-xs font-bold text-red-700">Anlaşmazlık Nedeni</div>
+              <textarea value={disputeReason} onChange={e => setDisputeReason(e.target.value)}
+                placeholder="Yaşadığınız sorunu açıklayın..." rows={3}
+                className="w-full border border-red-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none" />
+              <div className="flex gap-2">
+                <button onClick={() => act('dispute_order', { order_id: order.id, reason: disputeReason })} disabled={!disputeReason.trim() || loading}
+                  className="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-xl disabled:opacity-50">Gönder</button>
+                <button onClick={() => setDisputeOpen(false)} className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-2 rounded-xl">İptal</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
-  const { user, logout, updateUser, refreshUser } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const { showToast } = useCart();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('listings');
   const [myListings, setMyListings] = useState([]);
+  const [listingFilter, setListingFilter] = useState('active');
   const [orders, setOrders] = useState([]);
+  const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editModal, setEditModal] = useState(null); // listing being edited
+
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -29,14 +189,24 @@ export default function ProfilePage() {
     setSelectedAvatar(user.avatar || '👤');
   }, [user, navigate]);
 
+  const loadListings = useCallback(() => {
+    getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
+  }, []);
+
+  const loadOrders = useCallback(() => {
+    apiAuth('get_my_orders', null, token).then(setOrders).catch(() => {});
+  }, [token]);
+
+  const loadSales = useCallback(() => {
+    apiAuth('get_my_sales', null, token).then(setSales).catch(() => {});
+  }, [token]);
+
   useEffect(() => {
     if (!user) return;
-    if (activeTab === 'listings') {
-      getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
-    } else if (activeTab === 'orders') {
-      getOrders().then(r => setOrders(r.data || [])).catch(() => {});
-    }
-  }, [activeTab, user]);
+    if (activeTab === 'listings') loadListings();
+    else if (activeTab === 'orders') loadOrders();
+    else if (activeTab === 'sales') loadSales();
+  }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
   if (!user) return null;
 
@@ -47,172 +217,183 @@ export default function ProfilePage() {
       if (editUsername !== user.username) payload.new_username = editUsername;
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
       if (newPassword) payload.new_password = newPassword;
-
-      if (Object.keys(payload).length === 0) {
-        showToast('Degisiklik yok.');
-        setSaving(false);
-        return;
-      }
-
+      if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setNewPassword('');
-      showToast('Profil guncellendi!');
-    } catch (err) {
-      showToast(err.message);
-    } finally {
-      setSaving(false);
-    }
+      showToast('Profil güncellendi!');
+    } catch (err) { showToast(err.message); }
+    finally { setSaving(false); }
   };
 
   const handleAddBalance = async () => {
     const amt = parseFloat(balanceAmount);
-    if (!amt || amt <= 0) { showToast('Gecerli bir tutar girin.'); return; }
+    if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
     try {
       const res = await addBalance(amt);
       updateUser({ ...user, balance: res.data.new_balance });
       setBalanceAmount('');
-      showToast(amt.toFixed(2) + ' TL yuklendi!');
-    } catch (err) {
-      showToast(err.message);
-    }
+      showToast(amt.toFixed(2) + ' ₺ yüklendi!');
+    } catch (err) { showToast(err.message); }
   };
 
   const handleDeleteListing = async (listingId) => {
-    if (!confirm('Bu ilani silmek istediginize emin misiniz?')) return;
+    if (!confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
     try {
       await deleteListing({ listing_id: listingId });
       setMyListings(prev => prev.filter(l => l.id !== listingId));
-      showToast('Ilan silindi.');
-    } catch (err) {
-      showToast(err.message);
-    }
+      showToast('İlan silindi.');
+    } catch (err) { showToast(err.message); }
   };
 
-  const handleLogout = () => {
-    logout();
-    showToast('Gorusuruz!');
-    navigate('/');
+  const handleUpdateListing = async (data) => {
+    setSaving(true);
+    try {
+      await apiAuth('update_listing', data, token);
+      showToast('İlan güncellendi!');
+      setEditModal(null);
+      loadListings();
+    } catch (e) { showToast(e.message); }
+    finally { setSaving(false); }
   };
+
+  const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
 
   const tabs = [
-    { id: 'listings', label: 'Ilanlarim', icon: List },
-    { id: 'orders', label: 'Siparislerim', icon: Package },
-    { id: 'balance', label: 'Bakiye', icon: Wallet },
-    { id: 'settings', label: 'Ayarlar', icon: Settings },
+    { id: 'listings', label: 'İlanlarım',         icon: List },
+    { id: 'orders',   label: 'Siparişlerim',       icon: Package },
+    { id: 'sales',    label: 'Satışlarım',         icon: Store },
+    { id: 'balance',  label: 'Bakiye',             icon: Wallet },
+    { id: 'profile',  label: 'Profil Bilgilerim',  icon: User },
   ];
 
-  return (
-    <div className="max-w-5xl mx-auto space-y-8">
+  const filteredListings = myListings.filter(l => {
+    if (listingFilter === 'active') return l.status === 'active';
+    if (listingFilter === 'passive') return l.status !== 'active' && l.status !== 'expired';
+    if (listingFilter === 'expired') return l.status === 'expired';
+    return true;
+  });
 
+  return (
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Profile Header */}
       <div className="card overflow-hidden">
-        <div className="h-32 bg-gradient-to-r from-neon-purple/20 via-neon-cyan/10 to-neon-pink/20 relative">
+        <div className="h-28 bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20 relative">
           <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
         </div>
-        <div className="px-6 sm:px-10 pb-8 relative">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-12 mb-4">
+        <div className="px-6 sm:px-8 pb-6 relative">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 mb-4">
             <div className="relative">
-              <div className="w-24 h-24 bg-surface-100 border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-lg">
+              <div className="w-20 h-20 bg-gray-50 border-4 border-white rounded-2xl flex items-center justify-center text-4xl shadow-lg">
                 {user.avatar || '👤'}
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-gray-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full border-2 border-white">
+              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-white">
                 Lv.{user.level || 1}
               </div>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-extrabold text-gray-800">{user.username}</h1>
-              <p className="text-gray-500 text-sm flex items-center justify-center sm:justify-start gap-1 mt-1">
-                <ShieldCheck size={14} className="text-neon-green" /> Dogrulanmis Uye
+              <h1 className="text-xl font-extrabold text-gray-800">{user.username}</h1>
+              <p className="text-gray-400 text-xs flex items-center justify-center sm:justify-start gap-1 mt-0.5">
+                <ShieldCheck size={12} className="text-emerald-500" /> Doğrulanmış Üye
               </p>
             </div>
-            <div className="text-center sm:text-right space-y-2">
-              <div>
-                <div className="text-xs text-gray-500">Bakiye</div>
-                <div className="text-2xl font-extrabold text-neon-green">{Number(user.balance || 0).toFixed(2)} ₺</div>
-              </div>
-              <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1 justify-center">
-                🏪 Mağazamı Gör
-              </Link>
-            </div>
+            <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
+              🏪 Mağazamı Gör
+            </Link>
           </div>
-
           {/* XP Bar */}
-          <div className="bg-surface-100 rounded-xl p-3 border border-gray-100">
+          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
             <div className="flex justify-between text-xs font-bold mb-1.5">
               <span className="text-gray-500">Seviye {user.level || 1}</span>
-              <span className="text-neon-purple">{user.xp || 0}% XP</span>
+              <span className="text-violet-600">{user.xp || 0} XP</span>
             </div>
-            <div className="w-full bg-surface-200 rounded-full h-2 overflow-hidden">
-              <div className="bg-gradient-to-r from-neon-purple to-neon-cyan h-full rounded-full transition-all" style={{ width: `${user.xp || 0}%` }} />
+            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-gradient-to-r from-violet-500 to-cyan-500 h-full rounded-full transition-all" style={{ width: `${Math.min(user.xp || 0, 100)}%` }} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs + Content */}
-      <div className="flex flex-col md:flex-row gap-6">
-        {/* Sidebar */}
-        <div className="w-full md:w-56 flex-shrink-0 space-y-2">
+      {/* Tabs */}
+      <div className="flex flex-col md:flex-row gap-5">
+        <div className="w-full md:w-52 flex-shrink-0 space-y-1">
           {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                activeTab === tab.id
-                  ? 'bg-neon-purple/10 text-neon-purple border border-neon-purple/20'
-                  : 'text-gray-500 hover:bg-white/5 hover:text-gray-300'
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                activeTab === tab.id ? 'bg-violet-600/10 text-violet-700 border border-violet-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
               }`}
             >
-              <tab.icon size={18} /> {tab.label}
+              <tab.icon size={16} /> {tab.label}
             </button>
           ))}
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm text-red-400 hover:bg-red-500/10 transition-all mt-4">
-            <LogOut size={18} /> Cikis Yap
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all mt-3">
+            <LogOut size={16} /> Çıkış Yap
           </button>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 card p-6 sm:p-8 min-h-[400px]">
+        <div className="flex-1 card p-5 sm:p-6 min-h-[400px]">
 
-          {/* ILANLARIM */}
+          {/* İLANLARIM */}
           {activeTab === 'listings' && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-extrabold">Ilanlarim</h2>
-                <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1">
-                  <Plus size={16} /> Yeni Ilan
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-lg font-extrabold text-gray-800">İlanlarım</h2>
+                <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1.5">
+                  <Plus size={15}/> Yeni İlan
                 </Link>
               </div>
-              {myListings.length === 0 ? (
+              <div className="flex gap-2 mb-4">
+                {[
+                  { key: 'active',  label: 'Aktif' },
+                  { key: 'passive', label: 'Pasif' },
+                  { key: 'expired', label: 'Süresi Dolmuş' },
+                  { key: 'all',     label: 'Tümü' },
+                ].map(f => (
+                  <button key={f.key} onClick={() => setListingFilter(f.key)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${listingFilter === f.key ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              {filteredListings.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-5xl mb-3">🏪</div>
-                  <h3 className="text-lg font-bold text-gray-300 mb-1">Henuz ilan eklemedin</h3>
-                  <Link to="/create" className="text-neon-purple font-bold hover:underline">Hemen ekle</Link>
+                  <div className="text-4xl mb-3">🏪</div>
+                  <p className="text-gray-400 font-semibold">Bu durumda ilan yok.</p>
+                  <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {myListings.map(listing => (
-                    <div key={listing.id} className="bg-surface-100/50 rounded-xl p-4 flex items-center gap-4 border border-gray-100">
-                      <div className="w-16 h-16 bg-white rounded-xl overflow-hidden flex-shrink-0">
+                <div className="space-y-3">
+                  {filteredListings.map(listing => (
+                    <div key={listing.id} className="bg-gray-50 rounded-xl p-4 flex items-center gap-3 border border-gray-100">
+                      <div className="w-14 h-14 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                         {listing.images?.[0] ? (
-                          <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+                          <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-600"><ImageIcon size={20} /></div>
+                          <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-neon-purple truncate block">{listing.title}</Link>
-                        <div className="text-xs text-gray-500 mt-1">{listing.game_name} &bull; {listing.category}</div>
+                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-sm">{listing.title}</Link>
+                        <div className="text-xs text-gray-400 mt-0.5">{listing.category}</div>
+                        {listing.expires_at && (
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            Bitiş: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
+                          </div>
+                        )}
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className="font-bold text-neon-green">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex gap-2 mt-2">
-                          <span className={`text-xs font-bold ${listing.status === 'active' ? 'text-neon-green' : 'text-gray-500'}`}>
-                            {listing.status === 'active' ? 'Aktif' : listing.status === 'sold' ? 'Satildi' : listing.status}
+                      <div className="text-right flex-shrink-0 space-y-1">
+                        <div className="font-bold text-emerald-600 text-sm">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="flex gap-1.5 justify-end">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+                            {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
                           </span>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="text-red-400 hover:text-red-300">
-                            <Trash2 size={14} />
+                        </div>
+                        <div className="flex gap-1 justify-end">
+                          <button onClick={() => setEditModal(listing)} className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500">
+                            <Edit3 size={13}/>
+                          </button>
+                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500">
+                            <Trash2 size={13}/>
                           </button>
                         </div>
                       </div>
@@ -223,142 +404,165 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* SIPARISLERIM */}
+          {/* SİPARİŞLERİM */}
           {activeTab === 'orders' && (
             <div>
-              <h2 className="text-xl font-extrabold mb-6">Siparislerim</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Siparişlerim</h2>
               {orders.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-5xl mb-3">📦</div>
-                  <h3 className="text-lg font-bold text-gray-300 mb-1">Henuz siparisin yok</h3>
-                  <Link to="/store" className="text-neon-purple font-bold hover:underline">Magazayi kesfet</Link>
+                  <div className="text-4xl mb-3">📦</div>
+                  <p className="text-gray-400 font-semibold">Henüz siparişin yok.</p>
+                  <Link to="/market" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Pazara göz at</Link>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {orders.map(order => (
-                    <div key={order.id} className="bg-surface-100/50 rounded-xl p-4 flex items-center gap-4 border border-gray-100">
-                      <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                        {order.item_type === 'epin' ? '💎' : '🎮'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-bold text-gray-800 truncate">{order.item_title || 'Urun'}</div>
-                        <div className="text-xs text-gray-500 mt-1">{order.game_name} {order.seller_name ? `• Satici: ${order.seller_name}` : ''}</div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <div className="font-bold text-neon-green">{Number(order.amount).toFixed(2)} ₺</div>
-                        <span className="badge-green text-[10px] mt-1">{order.status}</span>
-                      </div>
-                    </div>
+                    <OrderCard key={order.id} order={order} isSellerView={false} token={token} onRefresh={loadOrders} showToast={showToast} />
                   ))}
                 </div>
               )}
             </div>
           )}
 
-          {/* BAKIYE */}
+          {/* SATIŞLARIM */}
+          {activeTab === 'sales' && (
+            <div>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Satışlarım</h2>
+              {sales.length === 0 ? (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-3">🏪</div>
+                  <p className="text-gray-400 font-semibold">Henüz satışın yok.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {sales.map(order => (
+                    <OrderCard key={order.id} order={order} isSellerView={true} token={token} onRefresh={loadSales} showToast={showToast} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* BAKİYE */}
           {activeTab === 'balance' && (
             <div className="max-w-md">
-              <h2 className="text-xl font-extrabold mb-6">Bakiye Yukle</h2>
-              <div className="bg-surface-100/50 rounded-2xl p-6 border border-gray-100 mb-6">
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Bakiye</h2>
+              <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 mb-5">
                 <div className="text-sm text-gray-500 mb-1">Mevcut Bakiye</div>
-                <div className="text-4xl font-extrabold text-neon-green">{Number(user.balance || 0).toFixed(2)} ₺</div>
+                <div className="text-4xl font-extrabold text-emerald-600">{Number(user.balance || 0).toFixed(2)} ₺</div>
               </div>
-
               <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {[50, 100, 250, 500, 1000, 2500].map(amt => (
-                    <button
-                      key={amt}
-                      onClick={() => setBalanceAmount(String(amt))}
-                      className={`py-3 rounded-xl font-bold text-sm transition-all ${
-                        balanceAmount === String(amt)
-                          ? 'bg-neon-purple text-gray-800'
-                          : 'bg-surface-100 text-gray-400 hover:bg-white/5 border border-gray-100'
-                      }`}
-                    >
+                    <button key={amt} onClick={() => setBalanceAmount(String(amt))}
+                      className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
                       {amt} ₺
                     </button>
                   ))}
                 </div>
-                <input
-                  type="number"
-                  value={balanceAmount}
-                  onChange={e => setBalanceAmount(e.target.value)}
-                  placeholder="Ozel tutar (TL)..."
-                  className="input-field"
-                />
+                <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
+                  placeholder="Özel tutar (₺)..." className="input-field" />
                 <button onClick={handleAddBalance} className="btn-primary w-full">
-                  <Wallet size={18} className="inline mr-2" /> Bakiye Yukle
+                  <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
                 </button>
-                <p className="text-xs text-gray-600 text-center">Bu test asamasinda aninda yuklenir. Gercek odeme entegrasyonu sonra eklenecektir.</p>
+                <p className="text-xs text-gray-400 text-center">Test aşamasında anlık yüklenir. Gerçek ödeme entegrasyonu yakında.</p>
               </div>
             </div>
           )}
 
-          {/* AYARLAR */}
-          {activeTab === 'settings' && (
-            <div className="max-w-md space-y-6">
-              <h2 className="text-xl font-extrabold mb-6">Hesap Ayarlari</h2>
-
-              {/* Avatar */}
+          {/* PROFİL BİLGİLERİM */}
+          {activeTab === 'profile' && (
+            <div className="max-w-md space-y-5">
+              <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
               <div>
-                <label className="block text-sm font-bold text-gray-400 mb-2">Avatar</label>
+                <label className="block text-sm font-bold text-gray-600 mb-2">Avatar</label>
                 <div className="flex flex-wrap gap-2">
                   {AVATARS.map(av => (
-                    <button
-                      key={av}
-                      onClick={() => setSelectedAvatar(av)}
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl transition-all ${
-                        selectedAvatar === av
-                          ? 'bg-neon-purple/20 border-2 border-neon-purple scale-110'
-                          : 'bg-surface-100 border border-gray-100 hover:border-white/20'
-                      }`}
-                    >
+                    <button key={av} onClick={() => setSelectedAvatar(av)}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedAvatar === av ? 'bg-violet-100 border-2 border-violet-500 scale-110' : 'bg-gray-50 border border-gray-200 hover:border-violet-300'}`}>
                       {av}
                     </button>
                   ))}
                 </div>
               </div>
-
-              {/* Username */}
               <div>
-                <label className="block text-sm font-bold text-gray-400 mb-1">Kullanici Adi</label>
-                <input
-                  type="text"
-                  value={editUsername}
-                  onChange={e => setEditUsername(e.target.value)}
-                  className="input-field"
-                />
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">Kullanıcı Adı</label>
+                <input type="text" value={editUsername} onChange={e => setEditUsername(e.target.value)} className="input-field" />
               </div>
-
-              {/* Email (readonly) */}
               <div>
-                <label className="block text-sm font-bold text-gray-400 mb-1">E-posta</label>
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
                 <input type="email" value={user.email} disabled className="input-field opacity-50 cursor-not-allowed" />
-                <p className="text-[10px] text-gray-600 mt-1">Guvenlik geregi e-posta degistirilemez.</p>
+                <p className="text-xs text-gray-400 mt-1">Güvenlik gereği e-posta değiştirilemez.</p>
               </div>
-
-              {/* Password */}
               <div>
-                <label className="block text-sm font-bold text-gray-400 mb-1">Yeni Sifre</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  placeholder="Bos birakirsan degismez..."
-                  className="input-field"
-                />
+                <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Değiştirmek istemiyorsan boş bırak" className="input-field" />
               </div>
-
-              <button
-                onClick={handleSaveProfile}
-                disabled={saving}
-                className="btn-primary w-full disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : 'Degisiklikleri Kaydet'}
+              <button onClick={handleSaveProfile} disabled={saving}
+                className="btn-primary w-full disabled:opacity-50">
+                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
               </button>
             </div>
           )}
+
+        </div>
+      </div>
+
+      {/* Listing Edit Modal */}
+      {editModal && (
+        <EditListingModal
+          listing={editModal}
+          onClose={() => setEditModal(null)}
+          onSave={handleUpdateListing}
+          saving={saving}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditListingModal({ listing, onClose, onSave, saving }) {
+  const [form, setForm] = useState({
+    listing_id: listing.id,
+    title: listing.title,
+    price: listing.price,
+    description: listing.description || '',
+    status: listing.status,
+  });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-extrabold text-gray-800">İlanı Düzenle</h2>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18}/></button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Başlık</label>
+            <input value={form.title} onChange={e => set('title', e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Fiyat (₺)</label>
+            <input type="number" value={form.price} onChange={e => set('price', e.target.value)} step="0.01" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Açıklama</label>
+            <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-violet-400" />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
+            <select value={form.status} onChange={e => set('status', e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400">
+              <option value="active">Aktif</option>
+              <option value="inactive">Pasif</option>
+            </select>
+          </div>
+          <button onClick={() => onSave(form)} disabled={saving}
+            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
+            {saving ? 'Kaydediliyor...' : 'Güncelle'}
+          </button>
         </div>
       </div>
     </div>
