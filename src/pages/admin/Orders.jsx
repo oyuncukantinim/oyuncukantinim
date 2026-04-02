@@ -147,8 +147,8 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
         <div className="space-y-2">
           <div className="text-xs font-bold text-gray-500 uppercase mb-2">Admin İşlemleri</div>
 
-          {/* Teslimat durumu güncelle — iade/iptal edilmişse gösterme */}
-          {order.item_type === 'listing' && order.status !== 'refunded' && order.status !== 'cancelled' && (
+          {/* Teslimat durumu güncelle */}
+          {order.item_type === 'listing' && (
             <div>
               <div className="text-xs text-gray-500 mb-1.5">Teslimat Durumunu Değiştir:</div>
               <div className="flex flex-wrap gap-2">

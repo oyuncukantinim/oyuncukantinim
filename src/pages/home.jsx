@@ -38,17 +38,17 @@ export default function Home() {
         </div>
 
         <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-6 relative z-10 text-white">
-          Oyun Dunyasinin <br />
+          Oyun Dünyasının <br />
           <span className="text-cyan-200">Yeni Kantini</span>
         </h1>
 
         <p className="text-purple-100 text-lg md:text-xl max-w-2xl mb-10 relative z-10">
-          En uygun fiyatli E-Pinler, guvenilir oyuncu pazari ve aninda teslimat garantisiyle oyun deneyimini bir ust seviyeye tasi.
+          En uygun fiyatlı E-Pinler, güvenilir oyuncu pazarı ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 relative z-10">
           <Link to="/store" className="bg-white text-purple-700 font-bold text-lg py-4 px-8 rounded-xl hover:bg-purple-50 transition-all hover:scale-105 active:scale-95 shadow-lg">
-            Magazaya Goz At
+            Mağazaya Göz At
           </Link>
           <Link to="/market" className="bg-white/15 backdrop-blur-sm border border-white/25 text-white font-bold text-lg py-4 px-8 rounded-xl hover:bg-white/25 transition-all hover:scale-105 active:scale-95">
             Oyuncu Pazari
@@ -59,9 +59,9 @@ export default function Home() {
       {/* OZELLIKLER */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { icon: '⚡', title: 'Aninda Teslimat', desc: 'Satin aldigin E-Pin kodlari saniyeler icinde hesabina tanimlanir.' },
-          { icon: '🛡️', title: '%100 Guvenli', desc: 'Oyuncu pazarinda paran havuzda bekler, islem onaylaninca saticiya aktarilir.' },
-          { icon: '💬', title: '7/24 Destek', desc: 'Yapay zeka destekli botumuz ve canli destek ekibimiz her zaman yaninda.' },
+          { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
+          { icon: '🛡️', title: '%100 Güvenli', desc: 'Oyuncu pazarında paran havuzda bekler, işlem onaylanınca satıcıya aktarılır.' },
+          { icon: '💬', title: '7/24 Destek', desc: 'Yapay zeka destekli botumuz ve canlı destek ekibimiz her zaman yanında.' },
         ].map((f, i) => (
           <div key={i} className="card p-8 hover:shadow-neon-purple">
             <div className="text-4xl mb-4">{f.icon}</div>
@@ -78,7 +78,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-gradient-to-b from-orange-500 to-red-500 rounded-full" />
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <Flame className="text-orange-500" /> Populer Oyunlar
+                <Flame className="text-orange-500" /> Popüler Oyunlar
               </h2>
             </div>
           </div>
@@ -86,11 +86,14 @@ export default function Home() {
             {popularGames.map(game => (
               <Link
                 key={game.id}
-                to={`/market?game=${encodeURIComponent(game.name)}`}
+                to={game.category_slug ? `/categories/${game.category_slug}` : `/market?game=${encodeURIComponent(game.name)}`}
                 className={`bg-gradient-to-br ${game.color} p-[2px] rounded-2xl hover:scale-105 transition-transform shadow-md`}
               >
                 <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl p-5 flex flex-col items-center justify-center text-center">
-                  <span className="text-4xl mb-2">{game.emoji}</span>
+                  {game.image_url
+                    ? <img src={game.image_url} alt={game.name} className="w-12 h-12 object-contain mb-2 rounded-xl" />
+                    : <span className="text-4xl mb-2">{game.emoji || '🎮'}</span>
+                  }
                   <span className="text-gray-800 font-bold text-sm">{game.name}</span>
                 </div>
               </Link>
@@ -106,11 +109,11 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-gradient-to-b from-yellow-400 to-orange-400 rounded-full" />
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <Zap className="text-yellow-500" /> E-Pin Magazasi
+                <Zap className="text-yellow-500" /> E-Pin Mağazası
               </h2>
             </div>
             <Link to="/store" className="flex items-center gap-1 text-sm font-bold text-neon-purple bg-neon-purple/10 hover:bg-neon-purple hover:text-white px-4 py-2 rounded-full transition-all">
-              Tumunu Gor <ChevronRight size={14} />
+              Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -128,11 +131,11 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="w-1 h-8 bg-gradient-to-b from-neon-green to-emerald-400 rounded-full" />
               <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <ShieldCheck className="text-neon-green" /> Son Ilanlar
+                <ShieldCheck className="text-neon-green" /> Son İlanlar
               </h2>
             </div>
             <Link to="/market" className="flex items-center gap-1 text-sm font-bold text-neon-green bg-neon-green/10 hover:bg-neon-green hover:text-white px-4 py-2 rounded-full transition-all">
-              Tumunu Gor <ChevronRight size={14} />
+              Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

@@ -35,7 +35,7 @@ export default function ListingDetailPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <button onClick={() => navigate(-1)} className="mb-6 text-gray-400 hover:text-neon-purple font-bold flex items-center gap-2 transition-colors">
-        <ChevronLeft size={20} /> Geri Don
+        <ChevronLeft size={20} /> Geri Dön
       </button>
       <div className="card p-6 sm:p-8 flex flex-col lg:flex-row gap-8">
         <div className="w-full lg:w-1/2 space-y-4">
@@ -53,9 +53,15 @@ export default function ListingDetailPage() {
           )}
         </div>
         <div className="w-full lg:w-1/2 flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center flex-wrap gap-2 mb-4">
             <Link to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'} className="badge-cyan hover:opacity-80 transition-opacity">{listing.category}</Link>
             <span className="text-gray-400 text-sm font-bold flex items-center gap-1"><Gamepad2 size={14} /> {listing.game_name}</span>
+            {listing.delivery_type === 'stock'
+              ? <span className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">⚡ Anında Teslimat</span>
+              : listing.delivery_hours
+                ? <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">🕐 {listing.delivery_hours < 24 ? listing.delivery_hours + ' saat' : Math.floor(listing.delivery_hours / 24) + ' gün'} içinde teslimat</span>
+                : null
+            }
           </div>
           <h1 className="text-3xl font-extrabold text-gray-800 mb-4 leading-tight">{listing.title}</h1>
           <div className="flex items-center gap-4 mb-6 bg-surface-100 p-4 rounded-2xl border border-gray-100">
@@ -69,9 +75,9 @@ export default function ListingDetailPage() {
             )}
           </div>
           <div className="mb-8 flex-1">
-            <h3 className="font-bold text-gray-700 mb-3">Ilan Aciklamasi</h3>
+            <h3 className="font-bold text-gray-700 mb-3">İlan Açıklaması</h3>
             <div className="text-gray-500 text-sm leading-relaxed bg-surface-100 p-5 rounded-2xl border border-gray-100 whitespace-pre-wrap min-h-[100px]">
-              {listing.description || 'Satici bu ilan icin aciklama girmemis.'}
+              {listing.description || 'Satıcı bu ilan için açıklama girmemiş.'}
             </div>
           </div>
           <div className="pt-6 border-t border-gray-100 flex items-center justify-between mt-auto">

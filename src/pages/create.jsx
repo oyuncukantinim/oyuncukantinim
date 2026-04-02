@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { addListing } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
+import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -219,12 +220,17 @@ export default function CreatePage() {
               <label className="block text-sm font-bold text-gray-700 mb-2">Görseller (URL)</label>
               <div className="space-y-2">
                 {images.map((img, idx) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <button onClick={() => setCoverIndex(idx)} title="Kapak yap" className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
-                      <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
-                    </button>
-                    <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className="input-field flex-1 text-sm" />
-                    {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
+                  <div key={idx} className="space-y-0.5">
+                    <div className="flex gap-2 items-center">
+                      <button onClick={() => setCoverIndex(idx)} title="Kapak yap" className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
+                        <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
+                      </button>
+                      <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className={`input-field flex-1 text-sm ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
+                      {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
+                    </div>
+                    {img && !isValidImageUrl(img) && (
+                      <p className="text-[11px] text-red-500 pl-10">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
+                    )}
                   </div>
                 ))}
                 {images.length < 8 && (

@@ -5,8 +5,9 @@ import {
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
-  MapPin, History, ToggleLeft, ToggleRight
+  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList
 } from 'lucide-react';
+import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug } from '../lib/api';
@@ -242,6 +243,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('listings');
   const [myListings, setMyListings] = useState([]);
   const [listingFilter, setListingFilter] = useState('active');
+  const [listingsView, setListingsView] = useState(() => localStorage.getItem('listingsView') || 'list');
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
@@ -427,9 +429,27 @@ export default function ProfilePage() {
             <div>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-lg font-extrabold text-gray-800">İlanlarım</h2>
-                <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1.5">
-                  <Plus size={15}/> Yeni İlan
-                </Link>
+                <div className="flex items-center gap-2">
+                  <div className="flex border border-gray-200 rounded-xl overflow-hidden">
+                    <button
+                      onClick={() => { setListingsView('list'); localStorage.setItem('listingsView', 'list'); }}
+                      className={`p-1.5 transition-colors ${listingsView === 'list' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
+                      title="Liste görünümü"
+                    >
+                      <LayoutList size={14} />
+                    </button>
+                    <button
+                      onClick={() => { setListingsView('grid'); localStorage.setItem('listingsView', 'grid'); }}
+                      className={`p-1.5 transition-colors ${listingsView === 'grid' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
+                      title="Grid görünümü"
+                    >
+                      <LayoutGrid size={14} />
+                    </button>
+                  </div>
+                  <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1.5">
+                    <Plus size={15}/> Yeni İlan
+                  </Link>
+                </div>
               </div>
               <div className="flex gap-2 mb-4">
                 {[
@@ -449,6 +469,36 @@ export default function ProfilePage() {
                   <div className="text-4xl mb-3">🏪</div>
                   <p className="text-gray-400 font-semibold">Bu durumda ilan yok.</p>
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
+                </div>
+              ) : listingsView === 'grid' ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {filteredListings.map(listing => (
+                    <div key={listing.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex flex-col">
+                      <div className="aspect-video bg-white">
+                        {listing.images?.[0]
+                          ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
+                          : <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon size={24}/></div>
+                        }
+                      </div>
+                      <div className="p-2.5 flex flex-col gap-1 flex-1">
+                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
+                        <div className="font-bold text-emerald-600 text-sm">{Number(listing.price).toFixed(2)} ₺</div>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
+                        </span>
+                        <div className="flex gap-1 mt-auto pt-1">
+                          {listing.status !== 'expired' && listing.status !== 'sold' && (
+                            <button onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
+                              className={`p-1 rounded-lg transition-colors flex-shrink-0 ${listing.status === 'active' ? 'hover:bg-orange-50 text-emerald-500 hover:text-orange-500' : 'hover:bg-emerald-50 text-gray-400 hover:text-emerald-500'}`}>
+                              {listing.status === 'active' ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
+                            </button>
+                          )}
+                          <button onClick={() => setEditModal(listing)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500"><Edit3 size={12}/></button>
+                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 size={12}/></button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -667,7 +717,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
 
-  const handleSave = () => {
+  const handleSave = (overrideStatus) => {
     onSave({
       listing_id:     listing.id,
       title:          title.trim(),
@@ -676,7 +726,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       images:         images.filter(Boolean),
       cover_index:    coverIndex,
       delivery_hours: deliveryHours,
-      status,
+      status:         overrideStatus ?? status,
     });
   };
 
@@ -716,17 +766,23 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             <label className="block text-xs font-bold text-gray-600 mb-1.5">Görseller (URL)</label>
             <div className="space-y-2">
               {images.map((img, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <button onClick={() => setCoverIndex(idx)} title="Kapak yap"
-                    className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
-                    <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
-                  </button>
-                  <input value={img} onChange={e => setImage(idx, e.target.value)}
-                    placeholder={`Görsel ${idx + 1} URL`} className={inputCls + ' flex-1 text-xs'} />
-                  {images.length > 1 && (
-                    <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
-                      <Trash2 size={13} />
+                <div key={idx} className="space-y-0.5">
+                  <div className="flex gap-2 items-center">
+                    <button onClick={() => setCoverIndex(idx)} title="Kapak yap"
+                      className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
+                      <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                     </button>
+                    <input value={img} onChange={e => setImage(idx, e.target.value)}
+                      placeholder={`Görsel ${idx + 1} URL`}
+                      className={inputCls + ` flex-1 text-xs ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
+                    {images.length > 1 && (
+                      <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                  {img && !isValidImageUrl(img) && (
+                    <p className="text-[11px] text-red-500 pl-10">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
                   )}
                 </div>
               ))}
@@ -766,10 +822,23 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
           </div>
 
-          <button onClick={handleSave} disabled={saving || !title.trim() || !price}
-            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-          </button>
+          {listing.status === 'passive' ? (
+            <div className="flex gap-2">
+              <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+                {saving ? 'Kaydediliyor...' : 'Pasif Kaydet'}
+              </button>
+              <button onClick={() => handleSave('active')} disabled={saving || !title.trim() || !price}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+                {saving ? 'Kaydediliyor...' : '✅ Yayınla'}
+              </button>
+            </div>
+          ) : (
+            <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
+              className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+            </button>
+          )}
         </div>
       </div>
     </div>
