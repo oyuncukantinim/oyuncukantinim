@@ -230,9 +230,11 @@ function NoteCard({ note, onEdit, onDelete, onPin }) {
       </div>
       {/* İçerik */}
       <div className="px-4 py-3 flex-1">
-        <p className={`text-sm text-gray-600 whitespace-pre-wrap leading-relaxed ${!expanded && isLong ? 'line-clamp-8' : ''}`}>
-          {note.content || '—'}
-        </p>
+        <div className={`overflow-hidden transition-all duration-300 ${!expanded && isLong ? 'max-h-44' : 'max-h-[9999px]'}`}>
+          <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+            {note.content || '—'}
+          </p>
+        </div>
         {isLong && (
           <button onClick={() => setExpanded(e => !e)}
             className="mt-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
