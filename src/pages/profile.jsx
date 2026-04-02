@@ -144,6 +144,14 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [commentMax, setCommentMax] = useState(500);
+
+  useEffect(() => {
+    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
+      .then(r => r.json())
+      .then(j => { if (j.status === 'success' && j.data.review_comment_max) setCommentMax(Number(j.data.review_comment_max)); })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -185,12 +193,18 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
             ))}
           </div>
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Yorum (isteğe bağlı)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-gray-600">Yorum (isteğe bağlı)</label>
+              <span className={`text-xs font-semibold ${comment.length > commentMax ? 'text-red-500' : comment.length > commentMax * 0.85 ? 'text-orange-500' : 'text-gray-400'}`}>
+                {comment.length}/{commentMax}
+              </span>
+            </div>
             <textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
               placeholder="Deneyimini paylaş..."
               rows={3}
+              maxLength={commentMax}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-violet-400"
             />
           </div>

@@ -32,6 +32,7 @@ const SETTINGS_ROWS = [
         { key: 'max_listing_images',    label: 'Max Görsel / İlan', type: 'number', placeholder: '5' },
         { key: 'listing_title_max',     label: 'Başlık Karakter Limiti', type: 'number', placeholder: '100' },
         { key: 'listing_desc_max',      label: 'Açıklama Karakter Limiti', type: 'number', placeholder: '2000' },
+        { key: 'review_comment_max',    label: 'Yorum Karakter Limiti', type: 'number', placeholder: '500' },
       ],
     },
     {
