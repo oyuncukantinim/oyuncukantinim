@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Bot, X, Send, MessageCircle } from 'lucide-react';
 
 const callGeminiApi = async (prompt) => {
-  const apiKey = "";
+  const apiKey = "AIzaSyC7e_IV9EnWk9E0nDLaCFl3eo_SYCclhWk";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
   const payload = { contents: [{ parts: [{ text: prompt }] }] };
 

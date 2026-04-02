@@ -181,7 +181,7 @@ export default function ListingDetailPage() {
                 to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
                 className="badge-cyan text-xs hover:opacity-80 transition-opacity"
               >
-                {listing.category}
+                {listing.category_name || listing.category}
               </Link>
               {listing.delivery_type === 'stock'
                 ? <span className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">⚡ Anında Teslimat</span>
