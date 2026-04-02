@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Search, ChevronLeft, ChevronRight, Eye, X, RefreshCw, CheckCircle, AlertTriangle, Clock, Truck, XCircle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Eye, X, RefreshCw, CheckCircle, AlertTriangle, Clock, Truck, XCircle, History } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetOrders, adminUpdateOrder } from '../../lib/adminApi';
+import { adminGetOrders, adminUpdateOrder, adminGetOrderLogs } from '../../lib/adminApi';
 
 const STATUS_MAP = {
   completed: { label: 'Tamamlandı', color: 'emerald' },
@@ -30,6 +30,15 @@ function DeliveryBadge({ status }) {
 
 function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
   const [loading, setLoading] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(true);
+
+  useEffect(() => {
+    adminGetOrderLogs(order.id)
+      .then(r => setLogs(r.data || []))
+      .catch(() => {})
+      .finally(() => setLogsLoading(false));
+  }, [order.id]);
 
   const update = async (fields) => {
     setLoading(true);
@@ -161,9 +170,13 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
             </button>
           )}
 
-          {/* Genel durum */}
-          <div className="flex gap-2 pt-1">
-            {order.status !== 'refunded' && (
+          {/* Genel durum - iade edilmişse tüm aksiyonlar kilitli */}
+          {order.status === 'refunded' ? (
+            <div className="text-center text-sm text-red-500 font-semibold bg-red-50 border border-red-100 rounded-xl py-2.5 mt-2">
+              Bu sipariş iade edildi. Başka işlem yapılamaz.
+            </div>
+          ) : (
+            <div className="flex gap-2 pt-1">
               <button
                 disabled={loading}
                 onClick={() => update({ status: 'refunded' })}
@@ -171,26 +184,53 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
               >
                 <RefreshCw size={13} /> İade Et
               </button>
-            )}
-            {order.status !== 'cancelled' && (
-              <button
-                disabled={loading}
-                onClick={() => update({ status: 'cancelled' })}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold py-2 rounded-xl disabled:opacity-50 transition-colors"
-              >
-                <XCircle size={13} /> İptal Et
-              </button>
-            )}
-            {order.status === 'pending' && (
-              <button
-                disabled={loading}
-                onClick={() => update({ status: 'completed' })}
-                className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold py-2 rounded-xl disabled:opacity-50 transition-colors"
-              >
-                <CheckCircle size={13} /> Tamamla
-              </button>
-            )}
+              {order.status !== 'cancelled' && (
+                <button
+                  disabled={loading}
+                  onClick={() => update({ status: 'cancelled' })}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-bold py-2 rounded-xl disabled:opacity-50 transition-colors"
+                >
+                  <XCircle size={13} /> İptal Et
+                </button>
+              )}
+              {order.status === 'pending' && (
+                <button
+                  disabled={loading}
+                  onClick={() => update({ status: 'completed' })}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold py-2 rounded-xl disabled:opacity-50 transition-colors"
+                >
+                  <CheckCircle size={13} /> Tamamla
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* İşlem Geçmişi */}
+        <div className="mt-5 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-2 mb-3">
+            <History size={14} className="text-gray-400" />
+            <span className="text-xs font-bold text-gray-500 uppercase">İşlem Geçmişi</span>
           </div>
+          {logsLoading ? (
+            <div className="text-xs text-gray-400 text-center py-3">Yükleniyor...</div>
+          ) : logs.length === 0 ? (
+            <div className="text-xs text-gray-400 text-center py-3">Henüz işlem yapılmadı.</div>
+          ) : (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {logs.map((log, i) => (
+                <div key={i} className="flex items-start gap-2.5 text-xs">
+                  <div className="w-1.5 h-1.5 bg-violet-400 rounded-full mt-1.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-700 font-semibold">{log.action}</span>
+                    <div className="text-gray-400 mt-0.5">
+                      {log.admin_name} · {new Date(log.created_at).toLocaleString('tr-TR')}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -258,6 +298,7 @@ export default function AdminOrders() {
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">Alıcı</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">Satıcı</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tutar</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">Durum</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">Teslimat</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">Tarih</th>
                   <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">İşlem</th>
@@ -265,9 +306,9 @@ export default function AdminOrders() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Yükleniyor...</td></tr>
                 ) : orders.length === 0 ? (
-                  <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-400">Sipariş bulunamadı.</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-400">Sipariş bulunamadı.</td></tr>
                 ) : orders.map(o => {
                   const { label, color } = STATUS_MAP[o.status] || { label: o.status, color: 'gray' };
                   const ds = parseInt(o.delivery_status ?? 0);
@@ -277,14 +318,14 @@ export default function AdminOrders() {
                       <td className="px-4 py-3 text-gray-400 text-xs font-mono">#{o.id}</td>
                       <td className="px-4 py-3">
                         <div className="font-semibold text-gray-800 max-w-[150px] truncate">{o.item_title || '—'}</div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-${color}-50 text-${color}-700`}>{label}</span>
-                          <span className="text-[10px] text-gray-400">{o.item_type === 'epin' ? 'E-Pin' : 'İlan'}</span>
-                        </div>
+                        <div className="text-[10px] text-gray-400 mt-0.5">{o.item_type === 'epin' ? 'E-Pin' : 'İlan'}</div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell text-sm">{o.buyer || '—'}</td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell text-sm">{o.seller || '—'}</td>
                       <td className="px-4 py-3 font-bold text-emerald-600 text-sm">{fmtMoney(o.amount)}</td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full bg-${color}-50 text-${color}-700`}>{label}</span>
+                      </td>
                       <td className="px-4 py-3 hidden lg:table-cell">
                         {o.item_type === 'listing' && dInfo && (
                           <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-${dInfo.color}-50 text-${dInfo.color}-700`}>

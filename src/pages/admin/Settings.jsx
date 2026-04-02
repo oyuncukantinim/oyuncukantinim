@@ -3,46 +3,107 @@ import { Save, ToggleLeft, ToggleRight, Settings as SettingsIcon } from 'lucide-
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetSettings, adminSaveSettings } from '../../lib/adminApi';
 
-const SETTINGS_SCHEMA = [
-  {
-    section: 'Genel',
-    fields: [
-      { key: 'site_name', label: 'Site Adı', type: 'text', placeholder: 'Oyuncu Kantinim' },
-    ],
-  },
-  {
-    section: 'Özellikler',
-    fields: [
-      { key: 'registration_enabled', label: 'Yeni Üyelik', type: 'toggle', desc: 'Kapalıysa yeni kullanıcılar kayıt olamaz' },
-      { key: 'balance_add_enabled',  label: 'Bakiye Yükleme', type: 'toggle', desc: 'Kapalıysa kullanıcılar bakiye yükleyemez' },
-      { key: 'maintenance_mode',     label: 'Bakım Modu', type: 'toggle', desc: 'Açıksa site kullanıcılara kapalı görünür' },
-    ],
-  },
-  {
-    section: 'Ticari',
-    fields: [
-      { key: 'commission_rate',       label: 'Komisyon Oranı (%)', type: 'number', placeholder: '10' },
-      { key: 'max_listings_per_user', label: 'Kullanıcı Başına Max İlan', type: 'number', placeholder: '50' },
-      { key: 'min_listing_price',     label: 'Min İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
-      { key: 'max_listing_price',     label: 'Max İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
-    ],
-  },
-  {
-    section: 'Teslimat & Havuz',
-    fields: [
-      { key: 'escrow_enabled',        label: 'Emanet (Havuz) Sistemi', type: 'toggle', desc: 'Manuel ilanlar için para satıcıya onay sonrası geçer' },
-      { key: 'auto_confirm_days',     label: 'Otomatik Onay (gün)', type: 'number', placeholder: '3' },
-      { key: 'listing_duration_days', label: 'İlan Süresi (gün)', type: 'number', placeholder: '30' },
-    ],
-  },
-  {
-    section: 'Duyuru Bandı',
-    fields: [
-      { key: 'announcement_active', label: 'Duyuru Bandı Aktif', type: 'toggle', desc: 'Site üstünde renkli bant gösterilir' },
-      { key: 'announcement_text',   label: 'Duyuru Metni', type: 'text', placeholder: 'Büyük indirim başladı! ...' },
-    ],
-  },
+// Bölümler ikişer ikişer yan yana gösterilir
+const SETTINGS_ROWS = [
+  [
+    {
+      section: 'Genel',
+      fields: [
+        { key: 'site_name', label: 'Site Adı', type: 'text', placeholder: 'Oyuncu Kantinim' },
+      ],
+    },
+    {
+      section: 'Özellikler',
+      fields: [
+        { key: 'registration_enabled', label: 'Yeni Üyelik', type: 'toggle', desc: 'Kapalıysa yeni kullanıcılar kayıt olamaz' },
+        { key: 'balance_add_enabled',  label: 'Bakiye Yükleme', type: 'toggle', desc: 'Kapalıysa kullanıcılar bakiye yükleyemez' },
+        { key: 'maintenance_mode',     label: 'Bakım Modu', type: 'toggle', desc: 'Açıksa site kullanıcılara kapalı görünür' },
+      ],
+    },
+  ],
+  [
+    {
+      section: 'Ticari',
+      fields: [
+        { key: 'commission_rate',       label: 'Komisyon Oranı (%)', type: 'number', placeholder: '10' },
+        { key: 'max_listings_per_user', label: 'Max İlan / Kullanıcı', type: 'number', placeholder: '50' },
+        { key: 'min_listing_price',     label: 'Min İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
+        { key: 'max_listing_price',     label: 'Max İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
+      ],
+    },
+    {
+      section: 'Teslimat & Havuz',
+      fields: [
+        { key: 'escrow_enabled',        label: 'Emanet (Havuz) Sistemi', type: 'toggle', desc: 'Manuel ilanlar için para satıcıya onay sonrası geçer' },
+        { key: 'auto_confirm_days',     label: 'Otomatik Onay (gün)', type: 'number', placeholder: '3' },
+        { key: 'listing_duration_days', label: 'İlan Süresi (gün)', type: 'number', placeholder: '30' },
+      ],
+    },
+  ],
+  [
+    {
+      section: 'Duyuru Bandı',
+      fields: [
+        { key: 'announcement_active', label: 'Duyuru Bandı Aktif', type: 'toggle', desc: 'Site üstünde renkli bant gösterilir' },
+        { key: 'announcement_text',   label: 'Duyuru Metni', type: 'text', placeholder: 'Büyük indirim başladı! ...' },
+      ],
+    },
+  ],
 ];
+
+function SettingField({ field, value, onChange }) {
+  if (field.type === 'toggle') {
+    return (
+      <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
+        <div>
+          <div className="font-semibold text-gray-800 text-sm">{field.label}</div>
+          {field.desc && <div className="text-xs text-gray-400 mt-0.5">{field.desc}</div>}
+        </div>
+        <button
+          onClick={() => onChange(value === '1' ? '0' : '1')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ml-4 ${
+            value === '1' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-500'
+          }`}
+        >
+          {value === '1' ? <><ToggleRight size={16} /> Açık</> : <><ToggleLeft size={16} /> Kapalı</>}
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="py-2.5 border-b border-gray-50 last:border-0">
+      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label}</label>
+      <input
+        type={field.type === 'number' ? 'number' : 'text'}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
+        placeholder={field.placeholder}
+        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
+      />
+    </div>
+  );
+}
+
+function SectionCard({ section, settings, set }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+        <SettingsIcon size={15} className="text-violet-600" />
+        <h3 className="font-extrabold text-gray-800 text-sm">{section.section}</h3>
+      </div>
+      <div className="px-5 py-1 flex-1">
+        {section.fields.map(field => (
+          <SettingField
+            key={field.key}
+            field={field}
+            value={settings[field.key]}
+            onChange={v => set(field.key, v)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({});
@@ -82,44 +143,12 @@ export default function AdminSettings() {
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="max-w-4xl mx-auto space-y-6">
-        {SETTINGS_SCHEMA.map(section => (
-          <div key={section.section} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
-              <SettingsIcon size={16} className="text-violet-600" />
-              <h3 className="font-extrabold text-gray-800">{section.section}</h3>
-            </div>
-            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {section.fields.map(field => (
-                <div key={field.key} className={field.type === 'text' && !field.placeholder?.length ? 'sm:col-span-2' : ''}>
-                  {field.type === 'toggle' ? (
-                    <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 h-full">
-                      <div>
-                        <div className="font-semibold text-gray-800 text-sm">{field.label}</div>
-                        {field.desc && <div className="text-xs text-gray-400 mt-0.5">{field.desc}</div>}
-                      </div>
-                      <button
-                        onClick={() => set(field.key, settings[field.key] === '1' ? '0' : '1')}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ml-3 ${settings[field.key] === '1' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-gray-200 text-gray-500'}`}
-                      >
-                        {settings[field.key] === '1' ? <><ToggleRight size={16} /> Açık</> : <><ToggleLeft size={16} /> Kapalı</>}
-                      </button>
-                    </div>
-                  ) : (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label}</label>
-                      <input
-                        type={field.type === 'number' ? 'number' : 'text'}
-                        value={settings[field.key] || ''}
-                        onChange={e => set(field.key, e.target.value)}
-                        placeholder={field.placeholder}
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
-                      />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+      <div className="max-w-5xl mx-auto space-y-4">
+        {SETTINGS_ROWS.map((row, i) => (
+          <div key={i} className={`grid gap-4 ${row.length === 2 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
+            {row.map(section => (
+              <SectionCard key={section.section} section={section} settings={settings} set={set} />
+            ))}
           </div>
         ))}
 

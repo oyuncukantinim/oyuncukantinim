@@ -99,6 +99,14 @@ export const adminBroadcast = (body) =>
 // Conversations
 export const adminGetConversations = (params = {}) =>
   adminRequest('admin_get_conversations', { query: params });
+export const adminGetChat = (uid1, uid2) =>
+  adminRequest('admin_get_chat', { query: { uid1, uid2 } });
+export const adminSendChat = (uid1, uid2, message) =>
+  adminRequest('admin_send_chat', { method: 'POST', body: { uid1, uid2, message } });
+
+// Order Logs
+export const adminGetOrderLogs = (order_id) =>
+  adminRequest('admin_get_order_logs', { query: { order_id } });
 
 // Categories Reorder
 export const adminReorderCategories = (orders) =>
