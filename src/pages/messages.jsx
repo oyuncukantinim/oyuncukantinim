@@ -1,90 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Send, ChevronLeft, MessageCircle, Search, Check, Shield } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Send, MessageCircle, Search, Check, Shield, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, sendMessage } from '../lib/api';
-
-export default function MessagesPage() {
-  const { userId } = useParams();
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  if (!user) { navigate('/login'); return null; }
-
-  return userId
-    ? <ChatView userId={userId} currentUser={user} />
-    : <ConversationList currentUser={user} />;
-}
-
-/* ── Conversation List ─────────────────────────────────────── */
-function ConversationList({ currentUser }) {
-  const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    getConversations()
-      .then(r => setConversations(r.data || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-
-  const filtered = conversations.filter(c =>
-    c.username?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  return (
-    <div className="max-w-xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">Mesajlar</h1>
-          <p className="text-sm text-gray-400 mt-0.5">{conversations.length} konuşma</p>
-        </div>
-        <div className="w-11 h-11 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg shadow-violet-200">
-          <MessageCircle size={20} className="text-white" />
-        </div>
-      </div>
-
-      {/* Search */}
-      {conversations.length > 2 && (
-        <div className="relative mb-5">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Konuşma ara..."
-            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm focus:outline-none focus:border-violet-400 shadow-sm"
-          />
-        </div>
-      )}
-
-      {loading ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-[3px] border-violet-200 border-t-violet-600 rounded-full animate-spin" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="bg-white border border-gray-100 rounded-3xl p-14 text-center shadow-sm">
-          <div className="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <MessageCircle size={30} className="text-gray-300" />
-          </div>
-          <p className="font-bold text-gray-600 mb-1.5">
-            {search ? 'Konuşma bulunamadı' : 'Henüz mesajın yok'}
-          </p>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            Bir satıcının ilanına giderek mesaj gönderebilirsin.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          {filtered.map(conv => (
-            <ConvCard key={conv.user_id} conv={conv} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 const AVATAR_COLORS = [
   'from-violet-400 to-purple-500',
@@ -93,53 +11,153 @@ const AVATAR_COLORS = [
   'from-rose-400 to-pink-500',
   'from-amber-400 to-orange-500',
 ];
-
-function avatarColor(username) {
-  return AVATAR_COLORS[(username?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
+function avatarColor(name) {
+  return AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
 }
 
-function ConvCard({ conv }) {
-  const initials = conv.username?.[0]?.toUpperCase() || '?';
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = Date.now() - d;
+  if (diff < 60000) return 'şimdi';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'dk';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'sa';
+  return d.toLocaleDateString('tr-TR');
+}
+
+export default function MessagesPage() {
+  const { userId } = useParams();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [conversations, setConversations] = useState([]);
+  const [loadingConvs, setLoadingConvs] = useState(true);
+  const [search, setSearch] = useState('');
+  // On mobile: if userId in URL, show chat; else show list
+  const [mobileShowChat, setMobileShowChat] = useState(!!userId);
+
+  useEffect(() => {
+    if (!user) { navigate('/login'); return; }
+    getConversations()
+      .then(r => setConversations(r.data || []))
+      .catch(() => {})
+      .finally(() => setLoadingConvs(false));
+  }, [user, navigate]);
+
+  useEffect(() => { setMobileShowChat(!!userId); }, [userId]);
+
+  if (!user) return null;
+
+  const filtered = conversations.filter(c =>
+    !search || c.username?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const activeUserId = userId ? String(userId) : null;
+
+  const handleSelectConv = (conv) => {
+    navigate(`/messages/${conv.user_id}`);
+    setMobileShowChat(true);
+  };
 
   return (
-    <Link
-      to={`/messages/${conv.user_id}`}
-      className="flex items-center gap-4 bg-white border border-gray-100 rounded-2xl px-4 py-4 hover:border-violet-200 hover:shadow-md hover:shadow-violet-50 transition-all group"
-    >
-      {/* Avatar */}
-      <div className="relative flex-shrink-0">
-        <div className={`w-[52px] h-[52px] bg-gradient-to-br ${avatarColor(conv.username)} rounded-2xl flex items-center justify-center text-white text-xl font-extrabold shadow-sm`}>
-          {initials}
-        </div>
-        {conv.unread_count > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 bg-violet-600 text-white text-[10px] font-extrabold min-w-[20px] h-5 rounded-full flex items-center justify-center px-1 shadow-sm">
-            {conv.unread_count > 9 ? '9+' : conv.unread_count}
-          </span>
-        )}
-      </div>
+    <div className="max-w-5xl mx-auto">
+      <div className="flex bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 9rem)' }}>
 
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <span className={`font-bold text-sm ${conv.unread_count > 0 ? 'text-gray-900' : 'text-gray-700'} group-hover:text-violet-700 transition-colors`}>
-            {conv.username}
-          </span>
-          <span className="text-[11px] text-gray-400 flex-shrink-0 ml-2">{formatTime(conv.last_message_time)}</span>
-        </div>
-        <p className={`text-sm truncate leading-snug ${conv.unread_count > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
-          {conv.last_message || 'Henüz mesaj yok'}
-        </p>
-      </div>
+        {/* ── LEFT: Conversation List ── */}
+        <div className={`w-full lg:w-80 flex-shrink-0 flex flex-col border-r border-gray-100 ${mobileShowChat ? 'hidden lg:flex' : 'flex'}`}>
+          {/* Header */}
+          <div className="px-4 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <MessageCircle size={15} className="text-white" />
+                </div>
+                <span className="font-extrabold text-gray-800">Mesajlar</span>
+              </div>
+              <span className="text-xs text-gray-400">{conversations.length} konuşma</span>
+            </div>
+            <div className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Ara..."
+                className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400"
+              />
+            </div>
+          </div>
 
-      {conv.unread_count > 0 && (
-        <div className="w-2.5 h-2.5 bg-violet-500 rounded-full flex-shrink-0" />
-      )}
-    </Link>
+          {/* List */}
+          <div className="flex-1 overflow-y-auto divide-y divide-gray-50">
+            {loadingConvs ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-sm px-4">
+                {search ? 'Konuşma bulunamadı.' : 'Henüz mesajın yok.\nBir satıcıya mesaj gönder.'}
+              </div>
+            ) : filtered.map(conv => {
+              const initial = conv.username?.[0]?.toUpperCase() || '?';
+              const isActive = activeUserId === String(conv.user_id);
+              return (
+                <button
+                  key={conv.user_id}
+                  onClick={() => handleSelectConv(conv)}
+                  className={`w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors ${isActive ? 'bg-violet-50' : ''}`}
+                >
+                  <div className="relative flex-shrink-0">
+                    <div className={`w-11 h-11 bg-gradient-to-br ${avatarColor(conv.username)} rounded-xl flex items-center justify-center text-white font-extrabold text-base`}>
+                      {initial}
+                    </div>
+                    {conv.unread_count > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-violet-600 text-white text-[9px] font-extrabold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                        {conv.unread_count > 9 ? '9+' : conv.unread_count}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className={`font-bold text-sm ${isActive ? 'text-violet-700' : 'text-gray-800'}`}>{conv.username}</span>
+                      <span className="text-[11px] text-gray-400 flex-shrink-0 ml-1">{formatTime(conv.last_message_time)}</span>
+                    </div>
+                    <p className={`text-xs truncate ${conv.unread_count > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
+                      {conv.last_message || 'Henüz mesaj yok'}
+                    </p>
+                  </div>
+                  {conv.unread_count > 0 && (
+                    <div className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── RIGHT: Chat ── */}
+        <div className={`flex-1 flex flex-col min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
+          {activeUserId
+            ? <ChatPanel userId={activeUserId} currentUser={user} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
+            : (
+              <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
+                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
+                  <MessageCircle size={30} className="text-gray-200" />
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-gray-500 mb-1">Sohbet Seçin</p>
+                  <p className="text-sm">Sol listeden bir konuşmaya tıklayın.</p>
+                </div>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </div>
   );
 }
 
-/* ── Chat View ─────────────────────────────────────────────── */
-function ChatView({ userId, currentUser }) {
+/* ── Chat Panel ──────────────────────────────────────────────── */
+function ChatPanel({ userId, currentUser, onBack }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -147,14 +165,13 @@ function ChatView({ userId, currentUser }) {
   const [initialized, setInitialized] = useState(false);
   const endRef = useRef(null);
   const inputRef = useRef(null);
-  const navigate = useNavigate();
 
-  const fetchMessages = (isInitial = false) => {
+  const fetchMessages = useCallback((isInitial = false) => {
     getMessages(userId).then(r => {
       const msgs = r.data || [];
       setMessages(msgs);
       const other = msgs.find(m => String(m.sender_id) !== String(currentUser.id));
-      if (other) setOtherName(other.sender_name || otherName);
+      if (other) setOtherName(other.sender_name || `Kullanıcı #${userId}`);
       if (isInitial) {
         setTimeout(() => {
           endRef.current?.scrollIntoView({ behavior: 'instant' });
@@ -162,13 +179,15 @@ function ChatView({ userId, currentUser }) {
         }, 50);
       }
     }).catch(() => {});
-  };
+  }, [userId, currentUser.id]);
 
   useEffect(() => {
+    setInitialized(false);
+    setMessages([]);
     fetchMessages(true);
     const interval = setInterval(() => fetchMessages(false), 3000);
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [fetchMessages]);
 
   useEffect(() => {
     if (!initialized) return;
@@ -185,10 +204,7 @@ function ChatView({ userId, currentUser }) {
       fetchMessages(false);
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } catch { }
-    finally {
-      setSending(false);
-      inputRef.current?.focus();
-    }
+    finally { setSending(false); inputRef.current?.focus(); }
   };
 
   // Group by date
@@ -203,17 +219,13 @@ function ChatView({ userId, currentUser }) {
   const otherInitial = otherName?.[0]?.toUpperCase() || '?';
 
   return (
-    <div className="max-w-2xl mx-auto flex flex-col" style={{ height: 'calc(100vh - 10rem)' }}>
-
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 mb-3 shadow-sm flex-shrink-0">
-        <button
-          onClick={() => navigate('/messages')}
-          className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 transition-colors -ml-1"
-        >
-          <ChevronLeft size={20} />
+      <div className="px-4 py-3.5 border-b border-gray-100 flex items-center gap-3 flex-shrink-0 bg-white">
+        <button onClick={onBack} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500 lg:hidden">
+          <ArrowLeft size={18} />
         </button>
-        <div className={`w-10 h-10 bg-gradient-to-br ${avatarColor(otherName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`}>
+        <div className={`w-9 h-9 bg-gradient-to-br ${avatarColor(otherName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`}>
           {otherInitial}
         </div>
         <div className="flex-1 min-w-0">
@@ -223,36 +235,34 @@ function ChatView({ userId, currentUser }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto pb-2 px-1">
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50/40">
         {grouped.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
-              <MessageCircle size={28} className="text-gray-200" />
+            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm">
+              <MessageCircle size={24} className="text-gray-200" />
             </div>
             <p className="text-sm font-semibold text-gray-400">İlk mesajı sen gönder!</p>
           </div>
         )}
-
         {grouped.map((item, idx) => {
           if (item.type === 'date') {
             return (
               <div key={`d${idx}`} className="flex items-center gap-3 py-3">
-                <div className="flex-1 h-px bg-gray-100" />
-                <span className="text-[11px] text-gray-400 font-semibold bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-[11px] text-gray-400 font-semibold bg-white px-3 py-1 rounded-full border border-gray-100">
                   {item.label}
                 </span>
-                <div className="flex-1 h-px bg-gray-100" />
+                <div className="flex-1 h-px bg-gray-200" />
               </div>
             );
           }
-
           const msg = item.data;
           const isAdmin = msg.is_admin_msg == 1;
           const isMine = !isAdmin && String(msg.sender_id) === String(currentUser.id);
 
           if (isAdmin) {
             return (
-              <div key={msg.id} className="flex justify-center py-1 px-1 mb-1">
+              <div key={msg.id} className="flex justify-center py-1 mb-1">
                 <div className="max-w-[80%] bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-center">
                   <div className="flex items-center justify-center gap-1.5 mb-1">
                     <Shield size={11} className="text-amber-600" />
@@ -266,7 +276,7 @@ function ChatView({ userId, currentUser }) {
           }
 
           return (
-            <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} px-1 mb-1`}>
+            <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1.5`}>
               {!isMine && (
                 <div className={`w-7 h-7 bg-gradient-to-br ${avatarColor(otherName)} rounded-full flex items-center justify-center text-white text-xs font-extrabold mr-2 flex-shrink-0 self-end mb-5`}>
                   {otherInitial}
@@ -294,7 +304,7 @@ function ChatView({ userId, currentUser }) {
       {/* Input */}
       <form
         onSubmit={handleSend}
-        className="flex items-center gap-2.5 flex-shrink-0 mt-2 bg-white border border-gray-100 rounded-2xl px-3 py-2 shadow-sm"
+        className="flex items-center gap-2.5 px-4 py-3 border-t border-gray-100 bg-white flex-shrink-0"
       >
         <input
           ref={inputRef}
@@ -302,28 +312,17 @@ function ChatView({ userId, currentUser }) {
           value={text}
           onChange={e => setText(e.target.value)}
           placeholder="Mesajını yaz..."
-          className="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none py-1.5 px-1"
+          className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-violet-400"
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
         />
         <button
           type="submit"
           disabled={sending || !text.trim()}
-          className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 disabled:opacity-40 text-white rounded-xl flex items-center justify-center transition-all shadow-sm shadow-violet-200 flex-shrink-0"
+          className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 disabled:opacity-40 text-white rounded-xl flex items-center justify-center transition-all flex-shrink-0"
         >
           <Send size={16} />
         </button>
       </form>
     </div>
   );
-}
-
-function formatTime(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  const now = new Date();
-  const diff = now - d;
-  if (diff < 60000) return 'şimdi';
-  if (diff < 3600000) return Math.floor(diff / 60000) + 'dk';
-  if (diff < 86400000) return Math.floor(diff / 3600000) + 'sa';
-  return d.toLocaleDateString('tr-TR');
 }

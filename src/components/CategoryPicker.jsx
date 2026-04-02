@@ -40,9 +40,9 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const navigate = (cat) => {
     const kids = childrenOf(cat.id);
     if (kids.length > 0) {
-      // Alt kategorileri varsa içine gir
+      // Alt kategorileri varsa içine gir, ama bu kategoriyi seçme
       setPath(p => [...p, cat.id]);
-      onChange(cat); // kısmen seçili (alt kategori de seçilebilir)
+      onChange(null);
     } else {
       // Yaprak kategori, seçimi tamamla
       onChange(cat);
@@ -53,8 +53,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const goBack = () => {
     setPath(p => {
       const next = p.slice(0, -1);
-      const parentId = next[next.length - 1] ?? null;
-      onChange(parentId ? categories.find(c => c.id === parentId) || null : null);
+      onChange(null); // geri gidince seçimi temizle
       return next;
     });
   };
@@ -126,21 +125,24 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
           // Arama sonuçları
           searchResults.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
-          ) : searchResults.map(cat => (
-            <button
-              key={cat.id}
-              onClick={() => { navigate(cat); }}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-violet-50 text-left transition-colors ${value === cat.id ? 'bg-violet-50' : ''}`}
-            >
-              <span className="text-lg w-6 text-center">{cat.icon}</span>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-gray-800">{cat.name}</div>
-                <div className="text-xs text-gray-400">{getPath(cat.id)}</div>
-              </div>
-              {value === cat.id && <Check size={14} className="text-violet-600 flex-shrink-0" />}
-              {childrenOf(cat.id).length > 0 && <ChevronRight size={14} className="text-gray-400 flex-shrink-0" />}
-            </button>
-          ))
+          ) : searchResults.map(cat => {
+            const hasKids = childrenOf(cat.id).length > 0;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => { navigate(cat); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-violet-50 text-left transition-colors ${value === cat.id ? 'bg-violet-50' : ''}`}
+              >
+                <span className="text-lg w-6 text-center">{cat.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-gray-800">{cat.name}</div>
+                  <div className="text-xs text-gray-400">{getPath(cat.id)}{hasKids ? ' — alt kategoriye gidin' : ''}</div>
+                </div>
+                {value === cat.id && <Check size={14} className="text-violet-600 flex-shrink-0" />}
+                {hasKids && <ChevronRight size={14} className="text-gray-400 flex-shrink-0" />}
+              </button>
+            );
+          })
         ) : currentLevel.length === 0 ? (
           <div className="px-4 py-6 text-center text-sm text-gray-400">Kategori bulunamadı.</div>
         ) : (

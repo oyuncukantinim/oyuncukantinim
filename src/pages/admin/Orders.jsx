@@ -113,13 +113,24 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 {order.seller_paid == 1 ? 'Ödendi' : 'Beklemede (Havuz)'}
               </span>
             </div>
-            {order.auto_confirm_at && (
+            {order.auto_confirm_at && order.status !== 'refunded' && order.status !== 'cancelled' && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Otomatik Onay</span>
                 <span className="text-gray-600 text-xs">{fmtDate(order.auto_confirm_at)}</span>
               </div>
             )}
           </div>
+
+          {/* Anlaşmazlık notu */}
+          {ds === 3 && order.dispute_reason && (
+            <div>
+              <div className="text-xs font-bold text-red-600 mb-1.5">⚠️ Anlaşmazlık Nedeni</div>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-800 whitespace-pre-wrap">{order.dispute_reason}</div>
+            </div>
+          )}
+          {ds === 3 && !order.dispute_reason && (
+            <div className="text-xs text-red-500 bg-red-50 border border-red-100 rounded-xl p-3">⚠️ Alıcı anlaşmazlık bildirdi. Detay girilmemiş.</div>
+          )}
 
           {/* Teslimat içeriği */}
           {order.delivery_content && (
@@ -136,8 +147,8 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
         <div className="space-y-2">
           <div className="text-xs font-bold text-gray-500 uppercase mb-2">Admin İşlemleri</div>
 
-          {/* Teslimat durumu güncelle */}
-          {order.item_type === 'listing' && (
+          {/* Teslimat durumu güncelle — iade/iptal edilmişse gösterme */}
+          {order.item_type === 'listing' && order.status !== 'refunded' && order.status !== 'cancelled' && (
             <div>
               <div className="text-xs text-gray-500 mb-1.5">Teslimat Durumunu Değiştir:</div>
               <div className="flex flex-wrap gap-2">

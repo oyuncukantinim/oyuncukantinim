@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -40,7 +41,41 @@ function AdminRoute({ children }) {
   return children;
 }
 
+function MaintenancePage() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center px-4">
+      <div className="text-center max-w-md">
+        <div className="text-6xl mb-6">🔧</div>
+        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Bakım Çalışması</h1>
+        <p className="text-gray-500 text-lg mb-6">Sitemiz şu an bakımda. Kısa süre içinde geri döneceğiz.</p>
+        <div className="bg-white/70 backdrop-blur rounded-2xl px-6 py-4 border border-violet-100 text-sm text-violet-700 font-semibold">
+          Oyuncu Kantinim — Yakında Görüşmek Üzere 🎮
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SiteLayout() {
+  const [maintenance, setMaintenance] = useState(false);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'success') setMaintenance(j.data.maintenance_mode == 1);
+      })
+      .catch(() => {})
+      .finally(() => setChecked(true));
+  }, []);
+
+  if (!checked) return null;
+
+  // Admin token varsa bakım modunu atla
+  const isAdmin = !!localStorage.getItem('admin_token');
+  if (maintenance && !isAdmin) return <MaintenancePage />;
+
   return (
     <div className="min-h-screen bg-surface-50 font-sans">
       <Navbar />

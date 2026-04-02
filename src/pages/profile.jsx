@@ -5,7 +5,7 @@ import {
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
-  MapPin
+  MapPin, History, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -44,11 +44,75 @@ function DeliveryBadge({ status }) {
   );
 }
 
+function OrderLogsModal({ orderId, token, onClose }) {
+  const [logs, setLogs] = useState([]);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_order_logs&order_id=${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'success') {
+          setLogs(j.data.logs || []);
+          setDisputeReason(j.data.dispute_reason || '');
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [orderId, token]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <History size={16} className="text-violet-600" />
+            <h3 className="font-extrabold text-gray-800">Sipariş #{orderId} Geçmişi</h3>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16} /></button>
+        </div>
+
+        {disputeReason && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
+            <div className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1"><AlertTriangle size={11} /> Anlaşmazlık Nedeni</div>
+            <p className="text-sm text-red-800">{disputeReason}</p>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+          </div>
+        ) : logs.length === 0 ? (
+          <p className="text-center text-gray-400 text-sm py-6">Henüz işlem geçmişi yok.</p>
+        ) : (
+          <div className="space-y-3">
+            {logs.map((log, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-2 h-2 bg-violet-400 rounded-full mt-1.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">{log.action}</p>
+                  <p className="text-xs text-gray-400">{log.admin_name} · {new Date(log.created_at).toLocaleString('tr-TR')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showLogs, setShowLogs] = useState(false);
 
   const act = async (action, body) => {
     setLoading(true);
@@ -64,6 +128,8 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const status = (order.delivery_status ?? 0);
 
   return (
+    <>
+    {showLogs && <OrderLogsModal orderId={order.id} token={token} onClose={() => setShowLogs(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -80,8 +146,11 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
             {order.item_type === 'epin' && <span className="text-[10px] bg-yellow-100 text-yellow-700 font-bold px-2 py-0.5 rounded-lg">E-Pin</span>}
           </div>
         </div>
-        <div className="text-right flex-shrink-0 flex flex-col items-end gap-2">
+        <div className="text-right flex-shrink-0 flex flex-col items-end gap-1.5">
           <div className="font-extrabold text-emerald-600">{Number(order.amount).toFixed(2)} ₺</div>
+          <button onClick={() => setShowLogs(true)} className="text-[11px] text-violet-500 hover:text-violet-700 flex items-center gap-1 font-semibold">
+            <History size={11}/> Geçmiş
+          </button>
           <button onClick={() => setExpanded(e => !e)} className="text-xs text-gray-400 hover:text-violet-600 flex items-center gap-1">
             Detay {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
           </button>
@@ -161,6 +230,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -408,6 +478,14 @@ export default function ProfilePage() {
                           </span>
                         </div>
                         <div className="flex gap-1 justify-end">
+                          {listing.status !== 'expired' && listing.status !== 'sold' && (
+                            <button
+                              onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
+                              title={listing.status === 'active' ? 'Pasif yap' : 'Aktif et'}
+                              className={`p-1.5 rounded-lg transition-colors ${listing.status === 'active' ? 'hover:bg-orange-50 text-emerald-500 hover:text-orange-500' : 'hover:bg-emerald-50 text-gray-400 hover:text-emerald-500'}`}>
+                              {listing.status === 'active' ? <ToggleRight size={15}/> : <ToggleLeft size={15}/>}
+                            </button>
+                          )}
                           <button onClick={() => setEditModal(listing)} className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500">
                             <Edit3 size={13}/>
                           </button>
@@ -573,47 +651,124 @@ export default function ProfilePage() {
   );
 }
 
+const DELIVERY_HOURS_OPTS = [1, 2, 4, 6, 12, 24, 48, 72];
+
 function EditListingModal({ listing, onClose, onSave, saving }) {
-  const [form, setForm] = useState({
-    listing_id: listing.id,
-    title: listing.title,
-    price: listing.price,
-    description: listing.description || '',
-    status: listing.status,
-  });
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const imgs = listing.images || [];
+  const [title, setTitle]           = useState(listing.title || '');
+  const [price, setPrice]           = useState(listing.price || '');
+  const [description, setDesc]      = useState(listing.description || '');
+  const [images, setImages]         = useState(imgs.length > 0 ? imgs : ['']);
+  const [coverIndex, setCoverIndex] = useState(listing.cover_index ?? 0);
+  const [deliveryHours, setDelHours]= useState(listing.delivery_hours ?? 24);
+  const [status, setStatus]         = useState(listing.status || 'active');
+
+  const addImage    = () => setImages(i => [...i, '']);
+  const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
+  const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+
+  const handleSave = () => {
+    onSave({
+      listing_id:     listing.id,
+      title:          title.trim(),
+      price:          parseFloat(price) || 0,
+      description:    description.trim(),
+      images:         images.filter(Boolean),
+      cover_index:    coverIndex,
+      delivery_hours: deliveryHours,
+      status,
+    });
+  };
+
+  const inputCls = "w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-gray-800">İlanı Düzenle</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18}/></button>
         </div>
+
         <div className="space-y-4">
+          {/* Başlık */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Başlık</label>
-            <input value={form.title} onChange={e => set('title', e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400" />
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Başlık *</label>
+            <input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="İlan başlığı..." />
           </div>
+
+          {/* Fiyat */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Fiyat (₺)</label>
-            <input type="number" value={form.price} onChange={e => set('price', e.target.value)} step="0.01" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400" />
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Fiyat (₺) *</label>
+            <input type="number" value={price} onChange={e => setPrice(e.target.value)} step="0.01" min="0" className={inputCls} />
           </div>
+
+          {/* Açıklama */}
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-1.5">Açıklama</label>
-            <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={4} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:border-violet-400" />
+            <textarea value={description} onChange={e => setDesc(e.target.value)} rows={4}
+              className={inputCls + ' resize-none'} placeholder="İlanı detaylı açıklayın..." />
           </div>
+
+          {/* Görseller */}
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Görseller (URL)</label>
+            <div className="space-y-2">
+              {images.map((img, idx) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <button onClick={() => setCoverIndex(idx)} title="Kapak yap"
+                    className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
+                    <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
+                  </button>
+                  <input value={img} onChange={e => setImage(idx, e.target.value)}
+                    placeholder={`Görsel ${idx + 1} URL`} className={inputCls + ' flex-1 text-xs'} />
+                  {images.length > 1 && (
+                    <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {images.length < 8 && (
+                <button onClick={addImage} className="text-xs text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
+                  <Plus size={13} /> Görsel Ekle
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Teslimat süresi */}
+          {listing.delivery_type === 'manual' && (
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Teslimat Süresi</label>
+              <div className="flex flex-wrap gap-2">
+                {DELIVERY_HOURS_OPTS.map(h => (
+                  <button key={h} onClick={() => setDelHours(h)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                    {h < 24 ? `${h}s` : `${h / 24}g`}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Durum */}
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
-            <select value={form.status} onChange={e => set('status', e.target.value)} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400">
-              <option value="active">Aktif</option>
-              <option value="inactive">Pasif</option>
-            </select>
+            <div className="flex gap-2">
+              {[{ v: 'active', l: '✅ Aktif' }, { v: 'passive', l: '⏸ Pasif' }].map(opt => (
+                <button key={opt.v} onClick={() => setStatus(opt.v)}
+                  className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${status === opt.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                  {opt.l}
+                </button>
+              ))}
+            </div>
           </div>
-          <button onClick={() => onSave(form)} disabled={saving}
-            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
-            {saving ? 'Kaydediliyor...' : 'Güncelle'}
+
+          <button onClick={handleSave} disabled={saving || !title.trim() || !price}
+            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
         </div>
       </div>
