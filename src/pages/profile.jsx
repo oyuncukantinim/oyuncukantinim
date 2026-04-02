@@ -817,6 +817,22 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [coverIndex, setCoverIndex] = useState(listing.cover_index ?? 0);
   const [deliveryHours, setDelHours]= useState(listing.delivery_hours ?? 24);
   const [status, setStatus]         = useState(listing.status || 'active');
+  const [maxImages, setMaxImages]   = useState(5);
+  const [titleMax, setTitleMax]     = useState(100);
+  const [descMax, setDescMax]       = useState(2000);
+
+  useEffect(() => {
+    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
+      .then(r => r.json())
+      .then(j => {
+        if (j.status === 'success') {
+          if (j.data.max_listing_images) setMaxImages(Number(j.data.max_listing_images));
+          if (j.data.listing_title_max)  setTitleMax(Number(j.data.listing_title_max));
+          if (j.data.listing_desc_max)   setDescMax(Number(j.data.listing_desc_max));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const addImage    = () => setImages(i => [...i, '']);
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
@@ -849,8 +865,12 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
         <div className="space-y-4">
           {/* Başlık */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Başlık *</label>
-            <input value={title} onChange={e => setTitle(e.target.value)} className={inputCls} placeholder="İlan başlığı..." />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-gray-600">Başlık *</label>
+              <span className={`text-[11px] font-semibold ${title.length > titleMax ? 'text-red-500' : 'text-gray-400'}`}>{title.length}/{titleMax}</span>
+            </div>
+            <input value={title} onChange={e => e.target.value.length <= titleMax && setTitle(e.target.value)}
+              className={inputCls + (title.length >= titleMax ? ' border-orange-300' : '')} placeholder="İlan başlığı..." />
           </div>
 
           {/* Fiyat */}
@@ -861,14 +881,20 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
 
           {/* Açıklama */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Açıklama</label>
-            <textarea value={description} onChange={e => setDesc(e.target.value)} rows={4}
-              className={inputCls + ' resize-none'} placeholder="İlanı detaylı açıklayın..." />
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-gray-600">Açıklama</label>
+              <span className={`text-[11px] font-semibold ${description.length > descMax ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/{descMax}</span>
+            </div>
+            <textarea value={description} onChange={e => e.target.value.length <= descMax && setDesc(e.target.value)} rows={4}
+              className={inputCls + ' resize-none' + (description.length >= descMax ? ' border-orange-300' : '')} placeholder="İlanı detaylı açıklayın..." />
           </div>
 
           {/* Görseller */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Görseller (URL)</label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-gray-600">Görseller (URL)</label>
+              <span className="text-[11px] text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
+            </div>
             <div className="space-y-2">
               {images.map((img, idx) => (
                 <div key={idx} className="space-y-0.5">
@@ -891,7 +917,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   )}
                 </div>
               ))}
-              {images.length < 8 && (
+              {images.length < maxImages && (
                 <button onClick={addImage} className="text-xs text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
                   <Plus size={13} /> Görsel Ekle
                 </button>

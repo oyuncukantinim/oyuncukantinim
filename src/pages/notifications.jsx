@@ -1,24 +1,37 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Check } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Bell, Check, CheckCheck, ShoppingBag, ShoppingCart, MessageCircle, Wallet, Info, Megaphone } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getNotifications, markNotificationsRead } from '../lib/api';
 
-const TYPE_ICONS = {
-  sale: '💰',
-  purchase: '🛒',
-  message: '💬',
-  balance: '💳',
-  info: 'ℹ️',
+const TYPE_CONFIG = {
+  sale:         { icon: ShoppingBag,   color: 'bg-emerald-50 text-emerald-600',  ring: 'ring-emerald-200' },
+  purchase:     { icon: ShoppingCart,  color: 'bg-violet-50 text-violet-600',    ring: 'ring-violet-200' },
+  message:      { icon: MessageCircle, color: 'bg-cyan-50 text-cyan-600',        ring: 'ring-cyan-200' },
+  balance:      { icon: Wallet,        color: 'bg-yellow-50 text-yellow-600',    ring: 'ring-yellow-200' },
+  announcement: { icon: Megaphone,     color: 'bg-orange-50 text-orange-600',    ring: 'ring-orange-200' },
+  info:         { icon: Info,          color: 'bg-gray-100 text-gray-500',       ring: 'ring-gray-200' },
 };
 
-const TYPE_COLORS = {
-  sale: 'border-neon-green/20',
-  purchase: 'border-neon-purple/20',
-  message: 'border-neon-cyan/20',
-  balance: 'border-yellow-500/20',
-  info: 'border-gray-100',
-};
+function NotifIcon({ type }) {
+  const cfg = TYPE_CONFIG[type] || TYPE_CONFIG.info;
+  const Icon = cfg.icon;
+  return (
+    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ${cfg.color} ${cfg.ring}`}>
+      <Icon size={18} />
+    </div>
+  );
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+  if (diff < 60) return 'Az önce';
+  if (diff < 3600) return Math.floor(diff / 60) + ' dk önce';
+  if (diff < 86400) return Math.floor(diff / 3600) + ' sa önce';
+  if (diff < 604800) return Math.floor(diff / 86400) + ' gün önce';
+  return new Date(dateStr).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 export default function NotificationsPage() {
   const { user } = useAuth();
@@ -41,55 +54,87 @@ export default function NotificationsPage() {
     } catch {}
   };
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unread = notifications.filter(n => !n.is_read);
 
   if (!user) return null;
 
-  if (loading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-10 h-10 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="flex justify-center py-24">
+      <div className="w-10 h-10 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold flex items-center gap-2">
-          <Bell className="text-neon-pink" size={24} /> Bildirimler
-        </h1>
-        {unreadCount > 0 && (
-          <button onClick={handleMarkRead} className="btn-secondary py-2 px-4 text-sm flex items-center gap-1">
-            <Check size={14} /> Tumunu Oku
+    <div className="max-w-2xl mx-auto space-y-5">
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-violet-200">
+            <Bell size={18} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-extrabold text-gray-900">Bildirimler</h1>
+            <p className="text-xs text-gray-400">{notifications.length} bildirim{unread.length > 0 && ` · ${unread.length} okunmamış`}</p>
+          </div>
+        </div>
+        {unread.length > 0 && (
+          <button
+            onClick={handleMarkRead}
+            className="flex items-center gap-1.5 text-xs font-bold text-violet-600 hover:text-violet-800 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-xl transition-colors border border-violet-100"
+          >
+            <CheckCheck size={14} /> Tümünü Okundu İşaretle
           </button>
         )}
       </div>
 
+      {/* Okunmamış özet */}
+      {unread.length > 0 && (
+        <div className="bg-gradient-to-r from-violet-50 to-pink-50 border border-violet-100 rounded-2xl px-5 py-4 flex items-center gap-3">
+          <span className="w-2.5 h-2.5 bg-red-500 rounded-full flex-shrink-0 animate-pulse" />
+          <p className="text-sm font-semibold text-violet-800">
+            <span className="font-extrabold">{unread.length}</span> okunmamış bildiriminiz var.
+          </p>
+        </div>
+      )}
+
+      {/* Liste */}
       {notifications.length === 0 ? (
-        <div className="card p-12 text-center">
-          <div className="text-5xl mb-4">🔔</div>
-          <h3 className="text-lg font-bold text-gray-300">Henuz bildirim yok</h3>
+        <div className="card p-16 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Bell size={28} className="text-gray-300" />
+          </div>
+          <h3 className="font-extrabold text-gray-300 text-lg">Henüz bildirim yok</h3>
+          <p className="text-sm text-gray-300 mt-1">Yeni bildirimler burada görünecek.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {notifications.map(n => (
             <div
               key={n.id}
-              className={`card p-4 flex items-start gap-4 ${
-                !n.is_read ? 'bg-surface-100 ' + (TYPE_COLORS[n.type] || '') : 'opacity-60'
+              className={`relative flex items-start gap-4 p-4 rounded-2xl border transition-all ${
+                !n.is_read
+                  ? 'bg-white border-violet-100 shadow-sm shadow-violet-50'
+                  : 'bg-white/50 border-gray-100 opacity-70'
               }`}
             >
-              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-                {TYPE_ICONS[n.type] || 'ℹ️'}
-              </div>
+              {/* Unread dot */}
+              {!n.is_read && (
+                <span className="absolute top-4 right-4 w-2 h-2 bg-red-500 rounded-full" />
+              )}
+
+              <NotifIcon type={n.type} />
+
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-gray-800 text-sm">{n.title}</span>
-                  {!n.is_read && <span className="w-2 h-2 bg-neon-pink rounded-full flex-shrink-0" />}
+                <div className="flex items-start justify-between gap-2">
+                  <span className={`font-extrabold text-sm ${n.is_read ? 'text-gray-500' : 'text-gray-800'}`}>
+                    {n.title}
+                  </span>
                 </div>
-                <p className="text-sm text-gray-400 mt-1">{n.message}</p>
-                <span className="text-xs text-gray-600 mt-2 block">{formatDate(n.created_at)}</span>
+                <p className={`text-sm mt-0.5 leading-relaxed ${n.is_read ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {n.message}
+                </p>
+                <span className="text-[11px] text-gray-300 mt-1.5 block">{timeAgo(n.created_at)}</span>
               </div>
             </div>
           ))}
@@ -97,10 +142,4 @@ export default function NotificationsPage() {
       )}
     </div>
   );
-}
-
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }

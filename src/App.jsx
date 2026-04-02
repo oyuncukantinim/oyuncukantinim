@@ -56,15 +56,34 @@ function MaintenancePage() {
   );
 }
 
+function AnnouncementBanner({ text }) {
+  const [visible, setVisible] = useState(true);
+  if (!visible) return null;
+  return (
+    <div className="relative bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-sm font-semibold text-center py-2.5 px-10">
+      {text}
+      <button
+        onClick={() => setVisible(false)}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-lg leading-none"
+        aria-label="Kapat"
+      >×</button>
+    </div>
+  );
+}
+
 function SiteLayout() {
   const [maintenance, setMaintenance] = useState(false);
+  const [announcement, setAnnouncement] = useState({ active: false, text: '' });
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
       .then(r => r.json())
       .then(j => {
-        if (j.status === 'success') setMaintenance(j.data.maintenance_mode == 1);
+        if (j.status === 'success') {
+          setMaintenance(j.data.maintenance_mode == 1);
+          setAnnouncement({ active: j.data.announcement_active == 1, text: j.data.announcement_text || '' });
+        }
       })
       .catch(() => {})
       .finally(() => setChecked(true));
@@ -78,6 +97,7 @@ function SiteLayout() {
 
   return (
     <div className="min-h-screen bg-surface-50 font-sans">
+      {announcement.active && announcement.text && <AnnouncementBanner text={announcement.text} />}
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Routes>

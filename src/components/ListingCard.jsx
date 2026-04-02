@@ -16,14 +16,11 @@ export default function ListingCard({ listing }) {
             <ImageIcon size={40} />
           </div>
         )}
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-xs font-bold px-2 py-1 rounded-lg backdrop-blur-md flex items-center gap-1">
-          <ImageIcon size={10} /> {listing.images?.length || 0}
-        </div>
       </div>
 
       {/* Tags */}
       <div className="flex justify-between items-center mb-3">
-        <span className="badge-cyan">{listing.category || listing.type}</span>
+        <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
         <span className="text-xs font-bold text-gray-400">{listing.game_name || listing.game}</span>
       </div>
 

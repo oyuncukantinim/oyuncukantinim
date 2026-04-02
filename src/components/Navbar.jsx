@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle } from 'lucide-react';
+import { Gamepad2, Store, Users, ShoppingCart, Menu, X, Bell, MessageCircle, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { getUnreadNotificationsCount } from '../lib/api';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
@@ -16,6 +17,20 @@ export default function Navbar() {
   const { cart } = useCart();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [unreadNotif, setUnreadNotif] = useState(0);
+
+  useEffect(() => {
+    if (!user) { setUnreadNotif(0); return; }
+    getUnreadNotificationsCount()
+      .then(r => setUnreadNotif(r.data?.unread ?? 0))
+      .catch(() => {});
+    const interval = setInterval(() => {
+      getUnreadNotificationsCount()
+        .then(r => setUnreadNotif(r.data?.unread ?? 0))
+        .catch(() => {});
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-sm">
@@ -53,6 +68,12 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <Link
+              to="/create"
+              className="flex items-center gap-1.5 bg-neon-purple text-white font-bold text-sm px-3 py-1.5 rounded-xl hover:bg-violet-700 transition-colors"
+            >
+              <Plus size={15} /> İlan Ekle
+            </Link>
             {user && (
               <>
                 <Link to="/messages" className="relative p-2 text-gray-400 hover:text-neon-cyan transition-colors">
@@ -60,6 +81,11 @@ export default function Navbar() {
                 </Link>
                 <Link to="/notifications" className="relative p-2 text-gray-400 hover:text-neon-pink transition-colors">
                   <Bell size={20} />
+                  {unreadNotif > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white">
+                      {unreadNotif > 9 ? '9+' : unreadNotif}
+                    </span>
+                  )}
                 </Link>
               </>
             )}
@@ -119,17 +145,24 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-3 border-t border-gray-100">
+            <div className="pt-3 border-t border-gray-100 space-y-2">
+              <Link to="/create" onClick={() => setMobileOpen(false)} className="flex items-center justify-center gap-2 w-full bg-neon-purple text-white font-bold py-3 rounded-xl">
+                <Plus size={15} /> İlan Ekle
+              </Link>
               {user ? (
                 <>
                   <Link to="/messages" onClick={() => setMobileOpen(false)} className="block px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-semibold">Mesajlar</Link>
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block mt-2 w-full text-center btn-primary py-3">
+                  <Link to="/notifications" onClick={() => setMobileOpen(false)} className="flex items-center justify-between px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl font-semibold">
+                    <span>Bildirimler</span>
+                    {unreadNotif > 0 && <span className="bg-red-500 text-white text-[10px] font-bold h-5 px-1.5 rounded-full flex items-center">{unreadNotif > 9 ? '9+' : unreadNotif}</span>}
+                  </Link>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block w-full text-center btn-primary py-3">
                     {user.avatar} {user.username} ({Number(user.balance || 0).toFixed(2)} ₺)
                   </Link>
                 </>
               ) : (
                 <Link to="/login" onClick={() => setMobileOpen(false)} className="block w-full text-center btn-primary py-3">
-                  Giris Yap / Kayit Ol
+                  Giriş Yap / Kayıt Ol
                 </Link>
               )}
             </div>

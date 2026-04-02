@@ -5,7 +5,7 @@ import { adminBroadcast } from '../../lib/adminApi';
 
 export default function AdminAnnouncements() {
   const [target, setTarget] = useState('all'); // 'all' | 'user'
-  const [userId, setUserId] = useState('');
+  const [username, setUsername] = useState('');
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -13,14 +13,14 @@ export default function AdminAnnouncements() {
 
   const handleSend = async () => {
     if (!title || !message) { setResult('Başlık ve mesaj zorunlu.'); return; }
-    if (target === 'user' && !userId) { setResult('Kullanıcı ID girin.'); return; }
+    if (target === 'user' && !username.trim()) { setResult('Kullanıcı adı girin.'); return; }
     setSending(true); setResult('');
     try {
       const body = { title, message };
-      if (target === 'user') body.user_id = parseInt(userId);
+      if (target === 'user') body.username = username.trim();
       const res = await adminBroadcast(body);
       setResult(res.message);
-      setTitle(''); setMessage(''); setUserId('');
+      setTitle(''); setMessage(''); setUsername('');
     } catch (e) { setResult(e.message); }
     finally { setSending(false); }
   };
@@ -55,15 +55,15 @@ export default function AdminAnnouncements() {
             ))}
           </div>
 
-          {/* Kullanıcı ID (belirli kullanıcıysa) */}
+          {/* Kullanıcı Adı (belirli kullanıcıysa) */}
           {target === 'user' && (
             <div className="mb-4">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı ID</label>
+              <label className="block text-sm font-bold text-gray-700 mb-1.5">Kullanıcı Adı</label>
               <input
-                type="number"
-                value={userId}
-                onChange={e => setUserId(e.target.value)}
-                placeholder="Örn: 42"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Örn: ahmet123"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
               />
             </div>

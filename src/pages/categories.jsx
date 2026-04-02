@@ -36,11 +36,21 @@ export default function CategoriesPage() {
     return categories.filter(c => c.name.toLowerCase().includes(q));
   }, [categories, search]);
 
-  // Tür filtresine göre kök kategoriler
+  // Tür filtresine göre kök kategoriler (Tümü = sadece kökler; tür seçiliyse kökleri + alt kategorileri)
   const filteredRoots = useMemo(() => {
     if (!activeType) return roots;
     return roots.filter(r => String(r.type_id) === String(activeType));
   }, [roots, activeType]);
+
+  // Tür seçiliyse o türün tüm kategorileri (kök + alt)
+  const filteredAll = useMemo(() => {
+    if (!activeType) return [];
+    const typeRootIds = new Set(filteredRoots.map(r => r.id));
+    return categories.filter(c =>
+      String(c.type_id) === String(activeType) ||
+      (c.parent_id && typeRootIds.has(Number(c.parent_id)))
+    );
+  }, [activeType, filteredRoots, categories]);
 
   if (loading) return (
     <div className="flex justify-center items-center py-32">
@@ -146,29 +156,56 @@ export default function CategoriesPage() {
         </>
       )}
 
-      {/* Kök kategoriler */}
+      {/* Kök kategoriler (Tümü) veya tür filtrelenmiş liste */}
       {!isSearching && !isInSubLevel && (
         <>
-          {filteredRoots.length === 0 ? (
-            <div className="text-center py-20 text-gray-400">
-              <Tag size={40} className="mx-auto mb-3 opacity-20" />
-              <p className="font-semibold">Bu türde kategori bulunamadı.</p>
-            </div>
+          {activeType ? (
+            /* Tür seçiliyse: kök + alt kategorileri düz liste olarak göster */
+            filteredAll.length === 0 ? (
+              <div className="text-center py-20 text-gray-400">
+                <Tag size={40} className="mx-auto mb-3 opacity-20" />
+                <p className="font-semibold">Bu türde kategori bulunamadı.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {filteredAll.map(cat => {
+                  const kids = childrenOf(cat.id);
+                  const isRoot = !cat.parent_id;
+                  return (
+                    <CategoryCard
+                      key={cat.id}
+                      cat={cat}
+                      isRoot={isRoot}
+                      kidCount={kids.length}
+                      onClick={isRoot && kids.length > 0 ? () => setActiveRoot(cat) : null}
+                    />
+                  );
+                })}
+              </div>
+            )
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-              {filteredRoots.map(cat => {
-                const kids = childrenOf(cat.id);
-                return (
-                  <CategoryCard
-                    key={cat.id}
-                    cat={cat}
-                    isRoot={true}
-                    kidCount={kids.length}
-                    onClick={kids.length > 0 ? () => setActiveRoot(cat) : null}
-                  />
-                );
-              })}
-            </div>
+            /* Tümü: sadece kök kategoriler */
+            filteredRoots.length === 0 ? (
+              <div className="text-center py-20 text-gray-400">
+                <Tag size={40} className="mx-auto mb-3 opacity-20" />
+                <p className="font-semibold">Kategori bulunamadı.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                {filteredRoots.map(cat => {
+                  const kids = childrenOf(cat.id);
+                  return (
+                    <CategoryCard
+                      key={cat.id}
+                      cat={cat}
+                      isRoot={true}
+                      kidCount={kids.length}
+                      onClick={kids.length > 0 ? () => setActiveRoot(cat) : null}
+                    />
+                  );
+                })}
+              </div>
+            )
           )}
         </>
       )}
@@ -219,7 +256,7 @@ function CategoryCard({ cat, isRoot, kidCount, onClick }) {
   const inner = (
     <div
       className="group relative flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 bg-white cursor-pointer"
-      style={{ height: '200px' }}
+      style={{ aspectRatio: '190/240' }}
     >
       {/* Image / Gradient background */}
       {cat.image ? (

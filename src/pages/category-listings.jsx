@@ -28,22 +28,31 @@ export default function CategoryListingsPage() {
   const [category, setCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [listings, setListings] = useState([]);
+  const [catAttrs, setCatAttrs] = useState([]);
+  const [attrFilters, setAttrFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest');
   const [subCatFilter, setSubCatFilter] = useState(null);
 
-  // Load categories + listings
+  // Load categories + listings + attributes
   useEffect(() => {
     if (!catId) return;
     Promise.all([
       fetchPublic('get_categories_tree'),
       fetchPublic('get_listings', { category_id: catId, sort }),
-    ]).then(([cats, items]) => {
+      fetchPublic('get_category_attributes', { category_id: catId }),
+    ]).then(([cats, items, attrs]) => {
       setCategories(cats || []);
       const found = (cats || []).find(c => String(c.id) === String(catId));
       setCategory(found || null);
       setListings(items || []);
+      const filterable = (attrs || []).filter(a => a.is_filterable);
+      setCatAttrs(filterable);
+      // Sıfırla filtreler
+      const init = {};
+      filterable.forEach(a => { init[a.slug] = ''; });
+      setAttrFilters(init);
     }).finally(() => setLoading(false));
   }, [catId, sort]);
 
@@ -68,8 +77,18 @@ export default function CategoryListingsPage() {
       const q = search.toLowerCase();
       list = list.filter(l => l.title.toLowerCase().includes(q));
     }
+    // Özellik filtreleri
+    Object.entries(attrFilters).forEach(([slug, val]) => {
+      if (!val) return;
+      list = list.filter(l => {
+        const attrs = l.attributes ? (typeof l.attributes === 'string' ? JSON.parse(l.attributes) : l.attributes) : {};
+        const attrVal = attrs[slug];
+        if (Array.isArray(attrVal)) return attrVal.some(v => String(v).toLowerCase().includes(val.toLowerCase()));
+        return String(attrVal || '').toLowerCase().includes(val.toLowerCase());
+      });
+    });
     return list;
-  }, [listings, subCatFilter, search]);
+  }, [listings, subCatFilter, search, attrFilters]);
 
   if (loading) return (
     <div className="flex justify-center items-center py-32">
@@ -138,6 +157,39 @@ export default function CategoryListingsPage() {
               {c.icon} {c.name}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Özellik filtreleri */}
+      {catAttrs.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {catAttrs.map(attr => {
+            if (attr.type === 'select' || attr.type === 'multiselect') {
+              return (
+                <select
+                  key={attr.slug}
+                  value={attrFilters[attr.slug] || ''}
+                  onChange={e => setAttrFilters(f => ({ ...f, [attr.slug]: e.target.value }))}
+                  className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-violet-400"
+                >
+                  <option value="">{attr.name}: Tümü</option>
+                  {(attr.options || []).map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              );
+            }
+            return (
+              <input
+                key={attr.slug}
+                type="text"
+                value={attrFilters[attr.slug] || ''}
+                onChange={e => setAttrFilters(f => ({ ...f, [attr.slug]: e.target.value }))}
+                placeholder={attr.name + ' ara...'}
+                className="border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
+              />
+            );
+          })}
         </div>
       )}
 

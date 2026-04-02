@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Gamepad2, Star, ShoppingCart,
-  MessageCircle, Image as ImageIcon, Clock, Zap, Shield,
+  MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag,
 } from 'lucide-react';
 import { getListing, idFromSlug } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+
+const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
 export default function ListingDetailPage() {
   const { slug } = useParams();
@@ -15,12 +17,23 @@ export default function ListingDetailPage() {
   const { addToCart } = useCart();
   const { user } = useAuth();
   const [listing, setListing] = useState(null);
+  const [catAttrs, setCatAttrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
     getListing(id)
-      .then(r => { setListing(r.data); setActiveImg(r.data.cover_index || 0); })
+      .then(r => {
+        setListing(r.data);
+        setActiveImg(r.data.cover_index || 0);
+        // Kategori özelliklerini çek
+        if (r.data.category_id) {
+          fetch(`${API_URL}?action=get_category_attributes&category_id=${r.data.category_id}`)
+            .then(res => res.json())
+            .then(j => { if (j.status === 'success') setCatAttrs(j.data || []); })
+            .catch(() => {});
+        }
+      })
       .catch(() => navigate('/market'))
       .finally(() => setLoading(false));
   }, [id, navigate]);
@@ -122,6 +135,28 @@ export default function ListingDetailPage() {
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Kategoriye özel özellikler */}
+          {catAttrs.length > 0 && listing.attributes && Object.keys(listing.attributes).length > 0 && (
+            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+              <h3 className="font-extrabold text-gray-800 mb-3 text-sm uppercase tracking-wide flex items-center gap-1.5">
+                <Tag size={13} className="text-violet-500" /> İlan Özellikleri
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {catAttrs.map(attr => {
+                  const val = listing.attributes?.[attr.slug];
+                  if (!val && val !== 0) return null;
+                  const display = Array.isArray(val) ? val.join(', ') : val;
+                  return (
+                    <div key={attr.slug} className="bg-surface-50 rounded-xl px-3 py-2">
+                      <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">{attr.name}</div>
+                      <div className="text-sm font-bold text-gray-700 mt-0.5 truncate">{display}</div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
