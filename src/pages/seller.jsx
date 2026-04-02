@@ -310,34 +310,48 @@ export default function SellerPage() {
           ) : (
             <div className="space-y-4">
               {reviews.map(r => (
-                <div key={r.id} className="card p-5 flex gap-4">
-                  <div className="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-                    {r.reviewer_avatar || '👤'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <Link to={`/p/${r.reviewer_username}`} className="font-bold text-gray-800 hover:text-neon-purple text-sm transition-colors">
-                        {r.reviewer_username}
-                      </Link>
-                      <span className="text-xs text-gray-400">{formatDate(r.created_at)}</span>
-                    </div>
-                    <StarRating value={r.rating} readonly />
-                    {(r.reliability || r.satisfaction || r.speed || r.service_quality) && (
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
-                        {[
-                          { label: 'Güvenilirlik', val: r.reliability },
-                          { label: 'Memnuniyet',   val: r.satisfaction },
-                          { label: 'Hız',          val: r.speed },
-                          { label: 'Hizmet',       val: r.service_quality },
-                        ].map(c => c.val != null && (
-                          <span key={c.label} className="text-xs text-gray-400">
-                            {c.label}: <span className="font-bold text-yellow-500">{c.val}</span>
-                            <Star size={9} className="inline ml-0.5 text-yellow-400 fill-yellow-400" />
-                          </span>
-                        ))}
+                <div key={r.id} className="card p-5">
+                  {/* İlan bilgisi (başlık + fotoğraf) */}
+                  {(r.item_title || r.item_image) && (
+                    <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl p-3 mb-4">
+                      {r.item_image && (
+                        <img src={r.item_image} alt="" className="w-16 h-11 object-cover rounded-lg flex-shrink-0 border border-gray-200" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-0.5">Satın Alınan İlan</div>
+                        <p className="text-sm font-bold text-gray-700 line-clamp-1">{r.item_title}</p>
                       </div>
-                    )}
-                    {r.comment && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{r.comment}</p>}
+                    </div>
+                  )}
+                  <div className="flex gap-4">
+                    <div className="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
+                      {r.reviewer_avatar || '👤'}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <Link to={`/p/${r.reviewer_username}`} className="font-bold text-gray-800 hover:text-neon-purple text-sm transition-colors">
+                          {r.reviewer_username}
+                        </Link>
+                        <span className="text-xs text-gray-400">{formatDate(r.created_at)}</span>
+                      </div>
+                      <StarRating value={r.rating} readonly />
+                      {(r.reliability || r.satisfaction || r.speed || r.service_quality) && (
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                          {[
+                            { label: 'Güvenilirlik', val: r.reliability },
+                            { label: 'Memnuniyet',   val: r.satisfaction },
+                            { label: 'Hız',          val: r.speed },
+                            { label: 'Hizmet',       val: r.service_quality },
+                          ].map(c => c.val != null && (
+                            <span key={c.label} className="text-xs text-gray-400">
+                              {c.label}: <span className="font-bold text-yellow-500">{c.val}</span>
+                              <Star size={9} className="inline ml-0.5 text-yellow-400 fill-yellow-400" />
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {r.comment && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{r.comment}</p>}
+                    </div>
                   </div>
                 </div>
               ))}

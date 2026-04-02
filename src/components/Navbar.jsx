@@ -36,6 +36,13 @@ export default function Navbar() {
     return () => { clearInterval(interval); window.removeEventListener('notifications-read', handler); };
   }, [user]);
 
+  // Bildirimler sayfasına gelindiğinde sayacı anında sıfırla (event'e ek güvence)
+  useEffect(() => {
+    if (location.pathname === '/notifications') {
+      setUnreadNotif(0);
+    }
+  }, [location.pathname]);
+
   const handleCartEnter = () => {
     clearTimeout(cartTimeout.current);
     setCartHover(true);
