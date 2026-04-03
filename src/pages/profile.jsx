@@ -712,18 +712,18 @@ export default function ProfilePage() {
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : listingsView === 'grid' ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {filteredListings.map(listing => (
                     <div key={listing.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex flex-col">
-                      <div className="aspect-[4/3] bg-white">
+                      <div className="aspect-video bg-white">
                         {listing.images?.[0]
                           ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                           : <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon size={24}/></div>
                         }
                       </div>
-                      <div className="p-2 flex flex-col gap-1 flex-1">
+                      <div className="p-1.5 flex flex-col gap-1 flex-1">
                         <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
-                        <div className="font-bold text-emerald-600 text-sm">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="font-bold text-emerald-600 text-[13px]">{Number(listing.price).toFixed(2)} ₺</div>
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
                           {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
                         </span>
@@ -744,8 +744,8 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {filteredListings.map(listing => (
-                    <div key={listing.id} className="bg-gray-50 rounded-xl p-3 flex items-center gap-2.5 border border-gray-100">
-                      <div className="w-12 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2 border border-gray-100">
+                      <div className="w-10 h-10 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                         {listing.images?.[0] ? (
                           <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                         ) : (
@@ -753,7 +753,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-[13px]">{listing.title}</Link>
+                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-xs">{listing.title}</Link>
                         <div className="text-xs text-gray-400 mt-0.5">{listing.category}</div>
                         {listing.expires_at && (
                           <div className="text-xs text-gray-400 mt-0.5">
@@ -762,7 +762,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="text-right flex-shrink-0 space-y-0.5">
-                        <div className="font-bold text-emerald-600 text-sm">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="font-bold text-emerald-600 text-[13px]">{Number(listing.price).toFixed(2)} ₺</div>
                         <div className="flex gap-1.5 justify-end">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
                             {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
