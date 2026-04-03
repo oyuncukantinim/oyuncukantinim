@@ -1,5 +1,47 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { ArrowLeft, Check, ChevronRight, Search, X } from 'lucide-react';
+
+function CategoryVisualCard({ category, selected, hasChildren, subtitle, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`group relative overflow-hidden rounded-2xl border text-left transition-all ${
+        selected
+          ? 'border-violet-400 ring-2 ring-violet-300/60'
+          : 'border-slate-700/80 hover:-translate-y-0.5 hover:border-violet-400/60'
+      }`}
+      style={{ aspectRatio: '190 / 138' }}
+    >
+      {category.image ? (
+        <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900">
+          <span className="text-5xl opacity-80">{category.icon || 'ğŸ“'}</span>
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-slate-900/10" />
+
+      <div className="absolute right-2 top-2 flex items-center gap-1">
+        {hasChildren && (
+          <span className="rounded-full bg-black/35 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+            Alt Kategori
+          </span>
+        )}
+        {selected && (
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg">
+            <Check size={13} />
+          </span>
+        )}
+      </div>
+
+      <div className="absolute inset-x-0 bottom-0 p-3">
+        <div className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow-sm">{category.name}</div>
+        {subtitle ? <div className="mt-1 line-clamp-1 text-[11px] text-white/75">{subtitle}</div> : null}
+      </div>
+    </button>
+  );
+}
 
 export default function CategoryPicker({ categories = [], value, onChange }) {
   const [search, setSearch] = useState('');
@@ -61,164 +103,118 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const currentLevel = childrenOf(currentParentId);
   const breadcrumbCats = path.map((id) => categories.find((category) => category.id === id)).filter(Boolean);
 
-  const renderCategoryCard = (category, { showPath = false } = {}) => {
-    const children = childrenOf(category.id);
-    const hasChildren = children.length > 0;
-    const isSelected = value === category.id;
+  const renderCards = (items, withPath = false) => (
+    <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
+      {items.map((category) => {
+        const children = childrenOf(category.id);
+        const hasChildren = children.length > 0;
+        const isSelected = value === category.id;
+        const subtitle = withPath
+          ? getPath(category.id)
+          : hasChildren
+            ? `${children.length} alt kategori`
+            : category.min_price != null
+              ? `Min ${category.min_price}â‚º`
+              : '';
 
-    return (
-      <button
-        key={category.id}
-        onClick={() => navigate(category)}
-        className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-all ${
-          isSelected
-            ? 'border-violet-200 bg-violet-50 shadow-sm'
-            : 'border-gray-100 bg-white hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/60'
-        }`}
-      >
-        <span
-          className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm ${
-            isSelected ? 'bg-violet-100' : 'bg-slate-100'
-          }`}
-        >
-          {category.icon || '📁'}
-        </span>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className={`text-sm font-bold ${isSelected ? 'text-violet-700' : 'text-gray-800'}`}>{category.name}</div>
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                hasChildren ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-600'
-              }`}
-            >
-              {hasChildren ? 'Alt kategori' : 'Seçilebilir'}
-            </span>
-          </div>
-
-          {showPath ? (
-            <div className="mt-1 line-clamp-2 text-xs text-gray-400">{getPath(category.id)}</div>
-          ) : (
-            <div className="mt-1 text-xs text-gray-400">
-              {hasChildren ? `${children.length} alt kategori arasından seçim yapın` : 'Bu kategoriyle bir sonraki adıma geçebilirsiniz'}
-            </div>
-          )}
-
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {category.min_price !== null && (
-              <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
-                Min {category.min_price}₺
-              </span>
-            )}
-            {category.commission_rate !== null && (
-              <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600">
-                %{category.commission_rate} komisyon
-              </span>
-            )}
-          </div>
-        </div>
-
-        {isSelected && <Check size={16} className="flex-shrink-0 text-violet-600" />}
-        {hasChildren && <ChevronRight size={16} className={`flex-shrink-0 ${isSelected ? 'text-violet-400' : 'text-gray-300'}`} />}
-      </button>
-    );
-  };
+        return (
+          <CategoryVisualCard
+            key={category.id}
+            category={category}
+            selected={isSelected}
+            hasChildren={hasChildren}
+            subtitle={subtitle}
+            onClick={() => navigate(category)}
+          />
+        );
+      })}
+    </div>
+  );
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-      {selected && (
-        <div className="flex items-center gap-2 border-b border-violet-100 bg-violet-50 px-4 py-2.5">
-          <Check size={14} className="flex-shrink-0 text-violet-600" />
-          <span className="flex-1 text-sm font-bold text-violet-700">{getPath(selected.id)}</span>
-          {selected.commission_rate !== null && (
-            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-600">
-              %{selected.commission_rate} komisyon
-            </span>
-          )}
-          {selected.min_price !== null && (
-            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-600">
-              Min {selected.min_price}₺
-            </span>
-          )}
-          <button onClick={clear} className="rounded-lg p-0.5 transition-colors hover:bg-violet-200">
-            <X size={13} className="text-violet-500" />
-          </button>
-        </div>
-      )}
+    <div className="overflow-hidden rounded-2xl border border-slate-700 bg-[#2d3046] shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+      <div className="border-b border-white/5 px-4 py-4">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white/80">
+              <span>Ä°lan Kategorileri</span>
+              {path.length > 0 &&
+                breadcrumbCats.map((category, index) => (
+                  <span key={category.id} className="flex items-center gap-2">
+                    <ChevronRight size={14} className="text-white/35" />
+                    <button
+                      onClick={() => {
+                        const nextPath = path.slice(0, index + 1);
+                        setPath(nextPath);
+                        onChange(null);
+                      }}
+                      className={`transition-colors ${
+                        index === path.length - 1 ? 'text-white' : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  </span>
+                ))}
+            </div>
+            {currentParent ? (
+              <div className="mt-1 text-xs text-white/45">Bu kategorinin alt baÅŸlÄ±klarÄ±ndan seÃ§im yapabilirsiniz.</div>
+            ) : (
+              <div className="mt-1 text-xs text-white/45">Kategori gÃ¶rsellerine tÄ±klayarak alt seviyelere inebilirsiniz.</div>
+            )}
+          </div>
 
-      <div className="border-b border-gray-100 px-3 py-2.5">
-        <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Kategori ara..."
-            className="w-full rounded-xl border border-gray-100 bg-gray-50 py-1.5 pl-8 pr-3 text-sm focus:border-violet-400 focus:outline-none"
-          />
-          {search && (
-            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2">
-              <X size={12} className="text-gray-400" />
-            </button>
-          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {path.length > 0 && (
+              <button
+                onClick={goBack}
+                className="inline-flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <ArrowLeft size={13} />
+                Geri
+              </button>
+            )}
+            {selected && (
+              <button
+                onClick={clear}
+                className="inline-flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+              >
+                <X size={13} />
+                Temizle
+              </button>
+            )}
+            <div className="relative min-w-[220px]">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Filtreleme yapÄ±n..."
+                className="w-full rounded-xl border border-white/10 bg-white/10 py-2 pl-9 pr-9 text-sm text-white placeholder:text-white/35 focus:border-violet-400 focus:outline-none"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/45 hover:text-white">
+                  <X size={13} />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {path.length > 0 && !search && (
-        <div className="flex items-center gap-1 overflow-x-auto border-b border-gray-100 bg-gray-50 px-3 py-2 text-xs">
-          <button
-            onClick={goBack}
-            className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 font-semibold text-gray-500 shadow-sm hover:text-violet-600"
-          >
-            <ArrowLeft size={12} />
-            Geri
-          </button>
-          <button onClick={clear} className="whitespace-nowrap font-semibold text-gray-500 hover:text-violet-600">
-            Tümü
-          </button>
-          {breadcrumbCats.map((category, index) => (
-            <span key={category.id} className="flex items-center gap-1">
-              <ChevronRight size={10} className="text-gray-400" />
-              <button
-                onClick={() => {
-                  const nextPath = path.slice(0, index + 1);
-                  setPath(nextPath);
-                  onChange(categories.find((item) => item.id === nextPath[nextPath.length - 1]) || null);
-                }}
-                className={`whitespace-nowrap font-semibold ${
-                  index === path.length - 1 ? 'text-violet-600' : 'text-gray-500 hover:text-violet-600'
-                }`}
-              >
-                {category.icon} {category.name}
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="max-h-[30rem] overflow-y-auto bg-gradient-to-b from-white to-slate-50/80">
-        {!search && (
-          <div className="border-b border-gray-100 px-4 py-3">
-            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-gray-400">
-              {currentParent ? 'Alt Kategoriler' : 'Kategori Seçimi'}
-            </div>
-            <div className="mt-1 text-sm font-semibold text-gray-700">
-              {currentParent ? `${currentParent.icon || '📁'} ${currentParent.name}` : 'Bir kategori seçerek devam edin'}
-            </div>
-          </div>
-        )}
-
+      <div className="max-h-[420px] overflow-y-auto bg-[#30344d]">
         {search ? (
           searchResults.length === 0 ? (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
+            <div className="px-4 py-10 text-center text-sm text-white/45">SonuÃ§ bulunamadÄ±.</div>
           ) : (
-            <div className="space-y-3 p-3">{searchResults.map((category) => renderCategoryCard(category, { showPath: true }))}</div>
+            renderCards(searchResults, true)
           )
         ) : currentLevel.length === 0 ? (
-          <div className="px-4 py-6 text-center text-sm text-gray-400">Kategori bulunamadı.</div>
+          <div className="px-4 py-10 text-center text-sm text-white/45">Kategori bulunamadÄ±.</div>
         ) : (
-          <div className="space-y-3 p-3">{currentLevel.map((category) => renderCategoryCard(category))}</div>
+          renderCards(currentLevel)
         )}
       </div>
     </div>
   );
 }
+
