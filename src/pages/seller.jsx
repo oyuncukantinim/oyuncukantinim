@@ -131,7 +131,7 @@ export default function SellerPage() {
       {/* KAPAK + PROFİL */}
       <div className="card overflow-hidden">
         {/* Kapak */}
-        <div className="aspect-[30/7] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
+        <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
           {seller.banner_image && (
             <img src={seller.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
           )}
