@@ -259,7 +259,7 @@ export default function AdminUsers() {
     const xp = Number(generalForm.xp);
 
     if (!username) {
-      showToast('KullanÄ±cÄ± adÄ± gerekli.');
+      showToast('Kullanıcı adı gerekli.');
       return;
     }
     if (!email) {
@@ -267,7 +267,7 @@ export default function AdminUsers() {
       return;
     }
     if (Number.isNaN(level) || level < 0 || Number.isNaN(xp) || xp < 0) {
-      showToast('Seviye ve XP iÃ§in geÃ§erli deÄŸer girin.');
+      showToast('Seviye ve XP için geçerli değer girin.');
       return;
     }
 
@@ -283,7 +283,7 @@ export default function AdminUsers() {
       });
       await refreshDetail(detailUser.id);
       await load();
-      showToast('Genel bilgiler gÃ¼ncellendi.');
+      showToast('Genel bilgiler güncellendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -304,7 +304,7 @@ export default function AdminUsers() {
       });
       await refreshDetail(detailUser.id);
       await load();
-      showToast('KiÅŸisel bilgiler gÃ¼ncellendi.');
+      showToast('Kişisel bilgiler güncellendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -315,7 +315,7 @@ export default function AdminUsers() {
   const handleDrawerBalance = async () => {
     const amount = Number(financeForm.amount);
     if (Number.isNaN(amount) || amount < 0) {
-      showToast('GeÃ§erli bir tutar girin.');
+      showToast('Geçerli bir tutar girin.');
       return;
     }
 
@@ -328,7 +328,7 @@ export default function AdminUsers() {
       setFinanceForm((prev) => ({ ...prev, amount: '' }));
       await refreshDetail(detailUser.id, { reloadTransactions: true });
       await load();
-      showToast(financeForm.action === 'set' ? 'Bakiye gÃ¼ncellendi.' : 'Bakiye eklendi.');
+      showToast(financeForm.action === 'set' ? 'Bakiye güncellendi.' : 'Bakiye eklendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -354,7 +354,7 @@ export default function AdminUsers() {
       await refreshDetail(detailUser.id);
       await load();
       setModerationForm((prev) => ({ ...prev, new_password: '' }));
-      showToast('Moderasyon bilgileri gÃ¼ncellendi.');
+      showToast('Moderasyon bilgileri güncellendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -367,7 +367,7 @@ export default function AdminUsers() {
     try {
       const isBanned = Number(selectedUser.is_banned) !== 1;
       await adminUpdateUser({ user_id: selectedUser.id, is_banned: isBanned ? 1 : 0, ban_reason: banReason });
-      showToast(isBanned ? 'KullanÄ±cÄ± banlandÄ±.' : 'Ban kaldÄ±rÄ±ldÄ±.');
+      showToast(isBanned ? 'Kullanıcı banlandı.' : 'Ban kaldırıldı.');
       setModalType('');
       await load();
       if (detailUser?.id === selectedUser.id) {
@@ -382,7 +382,7 @@ export default function AdminUsers() {
 
   const handleBalance = async () => {
     if (!balanceAmount || Number.isNaN(Number(balanceAmount))) {
-      showToast('GeÃ§erli tutar girin.');
+      showToast('Geçerli tutar girin.');
       return;
     }
 
@@ -393,7 +393,7 @@ export default function AdminUsers() {
       else body.balance_set = parseFloat(balanceAmount);
 
       await adminUpdateUser(body);
-      showToast('Bakiye gÃ¼ncellendi.');
+      showToast('Bakiye güncellendi.');
       setModalType('');
       setBalanceAmount('');
       await load();
@@ -409,14 +409,14 @@ export default function AdminUsers() {
 
   const handlePassword = async () => {
     if (!newPassword) {
-      showToast('Åifre girin.');
+      showToast('Şifre girin.');
       return;
     }
 
     setSaving(true);
     try {
       await adminUpdateUser({ user_id: selectedUser.id, new_password: newPassword });
-      showToast('Åifre sÄ±fÄ±rlandÄ±.');
+      showToast('Şifre sıfırlandı.');
       setModalType('');
       setNewPassword('');
       if (detailUser?.id === selectedUser.id) {
@@ -430,10 +430,10 @@ export default function AdminUsers() {
   };
 
   const handleToggleAdmin = async (user) => {
-    if (!confirm(`${user.username} kullanÄ±cÄ±sÄ±nÄ±n admin yetkisini ${user.is_admin ? 'kaldÄ±r' : 'ver'}?`)) return;
+    if (!confirm(`${user.username} kullanıcısının admin yetkisini ${user.is_admin ? 'kaldır' : 'ver'}?`)) return;
     try {
       await adminUpdateUser({ user_id: user.id, is_admin: user.is_admin ? 0 : 1 });
-      showToast('GÃ¼ncellendi.');
+      showToast('Güncellendi.');
       await load();
       if (detailUser?.id === user.id) {
         await refreshDetail(user.id);
@@ -458,8 +458,8 @@ export default function AdminUsers() {
     );
   }, [userTxns]);
 
-  const fmtMoney = (n) => `${Number(n || 0).toFixed(2)} â‚º`;
-  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('tr-TR') : 'â€”');
+  const fmtMoney = (n) => `${Number(n || 0).toFixed(2)} ₺`;
+  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('tr-TR') : '—');
   const fmtDateTime = (d) =>
     d
       ? new Date(d).toLocaleString('tr-TR', {
@@ -469,7 +469,7 @@ export default function AdminUsers() {
           hour: '2-digit',
           minute: '2-digit',
         })
-      : 'â€”';
+      : '—';
 
   return (
     <AdminLayout>
@@ -490,7 +490,7 @@ export default function AdminUsers() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                placeholder="KullanÄ±cÄ± adÄ± veya e-posta ara..."
+                placeholder="Kullanıcı adı veya e-posta ara..."
                 className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm focus:border-violet-400 focus:outline-none"
               />
             </div>
@@ -504,7 +504,7 @@ export default function AdminUsers() {
             >
 <option value="">Tüm Kullanıcılar</option>
               <option value="0">Aktif</option>
-              <option value="1">BanlÄ±</option>
+              <option value="1">Banlı</option>
             </select>
           </div>
         </div>
@@ -512,11 +512,11 @@ export default function AdminUsers() {
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <div>
-              <h3 className="text-lg font-extrabold text-gray-800">KullanÄ±cÄ±lar</h3>
-              <p className="mt-1 text-sm text-gray-500">{total} kullanÄ±cÄ± listeleniyor</p>
+              <h3 className="text-lg font-extrabold text-gray-800">Kullanıcılar</h3>
+              <p className="mt-1 text-sm text-gray-500">{total} kullanıcı listeleniyor</p>
             </div>
             <div className="hidden rounded-2xl bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 md:block">
-              SatÄ±ra tÄ±klayarak detay panelini aÃ§
+              Satıra tıklayarak detay panelini aç
             </div>
           </div>
 
@@ -524,26 +524,26 @@ export default function AdminUsers() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">KullanÄ±cÄ±</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Kullanıcı</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 md:table-cell">E-posta</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 sm:table-cell">Bakiye</th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">Ä°lan</th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">SipariÅŸ</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">İlan</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">Sipariş</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Durum</th>
-                  <th className="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Ä°ÅŸlemler</th>
+                  <th className="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
-                      YÃ¼kleniyor...
+                      Yükleniyor...
                     </td>
                   </tr>
                 ) : users.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-10 text-center text-gray-400">
-                      KullanÄ±cÄ± bulunamadÄ±.
+                      Kullanıcı bulunamadı.
                     </td>
                   </tr>
                 ) : (
@@ -555,7 +555,7 @@ export default function AdminUsers() {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-xl">{u.avatar || 'ğŸ‘¤'}</span>
+                          <span className="text-xl">{u.avatar || '👤'}</span>
                           <div>
                             <div className="flex items-center gap-1.5 font-bold text-gray-800">
                               <span>{u.username}</span>
@@ -565,7 +565,7 @@ export default function AdminUsers() {
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-gray-400">#{u.id} Â· Lv.{u.level}</div>
+                            <div className="text-xs text-gray-400">#{u.id} · Lv.{u.level}</div>
                           </div>
                         </div>
                       </td>
@@ -575,7 +575,7 @@ export default function AdminUsers() {
                       <td className="hidden px-4 py-3 text-gray-600 lg:table-cell">{u.order_count}</td>
                       <td className="px-4 py-3">
                         {Number(u.is_banned) === 1 ? (
-                          <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-600">BanlÄ±</span>
+                          <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-600">Banlı</span>
                         ) : (
                           <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600">Aktif</span>
                         )}
@@ -604,14 +604,14 @@ export default function AdminUsers() {
                               setSelectedUser(u);
                               setModalType('password');
                             }}
-                            title="Åifre"
+                            title="Şifre"
                             className="rounded-lg p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
                           >
                             <Key size={15} />
                           </button>
                           <button
                             onClick={() => handleToggleAdmin(u)}
-                            title={Number(u.is_admin) === 1 ? 'Admin KaldÄ±r' : 'Admin Yap'}
+                            title={Number(u.is_admin) === 1 ? 'Admin Kaldır' : 'Admin Yap'}
                             className="rounded-lg p-1.5 text-gray-500 hover:bg-violet-50 hover:text-violet-600"
                           >
                             <ShieldCheck size={15} />
@@ -622,7 +622,7 @@ export default function AdminUsers() {
                               setBanReason(u.ban_reason || '');
                               setModalType('ban');
                             }}
-                            title={Number(u.is_banned) === 1 ? 'Ban KaldÄ±r' : 'Banla'}
+                            title={Number(u.is_banned) === 1 ? 'Ban Kaldır' : 'Banla'}
                             className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                           >
                             <Ban size={15} />
@@ -660,7 +660,7 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      <Drawer open={drawerOpen} title={selectedUser ? `${selectedUser.username} Â· KullanÄ±cÄ± DetayÄ±` : 'KullanÄ±cÄ± DetayÄ±'} onClose={closeDrawer}>
+      <Drawer open={drawerOpen} title={selectedUser ? `${selectedUser.username} · Kullanıcı Detayı` : 'Kullanıcı Detayı'} onClose={closeDrawer}>
         {detailLoading || !detailUser ? (
           <div className="py-12 text-center">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
@@ -670,7 +670,7 @@ export default function AdminUsers() {
             <div className="rounded-3xl border border-slate-100 bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5">
               <div className="flex items-center gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-100">
-                  {detailUser.avatar || 'ğŸ‘¤'}
+                  {detailUser.avatar || '👤'}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -679,20 +679,20 @@ export default function AdminUsers() {
                       <span className="rounded-full bg-violet-100 px-2 py-1 text-[11px] font-bold text-violet-700">Admin</span>
                     )}
                     {Number(detailUser.is_banned) === 1 && (
-                      <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">BanlÄ±</span>
+                      <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">Banlı</span>
                     )}
                   </div>
                   <div className="mt-1 text-sm text-slate-500">{detailUser.email}</div>
                   <div className="mt-1 text-xs text-slate-400">
-                    #{detailUser.id} Â· Seviye {detailUser.level} Â· {fmtDateTime(detailUser.created_at)}
+                    #{detailUser.id} · Seviye {detailUser.level} · {fmtDateTime(detailUser.created_at)}
                   </div>
                 </div>
               </div>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <SummaryCard icon={Wallet} label="Bakiye" value={fmtMoney(detailUser.balance)} tone="border-emerald-100 bg-emerald-50/70" />
-                <SummaryCard icon={FileText} label="Ä°lan" value={detailUser.listings?.length || 0} tone="border-violet-100 bg-violet-50/70" />
-                <SummaryCard icon={Clock} label="SipariÅŸ" value={detailUser.orders?.length || 0} tone="border-cyan-100 bg-cyan-50/70" />
+                <SummaryCard icon={FileText} label="İlan" value={detailUser.listings?.length || 0} tone="border-violet-100 bg-violet-50/70" />
+                <SummaryCard icon={Clock} label="Sipariş" value={detailUser.orders?.length || 0} tone="border-cyan-100 bg-cyan-50/70" />
               </div>
             </div>
             
@@ -700,8 +700,8 @@ export default function AdminUsers() {
               <div className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-7">
                 {[
                   { id: 'general', label: 'Genel' },
-                  { id: 'personal', label: 'KiÅŸisel' },
-                  { id: 'listings', label: 'Ä°lanlar' },
+                  { id: 'personal', label: 'Kişisel' },
+                  { id: 'listings', label: 'İlanlar' },
                   { id: 'finance', label: 'Finans' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
@@ -724,7 +724,7 @@ export default function AdminUsers() {
             {detailTab === 'general' && (
               <div className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <FormField label="KullanÄ±cÄ± AdÄ±">
+                  <FormField label="Kullanıcı Adı">
                     <input
                       value={generalForm.username}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, username: e.target.value }))}
@@ -743,7 +743,7 @@ export default function AdminUsers() {
                     <input
                       value={generalForm.avatar}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, avatar: e.target.value }))}
-                      placeholder="Emoji veya gÃ¶rsel URL"
+                      placeholder="Emoji veya görsel URL"
                       className={inputClass}
                     />
                   </FormField>
@@ -769,7 +769,7 @@ export default function AdminUsers() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <InfoRow icon={Mail} label="Mevcut E-posta" value={detailUser.email} />
-                  <InfoRow icon={Clock} label="KayÄ±t Tarihi" value={fmtDateTime(detailUser.created_at)} />
+                  <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
                 </div>
 
                 <div className="flex justify-end">
@@ -794,21 +794,21 @@ export default function AdminUsers() {
                       className={inputClass}
                     />
                   </FormField>
-                  <FormField label="Ãœlke">
+                  <FormField label="Ülke">
                     <input
                       value={personalForm.country}
                       onChange={(e) => setPersonalForm((prev) => ({ ...prev, country: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
-                  <FormField label="Åehir">
+                  <FormField label="Şehir">
                     <input
                       value={personalForm.city}
                       onChange={(e) => setPersonalForm((prev) => ({ ...prev, city: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
-                  <FormField label="Ä°lÃ§e" span="sm:col-span-2">
+                  <FormField label="İlçe" span="sm:col-span-2">
                     <input
                       value={personalForm.district}
                       onChange={(e) => setPersonalForm((prev) => ({ ...prev, district: e.target.value }))}
@@ -831,7 +831,7 @@ export default function AdminUsers() {
                     disabled={drawerSaving === 'personal'}
                     className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-violet-500 disabled:opacity-50"
                   >
-                    {drawerSaving === 'personal' ? 'Kaydediliyor...' : 'KiÅŸisel Bilgileri Kaydet'}
+                    {drawerSaving === 'personal' ? 'Kaydediliyor...' : 'Kişisel Bilgileri Kaydet'}
                   </button>
                 </div>
               </div>
@@ -856,9 +856,9 @@ export default function AdminUsers() {
                 <div className="rounded-2xl border border-slate-100 bg-white p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-extrabold text-slate-900">HÄ±zlÄ± Bakiye Ä°ÅŸlemi</div>
+                      <div className="text-sm font-extrabold text-slate-900">Hızlı Bakiye İşlemi</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        Drawer iÃ§inden ekleme veya doÄŸrudan bakiye ayarlama yapabilirsiniz.
+                        Drawer içinden ekleme veya doğrudan bakiye ayarlama yapabilirsiniz.
                       </div>
                     </div>
                     <div className="rounded-xl bg-slate-100 p-1">
@@ -911,14 +911,14 @@ export default function AdminUsers() {
                   <>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <SummaryCard icon={TrendingDown} label="Harcama" value={fmtMoney(transactionSummary.total_spent)} tone="border-red-100 bg-red-50/70" />
-                      <SummaryCard icon={TrendingUp} label="KazanÃ§" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
+                      <SummaryCard icon={TrendingUp} label="Kazanç" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
                       <SummaryCard icon={Clock} label="Bekleyen" value={fmtMoney(transactionSummary.pending_earn)} tone="border-amber-100 bg-amber-50/70" />
                     </div>
 
                     <div className="rounded-2xl border border-slate-100 bg-white p-4">
                       <div className="mb-3 text-sm font-extrabold text-slate-900">Son Finansal Hareketler</div>
                       {(userTxns || []).length === 0 ? (
-                        <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">Ä°ÅŸlem bulunamadÄ±.</div>
+                        <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">İşlem bulunamadı.</div>
                       ) : (
                         <div className="space-y-2">
                           {(userTxns || []).slice(0, 20).map((tx, i) => {
@@ -939,10 +939,10 @@ export default function AdminUsers() {
                                   <div className="text-right">
                                     <div className={`text-sm font-black ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                                       {net < 0 ? '' : '+'}
-                                      {Number(net).toFixed(2)} â‚º
+                                      {Number(net).toFixed(2)} ₺
                                     </div>
                                     <div className={`mt-1 text-[11px] font-bold ${isBalance ? 'text-violet-600' : isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
-                                      {isBalance ? 'Bakiye' : isPurchase ? 'AlÄ±m' : 'SatÄ±ÅŸ'}
+                                      {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
                                     </div>
                                   </div>
                                 </div>
@@ -964,7 +964,7 @@ export default function AdminUsers() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-bold text-slate-900">Admin Yetkisi</div>
-                        <div className="mt-1 text-xs text-slate-400">KullanÄ±cÄ±nÄ±n yÃ¶netim paneline eriÅŸimini belirler.</div>
+                        <div className="mt-1 text-xs text-slate-400">Kullanıcının yönetim paneline erişimini belirler.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -979,7 +979,7 @@ export default function AdminUsers() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-bold text-slate-900">Ban Durumu</div>
-                        <div className="mt-1 text-xs text-slate-400">Ban aktifse kullanÄ±cÄ± giriÅŸ yapamaz.</div>
+                        <div className="mt-1 text-xs text-slate-400">Ban aktifse kullanıcı giriş yapamaz.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -1001,17 +1001,17 @@ export default function AdminUsers() {
                       value={moderationForm.ban_reason}
                       onChange={(e) => setModerationForm((prev) => ({ ...prev, ban_reason: e.target.value }))}
                       disabled={!moderationForm.is_banned}
-                      placeholder="Kural ihlali, sahte iÅŸlem, spam vb."
+                      placeholder="Kural ihlali, sahte işlem, spam vb."
                       className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
                     />
                   </FormField>
 
-                  <FormField label="Yeni Åifre" span="sm:col-span-2">
+                  <FormField label="Yeni Şifre" span="sm:col-span-2">
                     <input
                       type="text"
                       value={moderationForm.new_password}
                       onChange={(e) => setModerationForm((prev) => ({ ...prev, new_password: e.target.value }))}
-                      placeholder="BoÅŸ bÄ±rakÄ±rsanÄ±z ÅŸifre deÄŸiÅŸmez"
+                      placeholder="Boş bırakırsanız şifre değişmez"
                       className={inputClass}
                     />
                   </FormField>
@@ -1019,7 +1019,7 @@ export default function AdminUsers() {
 
                 <div className="grid gap-3 sm:grid-cols-2">
                   <InfoRow icon={Ban} label="Mevcut Ban Sebebi" value={detailUser.ban_reason} />
-                  <InfoRow icon={ShieldCheck} label="Rol" value={Number(detailUser.is_admin) === 1 ? 'Admin' : 'Standart KullanÄ±cÄ±'} />
+                  <InfoRow icon={ShieldCheck} label="Rol" value={Number(detailUser.is_admin) === 1 ? 'Admin' : 'Standart Kullanıcı'} />
                 </div>
 
                 <div className="flex justify-end">
@@ -1028,7 +1028,7 @@ export default function AdminUsers() {
                     disabled={drawerSaving === 'moderation'}
                     className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-slate-800 disabled:opacity-50"
                   >
-                    {drawerSaving === 'moderation' ? 'Kaydediliyor...' : 'Moderasyon AyarlarÄ±nÄ± Kaydet'}
+                    {drawerSaving === 'moderation' ? 'Kaydediliyor...' : 'Moderasyon Ayarlarını Kaydet'}
                   </button>
                 </div>
               </div>
@@ -1038,7 +1038,7 @@ export default function AdminUsers() {
       </Drawer>
 
       {modalType === 'ban' && selectedUser && (
-        <Modal title={Number(selectedUser.is_banned) === 1 ? 'Ban KaldÄ±r' : `${selectedUser.username} KullanÄ±cÄ±sÄ±nÄ± Banla`} onClose={() => setModalType('')}>
+        <Modal title={Number(selectedUser.is_banned) === 1 ? 'Ban Kaldır' : `${selectedUser.username} Kullanıcısını Banla`} onClose={() => setModalType('')}>
           {Number(selectedUser.is_banned) !== 1 && (
             <div className="mb-4">
               <label className="mb-1.5 block text-sm font-bold text-gray-700">Ban Sebebi</label>
@@ -1052,8 +1052,8 @@ export default function AdminUsers() {
           )}
           <p className="mb-5 text-sm text-gray-600">
             {Number(selectedUser.is_banned) === 1
-              ? `${selectedUser.username} kullanÄ±cÄ±sÄ±nÄ±n banÄ± kaldÄ±rÄ±lacak.`
-              : `${selectedUser.username} kullanÄ±cÄ±sÄ± banlanacak ve giriÅŸ yapamayacak.`}
+              ? `${selectedUser.username} kullanıcısının banı kaldırılacak.`
+              : `${selectedUser.username} kullanıcısı banlanacak ve giriş yapamayacak.`}
           </p>
           <button
             onClick={handleBan}
@@ -1062,13 +1062,13 @@ export default function AdminUsers() {
               Number(selectedUser.is_banned) === 1 ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'
             }`}
           >
-            {saving ? 'Kaydediliyor...' : Number(selectedUser.is_banned) === 1 ? 'BanÄ± KaldÄ±r' : 'Banla'}
+            {saving ? 'Kaydediliyor...' : Number(selectedUser.is_banned) === 1 ? 'Banı Kaldır' : 'Banla'}
           </button>
         </Modal>
       )}
 
       {modalType === 'balance' && selectedUser && (
-        <Modal title={`${selectedUser.username} Â· Bakiye DÃ¼zenle`} onClose={() => setModalType('')}>
+        <Modal title={`${selectedUser.username} · Bakiye Düzenle`} onClose={() => setModalType('')}>
           <div className="mb-4 rounded-xl bg-gray-50 p-3 text-sm">
             Mevcut Bakiye: <span className="font-extrabold text-emerald-600">{fmtMoney(selectedUser.balance)}</span>
           </div>
@@ -1089,7 +1089,7 @@ export default function AdminUsers() {
             type="number"
             value={balanceAmount}
             onChange={(e) => setBalanceAmount(e.target.value)}
-            placeholder="Tutar (â‚º)"
+            placeholder="Tutar (₺)"
             className="mb-4 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
           />
           <button
@@ -1097,18 +1097,18 @@ export default function AdminUsers() {
             disabled={saving}
             className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white hover:bg-violet-500 disabled:opacity-50"
           >
-            {saving ? 'Kaydediliyor...' : 'GÃ¼ncelle'}
+            {saving ? 'Kaydediliyor...' : 'Güncelle'}
           </button>
         </Modal>
       )}
 
       {modalType === 'password' && selectedUser && (
-        <Modal title={`${selectedUser.username} Â· Åifre SÄ±fÄ±rla`} onClose={() => setModalType('')}>
+        <Modal title={`${selectedUser.username} · Şifre Sıfırla`} onClose={() => setModalType('')}>
           <input
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Yeni ÅŸifre"
+            placeholder="Yeni şifre"
             className="mb-4 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
           />
           <button
@@ -1116,7 +1116,7 @@ export default function AdminUsers() {
             disabled={saving}
             className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-50"
           >
-            {saving ? 'Kaydediliyor...' : 'Åifreyi SÄ±fÄ±rla'}
+            {saving ? 'Kaydediliyor...' : 'Şifreyi Sıfırla'}
           </button>
         </Modal>
       )}
