@@ -1,5 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Search, Ban, ShieldCheck, Wallet, Key, ChevronLeft, ChevronRight, X, Eye, TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  Search,
+  Ban,
+  ShieldCheck,
+  Wallet,
+  Key,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Eye,
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  User,
+  Mail,
+  MapPin,
+  FileText,
+} from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 
@@ -10,9 +27,60 @@ function Modal({ title, onClose, children }) {
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X size={18} />
+          </button>
         </div>
         {children}
+      </div>
+    </div>
+  );
+}
+
+function Drawer({ open, title, onClose, children }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-slate-950/35" onClick={onClose} />
+      <div className="absolute inset-y-0 right-0 w-full max-w-2xl bg-white shadow-2xl border-l border-slate-200 overflow-y-auto">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur">
+          <h2 className="text-lg font-extrabold text-slate-900">{title}</h2>
+          <button onClick={onClose} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="p-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function SummaryCard({ icon: Icon, label, value, tone }) {
+  return (
+    <div className={`rounded-2xl border px-4 py-3 ${tone}`}>
+      <div className="flex items-center justify-between">
+        <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{label}</div>
+        <Icon size={16} className="text-slate-400" />
+      </div>
+      <div className="mt-2 text-xl font-black text-slate-900">{value}</div>
+    </div>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value, multiline = false }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 rounded-xl bg-white p-2 text-slate-500 shadow-sm">
+          <Icon size={15} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
+          <div className={`mt-1 text-sm font-semibold text-slate-700 ${multiline ? 'whitespace-pre-wrap' : ''}`}>
+            {value || 'Belirtilmedi'}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -30,41 +98,69 @@ export default function AdminUsers() {
 
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailUser, setDetailUser] = useState(null);
-  const [modalType, setModalType] = useState(''); // 'ban'|'balance'|'password'|'detail'
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
   const [detailTab, setDetailTab] = useState('info');
   const [userTxns, setUserTxns] = useState(null);
+  const [txLoading, setTxLoading] = useState(false);
 
+  const [modalType, setModalType] = useState('');
   const [banReason, setBanReason] = useState('');
   const [balanceAction, setBalanceAction] = useState('add');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  };
 
   const load = useCallback(() => {
     setLoading(true);
     adminGetUsers({ page, search, is_banned: filterBanned })
-      .then(r => { setUsers(r.data.users); setTotal(r.data.total); setPages(r.data.pages); })
+      .then((r) => {
+        setUsers(r.data.users || []);
+        setTotal(r.data.total || 0);
+        setPages(r.data.pages || 1);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [page, search, filterBanned]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const openDetail = async (user) => {
     setSelectedUser(user);
-    setModalType('detail');
+    setDrawerOpen(true);
     setDetailTab('info');
     setUserTxns(null);
+    setDetailUser(null);
+    setDetailLoading(true);
+
     const res = await adminGetUser(user.id).catch(() => null);
     if (res) setDetailUser(res.data);
+    setDetailLoading(false);
+  };
+
+  const closeDrawer = () => {
+    setDrawerOpen(false);
+    setSelectedUser(null);
+    setDetailUser(null);
+    setUserTxns(null);
+    setDetailTab('info');
+    setDetailLoading(false);
+    setTxLoading(false);
   };
 
   const loadUserTxns = async (userId) => {
-    if (userTxns) return;
+    if (userTxns || txLoading) return;
+    setTxLoading(true);
     const res = await adminGetUserTransactions(userId).catch(() => null);
-    if (res) setUserTxns(res.data);
+    if (res) setUserTxns(res.data || []);
+    setTxLoading(false);
   };
 
   const handleBan = async () => {
@@ -73,129 +169,248 @@ export default function AdminUsers() {
       const isBanned = Number(selectedUser.is_banned) !== 1;
       await adminUpdateUser({ user_id: selectedUser.id, is_banned: isBanned ? 1 : 0, ban_reason: banReason });
       showToast(isBanned ? 'Kullanıcı banlandı.' : 'Ban kaldırıldı.');
-      setModalType(''); load();
-    } catch (e) { showToast(e.message); }
-    finally { setSaving(false); }
+      setModalType('');
+      load();
+      if (detailUser?.id === selectedUser.id) openDetail({ ...selectedUser, is_banned: isBanned ? 1 : 0 });
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleBalance = async () => {
-    if (!balanceAmount || isNaN(balanceAmount)) { showToast('Geçerli tutar girin.'); return; }
+    if (!balanceAmount || Number.isNaN(Number(balanceAmount))) {
+      showToast('Geçerli tutar girin.');
+      return;
+    }
+
     setSaving(true);
     try {
       const body = { user_id: selectedUser.id };
       if (balanceAction === 'add') body.balance_add = parseFloat(balanceAmount);
       else body.balance_set = parseFloat(balanceAmount);
+
       await adminUpdateUser(body);
       showToast('Bakiye güncellendi.');
-      setModalType(''); setBalanceAmount(''); load();
-    } catch (e) { showToast(e.message); }
-    finally { setSaving(false); }
+      setModalType('');
+      setBalanceAmount('');
+      load();
+      if (detailUser?.id === selectedUser.id) openDetail(selectedUser);
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handlePassword = async () => {
-    if (!newPassword) { showToast('Şifre girin.'); return; }
+    if (!newPassword) {
+      showToast('Şifre girin.');
+      return;
+    }
+
     setSaving(true);
     try {
       await adminUpdateUser({ user_id: selectedUser.id, new_password: newPassword });
       showToast('Şifre sıfırlandı.');
-      setModalType(''); setNewPassword('');
-    } catch (e) { showToast(e.message); }
-    finally { setSaving(false); }
+      setModalType('');
+      setNewPassword('');
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleToggleAdmin = async (user) => {
     if (!confirm(`${user.username} kullanıcısının admin yetkisini ${user.is_admin ? 'kaldır' : 'ver'}?`)) return;
     try {
       await adminUpdateUser({ user_id: user.id, is_admin: user.is_admin ? 0 : 1 });
-      showToast('Güncellendi.'); load();
-    } catch (e) { showToast(e.message); }
+      showToast('Güncellendi.');
+      load();
+      if (detailUser?.id === user.id) openDetail({ ...user, is_admin: user.is_admin ? 0 : 1 });
+    } catch (e) {
+      showToast(e.message);
+    }
   };
 
-  const fmtMoney = (n) => Number(n || 0).toFixed(2) + ' ₺';
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '—';
+  const transactionSummary = useMemo(() => {
+    const rows = userTxns || [];
+    return rows.reduce((acc, tx) => {
+      const amount = Number(tx.amount || 0);
+      const sellerAmount = Number(tx.seller_amount ?? tx.amount ?? 0);
+      if (tx.tx_type === 'purchase') acc.total_spent += amount;
+      if (tx.tx_type === 'sale' && Number(tx.seller_paid) === 1) acc.total_earned += sellerAmount;
+      if (tx.tx_type === 'sale' && Number(tx.seller_paid) !== 1) acc.pending_earn += sellerAmount;
+      return acc;
+    }, { total_spent: 0, total_earned: 0, pending_earn: 0 });
+  }, [userTxns]);
+
+  const fmtMoney = (n) => `${Number(n || 0).toFixed(2)} ₺`;
+  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('tr-TR') : '—');
+  const fmtDateTime = (d) =>
+    d
+      ? new Date(d).toLocaleString('tr-TR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : '—';
 
   return (
     <AdminLayout>
       {toast && (
-        <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>
+        <div className="fixed top-4 right-4 z-50 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-xl">
+          {toast}
+        </div>
       )}
 
       <div className="space-y-4">
-        {/* Filters */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
-              placeholder="Kullanıcı adı veya e-posta ara..."
-              className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400"
-            />
+        <div className="rounded-2xl border border-gray-100 bg-white p-4">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Kullanıcı adı veya e-posta ara..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm focus:border-violet-400 focus:outline-none"
+              />
+            </div>
+            <select
+              value={filterBanned}
+              onChange={(e) => {
+                setFilterBanned(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+            >
+              <option value="">Tüm Kullanıcılar</option>
+              <option value="0">Aktif</option>
+              <option value="1">Banlı</option>
+            </select>
           </div>
-          <select
-            value={filterBanned} onChange={e => { setFilterBanned(e.target.value); setPage(1); }}
-            className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400"
-          >
-            <option value="">Tüm Kullanıcılar</option>
-            <option value="0">Aktif</option>
-            <option value="1">Banlı</option>
-          </select>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-extrabold text-gray-800">Kullanıcılar</h3>
-            <span className="text-sm text-gray-500">{total} kullanıcı</span>
+        <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+            <div>
+              <h3 className="text-lg font-extrabold text-gray-800">Kullanıcılar</h3>
+              <p className="mt-1 text-sm text-gray-500">{total} kullanıcı listeleniyor</p>
+            </div>
+            <div className="hidden rounded-2xl bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 md:block">
+              Satıra tıklayarak detay panelini aç
+            </div>
           </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kullanıcı</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden md:table-cell">E-posta</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden sm:table-cell">Bakiye</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">İlan</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase hidden lg:table-cell">Sipariş</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase">Durum</th>
-                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase">İşlemler</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Kullanıcı</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 md:table-cell">E-posta</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 sm:table-cell">Bakiye</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">İlan</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">Sipariş</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Durum</th>
+                  <th className="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">İşlemler</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Yükleniyor...</td></tr>
+                  <tr>
+                    <td colSpan={7} className="px-4 py-10 text-center text-gray-400">Yükleniyor...</td>
+                  </tr>
                 ) : users.length === 0 ? (
-                  <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-400">Kullanıcı bulunamadı.</td></tr>
-                ) : users.map(u => (
-                  <tr key={u.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+                  <tr>
+                    <td colSpan={7} className="px-4 py-10 text-center text-gray-400">Kullanıcı bulunamadı.</td>
+                  </tr>
+                ) : users.map((u) => (
+                  <tr
+                    key={u.id}
+                    onClick={() => openDetail(u)}
+                    className="cursor-pointer border-t border-gray-50 transition-colors hover:bg-violet-50/40"
+                  >
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <span className="text-xl">{u.avatar || '👤'}</span>
                         <div>
-                          <div className="font-bold text-gray-800 flex items-center gap-1">
-                            {u.username}
-                            {Number(u.is_admin) === 1 && <span className="text-[10px] bg-violet-100 text-violet-600 font-bold px-1.5 py-0.5 rounded-full">Admin</span>}
+                          <div className="flex items-center gap-1.5 font-bold text-gray-800">
+                            <span>{u.username}</span>
+                            {Number(u.is_admin) === 1 && (
+                              <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-600">
+                                Admin
+                              </span>
+                            )}
                           </div>
                           <div className="text-xs text-gray-400">#{u.id} · Lv.{u.level}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs hidden md:table-cell">{u.email}</td>
-                    <td className="px-4 py-3 font-bold text-emerald-600 hidden sm:table-cell">{fmtMoney(u.balance)}</td>
-                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{u.listing_count}</td>
-                    <td className="px-4 py-3 text-gray-600 hidden lg:table-cell">{u.order_count}</td>
+                    <td className="hidden px-4 py-3 text-xs text-gray-500 md:table-cell">{u.email}</td>
+                    <td className="hidden px-4 py-3 font-bold text-emerald-600 sm:table-cell">{fmtMoney(u.balance)}</td>
+                    <td className="hidden px-4 py-3 text-gray-600 lg:table-cell">{u.listing_count}</td>
+                    <td className="hidden px-4 py-3 text-gray-600 lg:table-cell">{u.order_count}</td>
                     <td className="px-4 py-3">
-                      {Number(u.is_banned) === 1
-                        ? <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-full">Banlı</span>
-                        : <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Aktif</span>
-                      }
+                      {Number(u.is_banned) === 1 ? (
+                        <span className="rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-600">Banlı</span>
+                      ) : (
+                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600">Aktif</span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openDetail(u)} title="Detay" className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-700"><Eye size={15} /></button>
-                        <button onClick={() => { setSelectedUser(u); setModalType('balance'); }} title="Bakiye" className="p-1.5 rounded-lg hover:bg-emerald-50 text-gray-500 hover:text-emerald-600"><Wallet size={15} /></button>
-                        <button onClick={() => { setSelectedUser(u); setModalType('password'); }} title="Şifre" className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-500 hover:text-blue-600"><Key size={15} /></button>
-                        <button onClick={() => handleToggleAdmin(u)} title={Number(u.is_admin) === 1 ? 'Admin Kaldır' : 'Admin Yap'} className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-500 hover:text-violet-600"><ShieldCheck size={15} /></button>
-                        <button onClick={() => { setSelectedUser(u); setBanReason(u.ban_reason || ''); setModalType('ban'); }} title={Number(u.is_banned) === 1 ? 'Ban Kaldır' : 'Banla'} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600"><Ban size={15} /></button>
+                      <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => openDetail(u)}
+                          title="Detay"
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                        >
+                          <Eye size={15} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setModalType('balance');
+                          }}
+                          title="Bakiye"
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-emerald-50 hover:text-emerald-600"
+                        >
+                          <Wallet size={15} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setModalType('password');
+                          }}
+                          title="Şifre"
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          <Key size={15} />
+                        </button>
+                        <button
+                          onClick={() => handleToggleAdmin(u)}
+                          title={Number(u.is_admin) === 1 ? 'Admin Kaldır' : 'Admin Yap'}
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-violet-50 hover:text-violet-600"
+                        >
+                          <ShieldCheck size={15} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedUser(u);
+                            setBanReason(u.ban_reason || '');
+                            setModalType('ban');
+                          }}
+                          title={Number(u.is_banned) === 1 ? 'Ban Kaldır' : 'Banla'}
+                          className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                        >
+                          <Ban size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -204,161 +419,257 @@ export default function AdminUsers() {
             </table>
           </div>
 
-          {/* Pagination */}
           {pages > 1 && (
-            <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+            <div className="flex items-center justify-between border-t border-gray-100 px-5 py-3">
               <span className="text-xs text-gray-500">Sayfa {page} / {pages}</span>
               <div className="flex gap-2">
-                <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1} className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30"><ChevronLeft size={16} /></button>
-                <button onClick={() => setPage(p => Math.min(pages, p+1))} disabled={page === pages} className="p-1.5 rounded-lg hover:bg-gray-100 disabled:opacity-30"><ChevronRight size={16} /></button>
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                  disabled={page === pages}
+                  className="rounded-lg p-1.5 hover:bg-gray-100 disabled:opacity-30"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Ban Modal */}
+      <Drawer open={drawerOpen} title={selectedUser ? `${selectedUser.username} · Kullanıcı Detayı` : 'Kullanıcı Detayı'} onClose={closeDrawer}>
+        {detailLoading || !detailUser ? (
+          <div className="py-12 text-center">
+            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <div className="rounded-3xl border border-slate-100 bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-100">
+                  {detailUser.avatar || '👤'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="truncate text-xl font-black text-slate-900">{detailUser.username}</h3>
+                    {Number(detailUser.is_admin) === 1 && (
+                      <span className="rounded-full bg-violet-100 px-2 py-1 text-[11px] font-bold text-violet-700">Admin</span>
+                    )}
+                    {Number(detailUser.is_banned) === 1 && (
+                      <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">Banlı</span>
+                    )}
+                  </div>
+                  <div className="mt-1 text-sm text-slate-500">{detailUser.email}</div>
+                  <div className="mt-1 text-xs text-slate-400">#{detailUser.id} · Seviye {detailUser.level} · {fmtDate(detailUser.created_at)}</div>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <SummaryCard icon={Wallet} label="Bakiye" value={fmtMoney(detailUser.balance)} tone="border-emerald-100 bg-emerald-50/70" />
+                <SummaryCard icon={FileText} label="İlan" value={detailUser.listings?.length || 0} tone="border-violet-100 bg-violet-50/70" />
+                <SummaryCard icon={Clock} label="Sipariş" value={detailUser.orders?.length || 0} tone="border-cyan-100 bg-cyan-50/70" />
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-slate-100 p-1">
+              <div className="flex gap-1">
+                {[{ id: 'info', label: 'Genel Bilgiler' }, { id: 'finance', label: 'Finans' }].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setDetailTab(tab.id);
+                      if (tab.id === 'finance') loadUserTxns(detailUser.id);
+                    }}
+                    className={`flex-1 rounded-xl px-3 py-2 text-sm font-bold transition-all ${
+                      detailTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {detailTab === 'info' && (
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <InfoRow icon={User} label="Ad Soyad" value={detailUser.full_name} />
+                  <InfoRow icon={Mail} label="E-posta" value={detailUser.email} />
+                  <InfoRow
+                    icon={MapPin}
+                    label="Konum"
+                    value={[detailUser.district, detailUser.city, detailUser.country].filter(Boolean).join(' / ')}
+                  />
+                  <InfoRow icon={Ban} label="Ban Sebebi" value={detailUser.ban_reason} />
+                </div>
+
+                <InfoRow icon={MapPin} label="Adres" value={detailUser.address} multiline />
+
+                {detailUser.bio && (
+                  <InfoRow icon={FileText} label="Biyografi" value={detailUser.bio} multiline />
+                )}
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son İlanlar</div>
+                  {detailUser.listings?.length > 0 ? (
+                    <div className="space-y-2">
+                      {detailUser.listings.slice(0, 5).map((listing) => (
+                        <div key={listing.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm">
+                          <span className="min-w-0 flex-1 truncate font-semibold text-slate-700">{listing.title}</span>
+                          <span className="ml-3 font-bold text-emerald-600">{fmtMoney(listing.price)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">İlan bulunmuyor.</div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {detailTab === 'finance' && (
+              <div className="space-y-4">
+                {txLoading && !userTxns ? (
+                  <div className="py-12 text-center">
+                    <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <SummaryCard icon={TrendingDown} label="Harcama" value={fmtMoney(transactionSummary.total_spent)} tone="border-red-100 bg-red-50/70" />
+                      <SummaryCard icon={TrendingUp} label="Kazanç" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
+                      <SummaryCard icon={Clock} label="Bekleyen" value={fmtMoney(transactionSummary.pending_earn)} tone="border-amber-100 bg-amber-50/70" />
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                      <div className="mb-3 text-sm font-extrabold text-slate-900">Son Finansal Hareketler</div>
+                      {(userTxns || []).length === 0 ? (
+                        <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">İşlem bulunamadı.</div>
+                      ) : (
+                        <div className="space-y-2">
+                          {(userTxns || []).slice(0, 20).map((tx, i) => {
+                            const isPurchase = tx.tx_type === 'purchase';
+                            const net = isPurchase ? -Number(tx.amount || 0) : Number(tx.seller_amount ?? tx.amount ?? 0);
+                            return (
+                              <div key={`${tx.tx_type}-${tx.id}-${i}`} className="rounded-xl bg-slate-50 px-3 py-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0 flex-1">
+                                    <div className="truncate text-sm font-bold text-slate-800">{tx.item_title || 'İşlem'}</div>
+                                    <div className="mt-1 text-xs text-slate-400">{tx.counterparty || '—'} · {fmtDateTime(tx.created_at)}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className={`text-sm font-black ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                                      {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                                    </div>
+                                    <div className={`mt-1 text-[11px] font-bold ${isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
+                                      {isPurchase ? 'Alım' : 'Satış'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </Drawer>
+
       {modalType === 'ban' && selectedUser && (
-        <Modal title={Number(selectedUser.is_banned) === 1 ? 'Ban Kaldır' : `${selectedUser.username} Kullanıcısını Banla`} onClose={() => setModalType('')}>
+        <Modal
+          title={Number(selectedUser.is_banned) === 1 ? 'Ban Kaldır' : `${selectedUser.username} Kullanıcısını Banla`}
+          onClose={() => setModalType('')}
+        >
           {Number(selectedUser.is_banned) !== 1 && (
             <div className="mb-4">
-              <label className="block text-sm font-bold text-gray-700 mb-1.5">Ban Sebebi</label>
-              <input value={banReason} onChange={e => setBanReason(e.target.value)} placeholder="Kural ihlali, spam vb." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+              <label className="mb-1.5 block text-sm font-bold text-gray-700">Ban Sebebi</label>
+              <input
+                value={banReason}
+                onChange={(e) => setBanReason(e.target.value)}
+                placeholder="Kural ihlali, spam vb."
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+              />
             </div>
           )}
-          <p className="text-sm text-gray-600 mb-5">
+          <p className="mb-5 text-sm text-gray-600">
             {Number(selectedUser.is_banned) === 1
               ? `${selectedUser.username} kullanıcısının banı kaldırılacak.`
-              : `${selectedUser.username} kullanıcısı banlanacak ve giriş yapamayacak.`
-            }
+              : `${selectedUser.username} kullanıcısı banlanacak ve giriş yapamayacak.`}
           </p>
-          <button onClick={handleBan} disabled={saving} className={`w-full py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 text-white ${Number(selectedUser.is_banned) === 1 ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'}`}>
-            {saving ? 'Kaydediliyor...' : (Number(selectedUser.is_banned) === 1 ? 'Banı Kaldır' : 'Banla')}
+          <button
+            onClick={handleBan}
+            disabled={saving}
+            className={`w-full rounded-xl py-2.5 text-sm font-bold text-white transition-all disabled:opacity-50 ${
+              Number(selectedUser.is_banned) === 1 ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-red-600 hover:bg-red-500'
+            }`}
+          >
+            {saving ? 'Kaydediliyor...' : Number(selectedUser.is_banned) === 1 ? 'Banı Kaldır' : 'Banla'}
           </button>
         </Modal>
       )}
 
-      {/* Balance Modal */}
       {modalType === 'balance' && selectedUser && (
-        <Modal title={`${selectedUser.username} - Bakiye Düzenle`} onClose={() => setModalType('')}>
-          <div className="mb-4 bg-gray-50 rounded-xl p-3 text-sm">
+        <Modal title={`${selectedUser.username} · Bakiye Düzenle`} onClose={() => setModalType('')}>
+          <div className="mb-4 rounded-xl bg-gray-50 p-3 text-sm">
             Mevcut Bakiye: <span className="font-extrabold text-emerald-600">{fmtMoney(selectedUser.balance)}</span>
           </div>
-          <div className="flex gap-2 mb-4">
-            {['add','set'].map(a => (
-              <button key={a} onClick={() => setBalanceAction(a)} className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${balanceAction === a ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-600'}`}>
-                {a === 'add' ? 'Ekle' : 'Ayarla'}
+          <div className="mb-4 flex gap-2">
+            {['add', 'set'].map((action) => (
+              <button
+                key={action}
+                onClick={() => setBalanceAction(action)}
+                className={`flex-1 rounded-xl py-2 text-sm font-bold transition-all ${
+                  balanceAction === action ? 'bg-violet-600 text-white' : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                {action === 'add' ? 'Ekle' : 'Ayarla'}
               </button>
             ))}
           </div>
-          <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)} placeholder="Tutar (₺)" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm mb-4 focus:outline-none focus:border-violet-400" />
-          <button onClick={handleBalance} disabled={saving} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
+          <input
+            type="number"
+            value={balanceAmount}
+            onChange={(e) => setBalanceAmount(e.target.value)}
+            placeholder="Tutar (₺)"
+            className="mb-4 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+          />
+          <button
+            onClick={handleBalance}
+            disabled={saving}
+            className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white hover:bg-violet-500 disabled:opacity-50"
+          >
             {saving ? 'Kaydediliyor...' : 'Güncelle'}
           </button>
         </Modal>
       )}
 
-      {/* Password Modal */}
       {modalType === 'password' && selectedUser && (
-        <Modal title={`${selectedUser.username} - Şifre Sıfırla`} onClose={() => setModalType('')}>
-          <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Yeni şifre" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm mb-4 focus:outline-none focus:border-violet-400" />
-          <button onClick={handlePassword} disabled={saving} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
+        <Modal title={`${selectedUser.username} · Şifre Sıfırla`} onClose={() => setModalType('')}>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Yeni şifre"
+            className="mb-4 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+          />
+          <button
+            onClick={handlePassword}
+            disabled={saving}
+            className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-500 disabled:opacity-50"
+          >
             {saving ? 'Kaydediliyor...' : 'Şifreyi Sıfırla'}
           </button>
-        </Modal>
-      )}
-
-      {/* Detail Modal */}
-      {modalType === 'detail' && selectedUser && (
-        <Modal title={`${selectedUser.username} - Detay`} onClose={() => { setModalType(''); setDetailUser(null); setUserTxns(null); }}>
-          {/* Tabs */}
-          <div className="flex gap-1 mb-4 bg-gray-100 rounded-xl p-1">
-            {[{ id: 'info', label: 'Genel' }, { id: 'finance', label: 'Finansal' }].map(t => (
-              <button key={t.id} onClick={() => { setDetailTab(t.id); if (t.id === 'finance') loadUserTxns(selectedUser.id); }}
-                className={`flex-1 py-1.5 rounded-lg text-sm font-bold transition-all ${detailTab === t.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
-                {t.label}
-              </button>
-            ))}
-          </div>
-
-          {detailTab === 'info' && (
-            !detailUser ? (
-              <div className="py-8 text-center"><div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
-            ) : (
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                  <span className="text-3xl">{detailUser.avatar}</span>
-                  <div>
-                    <div className="font-extrabold text-gray-900">{detailUser.username}</div>
-                    <div className="text-gray-500">{detailUser.email}</div>
-                    <div className="text-xs text-gray-400">#{detailUser.id} · Seviye {detailUser.level} · {fmtDate(detailUser.created_at)}</div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-emerald-50 rounded-xl p-3 text-center"><div className="font-extrabold text-emerald-700">{fmtMoney(detailUser.balance)}</div><div className="text-xs text-gray-500">Bakiye</div></div>
-                  <div className="bg-violet-50 rounded-xl p-3 text-center"><div className="font-extrabold text-violet-700">{detailUser.listings?.length || 0}</div><div className="text-xs text-gray-500">İlan</div></div>
-                </div>
-                {detailUser.listings?.length > 0 && (
-                  <div>
-                    <div className="font-bold text-gray-700 mb-2">Son İlanlar</div>
-                    <div className="space-y-1.5">
-                      {detailUser.listings.slice(0,5).map(l => (
-                        <div key={l.id} className="flex justify-between text-xs bg-gray-50 rounded-lg px-3 py-2">
-                          <span className="truncate flex-1 text-gray-700">{l.title}</span>
-                          <span className="font-bold text-emerald-600 ml-2">{fmtMoney(l.price)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          )}
-
-          {detailTab === 'finance' && (
-            !userTxns ? (
-              <div className="py-8 text-center"><div className="w-6 h-6 border-2 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" /></div>
-            ) : (
-              <div className="space-y-3 text-sm">
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-red-50 rounded-xl p-2.5 text-center">
-                    <TrendingDown size={14} className="text-red-500 mx-auto mb-1" />
-                    <div className="font-extrabold text-red-600 text-sm">{fmtMoney(userTxns.summary?.total_spent)}</div>
-                    <div className="text-[10px] text-gray-500">Harcama</div>
-                  </div>
-                  <div className="bg-emerald-50 rounded-xl p-2.5 text-center">
-                    <TrendingUp size={14} className="text-emerald-600 mx-auto mb-1" />
-                    <div className="font-extrabold text-emerald-600 text-sm">{fmtMoney(userTxns.summary?.total_earned)}</div>
-                    <div className="text-[10px] text-gray-500">Kazanç</div>
-                  </div>
-                  <div className="bg-yellow-50 rounded-xl p-2.5 text-center">
-                    <Clock size={14} className="text-yellow-600 mx-auto mb-1" />
-                    <div className="font-extrabold text-yellow-600 text-sm">{fmtMoney(userTxns.summary?.pending_earn)}</div>
-                    <div className="text-[10px] text-gray-500">Bekleyen</div>
-                  </div>
-                </div>
-                <div className="space-y-1.5 max-h-60 overflow-y-auto">
-                  {(userTxns.transactions || []).length === 0 ? (
-                    <div className="text-center text-gray-400 py-6 text-xs">İşlem bulunamadı.</div>
-                  ) : (userTxns.transactions || []).map((tx, i) => {
-                    const isPurchase = tx.tx_type === 'purchase';
-                    const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
-                    return (
-                      <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                          {isPurchase ? 'Alım' : 'Satış'}
-                        </span>
-                        <span className="flex-1 truncate text-xs text-gray-700">{tx.item_title || '—'}</span>
-                        <span className={`font-extrabold text-xs ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                          {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )
-          )}
         </Modal>
       )}
     </AdminLayout>
