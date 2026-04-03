@@ -597,12 +597,13 @@ export default function ProfilePage() {
       <div className="card overflow-hidden">
         <div className="h-32 sm:h-36 relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
           {user.banner_image ? (
-            <>
-              <img src={user.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-slate-900/20" />
-            </>
+            <img src={user.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+            <>
+              <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+              <div className="absolute -top-10 right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl" />
+              <div className="absolute -bottom-8 left-12 w-40 h-24 rounded-full bg-cyan-200/20 blur-2xl" />
+            </>
           )}
         </div>
         <div className="px-6 sm:px-8 pb-6 relative">
@@ -1027,14 +1028,16 @@ export default function ProfilePage() {
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="h-24 sm:h-28 relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
                         {normalizedBannerImage ? (
-                          <>
-                            <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                            <div className="absolute inset-0 bg-slate-900/20" />
-                          </>
+                          <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
-                          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-semibold">
-                            Banner onizlemesi burada gorunecek
-                          </div>
+                          <>
+                            <div className="absolute inset-0 bg-white/25" />
+                            <div className="absolute -top-8 right-6 w-24 h-24 rounded-full bg-white/25 blur-2xl" />
+                            <div className="absolute -bottom-8 left-8 w-28 h-20 rounded-full bg-cyan-200/25 blur-2xl" />
+                            <div className="absolute inset-x-0 bottom-3 flex justify-center text-gray-500 text-xs font-semibold">
+                              Varsayilan banner gorunumu
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>

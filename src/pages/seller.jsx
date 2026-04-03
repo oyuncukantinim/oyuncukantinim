@@ -135,10 +135,14 @@ export default function SellerPage() {
           {seller.banner_image && (
             <img src={seller.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
           )}
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute bottom-0 right-8 opacity-10 pointer-events-none">
-            <Trophy size={120} className="text-white" />
-          </div>
+          {!seller.banner_image && (
+            <>
+              <div className="absolute inset-0 bg-black/10" />
+              <div className="absolute bottom-0 right-8 opacity-10 pointer-events-none">
+                <Trophy size={120} className="text-white" />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Profil içeriği */}
