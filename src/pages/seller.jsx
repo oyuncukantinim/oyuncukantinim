@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Star, MessageCircle, UserPlus, UserCheck, ShieldCheck,
   Package, ThumbsUp, Clock, ChevronRight, Image as ImageIcon,
-  Flame, Award, Zap, Diamond, Trophy, Medal, Edit3
+  Flame, Award, Zap, Diamond, Trophy, Medal
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -131,8 +131,11 @@ export default function SellerPage() {
       {/* KAPAK + PROFİL */}
       <div className="card overflow-hidden">
         {/* Kapak */}
-        <div className="h-40 bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative">
-          <div className="absolute inset-0 bg-black/10" />
+        <div className="h-32 sm:h-36 bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
+          {seller.banner_image && (
+            <img src={seller.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          )}
+          <div className="absolute inset-0 bg-black/20" />
           <div className="absolute bottom-0 right-8 opacity-10 pointer-events-none">
             <Trophy size={120} className="text-white" />
           </div>
@@ -167,11 +170,6 @@ export default function SellerPage() {
                     }
                   </button>
                 </>
-              )}
-              {isOwnProfile && (
-                <Link to="/profile" className="btn-secondary py-2 px-4 text-sm flex items-center gap-1.5">
-                  <Edit3 size={15} /> Profili Düzenle
-                </Link>
               )}
             </div>
           </div>
@@ -366,3 +364,5 @@ function formatDate(dateStr) {
   if (!dateStr) return '';
   return new Date(dateStr).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' });
 }
+
+

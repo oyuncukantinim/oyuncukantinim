@@ -425,6 +425,7 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [bannerImage, setBannerImage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
@@ -440,6 +441,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
+    setBannerImage(user.banner_image || '');
     setSelectedAvatar(user.avatar || '👤');
     setPersonalInfo({
       full_name: user.full_name || '',
@@ -478,7 +480,12 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const normalizedUsername = editUsername.trim();
-  const profileDirty = normalizedUsername !== (user.username || '') || selectedAvatar !== (user.avatar || '👤') || Boolean(newPassword);
+  const normalizedBannerImage = bannerImage.trim();
+  const profileDirty =
+    normalizedUsername !== (user.username || '') ||
+    selectedAvatar !== (user.avatar || '') ||
+    normalizedBannerImage !== (user.banner_image || '') ||
+    Boolean(newPassword);
   const personalDirty =
     personalInfo.full_name !== (user.full_name || '') ||
     personalInfo.country !== (user.country || '') ||
@@ -490,6 +497,11 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const payload = {};
+      if (!isValidImageUrl(normalizedBannerImage)) {
+        showToast(`Banner gorseli gecersiz. Izinli alanlar: ${ALLOWED_DOMAINS_LABEL}`);
+        setSaving(false);
+        return;
+      }
       if (!normalizedUsername) {
         showToast('Kullanıcı adı boş bırakılamaz.');
         setSaving(false);
@@ -497,11 +509,13 @@ export default function ProfilePage() {
       }
       if (normalizedUsername !== user.username) payload.new_username = normalizedUsername;
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
+      if (normalizedBannerImage !== (user.banner_image || '')) payload.banner_image = normalizedBannerImage;
       if (newPassword) payload.new_password = newPassword;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditUsername(res.data.username || '');
+      setBannerImage(res.data.banner_image || '');
       setSelectedAvatar(res.data.avatar || '👤');
       setNewPassword('');
       setShowPassword(false);
@@ -581,8 +595,15 @@ export default function ProfilePage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Profile Header */}
       <div className="card overflow-hidden">
-        <div className="h-28 bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20 relative">
-          <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+        <div className="h-32 sm:h-36 relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
+          {user.banner_image ? (
+            <>
+              <img src={user.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-slate-900/20" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
+          )}
         </div>
         <div className="px-6 sm:px-8 pb-6 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 mb-4">
@@ -606,26 +627,6 @@ export default function ProfilePage() {
                   <Shield size={12}/> Admin Paneli
                 </Link>
               )}
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
-                  activeTab === 'profile'
-                    ? 'bg-violet-100 text-violet-700 border border-violet-200'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-violet-300 hover:text-violet-600'
-                }`}
-              >
-                <Edit3 size={12}/> Profili Düzenle
-              </button>
-              <button
-                onClick={() => setActiveTab('personal')}
-                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
-                  activeTab === 'personal'
-                    ? 'bg-cyan-100 text-cyan-700 border border-cyan-200'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-cyan-300 hover:text-cyan-600'
-                }`}
-              >
-                <MapPin size={12}/> Kişisel Bilgiler
-              </button>
               <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
                 🏪 Mağazamı Gör
               </Link>
@@ -1000,6 +1001,42 @@ export default function ProfilePage() {
                           {av}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-600">Profil Banner Gorseli</label>
+                        <p className="text-xs text-gray-400 mt-1">`/profile` ve `/p/kullaniciadi` sayfalarinda ayni gorsel kullanilir.</p>
+                      </div>
+                      <span className="text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-1">
+                        Cerceve: 1500 x 450 px
+                      </span>
+                    </div>
+                    <input
+                      type="url"
+                      value={bannerImage}
+                      onChange={e => setBannerImage(e.target.value)}
+                      placeholder="https://..."
+                      className="input-field"
+                    />
+                    <p className="text-xs text-gray-400">
+                      Onerilen oran 10:3. Bos birakirsan banner kaldirilir. Izinli alanlar: {ALLOWED_DOMAINS_LABEL}
+                    </p>
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                      <div className="h-24 sm:h-28 relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
+                        {normalizedBannerImage ? (
+                          <>
+                            <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-slate-900/20" />
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs font-semibold">
+                            Banner onizlemesi burada gorunecek
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1512,3 +1549,5 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     </div>
   );
 }
+
+
