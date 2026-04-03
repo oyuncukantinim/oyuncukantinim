@@ -11,7 +11,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
           ? 'border-violet-400 ring-2 ring-violet-200'
           : 'border-gray-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md'
       }`}
-      style={{ aspectRatio: '150 / 250' }}
+      style={{ aspectRatio: '240 / 340' }}
     >
       {category.image ? (
         <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
