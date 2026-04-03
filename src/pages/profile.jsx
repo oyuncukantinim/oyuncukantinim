@@ -595,7 +595,7 @@ export default function ProfilePage() {
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Profile Header */}
       <div className="card overflow-hidden">
-        <div className="aspect-[15/4] relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
+        <div className="aspect-[30/7] relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
           {user.banner_image ? (
             <img src={user.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
@@ -1012,7 +1012,7 @@ export default function ProfilePage() {
                         <p className="text-xs text-gray-400 mt-1">`/profile` ve `/p/kullaniciadi` sayfalarinda ayni gorsel kullanilir.</p>
                       </div>
                       <span className="text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-1">
-                        Tuval: 1500 x 400 px
+                        Tuval: 1500 x 350 px
                       </span>
                     </div>
                     <input
@@ -1023,10 +1023,10 @@ export default function ProfilePage() {
                       className="input-field"
                     />
                     <p className="text-xs text-gray-400">
-                      Tam oturma icin 1500 x 400 px ya da ayni 15:4 oranini kullan. Bos birakirsan banner kaldirilir. Izinli alanlar: {ALLOWED_DOMAINS_LABEL}
+                      Tam oturma icin 1500 x 350 px ya da ayni 30:7 oranini kullan. Bos birakirsan banner kaldirilir. Izinli alanlar: {ALLOWED_DOMAINS_LABEL}
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                      <div className="aspect-[15/4] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
+                      <div className="aspect-[30/7] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
                         {normalizedBannerImage ? (
                           <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
