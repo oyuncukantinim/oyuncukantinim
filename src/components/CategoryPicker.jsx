@@ -1,174 +1,222 @@
-import { useState, useMemo } from 'react';
-import { Search, ChevronRight, X, Check } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { ArrowLeft, Check, ChevronRight, Search, X } from 'lucide-react';
 
-/**
- * CategoryPicker
- * props:
- *   categories: flat array from get_categories_tree
- *   value: selected category id (number|null)
- *   onChange: (category) => void  — category object or null
- */
 export default function CategoryPicker({ categories = [], value, onChange }) {
   const [search, setSearch] = useState('');
-  const [path, setPath] = useState([]); // array of category ids navigated into
+  const [path, setPath] = useState([]);
 
-  // Seçili kategori objesi
-  const selected = useMemo(() => categories.find(c => c.id === value) || null, [categories, value]);
+  const selected = useMemo(() => categories.find((category) => category.id === value) || null, [categories, value]);
 
-  // Arama sonuçları (tüm ağaçta)
+  const childrenOf = (parentId) => categories.filter((category) => category.parent_id == parentId);
+
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
-    const q = search.toLowerCase();
-    return categories.filter(c => c.name.toLowerCase().includes(q) || c.slug.includes(q));
+    const query = search.toLowerCase();
+    return categories.filter(
+      (category) => category.name.toLowerCase().includes(query) || String(category.slug || '').toLowerCase().includes(query),
+    );
   }, [search, categories]);
 
-  // Belirli bir parent'ın çocukları
-  const childrenOf = (parentId) => categories.filter(c => c.parent_id == parentId);
-
-  // Tam yol stringi (breadcrumb)
-  const getPath = (catId) => {
+  const getPath = (categoryId) => {
     const parts = [];
-    let cur = categories.find(c => c.id === catId);
-    while (cur) {
-      parts.unshift(cur.name);
-      cur = cur.parent_id ? categories.find(c => c.id === cur.parent_id) : null;
+    let current = categories.find((category) => category.id === categoryId);
+
+    while (current) {
+      parts.unshift(current.name);
+      current = current.parent_id ? categories.find((category) => category.id === current.parent_id) : null;
     }
-    return parts.join(' › ');
+
+    return parts.join(' > ');
   };
 
-  // Navigasyon: bir kategoriye tıkla
-  const navigate = (cat) => {
-    const kids = childrenOf(cat.id);
-    if (kids.length > 0) {
-      // Alt kategorileri varsa içine gir, ama bu kategoriyi seçme
-      setPath(p => [...p, cat.id]);
+  const navigate = (category) => {
+    const children = childrenOf(category.id);
+
+    if (children.length > 0) {
+      setPath((prev) => [...prev, category.id]);
       onChange(null);
     } else {
-      // Yaprak kategori, seçimi tamamla
-      onChange(cat);
+      onChange(category);
     }
+
     setSearch('');
   };
 
   const goBack = () => {
-    setPath(p => {
-      const next = p.slice(0, -1);
-      onChange(null); // geri gidince seçimi temizle
+    setPath((prev) => {
+      const next = prev.slice(0, -1);
+      onChange(null);
       return next;
     });
   };
 
-  const clear = () => { setPath([]); onChange(null); setSearch(''); };
+  const clear = () => {
+    setPath([]);
+    onChange(null);
+    setSearch('');
+  };
 
   const currentParentId = path.length > 0 ? path[path.length - 1] : null;
+  const currentParent = currentParentId ? categories.find((category) => category.id === currentParentId) : null;
   const currentLevel = childrenOf(currentParentId);
-  const breadcrumbCats = path.map(id => categories.find(c => c.id === id)).filter(Boolean);
+  const breadcrumbCats = path.map((id) => categories.find((category) => category.id === id)).filter(Boolean);
+
+  const renderCategoryCard = (category, { showPath = false } = {}) => {
+    const children = childrenOf(category.id);
+    const hasChildren = children.length > 0;
+    const isSelected = value === category.id;
+
+    return (
+      <button
+        key={category.id}
+        onClick={() => navigate(category)}
+        className={`flex w-full items-center gap-4 rounded-2xl border px-4 py-4 text-left transition-all ${
+          isSelected
+            ? 'border-violet-200 bg-violet-50 shadow-sm'
+            : 'border-gray-100 bg-white hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/60'
+        }`}
+      >
+        <span
+          className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl text-2xl shadow-sm ${
+            isSelected ? 'bg-violet-100' : 'bg-slate-100'
+          }`}
+        >
+          {category.icon || '📁'}
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className={`text-sm font-bold ${isSelected ? 'text-violet-700' : 'text-gray-800'}`}>{category.name}</div>
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                hasChildren ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-600'
+              }`}
+            >
+              {hasChildren ? 'Alt kategori' : 'Seçilebilir'}
+            </span>
+          </div>
+
+          {showPath ? (
+            <div className="mt-1 line-clamp-2 text-xs text-gray-400">{getPath(category.id)}</div>
+          ) : (
+            <div className="mt-1 text-xs text-gray-400">
+              {hasChildren ? `${children.length} alt kategori arasından seçim yapın` : 'Bu kategoriyle bir sonraki adıma geçebilirsiniz'}
+            </div>
+          )}
+
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {category.min_price !== null && (
+              <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-semibold text-cyan-600">
+                Min {category.min_price}₺
+              </span>
+            )}
+            {category.commission_rate !== null && (
+              <span className="rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-semibold text-violet-600">
+                %{category.commission_rate} komisyon
+              </span>
+            )}
+          </div>
+        </div>
+
+        {isSelected && <Check size={16} className="flex-shrink-0 text-violet-600" />}
+        {hasChildren && <ChevronRight size={16} className={`flex-shrink-0 ${isSelected ? 'text-violet-400' : 'text-gray-300'}`} />}
+      </button>
+    );
+  };
 
   return (
-    <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
-      {/* Seçili gösterge */}
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
       {selected && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-violet-50 border-b border-violet-100">
-          <Check size={14} className="text-violet-600 flex-shrink-0" />
-          <span className="text-sm font-bold text-violet-700 flex-1">{getPath(selected.id)}</span>
+        <div className="flex items-center gap-2 border-b border-violet-100 bg-violet-50 px-4 py-2.5">
+          <Check size={14} className="flex-shrink-0 text-violet-600" />
+          <span className="flex-1 text-sm font-bold text-violet-700">{getPath(selected.id)}</span>
           {selected.commission_rate !== null && (
-            <span className="text-[10px] bg-violet-100 text-violet-600 font-bold px-2 py-0.5 rounded-full">%{selected.commission_rate} komisyon</span>
+            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-600">
+              %{selected.commission_rate} komisyon
+            </span>
           )}
           {selected.min_price !== null && (
-            <span className="text-[10px] bg-cyan-100 text-cyan-600 font-bold px-2 py-0.5 rounded-full">Min {selected.min_price}₺</span>
+            <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-600">
+              Min {selected.min_price}₺
+            </span>
           )}
-          <button onClick={clear} className="p-0.5 hover:bg-violet-200 rounded-lg transition-colors">
+          <button onClick={clear} className="rounded-lg p-0.5 transition-colors hover:bg-violet-200">
             <X size={13} className="text-violet-500" />
           </button>
         </div>
       )}
 
-      {/* Arama */}
-      <div className="px-3 py-2.5 border-b border-gray-100">
+      <div className="border-b border-gray-100 px-3 py-2.5">
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(event) => setSearch(event.target.value)}
             placeholder="Kategori ara..."
-            className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-50 rounded-xl border border-gray-100 focus:outline-none focus:border-violet-400"
+            className="w-full rounded-xl border border-gray-100 bg-gray-50 py-1.5 pl-8 pr-3 text-sm focus:border-violet-400 focus:outline-none"
           />
-          {search && <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2"><X size={12} className="text-gray-400" /></button>}
+          {search && (
+            <button onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2">
+              <X size={12} className="text-gray-400" />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Breadcrumb navigasyon */}
       {path.length > 0 && !search && (
-        <div className="flex items-center gap-1 px-3 py-2 bg-gray-50 border-b border-gray-100 text-xs overflow-x-auto">
-          <button onClick={clear} className="text-gray-500 hover:text-violet-600 font-semibold whitespace-nowrap">Tümü</button>
-          {breadcrumbCats.map((cat, i) => (
-            <span key={cat.id} className="flex items-center gap-1">
+        <div className="flex items-center gap-1 overflow-x-auto border-b border-gray-100 bg-gray-50 px-3 py-2 text-xs">
+          <button
+            onClick={goBack}
+            className="inline-flex items-center gap-1 rounded-lg bg-white px-2 py-1 font-semibold text-gray-500 shadow-sm hover:text-violet-600"
+          >
+            <ArrowLeft size={12} />
+            Geri
+          </button>
+          <button onClick={clear} className="whitespace-nowrap font-semibold text-gray-500 hover:text-violet-600">
+            Tümü
+          </button>
+          {breadcrumbCats.map((category, index) => (
+            <span key={category.id} className="flex items-center gap-1">
               <ChevronRight size={10} className="text-gray-400" />
               <button
                 onClick={() => {
-                  const newPath = path.slice(0, i + 1);
-                  setPath(newPath);
-                  onChange(categories.find(c => c.id === newPath[newPath.length - 1]) || null);
+                  const nextPath = path.slice(0, index + 1);
+                  setPath(nextPath);
+                  onChange(categories.find((item) => item.id === nextPath[nextPath.length - 1]) || null);
                 }}
-                className={`whitespace-nowrap font-semibold ${i === path.length - 1 ? 'text-violet-600' : 'text-gray-500 hover:text-violet-600'}`}
+                className={`whitespace-nowrap font-semibold ${
+                  index === path.length - 1 ? 'text-violet-600' : 'text-gray-500 hover:text-violet-600'
+                }`}
               >
-                {cat.icon} {cat.name}
+                {category.icon} {category.name}
               </button>
             </span>
           ))}
         </div>
       )}
 
-      {/* Liste */}
-      <div className="max-h-64 overflow-y-auto">
+      <div className="max-h-[30rem] overflow-y-auto bg-gradient-to-b from-white to-slate-50/80">
+        {!search && (
+          <div className="border-b border-gray-100 px-4 py-3">
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-gray-400">
+              {currentParent ? 'Alt Kategoriler' : 'Kategori Seçimi'}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-gray-700">
+              {currentParent ? `${currentParent.icon || '📁'} ${currentParent.name}` : 'Bir kategori seçerek devam edin'}
+            </div>
+          </div>
+        )}
+
         {search ? (
-          // Arama sonuçları
           searchResults.length === 0 ? (
             <div className="px-4 py-6 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
-          ) : searchResults.map(cat => {
-            const hasKids = childrenOf(cat.id).length > 0;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => { navigate(cat); }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-violet-50 text-left transition-colors ${value === cat.id ? 'bg-violet-50' : ''}`}
-              >
-                <span className="text-lg w-6 text-center">{cat.icon}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-gray-800">{cat.name}</div>
-                  <div className="text-xs text-gray-400">{getPath(cat.id)}{hasKids ? ' — alt kategoriye gidin' : ''}</div>
-                </div>
-                {value === cat.id && <Check size={14} className="text-violet-600 flex-shrink-0" />}
-                {hasKids && <ChevronRight size={14} className="text-gray-400 flex-shrink-0" />}
-              </button>
-            );
-          })
+          ) : (
+            <div className="space-y-3 p-3">{searchResults.map((category) => renderCategoryCard(category, { showPath: true }))}</div>
+          )
         ) : currentLevel.length === 0 ? (
           <div className="px-4 py-6 text-center text-sm text-gray-400">Kategori bulunamadı.</div>
         ) : (
-          // Normal navigasyon
-          <>
-            {currentLevel.map(cat => {
-              const kids = childrenOf(cat.id);
-              const isSelected = value === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => navigate(cat)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-violet-50 text-left transition-colors border-b border-gray-50 last:border-0 ${isSelected ? 'bg-violet-50' : ''}`}
-                >
-                  <span className="text-xl w-7 text-center">{cat.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-sm font-semibold ${isSelected ? 'text-violet-700' : 'text-gray-800'}`}>{cat.name}</div>
-                    {kids.length > 0 && <div className="text-xs text-gray-400">{kids.length} alt kategori</div>}
-                    {cat.min_price !== null && <div className="text-xs text-gray-400">Min: {cat.min_price}₺</div>}
-                  </div>
-                  {isSelected && <Check size={14} className="text-violet-600 flex-shrink-0" />}
-                  {kids.length > 0 && <ChevronRight size={14} className={`flex-shrink-0 ${isSelected ? 'text-violet-400' : 'text-gray-300'}`} />}
-                </button>
-              );
-            })}
-          </>
+          <div className="space-y-3 p-3">{currentLevel.map((category) => renderCategoryCard(category))}</div>
         )}
       </div>
     </div>
