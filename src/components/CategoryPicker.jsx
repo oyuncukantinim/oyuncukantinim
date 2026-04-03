@@ -11,7 +11,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
           ? 'border-violet-400 ring-2 ring-violet-200'
           : 'border-gray-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md'
       }`}
-      style={{ aspectRatio: '90 / 115' }}
+      style={{ aspectRatio: '120 / 190' }}
     >
       {category.image ? (
         <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
@@ -21,8 +21,6 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/12 to-transparent" />
-
       {selected && (
         <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg">
           <Check size={13} />
@@ -30,17 +28,15 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
       )}
 
       <div className="absolute inset-x-0 bottom-0 px-2.5 pb-2.5">
-        <div className="rounded-xl bg-black/35 px-2.5 py-2 shadow-lg backdrop-blur-[2px]">
-          <div className="line-clamp-2 text-[13px] font-bold leading-tight text-white">{category.name}</div>
-          {subtitle ? <div className="mt-0.5 line-clamp-1 text-[10px] text-white/78">{subtitle}</div> : null}
+        <div className="line-clamp-2 text-[13px] font-bold leading-tight text-white" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>
+          {category.name}
         </div>
+        {subtitle ? (
+          <div className="mt-0.5 line-clamp-1 text-[10px] text-white/90" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+            {subtitle}
+          </div>
+        ) : null}
       </div>
-
-      {hasChildren && (
-        <div className="absolute right-2 top-10 rounded-full bg-black/35 px-2 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-[2px]">
-          Alt kategori
-        </div>
-      )}
     </button>
   );
 }
@@ -112,9 +108,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
         const isSelected = value === category.id;
         const subtitle = withPath
           ? getPath(category.id)
-          : hasChildren
-            ? `${children.length} alt kategori`
-            : category.min_price != null
+          : category.min_price != null
               ? `Min ${category.min_price}₺`
               : '';
 
