@@ -8,19 +8,19 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import {
-  getSellerProfile, getSellerListings, getSellerReviews,
+  getSellerProfile, getSellerListings, getSellerReviews, getSellerFollowers,
   followSeller, unfollowSeller
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 
-// Rozet tanımları
+// Rozet tanÃ„Â±mlarÃ„Â±
 const BADGE_META = {
-  verified:    { icon: '🛡️', label: 'Doğrulanmış Satıcı', color: 'bg-blue-50 text-blue-600 border-blue-200' },
-  fast:        { icon: '⚡', label: 'Hızlı Teslimat',      color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
-  super:       { icon: '🏆', label: 'Süper Satıcı',        color: 'bg-purple-50 text-purple-600 border-purple-200' },
-  elite:       { icon: '💎', label: 'Elite Satıcı',        color: 'bg-cyan-50 text-cyan-600 border-cyan-200' },
-  trend:       { icon: '🔥', label: 'Trend',               color: 'bg-orange-50 text-orange-600 border-orange-200' },
-  veteran:     { icon: '🎖️', label: 'Veteran',             color: 'bg-green-50 text-green-600 border-green-200' },
+  verified:    { icon: 'ÄŸÅ¸â€ºÂ¡Ã¯Â¸Â', label: 'DoÃ„Å¸rulanmÃ„Â±Ã…Å¸ SatÃ„Â±cÃ„Â±', color: 'bg-blue-50 text-blue-600 border-blue-200' },
+  fast:        { icon: 'Ã¢Å¡Â¡', label: 'HÃ„Â±zlÃ„Â± Teslimat',      color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
+  super:       { icon: 'ÄŸÅ¸Ââ€ ', label: 'SÃƒÂ¼per SatÃ„Â±cÃ„Â±',        color: 'bg-purple-50 text-purple-600 border-purple-200' },
+  elite:       { icon: 'ÄŸÅ¸â€™Â', label: 'Elite SatÃ„Â±cÃ„Â±',        color: 'bg-cyan-50 text-cyan-600 border-cyan-200' },
+  trend:       { icon: 'ÄŸÅ¸â€Â¥', label: 'Trend',               color: 'bg-orange-50 text-orange-600 border-orange-200' },
+  veteran:     { icon: 'ÄŸÅ¸Ââ€“Ã¯Â¸Â', label: 'Veteran',             color: 'bg-green-50 text-green-600 border-green-200' },
 };
 
 function Badge({ type }) {
@@ -66,6 +66,7 @@ export default function SellerPage() {
   const [seller, setSeller] = useState(null);
   const [listings, setListings] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [followers, setFollowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('listings');
   const [isFollowing, setIsFollowing] = useState(false);
@@ -88,11 +89,13 @@ export default function SellerPage() {
       getSellerListings(seller.id).then(r => setListings(r.data || [])).catch(() => {});
     } else if (activeTab === 'reviews') {
       getSellerReviews(seller.id).then(r => setReviews(r.data || [])).catch(() => {});
+    } else if (activeTab === 'followers') {
+      getSellerFollowers(seller.id).then(r => setFollowers(r.data || [])).catch(() => {});
     }
   }, [activeTab, seller]);
 
   const handleFollow = async () => {
-    if (!user) { showToast('Takip etmek için giriş yapın!'); navigate('/login'); return; }
+    if (!user) { showToast('Takip etmek iÃƒÂ§in giriÃ…Å¸ yapÃ„Â±n!'); navigate('/login'); return; }
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -119,16 +122,16 @@ export default function SellerPage() {
   const badges = seller.badges || [];
 
   const stats = [
-    { icon: Package,   label: 'Toplam Satış',   value: seller.total_sales ?? 0,                    color: 'text-neon-purple' },
-    { icon: ThumbsUp,  label: 'Başarı Oranı',   value: `%${seller.success_rate ?? 100}`,            color: 'text-neon-green' },
+    { icon: Package,   label: 'Toplam SatÃ„Â±Ã…Å¸',   value: seller.total_sales ?? 0,                    color: 'text-neon-purple' },
+    { icon: ThumbsUp,  label: 'BaÃ…Å¸arÃ„Â± OranÃ„Â±',   value: `%${seller.success_rate ?? 100}`,            color: 'text-neon-green' },
     { icon: Star,      label: 'Ortalama Puan',  value: Number(seller.avg_rating ?? 5).toFixed(1),   color: 'text-yellow-500' },
-    { icon: Clock,     label: 'Üyelik',         value: seller.member_since,                         color: 'text-neon-cyan' },
+    { icon: Clock,     label: 'ÃƒÅ“yelik',         value: seller.member_since,                         color: 'text-neon-cyan' },
   ];
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
 
-      {/* KAPAK + PROFİL */}
+      {/* KAPAK + PROFÃ„Â°L */}
       <div className="card overflow-hidden">
         {/* Kapak */}
         <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
@@ -145,12 +148,12 @@ export default function SellerPage() {
           )}
         </div>
 
-        {/* Profil içeriği */}
+        {/* Profil iÃƒÂ§eriÃ„Å¸i */}
         <div className="px-6 sm:px-8 pb-6">
-          {/* Avatar + butonlar satırı */}
+          {/* Avatar + butonlar satÃ„Â±rÃ„Â± */}
           <div className="flex items-end justify-between -mt-12 mb-4">
             <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl flex-shrink-0 z-10">
-              {seller.avatar || '👤'}
+              {seller.avatar || 'ÄŸÅ¸â€˜Â¤'}
             </div>
 
             <div className="flex gap-2 pb-1">
@@ -178,7 +181,7 @@ export default function SellerPage() {
             </div>
           </div>
 
-          {/* İsim + kullanıcı adı */}
+          {/* Ã„Â°sim + kullanÃ„Â±cÃ„Â± adÃ„Â± */}
           <div className="mb-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-extrabold text-gray-900">{seller.username}</h1>
@@ -189,13 +192,13 @@ export default function SellerPage() {
             )}
             <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
               <Clock size={11} />
-              Son görülme: {seller.last_seen || 'Çok önce değil'}
+              Son gÃƒÂ¶rÃƒÂ¼lme: {seller.last_seen || 'Ãƒâ€¡ok ÃƒÂ¶nce deÃ„Å¸il'}
             </p>
           </div>
 
-          {/* Takipçi */}
+          {/* TakipÃƒÂ§i */}
           <p className="text-xs text-gray-400 mt-2 mb-4">
-            <span className="font-bold text-gray-700">{seller.follower_count ?? 0}</span> takipçi
+            <span className="font-bold text-gray-700">{seller.follower_count ?? 0}</span> takipÃƒÂ§i
           </p>
 
           {/* Rozetler */}
@@ -205,7 +208,7 @@ export default function SellerPage() {
             </div>
           )}
 
-          {/* İstatistik Kartları */}
+          {/* Ã„Â°statistik KartlarÃ„Â± */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {stats.map((s, i) => (
               <div key={i} className="bg-surface-50 border border-gray-100 rounded-xl p-3 text-center">
@@ -221,8 +224,9 @@ export default function SellerPage() {
       {/* TABS */}
       <div className="flex gap-2 border-b border-gray-100">
         {[
-          { id: 'listings', label: `İlanlar (${seller.listing_count ?? 0})` },
-          { id: 'reviews',  label: `Değerlendirmeler (${seller.review_count ?? 0})` },
+          { id: 'listings', label: 'Ilanlar (' + (seller.listing_count ?? 0) + ')' },
+          { id: 'reviews',  label: 'Degerlendirmeler (' + (seller.review_count ?? 0) + ')' },
+          { id: 'followers', label: 'Takipciler (' + (seller.follower_count ?? 0) + ')' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -238,13 +242,13 @@ export default function SellerPage() {
         ))}
       </div>
 
-      {/* İLANLAR */}
+      {/* Ã„Â°LANLAR */}
       {activeTab === 'listings' && (
         <div>
           {listings.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
-              <div className="text-5xl mb-3">🏪</div>
-              <p className="font-semibold">Henüz aktif ilan yok.</p>
+              <div className="text-5xl mb-3">ÄŸÅ¸ÂÂª</div>
+              <p className="font-semibold">HenÃƒÂ¼z aktif ilan yok.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -254,19 +258,19 @@ export default function SellerPage() {
         </div>
       )}
 
-      {/* DEĞERLENDİRMELER */}
+      {/* DEÃ„ÂERLENDÃ„Â°RMELER */}
       {activeTab === 'reviews' && (
         <div className="space-y-6">
 
-          {/* Özet kutusu */}
+          {/* Ãƒâ€“zet kutusu */}
           <div className="card p-6">
             <div className="flex flex-col sm:flex-row items-center gap-6 mb-5">
               <div className="text-center flex-shrink-0">
                 <div className="text-5xl font-extrabold text-gray-800">{Number(seller.avg_rating ?? 5).toFixed(1)}</div>
                 <StarRating value={Math.round(seller.avg_rating ?? 5)} readonly />
-                <div className="text-xs text-gray-400 mt-1">{seller.review_count ?? 0} değerlendirme</div>
+                <div className="text-xs text-gray-400 mt-1">{seller.review_count ?? 0} deÃ„Å¸erlendirme</div>
               </div>
-              {/* Dağılım barları */}
+              {/* DaÃ„Å¸Ã„Â±lÃ„Â±m barlarÃ„Â± */}
               <div className="flex-1 w-full space-y-1.5">
                 {[5, 4, 3, 2, 1].map(star => {
                   const count = seller.rating_dist?.[star] ?? 0;
@@ -285,13 +289,13 @@ export default function SellerPage() {
                 })}
               </div>
             </div>
-            {/* Alt kriter ortalamaları */}
+            {/* Alt kriter ortalamalarÃ„Â± */}
             {(seller.avg_reliability || seller.avg_satisfaction || seller.avg_speed || seller.avg_service_quality) && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 border-t border-gray-100 pt-4">
                 {[
-                  { label: 'Güvenilirlik', value: seller.avg_reliability },
+                  { label: 'GÃƒÂ¼venilirlik', value: seller.avg_reliability },
                   { label: 'Memnuniyet',   value: seller.avg_satisfaction },
-                  { label: 'Hız',          value: seller.avg_speed },
+                  { label: 'HÃ„Â±z',          value: seller.avg_speed },
                   { label: 'Hizmet',       value: seller.avg_service_quality },
                 ].map(c => c.value != null && (
                   <div key={c.label} className="text-center bg-surface-50 rounded-xl p-3">
@@ -306,8 +310,8 @@ export default function SellerPage() {
           {/* Yorum Listesi */}
           {reviews.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
-              <div className="text-4xl mb-2">💬</div>
-              <p>Henüz değerlendirme yok.</p>
+              <div className="text-4xl mb-2">ÄŸÅ¸â€™Â¬</div>
+              <p>HenÃƒÂ¼z deÃ„Å¸erlendirme yok.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -316,7 +320,7 @@ export default function SellerPage() {
                   {/* Sol: Profil */}
                   <div className="flex flex-col items-center gap-1 flex-shrink-0 w-16 text-center">
                     <div className="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center text-xl">
-                      {r.reviewer_avatar || '👤'}
+                      {r.reviewer_avatar || 'ÄŸÅ¸â€˜Â¤'}
                     </div>
                     <Link to={`/p/${r.reviewer_username}`} className="font-bold text-gray-700 hover:text-neon-purple text-[11px] leading-tight transition-colors line-clamp-2">
                       {r.reviewer_username}
@@ -324,7 +328,7 @@ export default function SellerPage() {
                     <span className="text-[10px] text-gray-400">{formatDate(r.created_at)}</span>
                   </div>
 
-                  {/* Orta: İlan Bilgisi */}
+                  {/* Orta: Ã„Â°lan Bilgisi */}
                   {(r.item_title || r.item_image) && (
                     <div className="flex items-center gap-2 flex-shrink-0 border-x border-gray-100 px-3">
                       {r.item_image && (
@@ -334,15 +338,15 @@ export default function SellerPage() {
                     </div>
                   )}
 
-                  {/* Sağ: Yorum + Puanlar */}
+                  {/* SaÃ„Å¸: Yorum + Puanlar */}
                   <div className="flex-1 min-w-0">
                     <StarRating value={r.rating} readonly />
                     {(r.reliability || r.satisfaction || r.speed || r.service_quality) && (
                       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
                         {[
-                          { label: 'Güvenilirlik', val: r.reliability },
+                          { label: 'GÃƒÂ¼venilirlik', val: r.reliability },
                           { label: 'Memnuniyet',   val: r.satisfaction },
-                          { label: 'Hız',          val: r.speed },
+                          { label: 'HÃ„Â±z',          val: r.speed },
                           { label: 'Hizmet',       val: r.service_quality },
                         ].map(c => c.val != null && (
                           <span key={c.label} className="text-xs text-gray-400">
@@ -355,6 +359,35 @@ export default function SellerPage() {
                     {r.comment && <p className="text-gray-500 text-sm mt-2 leading-relaxed">{r.comment}</p>}
                   </div>
                 </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'followers' && (
+        <div>
+          {followers.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <div className="text-4xl mb-2">👥</div>
+              <p>Henüz takipçi yok.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {followers.map(follower => (
+                <Link
+                  key={follower.id}
+                  to={`/p/${follower.username}`}
+                  className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm hover:border-violet-200 hover:shadow-md transition-all"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-2xl flex-shrink-0">
+                    {follower.avatar || '👤'}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-extrabold text-gray-800 truncate">{follower.username}</div>
+                    <div className="text-xs text-gray-400 mt-1">Seviye {follower.level || 1}</div>
+                  </div>
+                </Link>
               ))}
             </div>
           )}
