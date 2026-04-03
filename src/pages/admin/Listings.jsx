@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Search, Eye, ShieldAlert, History, Tags } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -287,3 +287,4 @@ export default function AdminListings() {
     </AdminLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Plus, Trash2, Pin, PinOff, Edit3, X, Check, StickyNote } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 
@@ -232,13 +232,13 @@ function NoteCard({ note, onEdit, onDelete, onPin }) {
       <div className="px-4 py-3 flex-1">
         <div className={`overflow-hidden transition-all duration-300 ${!expanded && isLong ? 'max-h-44' : 'max-h-[9999px]'}`}>
           <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
-            {note.content || '—'}
+            {note.content || 'â€”'}
           </p>
         </div>
         {isLong && (
           <button onClick={() => setExpanded(e => !e)}
             className="mt-2 text-xs font-bold text-gray-400 hover:text-gray-600 transition-colors">
-            {expanded ? '▲ Daha az göster' : '▼ Tamamını göster'}
+            {expanded ? 'â–² Daha az göster' : 'â–¼ Tamamını göster'}
           </button>
         )}
       </div>
@@ -248,3 +248,4 @@ function NoteCard({ note, onEdit, onDelete, onPin }) {
     </div>
   );
 }
+

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, ShoppingBag, Package,
   Star, Tag, CreditCard, Megaphone, Settings,
-  LogOut, Menu, X, ChevronRight, Shield, MessageSquare, Gamepad2, Wallet, StickyNote, ScrollText, LockKeyhole
+  LogOut, Menu, ChevronRight, Shield, MessageSquare, Gamepad2, Wallet, StickyNote, ScrollText, LockKeyhole
 } from 'lucide-react';
 
 const navItems = [
@@ -147,3 +147,4 @@ export default function AdminLayout({ children }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Users,
@@ -173,7 +173,7 @@ export default function AdminDashboard() {
             title="Son Siparişler"
             rows={stats?.recent_orders || []}
             cols={[
-              { key: 'item_title', label: 'Ürün', render: (row) => <span className="font-semibold text-gray-800 truncate block max-w-[140px]">{row.item_title || '—'}</span> },
+              { key: 'item_title', label: 'Ürün', render: (row) => <span className="font-semibold text-gray-800 truncate block max-w-[140px]">{row.item_title || '-'}</span> },
               { key: 'buyer', label: 'Alıcı', render: (row) => <span className="text-gray-500 text-xs">{row.buyer}</span> },
               { key: 'amount', label: 'Tutar', render: (row) => <span className="font-bold text-emerald-600">{fmtMoney(row.amount)}</span> },
               {
@@ -211,3 +211,4 @@ export default function AdminDashboard() {
     </AdminLayout>
   );
 }
+

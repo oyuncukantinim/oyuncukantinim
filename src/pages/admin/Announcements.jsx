@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Megaphone, Send, Users, UserRound, ShieldAlert } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminSendSegmentedBroadcast } from '../../lib/adminApi';
@@ -130,3 +130,4 @@ export default function AdminAnnouncements() {
     </AdminLayout>
   );
 }
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Plus, Trash2, GripVertical, Save, Gamepad2, Image as ImageIcon } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../../lib/imageUrl';
@@ -171,3 +171,4 @@ export default function AdminPopularGames() {
     </AdminLayout>
   );
 }
+

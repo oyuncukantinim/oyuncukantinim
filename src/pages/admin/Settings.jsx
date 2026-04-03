@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Save, Settings as SettingsIcon, CalendarRange, Sparkles } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
@@ -136,3 +136,4 @@ export default function AdminSettings() {
     </AdminLayout>
   );
 }
+

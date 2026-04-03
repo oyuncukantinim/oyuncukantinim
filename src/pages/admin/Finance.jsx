@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Download, TrendingUp, Wallet, ShoppingBag, AlertTriangle, Calculator } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetAllTransactions, adminGetFinanceOverview } from '../../lib/adminApi';
@@ -198,14 +198,14 @@ export default function AdminFinance() {
                   <tr key={tx.id} className="border-t border-gray-50 hover:bg-gray-50/50">
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">#{tx.id}</td>
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-gray-800 max-w-[160px] truncate">{tx.item_title || '—'}</div>
+                      <div className="font-semibold text-gray-800 max-w-[160px] truncate">{tx.item_title || '-'}</div>
                       <div className="text-xs text-gray-400">{tx.item_type}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{tx.buyer_username || '—'}</td>
-                    <td className="px-4 py-3 text-gray-600">{tx.seller_username || '—'}</td>
+                    <td className="px-4 py-3 text-gray-600">{tx.buyer_username || '-'}</td>
+                    <td className="px-4 py-3 text-gray-600">{tx.seller_username || '-'}</td>
                     <td className="px-4 py-3 text-right font-bold text-gray-900">{fmtMoney(tx.amount)}</td>
                     <td className="px-4 py-3 text-right font-bold text-emerald-600">{fmtMoney(tx.seller_amount)}</td>
-                    <td className="px-4 py-3 text-xs font-semibold text-gray-500">{DELIVERY_LABELS[tx.delivery_status] || '—'}</td>
+                    <td className="px-4 py-3 text-xs font-semibold text-gray-500">{DELIVERY_LABELS[tx.delivery_status] || '-'}</td>
                     <td className="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{new Date(tx.created_at).toLocaleString('tr-TR')}</td>
                   </tr>
                 ))}
@@ -217,3 +217,4 @@ export default function AdminFinance() {
     </AdminLayout>
   );
 }
+

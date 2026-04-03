@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useRef } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
@@ -265,7 +265,7 @@ export default function AdminCategories() {
               {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
               {cat.type_id && (() => { const t = typesList.find(x => x.id == cat.type_id); return t ? <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t.icon} {t.name}</span> : null; })()}
               {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
-              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
+              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}â‚º</span>}
             </div>
             <div className="text-xs text-gray-400">{cat.slug}</div>
           </div>
@@ -352,7 +352,7 @@ export default function AdminCategories() {
                       </div>
                     )}
                     {attr.type === 'range' && attr.options && (
-                      <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} — {attr.options.max}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} â€” {attr.options.max}</div>
                     )}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -430,7 +430,7 @@ export default function AdminCategories() {
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Üst Kategori</label>
               <select value={catForm.parent_id} onChange={e => setCatForm(f => ({...f, parent_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
-                <option value="">— Ana Kategori —</option>
+                <option value="">â€” Ana Kategori â€”</option>
                 {categories.filter(c => !c.parent_id && c.id !== editCat?.id).map(c => (
                   <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
                 ))}
@@ -440,7 +440,7 @@ export default function AdminCategories() {
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Türü</label>
               <select value={catForm.type_id} onChange={e => setCatForm(f => ({...f, type_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
-                <option value="">— Tür Yok —</option>
+                <option value="">â€” Tür Yok â€”</option>
                 {typesList.map(t => (
                   <option key={t.id} value={t.id}>{t.icon} {t.name}</option>
                 ))}
@@ -453,7 +453,7 @@ export default function AdminCategories() {
                 <input type="number" step="0.01" min="0" max="100" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Site geneli" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (â‚º)</label>
                 <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
             </div>
@@ -518,7 +518,7 @@ export default function AdminCategories() {
                     <>
                       <ImageIcon size={22} className="text-gray-400" />
                       <span className="text-xs text-gray-500 font-semibold">Görsel seç veya sürükle</span>
-                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF → otomatik WebP</span>
+                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF â†’ otomatik WebP</span>
                     </>
                   )}
                 </button>
@@ -547,7 +547,7 @@ export default function AdminCategories() {
 
       {/* Özellik Modal */}
       {attrModal && attrCat && (
-        <Modal title={editAttr ? 'Özellik Düzenle' : `"${attrCat.name}" — Yeni Özellik`} onClose={() => setAttrModal(false)}>
+        <Modal title={editAttr ? 'Özellik Düzenle' : `"${attrCat.name}" â€” Yeni Özellik`} onClose={() => setAttrModal(false)}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -662,3 +662,4 @@ export default function AdminCategories() {
     </AdminLayout>
   );
 }
+

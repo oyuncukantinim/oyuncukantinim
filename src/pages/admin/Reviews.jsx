@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { Search, Trash2, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetReviews, adminDeleteReview } from '../../lib/adminApi';
@@ -30,7 +30,7 @@ export default function AdminReviews() {
     catch (e) { showToast(e.message); }
   };
 
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '—';
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '-';
 
   return (
     <AdminLayout>
@@ -104,3 +104,4 @@ export default function AdminReviews() {
     </AdminLayout>
   );
 }
+

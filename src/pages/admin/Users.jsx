@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Search, Eye, Ban, LockKeyhole, NotebookPen, ShieldCheck } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -14,12 +14,12 @@ function Modal({ title, children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl p-6 max-h-[90vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-gray-900">{title}</h2>
           <button onClick={onClose} className="px-3 py-1.5 text-sm font-semibold rounded-xl hover:bg-gray-100">Kapat</button>
         </div>
-        {children}
+        <div className="overflow-y-auto pr-1">{children}</div>
       </div>
     </div>
   );
@@ -311,7 +311,7 @@ export default function AdminUsers() {
                   />
                   <button onClick={saveNote} className="px-4 py-2 rounded-xl bg-violet-600 text-white text-sm font-bold">Ekle</button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                   {(detail.notes || []).map((item) => (
                     <div key={item.id} className="bg-gray-50 rounded-xl p-3">
                       <div className="flex items-center justify-between gap-3">
@@ -326,7 +326,7 @@ export default function AdminUsers() {
 
               <div className="bg-white border border-gray-100 rounded-2xl p-4">
                 <div className="font-bold text-gray-900 mb-3">Kullanıcı Zaman Çizelgesi</div>
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                   {(detail.timeline || []).map((event, index) => (
                     <div key={`${event.type}-${index}`} className="flex gap-3">
                       <div className="w-2 h-2 rounded-full bg-violet-500 mt-2" />
@@ -337,6 +337,9 @@ export default function AdminUsers() {
                       </div>
                     </div>
                   ))}
+                  {(!detail.timeline || detail.timeline.length === 0) && (
+                    <div className="text-sm text-gray-500 bg-gray-50 rounded-xl px-3 py-3">Henüz zaman çizelgesi kaydı yok.</div>
+                  )}
                 </div>
               </div>
             </div>
@@ -346,3 +349,4 @@ export default function AdminUsers() {
     </AdminLayout>
   );
 }
+

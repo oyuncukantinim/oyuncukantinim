@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Search, Eye, Tags, ShieldAlert } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -189,10 +189,10 @@ export default function AdminOrders() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="font-bold text-gray-900">#{order.id}</div>
-                        <div className="text-xs text-gray-400 max-w-[180px] truncate">{order.item_title || '—'}</div>
+                        <div className="text-xs text-gray-400 max-w-[180px] truncate">{order.item_title || '-'}</div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">{order.buyer || '—'}</td>
-                      <td className="px-4 py-3 text-gray-600">{order.seller || '—'}</td>
+                      <td className="px-4 py-3 text-gray-600">{order.buyer || '-'}</td>
+                      <td className="px-4 py-3 text-gray-600">{order.seller || '-'}</td>
                       <td className="px-4 py-3 font-bold text-emerald-600">{fmtMoney(order.amount)}</td>
                       <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
@@ -221,9 +221,9 @@ export default function AdminOrders() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             <div className="space-y-4">
               <div className="bg-gray-50 rounded-2xl p-4 space-y-2">
-                <div className="flex justify-between"><span className="text-gray-500">Ürün</span><span className="font-bold text-gray-900">{detailOrder.item_title || '—'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Alıcı</span><span className="font-semibold text-gray-700">{detailOrder.buyer || '—'}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Satıcı</span><span className="font-semibold text-gray-700">{detailOrder.seller || '—'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Ürün</span><span className="font-bold text-gray-900">{detailOrder.item_title || '-'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Alıcı</span><span className="font-semibold text-gray-700">{detailOrder.buyer || '-'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Satıcı</span><span className="font-semibold text-gray-700">{detailOrder.seller || '-'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Tutar</span><span className="font-extrabold text-emerald-600">{fmtMoney(detailOrder.amount)}</span></div>
               </div>
 
@@ -302,3 +302,4 @@ export default function AdminOrders() {
     </AdminLayout>
   );
 }
+
