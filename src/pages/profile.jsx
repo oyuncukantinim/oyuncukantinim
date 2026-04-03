@@ -712,30 +712,30 @@ export default function ProfilePage() {
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : listingsView === 'grid' ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {filteredListings.map(listing => (
                     <div key={listing.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex flex-col">
-                      <div className="aspect-video bg-white">
+                      <div className="aspect-[4/3] bg-white">
                         {listing.images?.[0]
                           ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                           : <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon size={24}/></div>
                         }
                       </div>
-                      <div className="p-1.5 flex flex-col gap-1 flex-1">
+                      <div className="p-1.5 flex flex-col gap-0.5 flex-1">
                         <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
-                        <div className="font-bold text-emerald-600 text-[13px]">{Number(listing.price).toFixed(2)} ₺</div>
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
                           {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
                         </span>
-                        <div className="flex gap-1 mt-auto pt-1">
+                        <div className="flex gap-1 mt-auto pt-0.5">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
                               className={`p-1 rounded-lg transition-colors flex-shrink-0 ${listing.status === 'active' ? 'hover:bg-orange-50 text-emerald-500 hover:text-orange-500' : 'hover:bg-emerald-50 text-gray-400 hover:text-emerald-500'}`}>
-                              {listing.status === 'active' ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
+                              {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
                           )}
-                          <button onClick={() => setEditModal(listing)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500"><Edit3 size={12}/></button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 size={12}/></button>
+                          <button onClick={() => setEditModal(listing)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500"><Edit3 size={11}/></button>
+                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 size={11}/></button>
                         </div>
                       </div>
                     </div>
@@ -744,12 +744,12 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {filteredListings.map(listing => (
-                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2 border border-gray-100">
-                      <div className="w-10 h-10 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2.5 border border-gray-100">
+                      <div className="w-14 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                         {listing.images?.[0] ? (
                           <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>
+                          <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={20}/></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -762,7 +762,7 @@ export default function ProfilePage() {
                         )}
                       </div>
                       <div className="text-right flex-shrink-0 space-y-0.5">
-                        <div className="font-bold text-emerald-600 text-[13px]">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
                         <div className="flex gap-1.5 justify-end">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
                             {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
@@ -1360,20 +1360,26 @@ function FinanceTabContent() {
         <div className="space-y-2">
           {transactions.map((tx, i) => {
             const isPurchase = tx.tx_type === 'purchase';
+            const isBalance = tx.tx_type === 'balance';
             const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
             const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
             const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
             return (
               <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {isPurchase ? 'Alım' : 'Satış'}
+                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${isBalance ? 'bg-violet-50 text-violet-700' : isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                  {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
-                  <p className="text-[10px] text-gray-400">{tx.counterparty || ''} · <span className={delivColor}>{delivLabel}</span></p>
+                  <p className="text-[10px] text-gray-400">
+                    {isBalance
+                      ? `${tx.counterparty || 'Sistem'}${tx.balance_after != null ? ` · Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ₺` : ''}`
+                      : `${tx.counterparty || ''} · `}
+                    {!isBalance && <span className={delivColor}>{delivLabel}</span>}
+                  </p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className={`text-sm font-extrabold ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                  <div className={`text-sm font-extrabold ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                     {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
                   </div>
                   <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
@@ -1552,5 +1558,6 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     </div>
   );
 }
+
 
 
