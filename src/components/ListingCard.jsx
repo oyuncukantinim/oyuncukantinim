@@ -2,46 +2,64 @@ import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 
-export default function ListingCard({ listing }) {
+export default function ListingCard({ listing, compact = false }) {
   const coverImg = listing.images?.[listing.cover_index || 0];
 
   return (
-    <Link to={listingSlug(listing.title, listing.id)} className="card p-4 flex flex-col h-full group block">
-      {/* Cover */}
-      <div className="w-full h-40 bg-surface-100 rounded-xl mb-4 overflow-hidden relative">
+    <Link
+      to={listingSlug(listing.title, listing.id)}
+      className={`card group block h-full flex flex-col ${compact ? 'p-3' : 'p-4'}`}
+    >
+      <div className={`w-full overflow-hidden rounded-xl bg-surface-100 relative ${compact ? 'mb-3 h-32' : 'mb-4 h-40'}`}>
         {coverImg ? (
-          <img src={coverImg} alt={listing.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+          <img
+            src={coverImg}
+            alt={listing.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-300">
-            <ImageIcon size={40} />
+          <div className="flex h-full w-full items-center justify-center text-gray-300">
+            <ImageIcon size={compact ? 30 : 40} />
           </div>
         )}
       </div>
 
-      {/* Tags */}
-      <div className="flex justify-between items-center mb-3">
+      <div className={`flex items-center justify-between ${compact ? 'mb-2' : 'mb-3'}`}>
         <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
-        <span className="text-xs font-bold text-gray-400">{listing.game_name || listing.game}</span>
+        <span className={`font-bold text-gray-400 ${compact ? 'text-[11px]' : 'text-xs'}`}>
+          {listing.game_name || listing.game}
+        </span>
       </div>
 
-      {/* Title */}
-      <h3 className="font-bold text-gray-800 mb-3 line-clamp-2 leading-tight flex-1 text-base group-hover:text-neon-purple transition-colors">
+      <h3
+        className={`flex-1 line-clamp-2 font-bold leading-tight text-gray-800 transition-colors group-hover:text-neon-purple ${
+          compact ? 'mb-2 text-sm' : 'mb-3 text-base'
+        }`}
+      >
         {listing.title}
       </h3>
 
-      {/* Seller */}
-      <div className="flex items-center gap-2.5 mb-4 bg-surface-100 p-2.5 rounded-xl">
-        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg shadow-sm border border-gray-100 flex-shrink-0">
+      <div className={`flex items-center rounded-xl bg-surface-100 ${compact ? 'mb-3 gap-2 p-2' : 'mb-4 gap-2.5 p-2.5'}`}>
+        <div
+          className={`flex flex-shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white shadow-sm ${
+            compact ? 'h-7 w-7 text-base' : 'h-8 w-8 text-lg'
+          }`}
+        >
           {listing.avatar || '👤'}
         </div>
-        <Link to={`/p/${listing.seller}`} onClick={e => e.stopPropagation()} className="text-xs font-bold text-gray-700 hover:text-neon-purple transition-colors truncate">
+        <Link
+          to={`/p/${listing.seller}`}
+          onClick={(e) => e.stopPropagation()}
+          className={`truncate font-bold text-gray-700 transition-colors hover:text-neon-purple ${compact ? 'text-[11px]' : 'text-xs'}`}
+        >
           {listing.seller || 'Satıcı'}
         </Link>
       </div>
 
-      {/* Price */}
-      <div className="flex items-center justify-between border-t border-gray-100 pt-3 mt-auto">
-        <div className="text-xl font-extrabold text-neon-green">{Number(listing.price).toFixed(2)} ₺</div>
+      <div className={`mt-auto flex items-center justify-between border-t border-gray-100 ${compact ? 'pt-2.5' : 'pt-3'}`}>
+        <div className={`font-extrabold text-neon-green ${compact ? 'text-lg' : 'text-xl'}`}>
+          {Number(listing.price).toFixed(2)} ₺
+        </div>
         <span className="badge-purple text-xs">Detay</span>
       </div>
     </Link>
