@@ -17,34 +17,31 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
+import { listingSlug } from '../../lib/api';
 
 function Modal({ title, onClose, children }) {
-  const renderActivityRows = (rows, emptyText, roleLabel) => {
+  const renderListingCards = (rows, emptyText) => {
     if (!rows?.length) {
       return <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">{emptyText}</div>;
     }
 
     return (
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {rows.map((row) => (
-          <div key={`${roleLabel}-${row.id}`} className="rounded-xl bg-slate-50 px-3 py-3">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-bold text-slate-800">{row.item_title || row.title || 'Kayıt'}</div>
-                <div className="mt-1 text-xs text-slate-400">
-                  {roleLabel && row[roleLabel] ? `${row[roleLabel]} · ` : ''}{fmtDateTime(row.created_at)}
-                </div>
-              </div>
-              <div className="text-right">
-                {row.price != null || row.amount != null ? (
-                  <div className="text-sm font-black text-emerald-600">{fmtMoney(row.price ?? row.amount)}</div>
-                ) : null}
-                {row.status ? (
-                  <div className="mt-1 text-[11px] font-bold text-slate-500">{row.status}</div>
-                ) : null}
+          <Link
+            key={`listing-${row.id}`}
+            to={listingSlug(row.title || row.item_title || 'ilan', row.id)}
+            className="rounded-2xl border border-slate-100 bg-slate-50 p-3 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-white"
+          >
+            <div className="flex min-h-[84px] flex-col">
+              <div className="line-clamp-2 text-sm font-bold leading-tight text-slate-800">{row.title || row.item_title || 'İlan'}</div>
+              <div className="mt-2 text-xs text-slate-400">{fmtDateTime(row.created_at)}</div>
+              <div className="mt-auto pt-3">
+                {row.price != null ? <div className="text-sm font-black text-emerald-600">{fmtMoney(row.price)}</div> : null}
+                {row.status ? <div className="mt-1 text-[11px] font-bold text-slate-500">{row.status}</div> : null}
               </div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     );
@@ -704,8 +701,6 @@ export default function AdminUsers() {
                   { id: 'general', label: 'Genel' },
                   { id: 'personal', label: 'Kişisel' },
                   { id: 'listings', label: 'İlanlar' },
-                  { id: 'orders', label: 'Siparişler' },
-                  { id: 'sales', label: 'Satışlar' },
                   { id: 'finance', label: 'Finans' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
@@ -845,25 +840,7 @@ export default function AdminUsers() {
               <div className="space-y-4">
                 <div className="rounded-2xl border border-slate-100 bg-white p-4">
                   <div className="mb-3 text-sm font-extrabold text-slate-900">Son İlanlar</div>
-                  {renderActivityRows(detailUser.listings, 'İlan bulunmuyor.', null)}
-                </div>
-              </div>
-            )}
-
-            {detailTab === 'orders' && (
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son Siparişler</div>
-                  {renderActivityRows(detailUser.orders, 'Sipariş bulunmuyor.', 'seller_name')}
-                </div>
-              </div>
-            )}
-
-            {detailTab === 'sales' && (
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son Satışlar</div>
-                  {renderActivityRows(detailUser.sales, 'Satış bulunmuyor.', 'buyer_name')}
+                  {renderListingCards(detailUser.listings, 'İlan bulunmuyor.')}
                 </div>
               </div>
             )}
