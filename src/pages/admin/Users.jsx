@@ -19,6 +19,37 @@ import AdminLayout from '../../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 
 function Modal({ title, onClose, children }) {
+  const renderActivityRows = (rows, emptyText, roleLabel) => {
+    if (!rows?.length) {
+      return <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">{emptyText}</div>;
+    }
+
+    return (
+      <div className="space-y-2">
+        {rows.map((row) => (
+          <div key={`${roleLabel}-${row.id}`} className="rounded-xl bg-slate-50 px-3 py-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-bold text-slate-800">{row.item_title || row.title || 'Kayıt'}</div>
+                <div className="mt-1 text-xs text-slate-400">
+                  {roleLabel && row[roleLabel] ? `${row[roleLabel]} · ` : ''}{fmtDateTime(row.created_at)}
+                </div>
+              </div>
+              <div className="text-right">
+                {row.price != null || row.amount != null ? (
+                  <div className="text-sm font-black text-emerald-600">{fmtMoney(row.price ?? row.amount)}</div>
+                ) : null}
+                {row.status ? (
+                  <div className="mt-1 text-[11px] font-bold text-slate-500">{row.status}</div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -122,7 +153,7 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState(false);
 
   const [drawerSaving, setDrawerSaving] = useState('');
-  const [generalForm, setGeneralForm] = useState({ username: '', avatar: '', level: '0', xp: '0' });
+  const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '', level: '0', xp: '0' });
   const [personalForm, setPersonalForm] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '' });
   const [financeForm, setFinanceForm] = useState({ amount: '', action: 'add' });
@@ -155,6 +186,7 @@ export default function AdminUsers() {
 
     setGeneralForm({
       username: detailUser.username || '',
+      email: detailUser.email || '',
       avatar: detailUser.avatar || '',
       level: String(detailUser.level ?? 0),
       xp: String(detailUser.xp ?? 0),
@@ -224,11 +256,16 @@ export default function AdminUsers() {
 
   const handleSaveGeneral = async () => {
     const username = generalForm.username.trim();
+    const email = generalForm.email.trim();
     const level = Number(generalForm.level);
     const xp = Number(generalForm.xp);
 
     if (!username) {
       showToast('Kullanıcı adı gerekli.');
+      return;
+    }
+    if (!email) {
+      showToast('E-posta gerekli.');
       return;
     }
     if (Number.isNaN(level) || level < 0 || Number.isNaN(xp) || xp < 0) {
@@ -241,6 +278,7 @@ export default function AdminUsers() {
       await adminUpdateUser({
         user_id: detailUser.id,
         username,
+        email,
         avatar: generalForm.avatar.trim(),
         level,
         xp,
@@ -648,7 +686,7 @@ export default function AdminUsers() {
                   </div>
                   <div className="mt-1 text-sm text-slate-500">{detailUser.email}</div>
                   <div className="mt-1 text-xs text-slate-400">
-                    #{detailUser.id} · Seviye {detailUser.level} · {fmtDate(detailUser.created_at)}
+                    #{detailUser.id} · Seviye {detailUser.level} · {fmtDateTime(detailUser.created_at)}
                   </div>
                 </div>
               </div>
@@ -661,10 +699,13 @@ export default function AdminUsers() {
             </div>
             
             <div className="rounded-2xl bg-slate-100 p-1">
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-7">
                 {[
                   { id: 'general', label: 'Genel' },
                   { id: 'personal', label: 'Kişisel' },
+                  { id: 'listings', label: 'İlanlar' },
+                  { id: 'orders', label: 'Siparişler' },
+                  { id: 'sales', label: 'Satışlar' },
                   { id: 'finance', label: 'Finans' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
@@ -691,6 +732,14 @@ export default function AdminUsers() {
                     <input
                       value={generalForm.username}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, username: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="E-posta">
+                    <input
+                      type="email"
+                      value={generalForm.email}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, email: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
@@ -723,8 +772,8 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <InfoRow icon={Mail} label="E-posta" value={detailUser.email} />
-                  <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDate(detailUser.created_at)} />
+                  <InfoRow icon={Mail} label="Mevcut E-posta" value={detailUser.email} />
+                  <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
                 </div>
 
                 <div className="flex justify-end">
@@ -735,22 +784,6 @@ export default function AdminUsers() {
                   >
                     {drawerSaving === 'general' ? 'Kaydediliyor...' : 'Genel Bilgileri Kaydet'}
                   </button>
-                </div>
-
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son İlanlar</div>
-                  {detailUser.listings?.length > 0 ? (
-                    <div className="space-y-2">
-                      {detailUser.listings.slice(0, 5).map((listing) => (
-                        <div key={listing.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 text-sm">
-                          <span className="min-w-0 flex-1 truncate font-semibold text-slate-700">{listing.title}</span>
-                          <span className="ml-3 font-bold text-emerald-600">{fmtMoney(listing.price)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">İlan bulunmuyor.</div>
-                  )}
                 </div>
               </div>
             )}
@@ -804,6 +837,33 @@ export default function AdminUsers() {
                   >
                     {drawerSaving === 'personal' ? 'Kaydediliyor...' : 'Kişisel Bilgileri Kaydet'}
                   </button>
+                </div>
+              </div>
+            )}
+
+            {detailTab === 'listings' && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son İlanlar</div>
+                  {renderActivityRows(detailUser.listings, 'İlan bulunmuyor.', null)}
+                </div>
+              </div>
+            )}
+
+            {detailTab === 'orders' && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son Siparişler</div>
+                  {renderActivityRows(detailUser.orders, 'Sipariş bulunmuyor.', 'seller_name')}
+                </div>
+              </div>
+            )}
+
+            {detailTab === 'sales' && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son Satışlar</div>
+                  {renderActivityRows(detailUser.sales, 'Satış bulunmuyor.', 'buyer_name')}
                 </div>
               </div>
             )}
@@ -880,6 +940,7 @@ export default function AdminUsers() {
                         <div className="space-y-2">
                           {(userTxns || []).slice(0, 20).map((tx, i) => {
                             const isPurchase = tx.tx_type === 'purchase';
+                            const isBalance = tx.tx_type === 'balance';
                             const net = isPurchase ? -Number(tx.amount || 0) : Number(tx.seller_amount ?? tx.amount ?? 0);
                             return (
                               <div key={`${tx.tx_type}-${tx.id}-${i}`} className="rounded-xl bg-slate-50 px-3 py-3">
@@ -887,16 +948,18 @@ export default function AdminUsers() {
                                   <div className="min-w-0 flex-1">
                                     <div className="truncate text-sm font-bold text-slate-800">{tx.item_title || 'İşlem'}</div>
                                     <div className="mt-1 text-xs text-slate-400">
-                                      {tx.counterparty || '—'} · {fmtDateTime(tx.created_at)}
+                                      {isBalance
+                                        ? `${tx.counterparty || 'Sistem'}${tx.balance_after != null ? ` · Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ₺` : ''} · ${fmtDateTime(tx.created_at)}`
+                                        : `${tx.counterparty || '—'} · ${fmtDateTime(tx.created_at)}`}
                                     </div>
                                   </div>
                                   <div className="text-right">
-                                    <div className={`text-sm font-black ${net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                                    <div className={`text-sm font-black ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                                       {net < 0 ? '' : '+'}
                                       {Number(net).toFixed(2)} ₺
                                     </div>
-                                    <div className={`mt-1 text-[11px] font-bold ${isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
-                                      {isPurchase ? 'Alım' : 'Satış'}
+                                    <div className={`mt-1 text-[11px] font-bold ${isBalance ? 'text-violet-600' : isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
+                                      {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
                                     </div>
                                   </div>
                                 </div>

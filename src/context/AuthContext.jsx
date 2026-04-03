@@ -15,7 +15,10 @@ export function AuthProvider({ children }) {
       const res = await getMe();
       setUser(res.data);
       setStoredUser(res.data);
-    } catch {
+    } catch (err) {
+      if (err?.message && /ban/i.test(err.message)) {
+        window.alert(err.message);
+      }
       apiLogout();
       setUser(null);
     } finally {
