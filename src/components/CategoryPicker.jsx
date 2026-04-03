@@ -1,44 +1,46 @@
 ﻿import { useMemo, useState } from 'react';
 import { ArrowLeft, Check, ChevronRight, Search, X } from 'lucide-react';
 
-function CategoryVisualCard({ category, selected, hasChildren, subtitle, onClick }) {
+function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-2xl border text-left transition-all ${
+      className={`group relative overflow-hidden rounded-2xl border bg-slate-100 text-left shadow-sm transition-all ${
         selected
-          ? 'border-violet-400 ring-2 ring-violet-300/60'
-          : 'border-slate-700/80 hover:-translate-y-0.5 hover:border-violet-400/60'
+          ? 'border-violet-400 ring-2 ring-violet-200'
+          : 'border-gray-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md'
       }`}
-      style={{ aspectRatio: '190 / 138' }}
+      style={{ aspectRatio: '90 / 115' }}
     >
       {category.image ? (
         <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900">
-          <span className="text-5xl opacity-80">{category.icon || 'ğŸ“'}</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
+          <span className="text-4xl opacity-80">{category.icon || '📁'}</span>
         </div>
       )}
 
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-900/30 to-slate-900/10" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/12 to-transparent" />
 
-      <div className="absolute right-2 top-2 flex items-center gap-1">
-        {hasChildren && (
-          <span className="rounded-full bg-black/35 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
-            Alt Kategori
-          </span>
-        )}
-        {selected && (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg">
-            <Check size={13} />
-          </span>
-        )}
+      {selected && (
+        <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-white shadow-lg">
+          <Check size={13} />
+        </div>
+      )}
+
+      <div className="absolute inset-x-0 bottom-0 px-2.5 pb-2.5">
+        <div className="rounded-xl bg-black/35 px-2.5 py-2 shadow-lg backdrop-blur-[2px]">
+          <div className="line-clamp-2 text-[13px] font-bold leading-tight text-white">{category.name}</div>
+          {subtitle ? <div className="mt-0.5 line-clamp-1 text-[10px] text-white/78">{subtitle}</div> : null}
+        </div>
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 p-3">
-        <div className="line-clamp-2 text-sm font-bold leading-tight text-white drop-shadow-sm">{category.name}</div>
-        {subtitle ? <div className="mt-1 line-clamp-1 text-[11px] text-white/75">{subtitle}</div> : null}
-      </div>
+      {hasChildren && (
+        <div className="absolute right-2 top-10 rounded-full bg-black/35 px-2 py-1 text-[10px] font-bold text-white shadow-sm backdrop-blur-[2px]">
+          Alt kategori
+        </div>
+      )}
     </button>
   );
 }
@@ -98,13 +100,12 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
     setSearch('');
   };
 
-  const currentParentId = path.length > 0 ? path[path.length - 1] : null;
-  const currentParent = currentParentId ? categories.find((category) => category.id === currentParentId) : null;
-  const currentLevel = childrenOf(currentParentId);
   const breadcrumbCats = path.map((id) => categories.find((category) => category.id === id)).filter(Boolean);
+  const currentParentId = path.length > 0 ? path[path.length - 1] : null;
+  const currentLevel = childrenOf(currentParentId);
 
   const renderCards = (items, withPath = false) => (
-    <div className="grid grid-cols-2 gap-3 p-3 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-3 gap-3 p-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
       {items.map((category) => {
         const children = childrenOf(category.id);
         const hasChildren = children.length > 0;
@@ -114,11 +115,11 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
           : hasChildren
             ? `${children.length} alt kategori`
             : category.min_price != null
-              ? `Min ${category.min_price}â‚º`
+              ? `Min ${category.min_price}₺`
               : '';
 
         return (
-          <CategoryVisualCard
+          <CategoryCard
             key={category.id}
             category={category}
             selected={isSelected}
@@ -132,24 +133,25 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   );
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-700 bg-[#2d3046] shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
-      <div className="border-b border-white/5 px-4 py-4">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+      <div className="border-b border-gray-100 px-4 py-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-white/80">
-              <span>Ä°lan Kategorileri</span>
+            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-gray-700">
+              <span>İlan Kategorileri</span>
               {path.length > 0 &&
                 breadcrumbCats.map((category, index) => (
                   <span key={category.id} className="flex items-center gap-2">
-                    <ChevronRight size={14} className="text-white/35" />
+                    <ChevronRight size={14} className="text-gray-300" />
                     <button
+                      type="button"
                       onClick={() => {
                         const nextPath = path.slice(0, index + 1);
                         setPath(nextPath);
                         onChange(null);
                       }}
                       className={`transition-colors ${
-                        index === path.length - 1 ? 'text-white' : 'text-white/60 hover:text-white'
+                        index === path.length - 1 ? 'text-violet-600' : 'text-gray-500 hover:text-violet-600'
                       }`}
                     >
                       {category.name}
@@ -157,18 +159,19 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
                   </span>
                 ))}
             </div>
-            {currentParent ? (
-              <div className="mt-1 text-xs text-white/45">Bu kategorinin alt baÅŸlÄ±klarÄ±ndan seÃ§im yapabilirsiniz.</div>
-            ) : (
-              <div className="mt-1 text-xs text-white/45">Kategori gÃ¶rsellerine tÄ±klayarak alt seviyelere inebilirsiniz.</div>
-            )}
+            <div className="mt-1 text-xs text-gray-400">
+              {path.length > 0
+                ? 'Alt seviyeden seçim yapabilir veya geri dönebilirsiniz.'
+                : 'Görselli kategori kartlarından seçim yaparak devam edin.'}
+            </div>
           </div>
 
           <div className="flex flex-col gap-2 sm:flex-row">
             {path.length > 0 && (
               <button
+                type="button"
                 onClick={goBack}
-                className="inline-flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                className="inline-flex items-center justify-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-violet-300 hover:text-violet-600"
               >
                 <ArrowLeft size={13} />
                 Geri
@@ -176,23 +179,28 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
             )}
             {selected && (
               <button
+                type="button"
                 onClick={clear}
-                className="inline-flex items-center justify-center gap-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                className="inline-flex items-center justify-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-violet-300 hover:text-violet-600"
               >
                 <X size={13} />
                 Temizle
               </button>
             )}
             <div className="relative min-w-[220px]">
-              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35" />
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Filtreleme yapÄ±n..."
-                className="w-full rounded-xl border border-white/10 bg-white/10 py-2 pl-9 pr-9 text-sm text-white placeholder:text-white/35 focus:border-violet-400 focus:outline-none"
+                placeholder="Filtreleme yapın..."
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-9 text-sm text-gray-700 placeholder:text-gray-400 focus:border-violet-400 focus:outline-none"
               />
               {search && (
-                <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/45 hover:text-white">
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
                   <X size={13} />
                 </button>
               )}
@@ -201,15 +209,15 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
         </div>
       </div>
 
-      <div className="max-h-[420px] overflow-y-auto bg-[#30344d]">
+      <div className="max-h-[460px] overflow-y-auto bg-gray-50/60">
         {search ? (
           searchResults.length === 0 ? (
-            <div className="px-4 py-10 text-center text-sm text-white/45">SonuÃ§ bulunamadÄ±.</div>
+            <div className="px-4 py-10 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
           ) : (
             renderCards(searchResults, true)
           )
         ) : currentLevel.length === 0 ? (
-          <div className="px-4 py-10 text-center text-sm text-white/45">Kategori bulunamadÄ±.</div>
+          <div className="px-4 py-10 text-center text-sm text-gray-400">Kategori bulunamadı.</div>
         ) : (
           renderCards(currentLevel)
         )}
@@ -217,4 +225,3 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
     </div>
   );
 }
-
