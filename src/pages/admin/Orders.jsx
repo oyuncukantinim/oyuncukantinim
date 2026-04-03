@@ -53,6 +53,11 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
 
   const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR') : '—';
   const ds = parseInt(order.delivery_status ?? 0);
+  const showAutoConfirm =
+    Boolean(order.auto_confirm_at) &&
+    order.item_type === 'listing' &&
+    order.status === 'pending' &&
+    ![2, 3, 4].includes(ds);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -113,7 +118,7 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 {order.seller_paid == 1 ? 'Ödendi' : 'Beklemede (Havuz)'}
               </span>
             </div>
-            {order.auto_confirm_at && order.status !== 'refunded' && order.status !== 'cancelled' && (
+            {showAutoConfirm && (
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Otomatik Onay</span>
                 <span className="text-gray-600 text-xs">{fmtDate(order.auto_confirm_at)}</span>
