@@ -36,6 +36,12 @@ export const adminLogin = (email, password) =>
 
 // Dashboard
 export const adminStats = () => adminRequest('admin_stats');
+export const adminDashboardPlus = () => adminRequest('admin_get_dashboard_plus');
+export const adminBootstrap = () => adminRequest('admin_bootstrap');
+export const adminSaveAccessControl = (body) =>
+  adminRequest('admin_save_access_control', { method: 'POST', body });
+export const adminGetAuditLogs = (params = {}) =>
+  adminRequest('admin_get_audit_logs', { query: params });
 
 // Users
 export const adminGetUsers = (params = {}) =>
@@ -44,6 +50,14 @@ export const adminGetUser = (id) =>
   adminRequest('admin_get_user', { query: { id } });
 export const adminUpdateUser = (body) =>
   adminRequest('admin_update_user', { method: 'POST', body });
+export const adminGetUserInsights = (user_id) =>
+  adminRequest('admin_get_user_insights', { query: { user_id } });
+export const adminBulkUpdateUsers = (body) =>
+  adminRequest('admin_bulk_update_users', { method: 'POST', body });
+export const adminSaveEntityNote = (body) =>
+  adminRequest('admin_save_entity_note', { method: 'POST', body });
+export const adminDeleteEntityNote = (id) =>
+  adminRequest('admin_delete_entity_note', { method: 'POST', body: { id } });
 
 // Listings
 export const adminGetListings = (params = {}) =>
@@ -52,12 +66,26 @@ export const adminUpdateListing = (body) =>
   adminRequest('admin_update_listing', { method: 'POST', body });
 export const adminDeleteListing = (listing_id) =>
   adminRequest('admin_delete_listing', { method: 'POST', body: { listing_id } });
+export const adminGetModerationQueue = () =>
+  adminRequest('admin_get_moderation_queue');
+export const adminGetListingInsights = (listing_id) =>
+  adminRequest('admin_get_listing_insights', { query: { listing_id } });
+export const adminManageListing = (body) =>
+  adminRequest('admin_manage_listing', { method: 'POST', body });
+export const adminBulkUpdateListings = (body) =>
+  adminRequest('admin_bulk_update_listings', { method: 'POST', body });
 
 // Orders
 export const adminGetOrders = (params = {}) =>
   adminRequest('admin_get_orders', { query: params });
 export const adminUpdateOrder = (body) =>
   adminRequest('admin_update_order', { method: 'POST', body });
+export const adminGetOrderInsights = (order_id) =>
+  adminRequest('admin_get_order_insights', { query: { order_id } });
+export const adminManageOrder = (body) =>
+  adminRequest('admin_manage_order', { method: 'POST', body });
+export const adminBulkUpdateOrders = (body) =>
+  adminRequest('admin_bulk_update_orders', { method: 'POST', body });
 
 // Reviews
 export const adminGetReviews = (params = {}) =>
@@ -95,6 +123,8 @@ export const adminSaveSettings = (body) =>
 // Broadcast
 export const adminBroadcast = (body) =>
   adminRequest('admin_broadcast', { method: 'POST', body });
+export const adminSendSegmentedBroadcast = (body) =>
+  adminRequest('admin_send_segmented_broadcast', { method: 'POST', body });
 
 // Conversations
 export const adminGetConversations = (params = {}) =>
@@ -103,6 +133,16 @@ export const adminGetChat = (uid1, uid2) =>
   adminRequest('admin_get_chat', { query: { uid1, uid2 } });
 export const adminSendChat = (uid1, uid2, message) =>
   adminRequest('admin_send_chat', { method: 'POST', body: { uid1, uid2, message } });
+export const adminGetConversationMeta = (uid1, uid2) =>
+  adminRequest('admin_get_conversation_meta', { query: { uid1, uid2 } });
+export const adminSaveConversationMeta = (body) =>
+  adminRequest('admin_save_conversation_meta', { method: 'POST', body });
+export const adminGetQuickReplies = () =>
+  adminRequest('admin_get_quick_replies');
+export const adminSaveQuickReply = (body) =>
+  adminRequest('admin_save_quick_reply', { method: 'POST', body });
+export const adminDeleteQuickReply = (id) =>
+  adminRequest('admin_delete_quick_reply', { method: 'POST', body: { id } });
 
 // Order Logs
 export const adminGetOrderLogs = (order_id) =>
@@ -113,6 +153,8 @@ export const adminGetAllTransactions = (params = {}) =>
   adminRequest('admin_get_all_transactions', { query: params });
 export const adminGetUserTransactions = (user_id) =>
   adminRequest('admin_get_user_transactions', { query: { user_id } });
+export const adminGetFinanceOverview = (params = {}) =>
+  adminRequest('admin_get_finance_overview', { query: params });
 
 // Categories Reorder
 export const adminReorderCategories = (orders) =>

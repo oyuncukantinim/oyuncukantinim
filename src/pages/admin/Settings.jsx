@@ -1,170 +1,136 @@
-import { useState, useEffect } from 'react';
-import { Save, ToggleLeft, ToggleRight, Settings as SettingsIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Save, Settings as SettingsIcon, CalendarRange, Sparkles } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetSettings, adminSaveSettings } from '../../lib/adminApi';
 
-// Bölümler ikişer ikişer yan yana gösterilir
-const SETTINGS_ROWS = [
-  [
-    {
-      section: 'Genel',
-      fields: [
-        { key: 'site_name', label: 'Site Adı', type: 'text', placeholder: 'Oyuncu Kantinim' },
-      ],
-    },
-    {
-      section: 'Özellikler',
-      fields: [
-        { key: 'registration_enabled', label: 'Yeni Üyelik', type: 'toggle', desc: 'Kapalıysa yeni kullanıcılar kayıt olamaz' },
-        { key: 'balance_add_enabled',  label: 'Bakiye Yükleme', type: 'toggle', desc: 'Kapalıysa kullanıcılar bakiye yükleyemez' },
-        { key: 'maintenance_mode',     label: 'Bakım Modu', type: 'toggle', desc: 'Açıksa site kullanıcılara kapalı görünür' },
-      ],
-    },
-  ],
-  [
-    {
-      section: 'Ticari',
-      fields: [
-        { key: 'commission_rate',       label: 'Komisyon Oranı (%)', type: 'number', placeholder: '10' },
-        { key: 'max_listings_per_user', label: 'Max İlan / Kullanıcı', type: 'number', placeholder: '50' },
-        { key: 'min_listing_price',     label: 'Min İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
-        { key: 'max_listing_price',     label: 'Max İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
-        { key: 'max_listing_images',    label: 'Max Görsel / İlan', type: 'number', placeholder: '5' },
-        { key: 'listing_title_max',     label: 'Başlık Karakter Limiti', type: 'number', placeholder: '100' },
-        { key: 'listing_desc_max',      label: 'Açıklama Karakter Limiti', type: 'number', placeholder: '2000' },
-        { key: 'review_comment_max',    label: 'Yorum Karakter Limiti', type: 'number', placeholder: '500' },
-      ],
-    },
-    {
-      section: 'Teslimat & Havuz',
-      fields: [
-        { key: 'escrow_enabled',        label: 'Emanet (Havuz) Sistemi', type: 'toggle', desc: 'Manuel ilanlar için para satıcıya onay sonrası geçer' },
-        { key: 'auto_confirm_days',     label: 'Otomatik Onay (gün)', type: 'number', placeholder: '3' },
-        { key: 'listing_duration_days', label: 'İlan Süresi (gün)', type: 'number', placeholder: '30' },
-      ],
-    },
-  ],
-  [
-    {
-      section: 'Duyuru Bandı',
-      fields: [
-        { key: 'announcement_active', label: 'Duyuru Bandı Aktif', type: 'toggle', desc: 'Site üstünde renkli bant gösterilir' },
-        { key: 'announcement_text',   label: 'Duyuru Metni', type: 'text', placeholder: 'Büyük indirim başladı! ...' },
-      ],
-    },
-  ],
+const FIELD_GROUPS = [
+  {
+    title: 'Genel',
+    fields: [
+      { key: 'site_name', label: 'Site Adı' },
+      { key: 'announcement_text', label: 'Duyuru Bandı Metni' },
+    ],
+  },
+  {
+    title: 'Ticari',
+    fields: [
+      { key: 'commission_rate', label: 'Varsayılan Komisyon (%)', type: 'number' },
+      { key: 'min_listing_price', label: 'Min İlan Fiyatı', type: 'number' },
+      { key: 'max_listing_price', label: 'Max İlan Fiyatı', type: 'number' },
+      { key: 'auto_confirm_days', label: 'Otomatik Onay (gün)', type: 'number' },
+    ],
+  },
+  {
+    title: 'Planlı Bakım',
+    fields: [
+      { key: 'maintenance_schedule_start', label: 'Bakım Başlangıcı', type: 'datetime-local' },
+      { key: 'maintenance_schedule_end', label: 'Bakım Bitişi', type: 'datetime-local' },
+    ],
+  },
 ];
-
-function SettingField({ field, value, onChange }) {
-  if (field.type === 'toggle') {
-    return (
-      <div className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-        <div>
-          <div className="font-semibold text-gray-800 text-sm">{field.label}</div>
-          {field.desc && <div className="text-xs text-gray-400 mt-0.5">{field.desc}</div>}
-        </div>
-        <button
-          onClick={() => onChange(value === '1' ? '0' : '1')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-sm border transition-all flex-shrink-0 ml-4 ${
-            value === '1' ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-gray-50 border-gray-200 text-gray-500'
-          }`}
-        >
-          {value === '1' ? <><ToggleRight size={16} /> Açık</> : <><ToggleLeft size={16} /> Kapalı</>}
-        </button>
-      </div>
-    );
-  }
-  return (
-    <div className="py-2.5 border-b border-gray-50 last:border-0">
-      <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label}</label>
-      <input
-        type={field.type === 'number' ? 'number' : 'text'}
-        value={value || ''}
-        onChange={e => onChange(e.target.value)}
-        placeholder={field.placeholder}
-        className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
-      />
-    </div>
-  );
-}
-
-function SectionCard({ section, settings, set }) {
-  return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-      <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
-        <SettingsIcon size={15} className="text-violet-600" />
-        <h3 className="font-extrabold text-gray-800 text-sm">{section.section}</h3>
-      </div>
-      <div className="px-5 py-1 flex-1">
-        {section.fields.map(field => (
-          <SettingField
-            key={field.key}
-            field={field}
-            value={settings[field.key]}
-            onChange={v => set(field.key, v)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({});
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
 
-  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  };
 
   useEffect(() => {
     adminGetSettings()
-      .then(r => setSettings(r.data))
-      .catch(() => {})
+      .then((res) => setSettings(res.data || {}))
+      .catch((e) => showToast(e.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const set = (key, value) => setSettings(s => ({ ...s, [key]: value }));
+  const update = (key, value) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const handleSave = async () => {
+  const save = async () => {
     setSaving(true);
     try {
       await adminSaveSettings(settings);
       showToast('Ayarlar kaydedildi.');
-    } catch (e) { showToast(e.message); }
-    finally { setSaving(false); }
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading) return (
-    <AdminLayout>
-      <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    </AdminLayout>
-  );
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="w-8 h-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="max-w-5xl mx-auto space-y-4">
-        {SETTINGS_ROWS.map((row, i) => (
-          <div key={i} className={`grid gap-4 ${row.length === 2 ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'}`}>
-            {row.map(section => (
-              <SectionCard key={section.section} section={section} settings={settings} set={set} />
-            ))}
+      <div className="max-w-5xl mx-auto space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Link to="/admin/access-control" className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                <Sparkles size={18} />
+              </div>
+              <div className="font-extrabold text-gray-900">Özellik Bayrakları ve Yetkiler</div>
+            </div>
+            <p className="text-sm text-gray-500">Kurucu tarafı feature flag, rol ve kritik işlem ayarlarını buradan yönetir.</p>
+          </Link>
+
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center">
+                <CalendarRange size={18} />
+              </div>
+              <div className="font-extrabold text-gray-900">Planlı Bakım</div>
+            </div>
+            <p className="text-sm text-gray-500">Bakım zaman aralığı kaydedildiğinde API otomatik olarak bakım modunu açıp kapatır.</p>
+          </div>
+        </div>
+
+        {FIELD_GROUPS.map((group) => (
+          <div key={group.title} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
+                <SettingsIcon size={16} />
+              </div>
+              <h3 className="font-extrabold text-gray-900">{group.title}</h3>
+            </div>
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {group.fields.map((field) => (
+                <div key={field.key}>
+                  <label className="block text-sm font-bold text-gray-700 mb-1.5">{field.label}</label>
+                  <input
+                    type={field.type || 'text'}
+                    value={settings[field.key] || ''}
+                    onChange={(e) => update(field.key, e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-violet-400"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         ))}
 
         <button
-          onClick={handleSave}
+          onClick={save}
           disabled={saving}
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50 shadow-lg shadow-violet-500/20"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50"
         >
-          {saving
-            ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            : <><Save size={16} /> Tüm Ayarları Kaydet</>
-          }
+          {saving ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Save size={16} /> Ayarları Kaydet</>}
         </button>
       </div>
     </AdminLayout>

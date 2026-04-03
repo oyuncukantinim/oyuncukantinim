@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, ShoppingBag, Package,
   Star, Tag, CreditCard, Megaphone, Settings,
-  LogOut, Menu, X, ChevronRight, Shield, MessageSquare, Gamepad2, Wallet, StickyNote
+  LogOut, Menu, X, ChevronRight, Shield, MessageSquare, Gamepad2, Wallet, StickyNote, ScrollText, LockKeyhole
 } from 'lucide-react';
 
 const navItems = [
@@ -19,6 +19,8 @@ const navItems = [
   { path: '/admin/announcements', label: 'Duyurular',     icon: Megaphone },
   { path: '/admin/popular-games', label: 'Popüler Oyunlar', icon: Gamepad2 },
   { path: '/admin/settings',    label: 'Site Ayarları',   icon: Settings },
+  { path: '/admin/access-control', label: 'Erişim',       icon: LockKeyhole },
+  { path: '/admin/audit-logs',  label: 'Denetim Kaydı',   icon: ScrollText },
   { path: '/admin/dev-notes',   label: 'Geliştirme',      icon: StickyNote },
 ];
 
@@ -83,7 +85,7 @@ export default function AdminLayout({ children }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold truncate">{adminUser.username || 'Admin'}</div>
-            <div className="text-[10px] text-violet-400">Yönetici</div>
+            <div className="text-[10px] text-violet-400">{adminUser.admin_role_label || 'Yönetici'}</div>
           </div>
         </div>
         <button

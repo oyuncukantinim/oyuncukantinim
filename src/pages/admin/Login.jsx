@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff } from 'lucide-react';
-import { adminLogin } from '../../lib/adminApi';
+import { adminBootstrap, adminLogin } from '../../lib/adminApi';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -18,7 +18,8 @@ export default function AdminLogin() {
     try {
       const res = await adminLogin(email, password);
       localStorage.setItem('admin_token', res.data.token);
-      localStorage.setItem('admin_user', JSON.stringify(res.data.user));
+      const bootstrap = await adminBootstrap().catch(() => null);
+      localStorage.setItem('admin_user', JSON.stringify(bootstrap?.data?.admin || res.data.user));
       navigate('/admin');
     } catch (err) {
       setError(err.message);
