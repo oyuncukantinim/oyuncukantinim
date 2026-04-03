@@ -425,6 +425,7 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
@@ -476,17 +477,34 @@ export default function ProfilePage() {
 
   if (!user) return null;
 
+  const normalizedUsername = editUsername.trim();
+  const profileDirty = normalizedUsername !== (user.username || '') || selectedAvatar !== (user.avatar || '👤') || Boolean(newPassword);
+  const personalDirty =
+    personalInfo.full_name !== (user.full_name || '') ||
+    personalInfo.country !== (user.country || '') ||
+    personalInfo.city !== (user.city || '') ||
+    personalInfo.district !== (user.district || '') ||
+    personalInfo.address !== (user.address || '');
+
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
       const payload = {};
-      if (editUsername !== user.username) payload.new_username = editUsername;
+      if (!normalizedUsername) {
+        showToast('Kullanıcı adı boş bırakılamaz.');
+        setSaving(false);
+        return;
+      }
+      if (normalizedUsername !== user.username) payload.new_username = normalizedUsername;
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
       if (newPassword) payload.new_password = newPassword;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
+      setEditUsername(res.data.username || '');
+      setSelectedAvatar(res.data.avatar || '👤');
       setNewPassword('');
+      setShowPassword(false);
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
@@ -528,6 +546,11 @@ export default function ProfilePage() {
   const handleSavePersonalInfo = async () => {
     setSaving(true);
     try {
+      if (!personalDirty) {
+        showToast('Değişiklik yok.');
+        setSaving(false);
+        return;
+      }
       const res = await updateProfile(personalInfo);
       updateUser(res.data);
       showToast('Kişisel bilgiler güncellendi!');
@@ -577,12 +600,32 @@ export default function ProfilePage() {
                 <ShieldCheck size={12} className="text-emerald-500" /> Doğrulanmış Üye
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
               {Number(user.is_admin) === 1 && (
                 <Link to="/admin" className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
                   <Shield size={12}/> Admin Paneli
                 </Link>
               )}
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
+                  activeTab === 'profile'
+                    ? 'bg-violet-100 text-violet-700 border border-violet-200'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-violet-300 hover:text-violet-600'
+                }`}
+              >
+                <Edit3 size={12}/> Profili Düzenle
+              </button>
+              <button
+                onClick={() => setActiveTab('personal')}
+                className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors ${
+                  activeTab === 'personal'
+                    ? 'bg-cyan-100 text-cyan-700 border border-cyan-200'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-cyan-300 hover:text-cyan-600'
+                }`}
+              >
+                <MapPin size={12}/> Kişisel Bilgiler
+              </button>
               <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
                 🏪 Mağazamı Gör
               </Link>
@@ -935,69 +978,170 @@ export default function ProfilePage() {
 
           {/* PROFİL BİLGİLERİM */}
           {activeTab === 'profile' && (
-            <div className="max-w-md space-y-5">
-              <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-2">Avatar</label>
-                <div className="flex flex-wrap gap-2">
-                  {AVATARS.map(av => (
-                    <button key={av} onClick={() => setSelectedAvatar(av)}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedAvatar === av ? 'bg-violet-100 border-2 border-violet-500 scale-110' : 'bg-gray-50 border border-gray-200 hover:border-violet-300'}`}>
-                      {av}
-                    </button>
-                  ))}
+            <div className="max-w-3xl space-y-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
+                  <p className="text-sm text-gray-400 mt-1">Kullanıcı adı, avatar ve giriş güvenliğini buradan yönetebilirsin.</p>
+                </div>
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${profileDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                  {profileDirty ? 'Kaydedilmemiş değişiklik var' : 'Profil güncel'}
+                </span>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="space-y-5">
+                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
+                    <label className="block text-sm font-bold text-gray-600 mb-3">Avatar Seçimi</label>
+                    <div className="flex flex-wrap gap-2">
+                      {AVATARS.map(av => (
+                        <button key={av} onClick={() => setSelectedAvatar(av)}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl transition-all ${selectedAvatar === av ? 'bg-violet-100 border-2 border-violet-500 scale-110' : 'bg-white border border-gray-200 hover:border-violet-300'}`}>
+                          {av}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Kullanıcı Adı</label>
+                    <input
+                      type="text"
+                      value={editUsername}
+                      onChange={e => setEditUsername(e.target.value)}
+                      placeholder="Kullanıcı adın"
+                      className="input-field"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">3-20 karakter, harf, rakam ve alt çizgi kullanabilirsin.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
+                    <input type="email" value={user.email} disabled className="input-field opacity-50 cursor-not-allowed" />
+                    <p className="text-xs text-gray-400 mt-1">Güvenlik gereği e-posta bu ekrandan değiştirilemez.</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="Değiştirmek istemiyorsan boş bırak"
+                        className="input-field pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(v => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-violet-50 via-white to-cyan-50 border border-violet-100 rounded-2xl p-5 flex flex-col">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-violet-100 shadow-sm flex items-center justify-center text-3xl">
+                      {selectedAvatar || '👤'}
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Profil önizleme</div>
+                      <div className="text-lg font-extrabold text-gray-800">{normalizedUsername || 'Kullanıcı adı'}</div>
+                      <div className="text-xs text-gray-400">{user.email}</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 space-y-3 text-sm text-gray-500">
+                    <div className="bg-white/80 rounded-xl border border-white p-3">
+                      Avatar ve kullanıcı adı değişiklikleri anında profil kartına yansır.
+                    </div>
+                    <div className="bg-white/80 rounded-xl border border-white p-3">
+                      Şifre alanını boş bırakırsan mevcut şifren korunur.
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleSaveProfile}
+                    disabled={saving || !profileDirty}
+                    className="btn-primary w-full disabled:opacity-50 mt-auto"
+                  >
+                    {saving ? 'Kaydediliyor...' : profileDirty ? 'Profili Kaydet' : 'Profil Güncel'}
+                  </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">Kullanıcı Adı</label>
-                <input type="text" value={editUsername} onChange={e => setEditUsername(e.target.value)} className="input-field" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
-                <input type="email" value={user.email} disabled className="input-field opacity-50 cursor-not-allowed" />
-                <p className="text-xs text-gray-400 mt-1">Güvenlik gereği e-posta değiştirilemez.</p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
-                <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Değiştirmek istemiyorsan boş bırak" className="input-field" />
-              </div>
-              <button onClick={handleSaveProfile} disabled={saving}
-                className="btn-primary w-full disabled:opacity-50">
-                {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-              </button>
             </div>
           )}
 
           {/* KİŞİSEL BİLGİLER */}
           {activeTab === 'personal' && (
-            <div className="max-w-md space-y-5">
-              <h2 className="text-lg font-extrabold text-gray-800">Kişisel Bilgiler</h2>
-              <p className="text-xs text-gray-400">Bu bilgiler sadece siz ve site yöneticisi tarafından görülür.</p>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
-                <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="Adınız Soyadınız" className="input-field" />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="max-w-3xl space-y-5">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-600 mb-1.5">Ülke</label>
-                  <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="Türkiye" className="input-field" />
+                  <h2 className="text-lg font-extrabold text-gray-800">Kişisel Bilgiler</h2>
+                  <p className="text-sm text-gray-400 mt-1">Adres ve kimlik bilgileri yalnızca senin ve site yöneticisinin erişimine açıktır.</p>
                 </div>
-                <div>
-                  <label className="block text-sm font-bold text-gray-600 mb-1.5">Şehir</label>
-                  <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="İstanbul" className="input-field" />
+                <span className={`text-xs font-bold px-3 py-1 rounded-full ${personalDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                  {personalDirty ? 'Kaydedilmemiş değişiklik var' : 'Bilgiler güncel'}
+                </span>
+              </div>
+
+              <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
+                    <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="Adınız Soyadınız" className="input-field" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Ülke</label>
+                      <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="Türkiye" className="input-field" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Şehir</label>
+                      <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="İstanbul" className="input-field" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">İlçe</label>
+                    <input type="text" value={personalInfo.district} onChange={e => setPersonalInfo(f => ({...f, district: e.target.value}))} placeholder="Kadıköy" className="input-field" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
+                    <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={4} placeholder="Açık adresiniz..." className="input-field resize-none" />
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col">
+                  <div className="flex items-center gap-2 text-gray-700 font-bold">
+                    <MapPin size={16} className="text-cyan-600" />
+                    Kayıt Özeti
+                  </div>
+
+                  <div className="mt-4 space-y-3 text-sm">
+                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
+                      <div className="text-xs font-bold text-gray-400 mb-1">Ad Soyad</div>
+                      <div className="font-semibold text-gray-700">{personalInfo.full_name || 'Belirtilmedi'}</div>
+                    </div>
+                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
+                      <div className="text-xs font-bold text-gray-400 mb-1">Konum</div>
+                      <div className="font-semibold text-gray-700">
+                        {[personalInfo.district, personalInfo.city, personalInfo.country].filter(Boolean).join(' / ') || 'Belirtilmedi'}
+                      </div>
+                    </div>
+                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
+                      <div className="text-xs font-bold text-gray-400 mb-1">Adres</div>
+                      <div className="font-semibold text-gray-700 line-clamp-4">{personalInfo.address || 'Belirtilmedi'}</div>
+                    </div>
+                  </div>
+
+                  <button onClick={handleSavePersonalInfo} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
+                    {saving ? 'Kaydediliyor...' : personalDirty ? 'Kişisel Bilgileri Kaydet' : 'Bilgiler Güncel'}
+                  </button>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">İlçe</label>
-                <input type="text" value={personalInfo.district} onChange={e => setPersonalInfo(f => ({...f, district: e.target.value}))} placeholder="Kadıköy" className="input-field" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
-                <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={3} placeholder="Açık adresiniz..." className="input-field resize-none" />
-              </div>
-              <button onClick={handleSavePersonalInfo} disabled={saving} className="btn-primary w-full disabled:opacity-50">
-                {saving ? 'Kaydediliyor...' : 'Kişisel Bilgileri Kaydet'}
-              </button>
             </div>
           )}
 
