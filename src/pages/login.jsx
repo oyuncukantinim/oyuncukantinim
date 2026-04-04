@@ -15,7 +15,15 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { siteName, siteLogo, siteLogoText } = useSiteBrand();
+  const {
+    siteName,
+    siteLogo,
+    siteLogoText,
+    registrationEnabled,
+    usernameMinLength,
+    usernameMaxLength,
+    passwordMinLength,
+  } = useSiteBrand();
   const { login } = useAuth();
   const { showToast } = useCart();
   const navigate = useNavigate();
@@ -26,6 +34,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      if (!isLogin && !registrationEnabled) {
+        throw new Error('Yeni üyelik şu an kapalı.');
+      }
+
       const response = isLogin
         ? await loginUser({ email, password })
         : await registerUser({ username, email, password });
@@ -81,11 +93,17 @@ export default function LoginPage() {
             </button>
             <button
               onClick={() => {
+                if (!registrationEnabled) return;
                 setIsLogin(false);
                 setError('');
               }}
+              disabled={!registrationEnabled}
               className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
-                !isLogin ? 'bg-neon-purple text-white shadow-neon-purple' : 'text-gray-500 hover:text-white'
+                !registrationEnabled
+                  ? 'cursor-not-allowed text-gray-600 opacity-50'
+                  : !isLogin
+                    ? 'bg-neon-purple text-white shadow-neon-purple'
+                    : 'text-gray-500 hover:text-white'
               }`}
             >
               Kayıt Ol
@@ -98,6 +116,12 @@ export default function LoginPage() {
             </div>
           ) : null}
 
+          {!isLogin && !registrationEnabled ? (
+            <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-300">
+              Yeni üyelik şu an yönetici tarafından kapatıldı.
+            </div>
+          ) : null}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin ? (
               <div>
@@ -106,10 +130,12 @@ export default function LoginPage() {
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
                   <input
                     required
-                    type="text"
-                    value={username}
-                    onChange={(event) => setUsername(event.target.value)}
-                    placeholder="Kullanıcı adın..."
+                  type="text"
+                  value={username}
+                  onChange={(event) => setUsername(event.target.value)}
+                  minLength={usernameMinLength}
+                  maxLength={usernameMaxLength}
+                  placeholder="Kullanıcı adın..."
                     className="input-field pl-12"
                   />
                 </div>
@@ -140,6 +166,7 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
+                  minLength={passwordMinLength}
                   placeholder="Şifren..."
                   className="input-field pl-12"
                 />
@@ -148,7 +175,7 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || (!isLogin && !registrationEnabled)}
               className="btn-primary mt-4 flex w-full items-center justify-center gap-2 py-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (

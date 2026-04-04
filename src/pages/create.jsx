@@ -9,6 +9,7 @@ import { useCart } from '../context/CartContext';
 import { addListing } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -59,6 +60,16 @@ function StepBar({ current }) {
 export default function CreatePage() {
   const { user } = useAuth();
   const { showToast } = useCart();
+  const {
+    maxListingImages: defaultMaxImages,
+    listingTitleMax: defaultTitleMax,
+    listingDescMax: defaultDescMax,
+    minListingPrice: defaultMinListingPrice,
+    maxListingPrice: defaultMaxListingPrice,
+    maxListingsPerUser,
+    manualDeliveryMaxHours: defaultManualDeliveryMaxHours,
+    stockItemMaxCount: defaultStockItemMaxCount,
+  } = useSiteBrand();
   const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
@@ -80,10 +91,13 @@ export default function CreatePage() {
   const [stocks, setStocks] = useState([{ content: '', label: '' }]);
 
   // Admin tarafından belirlenen limitler
-  const [maxImages, setMaxImages] = useState(5);
-  const [titleMax, setTitleMax] = useState(100);
-  const [descMax, setDescMax] = useState(2000);
-  const [siteMinPrice, setSiteMinPrice] = useState(null);
+  const [maxImages, setMaxImages] = useState(defaultMaxImages);
+  const [titleMax, setTitleMax] = useState(defaultTitleMax);
+  const [descMax, setDescMax] = useState(defaultDescMax);
+  const [siteMinPrice, setSiteMinPrice] = useState(defaultMinListingPrice);
+  const [siteMaxPrice, setSiteMaxPrice] = useState(defaultMaxListingPrice);
+  const [manualDeliveryMaxHours, setManualDeliveryMaxHours] = useState(defaultManualDeliveryMaxHours);
+  const [stockItemMaxCount, setStockItemMaxCount] = useState(defaultStockItemMaxCount);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -95,6 +109,15 @@ export default function CreatePage() {
           if (j.data.max_listing_images) setMaxImages(j.data.max_listing_images);
           if (j.data.listing_title_max)  setTitleMax(j.data.listing_title_max);
           if (j.data.listing_desc_max)   setDescMax(j.data.listing_desc_max);
+          if (j.data.max_listing_price !== undefined && j.data.max_listing_price !== null && j.data.max_listing_price !== '') {
+            setSiteMaxPrice(Number(j.data.max_listing_price));
+          }
+          if (j.data.manual_delivery_max_hours) {
+            setManualDeliveryMaxHours(Number(j.data.manual_delivery_max_hours));
+          }
+          if (j.data.stock_item_max_count) {
+            setStockItemMaxCount(Number(j.data.stock_item_max_count));
+          }
           if (j.data.min_listing_price !== undefined && j.data.min_listing_price !== null && j.data.min_listing_price !== '') {
             setSiteMinPrice(Number(j.data.min_listing_price));
           }
@@ -142,6 +165,7 @@ export default function CreatePage() {
     if (step === 2) {
       if (!title.trim() || !price || priceNum <= 0) return false;
       if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
+      if (siteMaxPrice !== null && priceNum > siteMaxPrice) return false;
       return true;
     }
     if (step === 3) {
@@ -151,6 +175,8 @@ export default function CreatePage() {
       });
     }
     if (step === 4) {
+      if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) return false;
+      if (deliveryType === 'stock' && stocks.length > stockItemMaxCount) return false;
       if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
       return true;
     }
@@ -161,6 +187,15 @@ export default function CreatePage() {
     setSaving(true);
     try {
       const validStocks = stocks.filter(s => s.content.trim() !== '');
+      if (siteMaxPrice !== null && priceNum > siteMaxPrice) {
+        throw new Error(`Maksimum ilan fiyatı ${siteMaxPrice}₺ olabilir.`);
+      }
+      if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) {
+        throw new Error(`Manuel teslimat süresi en fazla ${manualDeliveryMaxHours} saat olabilir.`);
+      }
+      if (deliveryType === 'stock' && validStocks.length > stockItemMaxCount) {
+        throw new Error(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
+      }
       await addListing({
         title,
         price: priceNum,
@@ -187,7 +222,13 @@ export default function CreatePage() {
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
 
-  const addStock       = () => setStocks(s => [...s, { content: '', label: '' }]);
+  const addStock       = () => {
+    if (stocks.length >= stockItemMaxCount) {
+      showToast(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
+      return;
+    }
+    setStocks(s => [...s, { content: '', label: '' }]);
+  };
   const removeStock    = (idx) => setStocks(s => s.filter((_, j) => j !== idx));
   const setStockField  = (idx, field, val) => setStocks(s => s.map((x, j) => j === idx ? { ...x, [field]: val } : x));
 
@@ -203,6 +244,7 @@ export default function CreatePage() {
     <div className="mx-auto max-w-6xl">
       <div className="card p-6 sm:p-8">
         <h1 className="text-2xl font-extrabold text-gray-900 mb-6">Yeni İlan Oluştur</h1>
+        <p className="mb-4 text-sm text-gray-500">Kullanıcı başına en fazla {maxListingsPerUser} ilan oluşturulabilir.</p>
         <StepBar current={step} />
 
         {/* ADIM 1: KATEGORİ */}
@@ -255,6 +297,7 @@ export default function CreatePage() {
               {effectiveMinPrice !== null && (
                 <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
                   <span>Minimum ilan fiyatı: <strong className="text-cyan-600">{effectiveMinPrice}₺</strong></span>
+                  {siteMaxPrice !== null ? <span>Maksimum ilan fiyatı: <strong className="text-violet-600">{siteMaxPrice}₺</strong></span> : null}
                   <span>Bu alan minimum altına düşerse değer otomatik olarak güncellenir.</span>
                 </div>
               )}
@@ -401,14 +444,14 @@ export default function CreatePage() {
               <div>
                 <label className="mb-2 block text-sm font-bold text-gray-700">Teslimat Süresi</label>
                 <div className="flex flex-wrap gap-2">
-                  {DELIVERY_HOURS.map(h => (
+                  {DELIVERY_HOURS.filter(h => h <= manualDeliveryMaxHours).map(h => (
                     <button key={h} onClick={() => setDeliveryHours(h)} className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
                       {h < 24 ? `${h} saat` : `${h / 24} gün`}
                     </button>
                   ))}
                 </div>
                 <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700 font-medium">
-                  ⚠️ Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir.
+                  ⚠️ Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir. En yüksek süre: {manualDeliveryMaxHours} saat.
                 </div>
               </div>
             )}
@@ -417,7 +460,7 @@ export default function CreatePage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{stocks.filter(s => s.content.trim()).length} adet</span>
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{stocks.filter(s => s.content.trim()).length}/{stockItemMaxCount} adet</span>
                 </div>
                 <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                   {stocks.map((stock, idx) => (

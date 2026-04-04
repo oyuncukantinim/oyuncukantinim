@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions } from '../lib/api';
 import { AVATARS } from '../data/catalog';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -417,6 +418,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { showToast } = useCart();
+  const { defaultAvatar, defaultProfileBanner, balanceAddEnabled } = useSiteBrand();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('listings');
@@ -447,8 +449,8 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setEditEmail(user.email || '');
-    setBannerImage(user.banner_image || '');
-    setSelectedAvatar(user.avatar || '👤');
+    setBannerImage(user.banner_image || defaultProfileBanner || '');
+    setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
       full_name: user.full_name || '',
       country:   user.country   || '',
@@ -456,7 +458,7 @@ export default function ProfilePage() {
       district:  user.district  || '',
       address:   user.address   || '',
     });
-  }, [user, navigate]);
+  }, [user, navigate, defaultAvatar, defaultProfileBanner]);
 
   const loadListings = useCallback(() => {
     getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
@@ -489,8 +491,8 @@ export default function ProfilePage() {
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
   const profileDirty =
-    selectedAvatar !== (user.avatar || '') ||
-    normalizedBannerImage !== (user.banner_image || '');
+    selectedAvatar !== (user.avatar || defaultAvatar) ||
+    normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '');
   const personalDirty =
     personalInfo.full_name !== (user.full_name || '') ||
     personalInfo.country !== (user.country || '') ||
@@ -510,20 +512,24 @@ export default function ProfilePage() {
         return;
       }
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
-      if (normalizedBannerImage !== (user.banner_image || '')) payload.banner_image = normalizedBannerImage;
+      if (normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '')) payload.banner_image = normalizedBannerImage;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditUsername(res.data.username || '');
       setEditEmail(res.data.email || '');
-      setBannerImage(res.data.banner_image || '');
-      setSelectedAvatar(res.data.avatar || '👤');
+      setBannerImage(res.data.banner_image || defaultProfileBanner || '');
+      setSelectedAvatar(res.data.avatar || defaultAvatar);
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
   };
 
   const handleAddBalance = async () => {
+    if (!balanceAddEnabled) {
+      showToast('Bakiye yükleme şu an kapalı.');
+      return;
+    }
     const amt = parseFloat(balanceAmount);
     if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
     try {
@@ -589,7 +595,7 @@ export default function ProfilePage() {
     { id: 'sales',         label: 'Satışlarım',        icon: Store },
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
-    { id: 'balance',       label: 'Bakiye',            icon: Wallet },
+    ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
     { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
@@ -602,13 +608,19 @@ export default function ProfilePage() {
     return true;
   });
 
+  useEffect(() => {
+    if (!balanceAddEnabled && activeTab === 'balance') {
+      setActiveTab('finance');
+    }
+  }, [activeTab, balanceAddEnabled]);
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Profile Header */}
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
-          {user.banner_image ? (
-            <img src={user.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          {(user.banner_image || defaultProfileBanner) ? (
+            <img src={user.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
@@ -621,7 +633,7 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 mb-4">
             <div className="relative">
               <div className="w-20 h-20 bg-gray-50 border-4 border-white rounded-2xl flex items-center justify-center text-4xl shadow-lg">
-                {user.avatar || '👤'}
+                {user.avatar || defaultAvatar}
               </div>
               <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-white">
                 Lv.{user.level || 1}
@@ -1037,8 +1049,8 @@ export default function ProfilePage() {
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
-                        {normalizedBannerImage ? (
-                          <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        {(normalizedBannerImage || defaultProfileBanner) ? (
+                          <img src={normalizedBannerImage || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
                           <>
                             <div className="absolute inset-0 bg-white/25" />

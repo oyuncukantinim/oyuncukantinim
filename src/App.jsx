@@ -101,6 +101,7 @@ function SiteLayout() {
     siteName: 'Oyuncu Kantinim',
     siteLogo: '',
     siteLogoText: '',
+    siteFavicon: '',
     maintenanceTitle: 'Bakım Çalışması',
     maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
     footerTagline: 'Oyuncular için güvenli alım satım platformu.',
@@ -121,6 +122,7 @@ function SiteLayout() {
           siteName: data.site_name || 'Oyuncu Kantinim',
           siteLogo: data.site_logo || '',
           siteLogoText: data.site_logo_text || '',
+          siteFavicon: data.site_favicon || '',
           maintenanceTitle: data.maintenance_title || 'Bakım Çalışması',
           maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
           footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
@@ -131,6 +133,19 @@ function SiteLayout() {
         setSiteState((prev) => ({ ...prev, checked: true }));
       });
   }, []);
+
+  useEffect(() => {
+    const faviconHref = siteState.siteFavicon?.trim();
+    if (!faviconHref) return;
+
+    let link = document.querySelector("link[rel='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'icon');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', faviconHref);
+  }, [siteState.siteFavicon]);
 
   if (!siteState.checked) return null;
 

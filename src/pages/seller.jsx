@@ -21,6 +21,7 @@ import {
   unfollowSeller,
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const BADGE_META = {
   verified: { icon: '🛡️', label: 'Doğrulanmış Satıcı', color: 'bg-blue-50 text-blue-600 border-blue-200' },
@@ -71,6 +72,7 @@ export default function SellerPage() {
   const { username } = useParams();
   const { user } = useAuth();
   const { showToast } = useCart();
+  const { defaultAvatar, defaultProfileBanner } = useSiteBrand();
   const navigate = useNavigate();
 
   const [seller, setSeller] = useState(null);
@@ -159,8 +161,8 @@ export default function SellerPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
-          {seller.banner_image ? (
-            <img src={seller.banner_image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          {(seller.banner_image || defaultProfileBanner) ? (
+            <img src={seller.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               <div className="absolute inset-0 bg-black/10" />
@@ -174,7 +176,7 @@ export default function SellerPage() {
         <div className="px-6 sm:px-8 pb-6">
           <div className="flex items-end justify-between -mt-12 mb-4">
             <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl flex-shrink-0 z-10">
-              {seller.avatar || '👤'}
+              {seller.avatar || defaultAvatar}
             </div>
 
             {!isOwnProfile && (
@@ -320,7 +322,7 @@ export default function SellerPage() {
                 <div key={review.id} className="card p-5 flex gap-4">
                   <div className="flex flex-col items-center gap-1 flex-shrink-0 w-16 text-center">
                     <div className="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center text-xl">
-                      {review.reviewer_avatar || '👤'}
+                      {review.reviewer_avatar || defaultAvatar}
                     </div>
                     <Link to={`/p/${review.reviewer_username}`} className="font-bold text-gray-700 hover:text-neon-purple text-[11px] leading-tight transition-colors line-clamp-2">
                       {review.reviewer_username}
@@ -379,7 +381,7 @@ export default function SellerPage() {
                   className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm hover:border-violet-200 hover:shadow-md transition-all"
                 >
                   <div className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-2xl flex-shrink-0">
-                    {follower.avatar || '👤'}
+                    {follower.avatar || defaultAvatar}
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-extrabold text-gray-800 truncate">{follower.username}</div>

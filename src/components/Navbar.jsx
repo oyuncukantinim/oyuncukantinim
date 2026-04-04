@@ -4,6 +4,7 @@ import { Bell, LifeBuoy, Menu, MessageCircle, Plus, ShoppingCart, Store, Users, 
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getUnreadNotificationsCount, markNotificationsRead } from '../lib/api';
+import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from './SiteBrand';
 
 const NAV_LINKS = [
@@ -17,6 +18,7 @@ const NAV_LINKS = [
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   const { user } = useAuth();
   const { cart } = useCart();
+  const { defaultAvatar } = useSiteBrand();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotif, setUnreadNotif] = useState(0);
@@ -188,7 +190,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 className="flex items-center gap-2 rounded-xl border border-neon-purple/20 bg-neon-purple/5 py-1.5 pl-2 pr-4 transition-all hover:bg-neon-purple/10"
               >
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-100 bg-white text-sm shadow-sm">
-                  {user.avatar || '👤'}
+                  {user.avatar || defaultAvatar}
                 </div>
                 <div className="text-left">
                   <div className="text-[10px] font-medium leading-none text-gray-400">Bakiye</div>
@@ -259,7 +261,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     ) : null}
                   </Link>
                   <Link to="/profile" onClick={() => setMobileOpen(false)} className="block w-full py-3 text-center btn-primary">
-                    {user.avatar || '👤'} {user.username} ({Number(user.balance || 0).toFixed(2)} ₺)
+                    {user.avatar || defaultAvatar} {user.username} ({Number(user.balance || 0).toFixed(2)} ₺)
                   </Link>
                 </>
               ) : (
