@@ -557,7 +557,7 @@ export default function AdminCategories() {
               />
 
               {catForm.banner_image ? (
-                <div className="relative overflow-hidden rounded-xl border border-gray-200 group aspect-[4/1] w-full bg-slate-100">
+                <div className="relative h-40 w-full overflow-hidden rounded-xl border border-gray-200 group bg-slate-100">
                   <img src={catForm.banner_image} alt="" className="w-full h-full object-contain" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                     <button
@@ -581,7 +581,7 @@ export default function AdminCategories() {
                   type="button"
                   onClick={() => bannerFileInputRef.current?.click()}
                   disabled={bannerUploading}
-                  className="w-full aspect-[4/1] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
+                  className="w-full h-40 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
                 >
                   {bannerUploading ? (
                     <>
