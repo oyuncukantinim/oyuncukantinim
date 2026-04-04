@@ -460,7 +460,10 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Görseli</label>
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <label className="block text-xs font-bold text-gray-600">Kategori Görseli</label>
+                <span className="text-[10px] font-semibold text-gray-400">PC: 160x250px</span>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -484,8 +487,8 @@ export default function AdminCategories() {
               />
 
               {catForm.image ? (
-                <div className="relative rounded-xl overflow-hidden border border-gray-200 group">
-                  <img src={catForm.image} alt="" className="w-full h-32 object-cover" />
+                <div className="relative w-[160px] h-[250px] rounded-xl overflow-hidden border border-gray-200 group">
+                  <img src={catForm.image} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                     <button
                       type="button"
@@ -508,7 +511,7 @@ export default function AdminCategories() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={imageUploading}
-                  className="w-full h-28 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
+                  className="w-[160px] h-[250px] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
                 >
                   {imageUploading ? (
                     <>
@@ -527,7 +530,10 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Bannerı</label>
+              <div className="mb-1.5 flex items-center justify-between gap-3">
+                <label className="block text-xs font-bold text-gray-600">Kategori Bannerı</label>
+                <span className="text-[10px] font-semibold text-gray-400">PC: 1600x400px</span>
+              </div>
               <input
                 ref={bannerFileInputRef}
                 type="file"
@@ -551,8 +557,8 @@ export default function AdminCategories() {
               />
 
               {catForm.banner_image ? (
-                <div className="relative overflow-hidden rounded-xl border border-gray-200 group">
-                  <img src={catForm.banner_image} alt="" className="w-full h-28 object-cover" />
+                <div className="relative overflow-hidden rounded-xl border border-gray-200 group aspect-[4/1] w-full">
+                  <img src={catForm.banner_image} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                     <button
                       type="button"
@@ -575,7 +581,7 @@ export default function AdminCategories() {
                   type="button"
                   onClick={() => bannerFileInputRef.current?.click()}
                   disabled={bannerUploading}
-                  className="w-full h-24 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
+                  className="w-full aspect-[4/1] border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-violet-400 hover:bg-violet-50 transition-all disabled:opacity-50"
                 >
                   {bannerUploading ? (
                     <>
