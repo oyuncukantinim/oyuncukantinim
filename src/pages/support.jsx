@@ -381,6 +381,8 @@ export default function SupportPage() {
     listing_groups: { purchased: [], sold: [], mine: [] },
     settings: {
       max_linked_listings: 5,
+      support_subject_max_length: 120,
+      support_message_max_length: 2000,
       intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
       closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
     },
@@ -420,6 +422,8 @@ export default function SupportPage() {
   );
   const activeListingPool = meta.listing_groups?.[form.related_scope] || [];
   const maxLinkedListings = Number(meta.settings?.max_linked_listings || 5);
+  const subjectMaxLength = Number(meta.settings?.support_subject_max_length || 120);
+  const detailMaxLength = Number(meta.settings?.support_message_max_length || 2000);
   const selectedListingRows = useMemo(() => {
     const ids = new Set(form.selected_listing_ids.map(Number));
     return activeListingPool.filter((item) => ids.has(Number(item.id)));
@@ -429,7 +433,10 @@ export default function SupportPage() {
     ? Boolean(form.category)
     : wizardStep === 1
       ? form.selected_listing_ids.length > 0
-      : form.subject.trim().length >= 5 && form.message.trim().length >= 10;
+      : form.subject.trim().length >= 5
+        && form.subject.length <= subjectMaxLength
+        && form.message.trim().length >= 10
+        && form.message.length <= detailMaxLength;
 
   const loadMeta = async () => {
     setLoadingMeta(true);
@@ -441,6 +448,8 @@ export default function SupportPage() {
         listing_groups: { purchased: [], sold: [], mine: [] },
         settings: {
           max_linked_listings: 5,
+          support_subject_max_length: 120,
+          support_message_max_length: 2000,
           intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
           closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
         },
@@ -622,8 +631,20 @@ export default function SupportPage() {
           {wizardStep === 2 ? (
             <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
               <div className="space-y-4">
-                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Konu</label><input value={form.subject} onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Kısa bir konu yaz" /></div>
-                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Detay</label><textarea rows={7} value={form.message} onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))} className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Sorunu net şekilde anlat." /></div>
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <label className="block text-xs font-bold text-slate-500">Konu</label>
+                    <span className={`text-[11px] font-semibold ${form.subject.length > subjectMaxLength ? 'text-rose-500' : 'text-slate-400'}`}>{form.subject.length}/{subjectMaxLength}</span>
+                  </div>
+                  <input value={form.subject} maxLength={subjectMaxLength} onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value.slice(0, subjectMaxLength) }))} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Kısa bir konu yaz" />
+                </div>
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <label className="block text-xs font-bold text-slate-500">Detay</label>
+                    <span className={`text-[11px] font-semibold ${form.message.length > detailMaxLength ? 'text-rose-500' : 'text-slate-400'}`}>{form.message.length}/{detailMaxLength}</span>
+                  </div>
+                  <textarea rows={7} value={form.message} maxLength={detailMaxLength} onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value.slice(0, detailMaxLength) }))} className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Sorunu net şekilde anlat." />
+                </div>
               </div>
               <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Özet</div>

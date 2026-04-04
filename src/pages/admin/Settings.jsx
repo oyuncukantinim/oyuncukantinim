@@ -149,6 +149,8 @@ const SETTINGS_TABS = [
         section: 'Ticket Kuralları',
         fields: [
           { key: 'support_max_linked_listings', label: 'Maks. Bağlı İlan / Talep', type: 'number', placeholder: '5' },
+          { key: 'support_subject_max_length', label: 'Konu Karakter Limiti', type: 'number', placeholder: '120' },
+          { key: 'support_message_max_length', label: 'Detay Karakter Limiti', type: 'number', placeholder: '2000' },
           { key: 'support_ticket_delete_enabled', label: 'Admin Ticket Silme', type: 'toggle', desc: 'Kapalıysa admin panelde ticket silme işlemi pasif olur.' },
           { key: 'support_auto_assign_enabled', label: 'Otomatik Atama', type: 'toggle', desc: 'Yeni ticketlar ilk uygun yöneticiye otomatik atanır.' },
         ],
