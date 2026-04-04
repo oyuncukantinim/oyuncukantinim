@@ -68,7 +68,7 @@ function TicketMessage({ item }) {
           <span className={isAdmin ? 'text-slate-400' : 'text-white/70'}>•</span>
           <span className={isAdmin ? 'text-slate-400' : 'text-white/70'}>{fmtDate(item.created_at)}</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-6">{item.message}</p>
+        <p className="whitespace-pre-wrap break-words text-sm leading-6 [overflow-wrap:anywhere]">{item.message}</p>
       </div>
     </div>
   );
@@ -231,7 +231,15 @@ export default function SupportPage() {
 
   const toggleListing = (id) => setForm((prev) => {
     const next = new Set(prev.selected_listing_ids.map(Number));
-    if (next.has(Number(id))) next.delete(Number(id)); else next.add(Number(id));
+    if (next.has(Number(id))) {
+      next.delete(Number(id));
+    } else {
+      if (next.size >= 5) {
+        showToast('Bir destek talebine en fazla 5 ilan bağlayabilirsiniz.');
+        return prev;
+      }
+      next.add(Number(id));
+    }
     return { ...prev, selected_listing_ids: Array.from(next) };
   });
 
@@ -323,7 +331,7 @@ export default function SupportPage() {
               <div className="space-y-4">
                 <div className="grid gap-2 md:grid-cols-3">{LISTING_SCOPE_OPTIONS.map((item) => <button key={item.value} type="button" onClick={() => { setPickerOpen(false); setForm((prev) => ({ ...prev, related_scope: item.value, selected_listing_ids: [] })); }} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${form.related_scope === item.value ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{item.label}</button>)}</div>
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
-                  <button type="button" onClick={() => setPickerOpen((prev) => !prev)} className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left shadow-sm"><div><div className="text-sm font-black text-slate-900">İlan Seç</div><div className="text-xs text-slate-500">{form.selected_listing_ids.length > 0 ? `${form.selected_listing_ids.length} ilan seçildi` : 'Uygun ilanları açıp seç'}</div></div><ChevronDown size={18} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} /></button>
+                  <button type="button" onClick={() => setPickerOpen((prev) => !prev)} className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left shadow-sm"><div><div className="text-sm font-black text-slate-900">İlan Seç</div><div className="text-xs text-slate-500">{form.selected_listing_ids.length > 0 ? `${form.selected_listing_ids.length} / 5 ilan seçildi` : 'Uygun ilanları açıp en fazla 5 ilan seç'}</div></div><ChevronDown size={18} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} /></button>
                   {pickerOpen ? <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{activeListingPool.length ? activeListingPool.map((item) => <ListingCard key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}</div> : null}
                 </div>
                 <ListingsTable rows={selectedListingRows} title="Seçilen İlanlar" />
@@ -375,7 +383,7 @@ export default function SupportPage() {
                 {selectedTicket.category === 'listing' ? <div className="mt-4"><ListingsTable rows={selectedListings} title="Bağlı İlanlar" /></div> : null}
               </div>
               <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
-              <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} disabled={selectedTicket.status === 'closed'} placeholder={selectedTicket.status === 'closed' ? 'Bu bilet kapalı olduğu için yeni yanıt gönderilemez.' : 'Destek ekibine yanıt yaz...'} className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200 disabled:cursor-not-allowed disabled:bg-slate-100" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || selectedTicket.status === 'closed' || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>
+              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
             </div>
           )}
         </section>

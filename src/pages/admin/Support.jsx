@@ -48,10 +48,10 @@ function statusMeta(status) {
   return STATUS_OPTIONS.find((item) => item.value === status) || STATUS_OPTIONS[0];
 }
 
-function StatusBadge({ status }) {
+function StatusBadge({ status, compact = false }) {
   const meta = statusMeta(status);
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold ${meta.className}`}>
+    <span className={`inline-flex items-center rounded-full font-extrabold ${compact ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-[11px]'} ${meta.className}`}>
       {meta.label}
     </span>
   );
@@ -106,7 +106,7 @@ function TicketMessage({ message }) {
           <span className={isAdmin ? 'text-white/60' : 'text-slate-400'}>•</span>
           <span className={isAdmin ? 'text-white/60' : 'text-slate-400'}>{formatDateTime(message.created_at)}</span>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-6">{message.message}</p>
+        <p className="whitespace-pre-wrap break-words text-sm leading-6 [overflow-wrap:anywhere]">{message.message}</p>
       </div>
     </div>
   );
@@ -143,6 +143,8 @@ function RelatedListingsTable({ rows, scope }) {
               <th className="px-4 py-3">İlan</th>
               <th className="px-4 py-3">Fiyat</th>
               <th className="px-4 py-3">İlan Durumu</th>
+              <th className="px-4 py-3">Satıcı</th>
+              <th className="px-4 py-3">Alıcı</th>
               <th className="px-4 py-3">Son Güncelleme</th>
             </tr>
           </thead>
@@ -168,6 +170,8 @@ function RelatedListingsTable({ rows, scope }) {
                 </td>
                 <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
                 <td className="px-4 py-3"><ListingStatusBadge status={item.status} /></td>
+                <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
+                <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
                 <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>
               </tr>
             ))}
@@ -431,17 +435,16 @@ export default function AdminSupportPage() {
                 >
                   <div className="mb-1.5 flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{ticket.ticket_no}</div>
+                      <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">{ticket.ticket_no}</div>
                       <div className="mt-1 truncate text-[13px] font-black text-slate-900">{ticket.subject}</div>
                     </div>
-                    <StatusBadge status={ticket.status} />
+                    <StatusBadge status={ticket.status} compact />
                   </div>
                   <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[11px]">
                     <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{ticket.username}</span>
                     <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{categoryLabels[ticket.category] || 'Destek'}</span>
                     {ticket.selected_listing_count ? <span className="rounded-full bg-violet-50 px-2 py-1 font-bold text-violet-700">{ticket.selected_listing_count} ilan</span> : null}
                   </div>
-                  <p className="line-clamp-2 text-[11px] leading-5 text-slate-500">{ticket.last_message || 'Henüz mesaj yok.'}</p>
                   <div className="mt-2.5 flex items-center justify-between text-[11px] font-semibold text-slate-400">
                     <span>{formatDateTime(ticket.last_reply_at || ticket.created_at)}</span>
                     {ticket.assigned_admin_name ? <span>{ticket.assigned_admin_name}</span> : <span>Atanmadı</span>}
@@ -592,24 +595,6 @@ export default function AdminSupportPage() {
             </div>
 
             <div className="space-y-4 px-5 py-5">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Bilet Özeti</div>
-                <div className="mt-3 space-y-3 text-sm">
-                  <div>
-                    <div className="text-slate-400">Kullanıcı</div>
-                    <div className="font-black text-slate-900">{detail.username || '-'}</div>
-                  </div>
-                  <div>
-                    <div className="text-slate-400">Atanan</div>
-                    <div className="font-black text-slate-900">{detail.assigned_admin_name || 'Atanmadı'}</div>
-                  </div>
-                  <div>
-                    <div className="text-slate-400">Bağlı ilan</div>
-                    <div className="font-black text-slate-900">{relatedListingRows.length} ilan</div>
-                  </div>
-                </div>
-              </div>
-
               <div>
                 <label className="mb-1.5 block text-xs font-bold text-slate-500">Durum</label>
                 <select
