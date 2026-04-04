@@ -41,6 +41,14 @@ const LISTING_SCOPE_OPTIONS = [
 
 const STEP_TITLES = ['Kategori', 'İlgili Kayıt', 'Detay'];
 
+const normalizeSupportCategoryLabel = (item) => {
+  if (!item) return item;
+  if (item.value === 'listing') {
+    return { ...item, label: 'İlan Sorunu' };
+  }
+  return item;
+};
+
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');
 const fmtMoney = (value) => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 
@@ -378,7 +386,10 @@ export default function SupportPage() {
   useEffect(() => { if (!user) navigate('/login'); }, [navigate, user]);
 
   const showListingStep = form.category === 'listing';
-  const visibleCategories = useMemo(() => meta.categories.filter((item) => item.value === 'listing'), [meta.categories]);
+  const visibleCategories = useMemo(
+    () => meta.categories.filter((item) => item.value === 'listing').map(normalizeSupportCategoryLabel),
+    [meta.categories],
+  );
   const activeListingPool = meta.listing_groups?.[form.related_scope] || [];
   const maxLinkedListings = Number(meta.settings?.max_linked_listings || 5);
   const selectedListingRows = useMemo(() => {
