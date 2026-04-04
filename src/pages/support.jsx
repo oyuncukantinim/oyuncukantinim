@@ -42,6 +42,17 @@ const STEP_TITLES = ['Kategori', 'İlgili Kayıt', 'Detay'];
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');
 const fmtMoney = (value) => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 
+const orderStatusLabel = (status, deliveryStatus) => {
+  if (status === 'refunded') return 'İade';
+  if (status === 'cancelled') return 'İptal';
+  if (Number(deliveryStatus) === 3) return 'Anlaşmazlık';
+  if (Number(deliveryStatus) === 2) return 'Tamamlandı';
+  if (Number(deliveryStatus) === 1) return 'Teslim Edildi';
+  if (Number(deliveryStatus) === 0) return 'Teslimat Bekleniyor';
+  if (status === 'pending') return 'Bekliyor';
+  return 'Bekliyor';
+};
+
 function StatusBadge({ value }) {
   const [label, style] = STATUS[value] || STATUS.open;
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${style}`}>{label}</span>;
@@ -112,7 +123,27 @@ function ListingsTable({ rows, title }) {
   );
 }
 
-function ListingPickerRow({ item, selected, onToggle }) {
+function ListingPickerRow({ item, selected, onToggle, scope }) {
+  if (scope === 'purchased') {
+    return (
+      <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
+        <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.4fr)_minmax(0,0.9fr)_140px_140px_28px]">
+          <div className="text-[11px] font-black text-slate-500">#{item.order_id || '-'}</div>
+          <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
+            {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+          </div>
+          <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
+          <div className="truncate text-[12px] font-semibold text-slate-600">{item.seller_name || '-'}</div>
+          <div className="text-[11px] font-semibold text-slate-500">{orderStatusLabel(item.order_status, item.delivery_status)}</div>
+          <div className="text-[11px] font-semibold text-slate-400">{fmtDate(item.order_created_at)}</div>
+          <div className="flex justify-end">
+            {selected ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : <span className="inline-flex h-5 w-5 rounded-full border border-slate-200 bg-white" />}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
       <div className="flex items-center gap-3">
@@ -335,7 +366,7 @@ export default function SupportPage() {
                     <div className="text-xs text-slate-500">En fazla 5 ilan seçebilirsin. Seçtiğin satırlar tik ile işaretlenir.</div>
                   </div>
                   <div className="space-y-2">
-                    {activeListingPool.length ? activeListingPool.map((item) => <ListingPickerRow key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}
+                    {activeListingPool.length ? activeListingPool.map((item) => <ListingPickerRow key={`${form.related_scope}-${item.id}-${item.order_id || 'listing'}`} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} scope={form.related_scope} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}
                   </div>
                 </div>
               </div>
