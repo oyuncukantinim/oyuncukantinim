@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, X, Tag, ChevronRight, ChevronLeft } from 'lucide-react';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
@@ -9,6 +9,7 @@ function buildCatSlug(cat) {
 }
 
 export default function CategoriesPage() {
+  const [searchParams] = useSearchParams();
   const [categories, setCategories] = useState([]);
   const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +26,17 @@ export default function CategoriesPage() {
       setTypes(typeJson.data || []);
     }).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!categories.length || search.trim()) return;
+    const rootId = searchParams.get('root');
+    if (!rootId) {
+      setActiveRoot(null);
+      return;
+    }
+    const foundRoot = categories.find((c) => String(c.id) === String(rootId) && !c.parent_id);
+    setActiveRoot(foundRoot || null);
+  }, [categories, searchParams, search]);
 
   const roots = useMemo(() => categories.filter(c => !c.parent_id), [categories]);
   const childrenOf = (id) => categories.filter(c => String(c.parent_id) === String(id));

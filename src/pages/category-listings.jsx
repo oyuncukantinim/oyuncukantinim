@@ -21,6 +21,11 @@ function idFromCatSlug(slug) {
   return match ? parseInt(match[1]) : null;
 }
 
+function categoryHref(category, allCategories) {
+  const hasChildren = allCategories.some((item) => String(item.parent_id) === String(category.id));
+  return hasChildren ? `/categories?root=${category.id}` : `/categories/${category.slug}-${category.id}`;
+}
+
 export default function CategoryListingsPage() {
   const { catSlug } = useParams();
   const { user } = useAuth();
@@ -111,7 +116,7 @@ export default function CategoryListingsPage() {
             {i === breadcrumb.length - 1 ? (
               <span className="text-gray-700 font-bold">{bc.name}</span>
             ) : (
-              <Link to={`/categories/${bc.slug}-${bc.id}`} className="hover:text-violet-600 font-semibold">{bc.name}</Link>
+              <Link to={categoryHref(bc, categories)} className="hover:text-violet-600 font-semibold">{bc.name}</Link>
             )}
           </span>
         ))}
