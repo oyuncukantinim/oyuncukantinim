@@ -83,6 +83,7 @@ export default function CreatePage() {
   const [maxImages, setMaxImages] = useState(5);
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
+  const [siteMinPrice, setSiteMinPrice] = useState(null);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -94,6 +95,9 @@ export default function CreatePage() {
           if (j.data.max_listing_images) setMaxImages(j.data.max_listing_images);
           if (j.data.listing_title_max)  setTitleMax(j.data.listing_title_max);
           if (j.data.listing_desc_max)   setDescMax(j.data.listing_desc_max);
+          if (j.data.min_listing_price !== undefined && j.data.min_listing_price !== null && j.data.min_listing_price !== '') {
+            setSiteMinPrice(Number(j.data.min_listing_price));
+          }
         }
       })
       .catch(() => {});
@@ -110,10 +114,10 @@ export default function CreatePage() {
       });
   }, [selectedCategory]);
 
-  const effectiveCommission = selectedCategory?.commission_rate ?? null;
-  const effectiveMinPrice   = selectedCategory?.min_price ?? null;
+  const effectiveCommission = selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? null;
+  const effectiveMinPrice   = selectedCategory?.effective_min_price ?? selectedCategory?.min_price ?? siteMinPrice;
   const priceNum   = parseFloat(price) || 0;
-  const commission = priceNum * ((selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10) / 100);
+  const commission = priceNum * ((effectiveCommission ?? 10) / 100);
   const earnings   = priceNum - commission;
 
   const handlePriceChange = (value) => {
@@ -210,7 +214,7 @@ export default function CreatePage() {
               <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 text-sm space-y-1">
                 <div className="font-bold text-violet-800">{selectedCategory.icon} {selectedCategory.name} seçildi</div>
                 <div className="text-violet-600 flex flex-wrap gap-4 text-xs">
-                  <span>Komisyon: <strong>%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10}</strong></span>
+                  <span>Komisyon: <strong>%{effectiveCommission ?? 10}</strong></span>
                   {effectiveMinPrice !== null && <span>Minimum ilan fiyatı: <strong>{effectiveMinPrice}₺</strong></span>}
                 </div>
               </div>
@@ -237,7 +241,6 @@ export default function CreatePage() {
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1.5">
                 Fiyat (₺) *
-                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Minimum ilan fiyatı: {effectiveMinPrice}₺</span>}
               </label>
               <input
                 type="number"
@@ -250,13 +253,14 @@ export default function CreatePage() {
                 className="input-field"
               />
               {effectiveMinPrice !== null && (
-                <div className="mt-1 text-[11px] font-medium text-gray-400">
-                  Bu alanda {effectiveMinPrice}₺ altına inilirse değer otomatik olarak minimum fiyata çekilir.
+                <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
+                  <span>Minimum ilan fiyatı: <strong className="text-cyan-600">{effectiveMinPrice}₺</strong></span>
+                  <span>Bu alan minimum altına düşerse değer otomatik olarak güncellenir.</span>
                 </div>
               )}
               {priceNum > 0 && (
                 <div className="mt-2 flex gap-4 text-xs text-gray-500">
-                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10})</span>
+                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{effectiveCommission ?? 10})</span>
                   <span>Kazancınız: <strong className="text-emerald-600">{earnings.toFixed(2)}₺</strong></span>
                 </div>
               )}
