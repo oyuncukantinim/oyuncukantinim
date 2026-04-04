@@ -11,7 +11,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
           ? 'border-violet-400 ring-2 ring-violet-200'
           : 'border-gray-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md'
       }`}
-      style={{ width: '360px', height: '510px' }}
+      style={{ width: '140px', height: '220px' }}
     >
       {category.image ? (
         <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
@@ -27,12 +27,12 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
         </div>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 px-2.5 pb-2.5">
-        <div className="line-clamp-2 text-[13px] font-bold leading-tight text-white" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-2.5">
+        <div className="line-clamp-2 text-center text-[13px] font-bold leading-tight text-white" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>
           {category.name}
         </div>
         {subtitle ? (
-          <div className="mt-0.5 line-clamp-1 text-[10px] text-white/90" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
+          <div className="mt-0.5 line-clamp-1 text-center text-[10px] text-white/90" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
             {subtitle}
           </div>
         ) : null}
