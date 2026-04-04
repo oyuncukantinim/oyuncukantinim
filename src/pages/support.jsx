@@ -27,28 +27,28 @@ import { getListingCoverImage } from '../lib/listingMedia';
 
 const STATUS = {
   open: ['Açık', 'bg-rose-50 text-rose-700 border border-rose-200'],
-  in_review: ['Ä°nceleniyor', 'bg-amber-50 text-amber-700 border border-amber-200'],
-  waiting_user: ['YanÄ±t Bekliyor', 'bg-blue-50 text-blue-700 border border-blue-200'],
-  resolved: ['Ã‡Ã¶zÃ¼ldÃ¼', 'bg-emerald-50 text-emerald-700 border border-emerald-200'],
-  closed: ['KapalÄ±', 'bg-slate-100 text-slate-700 border border-slate-200'],
+  in_review: ['İnceleniyor', 'bg-amber-50 text-amber-700 border border-amber-200'],
+  waiting_user: ['Yanıt Bekliyor', 'bg-blue-50 text-blue-700 border border-blue-200'],
+  resolved: ['Çözüldü', 'bg-emerald-50 text-emerald-700 border border-emerald-200'],
+  closed: ['Kapalı', 'bg-slate-100 text-slate-700 border border-slate-200'],
 };
 
 const LISTING_SCOPE_OPTIONS = [
-  { value: 'purchased', label: 'SatÄ±n AlÄ±nan' },
-  { value: 'sold', label: 'SatÄ±lan' },
-  { value: 'mine', label: 'Ä°lanlarÄ±m' },
+  { value: 'purchased', label: 'Satın Alınan' },
+  { value: 'sold', label: 'Satılan' },
+  { value: 'mine', label: 'İlanlarım' },
 ];
 
-const STEP_TITLES = ['Kategori', 'Ä°lgili KayÄ±t', 'Detay'];
+const STEP_TITLES = ['Kategori', 'İlgili Kayıt', 'Detay'];
 
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');
-const fmtMoney = (value) => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} â‚º`;
+const fmtMoney = (value) => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 
 const orderStatusLabel = (status, deliveryStatus) => {
-  if (status === 'refunded') return 'Ä°ade';
-  if (status === 'cancelled') return 'Ä°ptal';
-  if (Number(deliveryStatus) === 3) return 'AnlaÅŸmazlÄ±k';
-  if (Number(deliveryStatus) === 2) return 'TamamlandÄ±';
+  if (status === 'refunded') return 'İade';
+  if (status === 'cancelled') return 'İptal';
+  if (Number(deliveryStatus) === 3) return 'Anlaşmazlık';
+  if (Number(deliveryStatus) === 2) return 'Tamamlandı';
   if (Number(deliveryStatus) === 1) return 'Teslim Edildi';
   if (Number(deliveryStatus) === 0) return 'Teslimat Bekleniyor';
   if (status === 'pending') return 'Bekliyor';
@@ -58,14 +58,14 @@ const orderStatusLabel = (status, deliveryStatus) => {
 const listingLifecycleLabel = (item) => {
   const status = item?.status;
   const expiresAt = item?.expires_at ? new Date(item.expires_at).getTime() : null;
-  if ((status === 'active' || !status) && expiresAt && expiresAt < Date.now()) return 'Ä°lan SÃ¼resi Doldu';
-  if (status === 'expired') return 'Ä°lan SÃ¼resi Doldu';
-  if (status === 'passive') return 'Ä°lan PasifleÅŸtirildi';
-  if (status === 'active') return 'Ä°lan Aktif';
+  if ((status === 'active' || !status) && expiresAt && expiresAt < Date.now()) return 'İlan Süresi Doldu';
+  if (status === 'expired') return 'İlan Süresi Doldu';
+  if (status === 'passive') return 'İlan Pasifleştirildi';
+  if (status === 'active') return 'İlan Aktif';
   if (status === 'pending') return 'Onay Bekliyor';
   if (status === 'draft') return 'Taslak';
   if (status === 'rejected') return 'Reddedildi';
-  if (status === 'sold') return 'Ä°lan Aktif DeÄŸil';
+  if (status === 'sold') return 'İlan Aktif Değil';
   return 'Durum Belirsiz';
 };
 
@@ -91,7 +91,7 @@ function TicketMessage({ item }) {
         <div className={`mb-1 flex items-center gap-2 text-[11px] font-bold ${isAdmin ? 'text-slate-500' : 'text-white/80'}`}>
           {isAdmin ? <LifeBuoy size={12} /> : <UserCircle2 size={12} />}
           <span>{item.author_name || (isAdmin ? 'Destek Ekibi' : 'Siz')}</span>
-          <span className={isAdmin ? 'text-slate-400' : 'text-white/70'}>â€¢</span>
+          <span className={isAdmin ? 'text-slate-400' : 'text-white/70'}>•</span>
           <span className={isAdmin ? 'text-slate-400' : 'text-white/70'}>{fmtDate(item.created_at)}</span>
         </div>
         <p className="whitespace-pre-wrap break-words text-sm leading-6 [overflow-wrap:anywhere]">{item.message}</p>
@@ -107,7 +107,7 @@ function LinkedListingsTable({ rows, title, scope }) {
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3">
         <div>
           <div className="text-sm font-black text-slate-900">{title}</div>
-          <div className="text-xs text-slate-500">SeÃ§ilen ilanlar bu talebe baÄŸlanÄ±r.</div>
+          <div className="text-xs text-slate-500">Seçilen ilanlar bu talebe bağlanır.</div>
         </div>
         <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-extrabold text-violet-700">{rows.length} ilan</span>
       </div>
@@ -116,13 +116,13 @@ function LinkedListingsTable({ rows, title, scope }) {
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
               <tr>
-                <th className="px-4 py-3">SipariÅŸ No</th>
-                <th className="px-4 py-3">GÃ¶rsel</th>
-                <th className="px-4 py-3">Ä°lan AdÄ±</th>
-                <th className="px-4 py-3">SatÄ±cÄ±</th>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Satıcı</th>
                 <th className="px-4 py-3">Fiyat</th>
-                <th className="px-4 py-3">SipariÅŸ Durumu</th>
-                <th className="px-4 py-3">SipariÅŸ Tarihi</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
               </tr>
             </thead>
             <tbody>
@@ -148,13 +148,13 @@ function LinkedListingsTable({ rows, title, scope }) {
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
               <tr>
-                <th className="px-4 py-3">SipariÅŸ No</th>
-                <th className="px-4 py-3">GÃ¶rsel</th>
-                <th className="px-4 py-3">Ä°lan AdÄ±</th>
-                <th className="px-4 py-3">AlÄ±cÄ±</th>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Alıcı</th>
                 <th className="px-4 py-3">Fiyat</th>
-                <th className="px-4 py-3">SipariÅŸ Durumu</th>
-                <th className="px-4 py-3">SipariÅŸ Tarihi</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
               </tr>
             </thead>
             <tbody>
@@ -180,12 +180,12 @@ function LinkedListingsTable({ rows, title, scope }) {
           <table className="min-w-full text-left text-sm">
             <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
               <tr>
-                <th className="px-4 py-3">Ä°lan No</th>
-                <th className="px-4 py-3">GÃ¶rsel</th>
-                <th className="px-4 py-3">Ä°lan AdÄ±</th>
+                <th className="px-4 py-3">İlan No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
                 <th className="px-4 py-3">Fiyat</th>
-                <th className="px-4 py-3">Ä°lan Durumu</th>
-                <th className="px-4 py-3">Son GÃ¼ncelleme</th>
+                <th className="px-4 py-3">İlan Durumu</th>
+                <th className="px-4 py-3">Son Güncelleme</th>
               </tr>
             </thead>
             <tbody>
@@ -298,13 +298,13 @@ function ListingPickerHeader({ scope }) {
   if (scope === 'purchased') {
     return (
       <div className="hidden rounded-[18px] border border-slate-200 bg-slate-100/80 px-3 py-2 md:grid md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px] md:items-center md:gap-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ No</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">GÃ¶rsel</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Ä°lan AdÄ±</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SatÄ±cÄ±</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş No</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Görsel</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">İlan Adı</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Satıcı</div>
         <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Fiyat</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ Durumu</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ Tarihi</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş Durumu</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş Tarihi</div>
         <div />
       </div>
     );
@@ -313,13 +313,13 @@ function ListingPickerHeader({ scope }) {
   if (scope === 'sold') {
     return (
       <div className="hidden rounded-[18px] border border-slate-200 bg-slate-100/80 px-3 py-2 md:grid md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px] md:items-center md:gap-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ No</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">GÃ¶rsel</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Ä°lan AdÄ±</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">AlÄ±cÄ±</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş No</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Görsel</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">İlan Adı</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Alıcı</div>
         <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Fiyat</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ Durumu</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">SipariÅŸ Tarihi</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş Durumu</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Sipariş Tarihi</div>
         <div />
       </div>
     );
@@ -328,12 +328,12 @@ function ListingPickerHeader({ scope }) {
   if (scope === 'mine') {
     return (
       <div className="hidden rounded-[18px] border border-slate-200 bg-slate-100/80 px-3 py-2 md:grid md:grid-cols-[96px_64px_minmax(0,1.5fr)_120px_130px_140px_28px] md:items-center md:gap-3">
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Ä°lan No</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">GÃ¶rsel</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Ä°lan AdÄ±</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">İlan No</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Görsel</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">İlan Adı</div>
         <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Fiyat</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Ä°lan Durumu</div>
-        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Son GÃ¼ncelleme</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">İlan Durumu</div>
+        <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">Son Güncelleme</div>
         <div />
       </div>
     );
@@ -353,8 +353,8 @@ export default function SupportPage() {
     listing_groups: { purchased: [], sold: [], mine: [] },
     settings: {
       max_linked_listings: 5,
-      intro_text: 'Ä°lan sorunlarÄ± iÃ§in doÄŸru ilanlarÄ± seÃ§ip destek talebi oluÅŸturabilirsiniz.',
-      closed_note: 'Bu destek talebi kapatÄ±ldÄ±. MÃ¼ÅŸteri tarafÄ±ndan yeniden aÃ§Ä±lamaz.',
+      intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
+      closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
     },
   });
   const [tickets, setTickets] = useState([]);
@@ -402,8 +402,8 @@ export default function SupportPage() {
         listing_groups: { purchased: [], sold: [], mine: [] },
         settings: {
           max_linked_listings: 5,
-          intro_text: 'Ä°lan sorunlarÄ± iÃ§in doÄŸru ilanlarÄ± seÃ§ip destek talebi oluÅŸturabilirsiniz.',
-          closed_note: 'Bu destek talebi kapatÄ±ldÄ±. MÃ¼ÅŸteri tarafÄ±ndan yeniden aÃ§Ä±lamaz.',
+          intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
+          closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
         },
       });
     } catch (error) {
@@ -467,7 +467,7 @@ export default function SupportPage() {
       next.delete(Number(id));
     } else {
       if (next.size >= maxLinkedListings) {
-        showToast(`Bir destek talebine en fazla ${maxLinkedListings} ilan baÄŸlayabilirsiniz.`);
+        showToast(`Bir destek talebine en fazla ${maxLinkedListings} ilan bağlayabilirsiniz.`);
         return prev;
       }
       next.add(Number(id));
@@ -487,7 +487,7 @@ export default function SupportPage() {
         related_scope: showListingStep ? form.related_scope : null,
         selected_listing_ids: showListingStep ? form.selected_listing_ids : [],
       });
-      showToast('Destek talebin oluÅŸturuldu.');
+      showToast('Destek talebin oluşturuldu.');
       setWizardStep(0);
       setForm({ subject: '', category: 'listing', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
       await loadTickets(response.data?.id || null);
@@ -507,7 +507,7 @@ export default function SupportPage() {
       setReplyMessage('');
       await loadTickets(selectedTicket.id);
       await loadTicketDetail(selectedTicket.id);
-      showToast('YanÄ±tÄ±n gÃ¶nderildi.');
+      showToast('Yanıtın gönderildi.');
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -520,7 +520,7 @@ export default function SupportPage() {
     setClosing(true);
     try {
       await closeSupportTicket(selectedTicket.id);
-      showToast('Destek talebi kapatÄ±ldÄ±.');
+      showToast('Destek talebi kapatıldı.');
       await loadTickets(selectedTicket.id);
       await loadTicketDetail(selectedTicket.id);
     } catch (error) {
@@ -583,14 +583,14 @@ export default function SupportPage() {
           {wizardStep === 2 ? (
             <div className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
               <div className="space-y-4">
-                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Konu</label><input value={form.subject} onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="KÄ±sa bir konu yaz" /></div>
-                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Detay</label><textarea rows={7} value={form.message} onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))} className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Sorunu net ÅŸekilde anlat." /></div>
+                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Konu</label><input value={form.subject} onChange={(e) => setForm((prev) => ({ ...prev, subject: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Kısa bir konu yaz" /></div>
+                <div><label className="mb-1.5 block text-xs font-bold text-slate-500">Detay</label><textarea rows={7} value={form.message} onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))} className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white" placeholder="Sorunu net şekilde anlat." /></div>
               </div>
               <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
-                <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Ã–zet</div>
+                <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Özet</div>
                 <div className="mt-3 space-y-3 text-sm">
                   <div><div className="text-slate-400">Kategori</div><div className="font-black text-slate-900">{visibleCategories[0]?.label || 'İlan Sorunu'}</div></div>
-                  {showListingStep ? <div><div className="text-slate-400">SeÃ§ilen Ä°lan</div><div className="font-black text-slate-900">{form.selected_listing_ids.length ? `${form.selected_listing_ids.length} ilan` : 'HenÃ¼z seÃ§ilmedi'}</div></div> : null}
+                  {showListingStep ? <div><div className="text-slate-400">Seçilen İlan</div><div className="font-black text-slate-900">{form.selected_listing_ids.length ? `${form.selected_listing_ids.length} ilan` : 'Henüz seçilmedi'}</div></div> : null}
                 </div>
               </div>
             </div>
@@ -600,24 +600,24 @@ export default function SupportPage() {
 
       <div className="grid gap-5 xl:grid-cols-[310px_minmax(0,1fr)]">
         <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-base font-black text-slate-900">Biletlerim</h2><p className="text-xs text-slate-500">TÃ¼m destek taleplerini tek listede takip et.</p></div><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold text-slate-500">{tickets.length} adet</span></div>
+          <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-base font-black text-slate-900">Biletlerim</h2><p className="text-xs text-slate-500">Tüm destek taleplerini tek listede takip et.</p></div><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold text-slate-500">{tickets.length} adet</span></div>
           <div className="relative mb-3"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Bilet no veya konu ara" className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-violet-400 focus:bg-white" /></div>
-          <div className="mb-3 flex flex-wrap gap-2">{[{ id: 'all', label: 'TÃ¼mÃ¼' }, { id: 'open', label: 'Açık' }, { id: 'waiting_user', label: 'Bekleyen' }, { id: 'resolved', label: 'Ã‡Ã¶zÃ¼ldÃ¼' }, { id: 'closed', label: 'KapalÄ±' }].map((item) => <button key={item.id} onClick={() => setFilterStatus(item.id)} className={`rounded-full px-3 py-1.5 text-xs font-bold ${filterStatus === item.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{item.label}</button>)}</div>
-          <div className="space-y-2">{loadingTickets ? <div className="py-10 text-center text-sm font-semibold text-slate-400">Biletler yÃ¼kleniyor...</div> : filteredTickets.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">Bu filtrede destek talebi bulunamadÄ±.</div> : filteredTickets.map((item) => <button key={item.id} onClick={() => setSelectedId(item.id)} className={`w-full rounded-2xl border p-4 text-left ${String(selectedId) === String(item.id) ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-white'}`}><div className="mb-2 flex items-start justify-between gap-3"><div className="min-w-0"><div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">{item.ticket_no}</div><div className="mt-1 truncate text-sm font-black text-slate-900">{item.subject}</div></div><StatusBadge value={item.status} compact /></div><div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-400"><span>{fmtDate(item.last_reply_at || item.created_at)}</span>{item.selected_listing_count ? <span>{item.selected_listing_count} ilan baÄŸlÄ±</span> : null}</div></button>)}</div>
+          <div className="mb-3 flex flex-wrap gap-2">{[{ id: 'all', label: 'Tümü' }, { id: 'open', label: 'Açık' }, { id: 'waiting_user', label: 'Bekleyen' }, { id: 'resolved', label: 'Çözüldü' }, { id: 'closed', label: 'Kapalı' }].map((item) => <button key={item.id} onClick={() => setFilterStatus(item.id)} className={`rounded-full px-3 py-1.5 text-xs font-bold ${filterStatus === item.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{item.label}</button>)}</div>
+          <div className="space-y-2">{loadingTickets ? <div className="py-10 text-center text-sm font-semibold text-slate-400">Biletler yükleniyor...</div> : filteredTickets.length === 0 ? <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">Bu filtrede destek talebi bulunamadı.</div> : filteredTickets.map((item) => <button key={item.id} onClick={() => setSelectedId(item.id)} className={`w-full rounded-2xl border p-4 text-left ${String(selectedId) === String(item.id) ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-white'}`}><div className="mb-2 flex items-start justify-between gap-3"><div className="min-w-0"><div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">{item.ticket_no}</div><div className="mt-1 truncate text-sm font-black text-slate-900">{item.subject}</div></div><StatusBadge value={item.status} compact /></div><div className="mt-3 flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-400"><span>{fmtDate(item.last_reply_at || item.created_at)}</span>{item.selected_listing_count ? <span>{item.selected_listing_count} ilan bağlı</span> : null}</div></button>)}</div>
         </section>
 
         <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-          {!selectedId ? <div className="flex min-h-[640px] flex-col items-center justify-center gap-4 text-center text-slate-400"><div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100"><LifeBuoy size={28} className="text-slate-300" /></div><div><h2 className="text-lg font-black text-slate-500">Bir destek talebi seÃ§</h2><p className="mt-1 text-sm">Soldaki listeden bir bilet aÃ§arak detayÄ±nÄ± gÃ¶rebilirsin.</p></div></div> : loadingDetail || !selectedTicket ? <div className="flex min-h-[640px] items-center justify-center text-sm font-semibold text-slate-400">Destek talebi yÃ¼kleniyor...</div> : (
+          {!selectedId ? <div className="flex min-h-[640px] flex-col items-center justify-center gap-4 text-center text-slate-400"><div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100"><LifeBuoy size={28} className="text-slate-300" /></div><div><h2 className="text-lg font-black text-slate-500">Bir destek talebi seç</h2><p className="mt-1 text-sm">Soldaki listeden bir bilet açarak detayını görebilirsin.</p></div></div> : loadingDetail || !selectedTicket ? <div className="flex min-h-[640px] items-center justify-center text-sm font-semibold text-slate-400">Destek talebi yükleniyor...</div> : (
             <div className="flex min-h-[640px] flex-col">
               <div className="border-b border-slate-100 pb-4">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-500">{selectedTicket.ticket_no}</span><StatusBadge value={selectedTicket.status} compact /></div><h2 className="text-2xl font-black tracking-tight text-slate-950">{selectedTicket.subject}</h2><div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Clock3 size={14} />{fmtDate(selectedTicket.created_at)}</span><span className="inline-flex items-center gap-1.5"><Package size={14} />Ticket {selectedTicket.id}</span></div></div>
-                  {selectedTicket.status !== 'closed' ? <button onClick={closeTicket} disabled={closing} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 disabled:opacity-40"><XCircle size={16} />{closing ? 'KapatÄ±lÄ±yor...' : 'Talebi Kapat'}</button> : null}
+                  {selectedTicket.status !== 'closed' ? <button onClick={closeTicket} disabled={closing} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 disabled:opacity-40"><XCircle size={16} />{closing ? 'Kapatılıyor...' : 'Talebi Kapat'}</button> : null}
                 </div>
-            {selectedTicket.category === 'listing' ? <div className="mt-4"><LinkedListingsTable rows={selectedListings} scope={selectedTicket.related_scope} title="BaÄŸlÄ± Ä°lanlar" /></div> : null}
+            {selectedTicket.category === 'listing' ? <div className="mt-4"><LinkedListingsTable rows={selectedListings} scope={selectedTicket.related_scope} title="Bağlı İlanlar" /></div> : null}
               </div>
-              <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">YazÄ±ÅŸma GeÃ§miÅŸi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henÃ¼z yazÄ±ÅŸma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
-              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{meta.settings?.closed_note || 'Bu destek talebi kapatÄ±ldÄ±. MÃ¼ÅŸteri tarafÄ±ndan yeniden aÃ§Ä±lamaz.'}</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanÄ±t yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum deÄŸiÅŸikliklerinde bildirim gÃ¶ndermiyoruz; yalnÄ±zca yeni yanÄ±tlar iÃ§in bilgilendirme yapÄ±lÄ±r.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'GÃ¶nderiliyor...' : 'YanÄ±t GÃ¶nder'}</button></div></div></form>}
+              <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
+              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{meta.settings?.closed_note || 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.'}</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
             </div>
           )}
         </section>
@@ -625,4 +625,6 @@ export default function SupportPage() {
     </div>
   );
 }
+
+
 
