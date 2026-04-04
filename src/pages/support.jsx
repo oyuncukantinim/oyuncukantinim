@@ -526,7 +526,13 @@ export default function SupportPage() {
 
       <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">Wizard akışıyla daha rahat seçim yap.</p></div></div>
-        <div className="mb-4 grid gap-2 md:grid-cols-3">{STEP_TITLES.map((title, index) => <div key={title} className={`rounded-xl border px-3 py-2.5 ${wizardStep === index ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}><div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Adım {index + 1}</div><div className="mt-1 text-[13px] font-black text-slate-900">{title}</div></div>)}</div>
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div className="grid gap-2 md:grid-cols-3 xl:flex-1">{STEP_TITLES.map((title, index) => <div key={title} className={`rounded-xl border px-3 py-2.5 ${wizardStep === index ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}><div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Adım {index + 1}</div><div className="mt-1 text-[13px] font-black text-slate-900">{title}</div></div>)}</div>
+          <div className="flex items-center gap-3 xl:justify-end">
+            <button type="button" onClick={() => setWizardStep((prev) => Math.max(0, prev - 1))} disabled={wizardStep === 0} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 disabled:opacity-40">Geri</button>
+            {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{wizardStep === 1 ? `Devam Et (${form.selected_listing_ids.length} ilan seçtin)` : 'Devam Et'}</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
+          </div>
+        </div>
         <form onSubmit={submitTicket} className="space-y-5">
           {wizardStep === 0 ? (
             <div className="max-w-[280px]"><button type="button" onClick={() => setCategory('listing')} className={`w-full rounded-[18px] border px-3.5 py-3 text-left transition-all ${form.category === 'listing' ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}><div className="text-[13px] font-black text-slate-900">{visibleCategories[0]?.label || 'İlan Sorunu'}</div><div className="mt-1.5 text-[11px] leading-5 text-slate-500">İlan grubunu seçer, görselli ilan seçim ekranından ilgili kayıtları bağlarsın.</div></button></div>
@@ -565,13 +571,6 @@ export default function SupportPage() {
               </div>
             </div>
           ) : null}
-
-          <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-            <button type="button" onClick={() => setWizardStep((prev) => Math.max(0, prev - 1))} disabled={wizardStep === 0} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 disabled:opacity-40">Geri</button>
-            <div className="flex items-center gap-3">
-              {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{wizardStep === 1 ? `Devam Et (${form.selected_listing_ids.length} ilan seçtin)` : 'Devam Et'}</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
-            </div>
-          </div>
         </form>
       </section>
 
