@@ -26,22 +26,22 @@ const SETTINGS_TABS = [
     icon: SettingsIcon,
     sections: [
       {
-        section: 'Marka KimliÄŸi',
+        section: 'Marka Kimliği',
         fields: [
-          { key: 'site_name', label: 'Site AdÄ±', type: 'text', placeholder: 'Oyuncu Kantinim' },
+          { key: 'site_name', label: 'Site Adı', type: 'text', placeholder: 'Oyuncu Kantinim' },
           {
             key: 'site_logo',
             label: 'Site Logosu',
             type: 'image',
             placeholder: 'https://...',
-            desc: 'Navbar, footer, login ve admin alanlarÄ±ndaki logo bu gÃ¶rselden beslenir.',
+            desc: 'Navbar, footer, login ve admin alanlarındaki logo bu görselden beslenir.',
           },
           {
             key: 'site_logo_text',
             label: 'Logo Metni',
             type: 'text',
             placeholder: 'Oyuncu Kantinim',
-            desc: 'Logo yanÄ±nda eski marka yazÄ±sÄ± gibi gÃ¶rÃ¼nÃ¼r.',
+            desc: 'Logo yanında eski marka yazısı gibi görünür.',
           },
           {
             key: 'site_favicon',
@@ -49,45 +49,45 @@ const SETTINGS_TABS = [
             type: 'image',
             placeholder: 'https://...',
             accept: '.png,.svg,.webp,.jpg,.jpeg,.ico,image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon,image/vnd.microsoft.icon',
-            desc: 'TarayÄ±cÄ± sekmesinde kullanÄ±lacak kÃ¼Ã§Ã¼k simge. SVG, PNG ve ICO kullanabilirsin.',
+            desc: 'Tarayıcı sekmesinde kullanılacak küçük simge. SVG, PNG ve ICO kullanabilirsin.',
           },
         ],
       },
       {
         section: 'Temel Kontroller',
         fields: [
-          { key: 'registration_enabled', label: 'Yeni Ãœyelik', type: 'toggle', desc: 'KapalÄ±ysa yeni kullanÄ±cÄ±lar kayÄ±t olamaz.' },
-          { key: 'balance_add_enabled', label: 'Bakiye YÃ¼kleme', type: 'toggle', desc: 'KapalÄ±ysa kullanÄ±cÄ±lar bakiye yÃ¼kleyemez.' },
-          { key: 'maintenance_mode', label: 'BakÄ±m Modu', type: 'toggle', desc: 'AÃ§Ä±ksa site kullanÄ±cÄ±ya bakÄ±m ekranÄ± gÃ¶sterir.' },
+          { key: 'registration_enabled', label: 'Yeni Üyelik', type: 'toggle', desc: 'Kapalıysa yeni kullanıcılar kayıt olamaz.' },
+          { key: 'balance_add_enabled', label: 'Bakiye Yükleme', type: 'toggle', desc: 'Kapalıysa kullanıcılar bakiye yükleyemez.' },
+          { key: 'maintenance_mode', label: 'Bakım Modu', type: 'toggle', desc: 'Açıksa site kullanıcıya bakım ekranı gösterir.' },
         ],
       },
     ],
   },
   {
     id: 'appearance',
-    label: 'GÃ¶rÃ¼nÃ¼m',
+    label: 'Görünüm',
     icon: LayoutTemplate,
     sections: [
       {
-        section: 'BakÄ±m Modu Metinleri',
+        section: 'Bakım Modu Metinleri',
         fields: [
-          { key: 'maintenance_title', label: 'BakÄ±m BaÅŸlÄ±ÄŸÄ±', type: 'text', placeholder: 'KÄ±sa bir bakÄ±m molasÄ±ndayÄ±z' },
-          { key: 'maintenance_message', label: 'BakÄ±m AÃ§Ä±klamasÄ±', type: 'textarea', rows: 4, placeholder: 'Sitemizi daha iyi hale getirmek iÃ§in kÄ±sa sÃ¼reli bakÄ±m Ã§alÄ±ÅŸmasÄ± yapÄ±yoruz.' },
+          { key: 'maintenance_title', label: 'Bakım Başlığı', type: 'text', placeholder: 'Kısa bir bakım molasındayız' },
+          { key: 'maintenance_message', label: 'Bakım Açıklaması', type: 'textarea', rows: 4, placeholder: 'Sitemizi daha iyi hale getirmek için kısa süreli bakım çalışması yapıyoruz.' },
         ],
       },
       {
-        section: 'VarsayÄ±lan GÃ¶rseller',
+        section: 'Varsayılan Görseller',
         fields: [
-          { key: 'default_avatar', label: 'VarsayÄ±lan Avatar', type: 'image', placeholder: 'https://...', desc: 'Profil fotoÄŸrafÄ± olmayan kullanÄ±cÄ±lar iÃ§in kullanÄ±lÄ±r.' },
-          { key: 'default_profile_banner', label: 'VarsayÄ±lan Profil BannerÄ±', type: 'image', placeholder: 'https://...', desc: 'Banner eklememiÅŸ profillerde gÃ¶rÃ¼nÃ¼r.' },
+          { key: 'default_avatar', label: 'Varsayılan Avatar', type: 'image', placeholder: 'https://...', desc: 'Profil fotoğrafı olmayan kullanıcılar için kullanılır.' },
+          { key: 'default_profile_banner', label: 'Varsayılan Profil Bannerı', type: 'image', placeholder: 'https://...', desc: 'Banner eklememiş profillerde görünür.' },
           { key: 'default_listing_image', label: 'Varsayılan İlan Görseli', type: 'image', placeholder: 'https://...', desc: 'Görseli olmayan ilan kartlarında bu görsel gösterilir.' },
         ],
       },
       {
         section: 'Footer ve Yasal Metinler',
         fields: [
-          { key: 'footer_copyright', label: 'Footer Telif Metni', type: 'text', placeholder: 'Â© Oyuncu Kantinim. TÃ¼m haklarÄ± saklÄ±dÄ±r.' },
-          { key: 'footer_tagline', label: 'Footer Alt Metni', type: 'text', placeholder: 'Oyuncular iÃ§in gÃ¼venli alÄ±m satÄ±m platformu.' },
+          { key: 'footer_copyright', label: 'Footer Telif Metni', type: 'text', placeholder: '© Oyuncu Kantinim. Tüm hakları saklıdır.' },
+          { key: 'footer_tagline', label: 'Footer Alt Metni', type: 'text', placeholder: 'Oyuncular için güvenli alım satım platformu.' },
         ],
       },
     ],
@@ -100,18 +100,18 @@ const SETTINGS_TABS = [
       {
         section: 'Fiyat ve Komisyon',
         fields: [
-          { key: 'commission_rate', label: 'Komisyon OranÄ± (%)', type: 'number', placeholder: '10' },
-          { key: 'min_listing_price', label: 'Minimum Ä°lan FiyatÄ± (â‚º)', type: 'number', placeholder: '1' },
-          { key: 'max_listing_price', label: 'Maksimum Ä°lan FiyatÄ± (â‚º)', type: 'number', placeholder: '50000' },
+          { key: 'commission_rate', label: 'Komisyon Oranı (%)', type: 'number', placeholder: '10' },
+          { key: 'min_listing_price', label: 'Minimum İlan Fiyatı (₺)', type: 'number', placeholder: '1' },
+          { key: 'max_listing_price', label: 'Maksimum İlan Fiyatı (₺)', type: 'number', placeholder: '50000' },
         ],
       },
       {
-        section: 'Ä°lan Limitleri',
+        section: 'İlan Limitleri',
         fields: [
-          { key: 'max_listings_per_user', label: 'Maks. Ä°lan / KullanÄ±cÄ±', type: 'number', placeholder: '50' },
-          { key: 'max_listing_images', label: 'Maks. GÃ¶rsel / Ä°lan', type: 'number', placeholder: '5' },
-          { key: 'listing_title_max', label: 'BaÅŸlÄ±k Karakter Limiti', type: 'number', placeholder: '100' },
-          { key: 'listing_desc_max', label: 'AÃ§Ä±klama Karakter Limiti', type: 'number', placeholder: '2000' },
+          { key: 'max_listings_per_user', label: 'Maks. İlan / Kullanıcı', type: 'number', placeholder: '50' },
+          { key: 'max_listing_images', label: 'Maks. Görsel / İlan', type: 'number', placeholder: '5' },
+          { key: 'listing_title_max', label: 'Başlık Karakter Limiti', type: 'number', placeholder: '100' },
+          { key: 'listing_desc_max', label: 'Açıklama Karakter Limiti', type: 'number', placeholder: '2000' },
           { key: 'review_comment_max', label: 'Yorum Karakter Limiti', type: 'number', placeholder: '500' },
         ],
       },
@@ -123,19 +123,19 @@ const SETTINGS_TABS = [
     icon: Truck,
     sections: [
       {
-        section: 'SipariÅŸ ve Onay',
+        section: 'Sipariş ve Onay',
         fields: [
-          { key: 'escrow_enabled', label: 'Emanet Sistemi', type: 'toggle', desc: 'Manuel ilanlarda Ã¶deme, onay sonrasÄ± satÄ±cÄ±ya aktarÄ±lÄ±r.' },
-          { key: 'auto_confirm_days', label: 'Otomatik Onay (gÃ¼n)', type: 'number', placeholder: '3' },
-          { key: 'listing_duration_days', label: 'Ä°lan SÃ¼resi (gÃ¼n)', type: 'number', placeholder: '30' },
+          { key: 'escrow_enabled', label: 'Emanet Sistemi', type: 'toggle', desc: 'Manuel ilanlarda ödeme, onay sonrası satıcıya aktarılır.' },
+          { key: 'auto_confirm_days', label: 'Otomatik Onay (gün)', type: 'number', placeholder: '3' },
+          { key: 'listing_duration_days', label: 'İlan Süresi (gün)', type: 'number', placeholder: '30' },
         ],
       },
       {
-        section: 'Teslimat KurallarÄ±',
+        section: 'Teslimat Kuralları',
         fields: [
-          { key: 'manual_delivery_max_hours', label: 'Manuel Teslimat Ãœst SÄ±nÄ±rÄ± (saat)', type: 'number', placeholder: '72' },
-          { key: 'dispute_window_hours', label: 'AnlaÅŸmazlÄ±k AÃ§ma SÃ¼resi (saat)', type: 'number', placeholder: '72' },
-          { key: 'stock_item_max_count', label: 'Maks. Stok SatÄ±rÄ± / Ä°lan', type: 'number', placeholder: '500' },
+          { key: 'manual_delivery_max_hours', label: 'Manuel Teslimat Üst Sınırı (saat)', type: 'number', placeholder: '72' },
+          { key: 'dispute_window_hours', label: 'Anlaşmazlık Açma Süresi (saat)', type: 'number', placeholder: '72' },
+          { key: 'stock_item_max_count', label: 'Maks. Stok Satırı / İlan', type: 'number', placeholder: '500' },
         ],
       },
     ],
@@ -146,64 +146,64 @@ const SETTINGS_TABS = [
     icon: LifeBuoy,
     sections: [
       {
-        section: 'Ticket KurallarÄ±',
+        section: 'Ticket Kuralları',
         fields: [
-          { key: 'support_max_linked_listings', label: 'Maks. BaÄŸlÄ± Ä°lan / Talep', type: 'number', placeholder: '5' },
-          { key: 'support_ticket_delete_enabled', label: 'Admin Ticket Silme', type: 'toggle', desc: 'KapalÄ±ysa admin panelde ticket silme iÅŸlemi pasif olur.' },
-          { key: 'support_auto_assign_enabled', label: 'Otomatik Atama', type: 'toggle', desc: 'Yeni ticketlar ilk uygun yÃ¶neticiye otomatik atanÄ±r.' },
+          { key: 'support_max_linked_listings', label: 'Maks. Bağlı İlan / Talep', type: 'number', placeholder: '5' },
+          { key: 'support_ticket_delete_enabled', label: 'Admin Ticket Silme', type: 'toggle', desc: 'Kapalıysa admin panelde ticket silme işlemi pasif olur.' },
+          { key: 'support_auto_assign_enabled', label: 'Otomatik Atama', type: 'toggle', desc: 'Yeni ticketlar ilk uygun yöneticiye otomatik atanır.' },
         ],
       },
       {
         section: 'Destek Metinleri',
         fields: [
-          { key: 'support_intro_text', label: 'Destek GiriÅŸ Metni', type: 'textarea', rows: 4, placeholder: 'Ä°lan sorunlarÄ± iÃ§in doÄŸru ilanlarÄ± seÃ§ip destek talebi oluÅŸturabilirsiniz.' },
-          { key: 'support_closed_note', label: 'KapalÄ± Ticket Notu', type: 'text', placeholder: 'Bu destek talebi kapatÄ±ldÄ±. MÃ¼ÅŸteri tarafÄ±ndan yeniden aÃ§Ä±lamaz.' },
+          { key: 'support_intro_text', label: 'Destek Giriş Metni', type: 'textarea', rows: 4, placeholder: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.' },
+          { key: 'support_closed_note', label: 'Kapalı Ticket Notu', type: 'text', placeholder: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.' },
         ],
       },
     ],
   },
   {
     id: 'messaging',
-    label: 'MesajlaÅŸma',
+    label: 'Mesajlaşma',
     icon: MessageSquare,
     sections: [
       {
-        section: 'Mesaj KurallarÄ±',
+        section: 'Mesaj Kuralları',
         fields: [
           { key: 'message_max_length', label: 'Mesaj Karakter Limiti', type: 'number', placeholder: '2000' },
-          { key: 'message_links_enabled', label: 'Link GÃ¶nderimi', type: 'toggle', desc: 'KapalÄ±ysa mesajlarda link paylaÅŸÄ±mÄ± engellenir.' },
-          { key: 'conversation_order_panel_enabled', label: 'Ortak SipariÅŸ Paneli', type: 'toggle', desc: 'Sohbet alanÄ±ndaki ortak sipariÅŸ paneli gÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼nÃ¼ kontrol eder.' },
+          { key: 'message_links_enabled', label: 'Link Gönderimi', type: 'toggle', desc: 'Kapalıysa mesajlarda link paylaşımı engellenir.' },
+          { key: 'conversation_order_panel_enabled', label: 'Ortak Sipariş Paneli', type: 'toggle', desc: 'Sohbet alanındaki ortak sipariş paneli görünürlüğünü kontrol eder.' },
         ],
       },
       {
-        section: 'Bildirim KurallarÄ±',
+        section: 'Bildirim Kuralları',
         fields: [
-          { key: 'notification_retention_days', label: 'Bildirim Saklama SÃ¼resi (gÃ¼n)', type: 'number', placeholder: '30' },
-          { key: 'sale_notification_enabled', label: 'SatÄ±ÅŸ Bildirimleri', type: 'toggle', desc: 'SatÄ±ÅŸ ve yeni sipariÅŸ bildirimlerini topluca aÃ§Ä±p kapatÄ±r.' },
-          { key: 'support_notification_enabled', label: 'Destek Bildirimleri', type: 'toggle', desc: 'Yeni destek talebi ve yeni destek yanÄ±tÄ± bildirimlerini kontrol eder.' },
+          { key: 'notification_retention_days', label: 'Bildirim Saklama Süresi (gün)', type: 'number', placeholder: '30' },
+          { key: 'sale_notification_enabled', label: 'Satış Bildirimleri', type: 'toggle', desc: 'Satış ve yeni sipariş bildirimlerini topluca açıp kapatır.' },
+          { key: 'support_notification_enabled', label: 'Destek Bildirimleri', type: 'toggle', desc: 'Yeni destek talebi ve yeni destek yanıtı bildirimlerini kontrol eder.' },
         ],
       },
     ],
   },
   {
     id: 'security',
-    label: 'GÃ¼venlik',
+    label: 'Güvenlik',
     icon: Shield,
     sections: [
       {
-        section: 'KullanÄ±cÄ± PolitikalarÄ±',
+        section: 'Kullanıcı Politikaları',
         fields: [
-          { key: 'username_min_length', label: 'KullanÄ±cÄ± AdÄ± Min Uzunluk', type: 'number', placeholder: '3' },
-          { key: 'username_max_length', label: 'KullanÄ±cÄ± AdÄ± Max Uzunluk', type: 'number', placeholder: '20' },
-          { key: 'password_min_length', label: 'Åifre Min Uzunluk', type: 'number', placeholder: '6' },
+          { key: 'username_min_length', label: 'Kullanıcı Adı Min Uzunluk', type: 'number', placeholder: '3' },
+          { key: 'username_max_length', label: 'Kullanıcı Adı Max Uzunluk', type: 'number', placeholder: '20' },
+          { key: 'password_min_length', label: 'Şifre Min Uzunluk', type: 'number', placeholder: '6' },
         ],
       },
       {
-        section: 'Admin GÃ¼venliÄŸi',
+        section: 'Admin Güvenliği',
         fields: [
-          { key: 'admin_session_hours', label: 'Admin Oturum SÃ¼resi (saat)', type: 'number', placeholder: '24' },
-          { key: 'ban_force_logout', label: 'BanlÄ± KullanÄ±cÄ±yÄ± Oturumdan DÃ¼ÅŸÃ¼r', type: 'toggle', desc: 'AÃ§Ä±ksa banlanan kullanÄ±cÄ± ilk doÄŸrulamada sistem dÄ±ÅŸÄ±na atÄ±lÄ±r.' },
-          { key: 'audit_log_enabled', label: 'Ayar DeÄŸiÅŸiklik Logu', type: 'toggle', desc: 'AÃ§Ä±ksa kritik admin ayar deÄŸiÅŸiklikleri ayrÄ± loglanÄ±r.' },
+          { key: 'admin_session_hours', label: 'Admin Oturum Süresi (saat)', type: 'number', placeholder: '24' },
+          { key: 'ban_force_logout', label: 'Banlı Kullanıcıyı Oturumdan Düşür', type: 'toggle', desc: 'Açıksa banlanan kullanıcı ilk doğrulamada sistem dışına atılır.' },
+          { key: 'audit_log_enabled', label: 'Ayar Değişiklik Logu', type: 'toggle', desc: 'Açıksa kritik admin ayar değişiklikleri ayrı loglanır.' },
         ],
       },
     ],
@@ -214,10 +214,10 @@ const SETTINGS_TABS = [
     icon: BellRing,
     sections: [
       {
-        section: 'Duyuru BandÄ±',
+        section: 'Duyuru Bandı',
         fields: [
-          { key: 'announcement_active', label: 'Duyuru BandÄ± Aktif', type: 'toggle', desc: 'Site Ã¼stÃ¼nde renkli duyuru bandÄ± gÃ¶rÃ¼nÃ¼r.' },
-          { key: 'announcement_text', label: 'Duyuru Metni', type: 'textarea', rows: 4, placeholder: 'BÃ¼yÃ¼k indirim baÅŸladÄ±...' },
+          { key: 'announcement_active', label: 'Duyuru Bandı Aktif', type: 'toggle', desc: 'Site üstünde renkli duyuru bandı görünür.' },
+          { key: 'announcement_text', label: 'Duyuru Metni', type: 'textarea', rows: 4, placeholder: 'Büyük indirim başladı...' },
         ],
       },
     ],
@@ -248,7 +248,7 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
               : 'border-slate-200 bg-slate-50 text-slate-500'
           }`}
         >
-          {value === '1' ? <><ToggleRight size={16} /> AÃ§Ä±k</> : <><ToggleLeft size={16} /> KapalÄ±</>}
+          {value === '1' ? <><ToggleRight size={16} /> Açık</> : <><ToggleLeft size={16} /> Kapalı</>}
         </button>
       </div>
     );
@@ -295,14 +295,14 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
                   className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600 disabled:opacity-50"
                 >
                   {imageUploading ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-                  Yeni GÃ¶rsel YÃ¼kle
+                  Yeni Görsel Yükle
                 </button>
                 <button
                   type="button"
                   onClick={() => onChange('')}
                   className="flex items-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
                 >
-                  <X size={13} /> KaldÄ±r
+                  <X size={13} /> Kaldır
                 </button>
               </div>
             </div>
@@ -316,12 +316,12 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
               {imageUploading ? (
                 <>
                   <Loader2 size={22} className="animate-spin text-violet-500" />
-                  <span className="text-xs font-semibold text-slate-500">GÃ¶rsel yÃ¼kleniyor...</span>
+                  <span className="text-xs font-semibold text-slate-500">Görsel yükleniyor...</span>
                 </>
               ) : (
                 <>
                   <ImageIcon size={22} className="text-slate-400" />
-                  <span className="text-xs font-semibold text-slate-500">GÃ¶rsel yÃ¼klemek iÃ§in tÄ±kla</span>
+                  <span className="text-xs font-semibold text-slate-500">Görsel yüklemek için tıkla</span>
                   <span className="text-[10px] text-slate-400">PNG, SVG, WebP veya JPG kullanabilirsin.</span>
                 </>
               )}
@@ -417,7 +417,7 @@ export default function AdminSettings() {
     try {
       const url = await adminUploadImage(file, 'branding', { preserveOriginal: key === 'site_favicon' });
       set(key, url);
-      showToast('GÃ¶rsel yÃ¼klendi.');
+      showToast('Görsel yüklendi.');
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -469,17 +469,17 @@ export default function AdminSettings() {
             <div className="max-w-3xl">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-100">
                 <SettingsIcon size={13} />
-                Site AyarlarÄ±
+                Site Ayarları
               </div>
-              <h1 className="text-3xl font-black tracking-tight">Marka, satÄ±ÅŸ, destek ve gÃ¼venlik ayarlarÄ±nÄ± tek merkezden yÃ¶net</h1>
+              <h1 className="text-3xl font-black tracking-tight">Marka, satış, destek ve güvenlik ayarlarını tek merkezden yönet</h1>
               <p className="mt-2 text-sm leading-6 text-violet-100/80">
-                Bu ekran artÄ±k sadece temel ayar formu deÄŸil; sitenin gÃ¶rÃ¼nÃ¼m, ticari kurallar ve operasyon davranÄ±ÅŸlarÄ±nÄ± yÃ¶nettiÄŸin kontrol merkezi.
+                Bu ekran artık sadece temel ayar formu değil; sitenin görünüm, ticari kurallar ve operasyon davranışlarını yönettiğin kontrol merkezi.
               </p>
             </div>
 
             <div className="flex flex-col items-start gap-3 rounded-[24px] border border-white/10 bg-white/10 px-4 py-4 lg:min-w-[280px]">
               <div className="text-xs font-bold uppercase tracking-[0.16em] text-violet-100/70">
-                {hasChanges ? 'KaydedilmemiÅŸ deÄŸiÅŸiklikler var' : 'TÃ¼m deÄŸiÅŸiklikler kayÄ±tlÄ±'}
+                {hasChanges ? 'Kaydedilmemiş değişiklikler var' : 'Tüm değişiklikler kayıtlı'}
               </div>
               <button
                 type="button"
@@ -488,7 +488,7 @@ export default function AdminSettings() {
                 className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-slate-900 transition-colors hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                {saving ? 'Kaydediliyor...' : 'TÃ¼m AyarlarÄ± Kaydet'}
+                {saving ? 'Kaydediliyor...' : 'Tüm Ayarları Kaydet'}
               </button>
             </div>
           </div>
@@ -516,7 +516,7 @@ export default function AdminSettings() {
                     </div>
                     <div>
                       <div className="text-sm font-black">{tab.label}</div>
-                      <div className="text-[11px] font-medium text-slate-400">{tab.sections.length} bÃ¶lÃ¼m</div>
+                      <div className="text-[11px] font-medium text-slate-400">{tab.sections.length} bölüm</div>
                     </div>
                   </button>
                 );
@@ -532,7 +532,7 @@ export default function AdminSettings() {
                   <h2 className="mt-1 text-2xl font-black text-slate-950">{activeTabConfig.label}</h2>
                 </div>
                 <div className="text-xs leading-5 text-slate-400">
-                  Bu sekmedeki ayarlar topluca kaydedilir. DeÄŸiÅŸiklikler canlÄ± Ã¶nizlemede anlÄ±k gÃ¶rÃ¼nÃ¼r.
+                  Bu sekmedeki ayarlar topluca kaydedilir. Değişiklikler kaydedildikten sonra site davranışına yansır.
                 </div>
               </div>
             </div>
@@ -553,4 +553,6 @@ export default function AdminSettings() {
     </AdminLayout>
   );
 }
+
+
 
