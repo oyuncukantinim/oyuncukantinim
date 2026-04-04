@@ -289,6 +289,8 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   const isManual = order.item_type === 'listing' && !order.delivery_content;
   const status = (order.delivery_status ?? 0);
+  const coverImage = Array.isArray(order.item_images) ? order.item_images[0] : null;
+  const coverFallback = order.item_type === 'epin' ? '🎫' : '🖼️';
 
   return (
     <>
@@ -297,8 +299,12 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
     {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
-        <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
-          {order.item_type === 'epin' ? '' : ''}
+        <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
+          {coverImage ? (
+            <img src={coverImage} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span>{coverFallback}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
@@ -423,6 +429,7 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
+  const [editEmail, setEditEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [bannerImage, setBannerImage] = useState('');
@@ -441,6 +448,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
+    setEditEmail(user.email || '');
     setBannerImage(user.banner_image || '');
     setSelectedAvatar(user.avatar || '👤');
     setPersonalInfo({
@@ -480,45 +488,38 @@ export default function ProfilePage() {
   if (!user) return null;
 
   const normalizedUsername = editUsername.trim();
+  const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
   const profileDirty =
-    normalizedUsername !== (user.username || '') ||
     selectedAvatar !== (user.avatar || '') ||
-    normalizedBannerImage !== (user.banner_image || '') ||
-    Boolean(newPassword);
+    normalizedBannerImage !== (user.banner_image || '');
   const personalDirty =
     personalInfo.full_name !== (user.full_name || '') ||
     personalInfo.country !== (user.country || '') ||
     personalInfo.city !== (user.city || '') ||
     personalInfo.district !== (user.district || '') ||
-    personalInfo.address !== (user.address || '');
+    personalInfo.address !== (user.address || '') ||
+    normalizedEmail !== (user.email || '') ||
+    Boolean(newPassword);
 
   const handleSaveProfile = async () => {
     setSaving(true);
     try {
       const payload = {};
       if (!isValidImageUrl(normalizedBannerImage)) {
-        showToast(`Banner gorseli gecersiz. Izinli alanlar: ${ALLOWED_DOMAINS_LABEL}`);
+        showToast(`Banner görseli geçersiz. İzinli alanlar: ${ALLOWED_DOMAINS_LABEL}`);
         setSaving(false);
         return;
       }
-      if (!normalizedUsername) {
-        showToast('Kullanıcı adı boş bırakılamaz.');
-        setSaving(false);
-        return;
-      }
-      if (normalizedUsername !== user.username) payload.new_username = normalizedUsername;
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
       if (normalizedBannerImage !== (user.banner_image || '')) payload.banner_image = normalizedBannerImage;
-      if (newPassword) payload.new_password = newPassword;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditUsername(res.data.username || '');
+      setEditEmail(res.data.email || '');
       setBannerImage(res.data.banner_image || '');
       setSelectedAvatar(res.data.avatar || '👤');
-      setNewPassword('');
-      setShowPassword(false);
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
@@ -565,8 +566,14 @@ export default function ProfilePage() {
         setSaving(false);
         return;
       }
-      const res = await updateProfile(personalInfo);
+      const payload = { ...personalInfo };
+      if (normalizedEmail !== (user.email || '')) payload.email = normalizedEmail;
+      if (newPassword) payload.new_password = newPassword;
+      const res = await updateProfile(payload);
       updateUser(res.data);
+      setEditEmail(res.data.email || '');
+      setNewPassword('');
+      setShowPassword(false);
       showToast('Kişisel bilgiler güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
@@ -743,19 +750,19 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {filteredListings.map(listing => (
-                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2.5 border border-gray-100">
-                      <div className="w-14 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
-                        {listing.images?.[0] ? (
-                          <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
+	                  {filteredListings.map(listing => (
+	                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2.5 border border-gray-100">
+	                      <div className="w-14 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+	                        {listing.images?.[0] ? (
+	                          <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={20}/></div>
                         )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-xs">{listing.title}</Link>
-                        <div className="text-xs text-gray-400 mt-0.5">{listing.category}</div>
-                        {listing.expires_at && (
+	                      </div>
+	                      <div className="flex-1 min-w-0">
+	                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-xs">{listing.title}</Link>
+	                        <div className="text-xs text-gray-400 mt-0.5">{(listing.category_name || listing.category || '').replace(/-/g, ' ')}</div>
+	                        {listing.expires_at && (
                           <div className="text-xs text-gray-400 mt-0.5">
                             Bitiş: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
                           </div>
@@ -984,7 +991,7 @@ export default function ProfilePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
-                  <p className="text-sm text-gray-400 mt-1">Kullanıcı adı, avatar ve giriş güvenliğini buradan yönetebilirsin.</p>
+                  <p className="text-sm text-gray-400 mt-1">Avatar ve banner görünümünü buradan yönetebilirsin.</p>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${profileDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
                   {profileDirty ? 'Kaydedilmemiş değişiklik var' : 'Profil güncel'}
@@ -1008,11 +1015,10 @@ export default function ProfilePage() {
                   <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <label className="block text-sm font-bold text-gray-600">Profil Banner Gorseli</label>
-                        <p className="text-xs text-gray-400 mt-1">`/profile` ve `/p/kullaniciadi` sayfalarinda ayni gorsel kullanilir.</p>
+                        <label className="block text-sm font-bold text-gray-600">Profil Banner Görseli</label>
                       </div>
                       <span className="text-[11px] font-bold text-violet-600 bg-violet-50 border border-violet-100 rounded-full px-2.5 py-1">
-                        Tuval: 1500 x 300 px
+                        1500x300px
                       </span>
                     </div>
                     <input
@@ -1023,7 +1029,7 @@ export default function ProfilePage() {
                       className="input-field"
                     />
                     <p className="text-xs text-gray-400">
-                      Tam oturma icin 1500 x 300 px ya da ayni 5:1 oranini kullan. Bos birakirsan banner kaldirilir. Izinli alanlar: {ALLOWED_DOMAINS_LABEL}
+                      Tam oturma için 1500x300px ya da aynı 5:1 oranını kullan. Boş bırakırsan banner kaldırılır. İzinli alanlar: {ALLOWED_DOMAINS_LABEL}
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
@@ -1035,7 +1041,7 @@ export default function ProfilePage() {
                             <div className="absolute -top-8 right-6 w-24 h-24 rounded-full bg-white/25 blur-2xl" />
                             <div className="absolute -bottom-8 left-8 w-28 h-20 rounded-full bg-cyan-200/25 blur-2xl" />
                             <div className="absolute inset-x-0 bottom-3 flex justify-center text-gray-500 text-xs font-semibold">
-                              Varsayilan banner gorunumu
+                              Varsayılan banner görünümü
                             </div>
                           </>
                         )}
@@ -1048,37 +1054,10 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       value={editUsername}
-                      onChange={e => setEditUsername(e.target.value)}
-                      placeholder="Kullanıcı adın"
-                      className="input-field"
+                      readOnly
+                      className="input-field bg-gray-50 text-gray-500 cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-400 mt-1">3-20 karakter, harf, rakam ve alt çizgi kullanabilirsin.</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
-                    <input type="email" value={user.email} disabled className="input-field opacity-50 cursor-not-allowed" />
-                    <p className="text-xs text-gray-400 mt-1">Güvenlik gereği e-posta bu ekrandan değiştirilemez.</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni ifre</label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        placeholder="Değiştirmek istemiyorsan boş bırak"
-                        className="input-field pr-11"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(v => !v)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
+                    <p className="text-xs text-gray-400 mt-1">Kullanıcı adı artık sabittir; alt çizgi de kullanılamaz.</p>
                   </div>
                 </div>
 
@@ -1096,10 +1075,10 @@ export default function ProfilePage() {
 
                   <div className="mt-5 space-y-3 text-sm text-gray-500">
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      Avatar ve kullanıcı adı değişiklikleri anında profil kartına yansır.
+                      Avatar ve banner değişiklikleri anında profil kartına yansır.
                     </div>
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      ifre alanını boş bırakırsan mevcut şifren korunur.
+                      Kullanıcı adı kayıt sonrası değiştirilemez.
                     </div>
                   </div>
 
@@ -1140,7 +1119,7 @@ export default function ProfilePage() {
                       <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="Türkiye" className="input-field" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-600 mb-1.5">ehir</label>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Şehir</label>
                       <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="İstanbul" className="input-field" />
                     </div>
                   </div>
@@ -1156,24 +1135,41 @@ export default function ProfilePage() {
 
                 <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col">
                   <div className="flex items-center gap-2 text-gray-700 font-bold">
-                    <MapPin size={16} className="text-cyan-600" />
-                    Kayıt Özeti
+                    <Shield size={16} className="text-cyan-600" />
+                    Hesap Güvenliği
                   </div>
 
-                  <div className="mt-4 space-y-3 text-sm">
-                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
-                      <div className="text-xs font-bold text-gray-400 mb-1">Ad Soyad</div>
-                      <div className="font-semibold text-gray-700">{personalInfo.full_name || 'Belirtilmedi'}</div>
+                  <div className="mt-4 space-y-4 text-sm">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
+                      <input
+                        type="email"
+                        value={editEmail}
+                        onChange={e => setEditEmail(e.target.value)}
+                        placeholder="E-posta adresin"
+                        className="input-field"
+                      />
                     </div>
-                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
-                      <div className="text-xs font-bold text-gray-400 mb-1">Konum</div>
-                      <div className="font-semibold text-gray-700">
-                        {[personalInfo.district, personalInfo.city, personalInfo.country].filter(Boolean).join(' / ') || 'Belirtilmedi'}
+
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                          placeholder="Değiştirmek istemiyorsan boş bırak"
+                          className="input-field pr-11"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
                       </div>
-                    </div>
-                    <div className="bg-white/80 rounded-xl border border-white px-3 py-2.5">
-                      <div className="text-xs font-bold text-gray-400 mb-1">Adres</div>
-                      <div className="font-semibold text-gray-700 line-clamp-4">{personalInfo.address || 'Belirtilmedi'}</div>
+                      <p className="text-xs text-gray-400 mt-1">Şifre alanını boş bırakırsan mevcut şifren korunur.</p>
                     </div>
                   </div>
 
@@ -1340,7 +1336,7 @@ function FinanceTabContent() {
 
       {/* Filtreler */}
       <div className="flex gap-2">
-        {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'}].map(f => (
+        {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'},{v:'balance',l:'Sistem'}].map(f => (
           <button key={f.v} onClick={() => setTypeFilter(f.v)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${typeFilter === f.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
             {f.l}
@@ -1373,7 +1369,7 @@ function FinanceTabContent() {
                   <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
                   <p className="text-[10px] text-gray-400">
                     {isBalance
-                      ? `${tx.counterparty || 'Sistem'}${tx.balance_before != null ? `  Eski bakiye: ${Number(tx.balance_before).toFixed(2)} ` : ''}${tx.balance_after != null ? `  Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ` : ''}`
+                      ? `${tx.counterparty || ''}${tx.balance_before != null ? ` Eski bakiye: ${Number(tx.balance_before).toFixed(2)}` : ''}${tx.balance_after != null ? ` Yeni bakiye: ${Number(tx.balance_after).toFixed(2)}` : ''}`.trim()
                       : `${tx.counterparty || ''} · `}
                     {!isBalance && <span className={delivColor}>{delivLabel}</span>}
                   </p>
@@ -1403,7 +1399,6 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [images, setImages]         = useState(imgs.length > 0 ? imgs : ['']);
   const [coverIndex, setCoverIndex] = useState(listing.cover_index ?? 0);
   const [deliveryHours, setDelHours]= useState(listing.delivery_hours ?? 24);
-  const [status, setStatus]         = useState(listing.status || 'active');
   const [maxImages, setMaxImages]   = useState(5);
   const [titleMax, setTitleMax]     = useState(100);
   const [descMax, setDescMax]       = useState(2000);
@@ -1425,7 +1420,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
 
-  const handleSave = (overrideStatus) => {
+  const handleSave = () => {
     onSave({
       listing_id:     listing.id,
       title:          title.trim(),
@@ -1434,7 +1429,6 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       images:         images.filter(Boolean),
       cover_index:    coverIndex,
       delivery_hours: deliveryHours,
-      status:         overrideStatus ?? status,
     });
   };
 
@@ -1527,38 +1521,12 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
           )}
 
-          {/* Durum — sadece aktif ilanlar için göster */}
-          {listing.status !== 'passive' && (
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
-              <div className="flex gap-2">
-                {[{ v: 'active', l: '✅ Aktif' }, { v: 'passive', l: ' Pasif' }].map(opt => (
-                  <button key={opt.v} onClick={() => setStatus(opt.v)}
-                    className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${status === opt.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                    {opt.l}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {listing.status === 'passive' ? (
-            <button onClick={() => handleSave('active')} disabled={saving || !title.trim() || !price}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-              {saving ? 'Kaydediliyor...' : '✅ Kaydet ve Yayınla'}
-            </button>
-          ) : (
-            <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
-              className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
-            </button>
-          )}
+          <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
+            className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+            {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-
-
-

@@ -12,4 +12,4 @@ export const SORT_OPTIONS = [
   { value: 'price-desc', label: 'Fiyat azalan' },
 ];
 
-export const AVATARS = ['👤','🐱','🐼','🦊','🐻','🦁','🐲','🦄','🐙','🐺','👾','🤖','🎮','⭐','🔥','💎'];
+export const AVATARS = ['👤','🐱','🐼','🦊','🐻','🦁','🐲','🦄','🐙','🐺','👾','🤖','🎮','⭐','🔥','💎','😎','🐸','🚀','🧙','👻'];
