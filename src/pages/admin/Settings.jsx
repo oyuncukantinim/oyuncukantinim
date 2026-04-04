@@ -17,7 +17,6 @@ import {
   X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import SiteBrand from '../../components/SiteBrand';
 import { adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
 
 const SETTINGS_TABS = [
@@ -226,64 +225,6 @@ const SETTINGS_TABS = [
 function normalizeValue(field, value) {
   if (field.type === 'toggle') return value === '1' ? '1' : '0';
   return value ?? '';
-}
-
-function SettingsPreview({ settings }) {
-  const maintenanceMode = settings.maintenance_mode === '1';
-  const announcementActive = settings.announcement_active === '1' && settings.announcement_text;
-
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-5 py-4">
-        <div className="text-sm font-black text-slate-900">Canlı Önizleme</div>
-        <div className="text-xs text-slate-500">Marka ve metin ayarlarının sitede nasıl görüneceğini hızlıca kontrol et.</div>
-      </div>
-      <div className="space-y-4 p-5">
-        {announcementActive ? (
-          <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700">
-            {settings.announcement_text}
-          </div>
-        ) : null}
-
-        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <SiteBrand
-            siteName={settings.site_name || 'Oyuncu Kantinim'}
-            siteLogo={settings.site_logo || ''}
-            siteLogoText={settings.site_logo_text || ''}
-            showNameWithLogo
-            titleClassName="text-lg font-black text-slate-900"
-            subtitleClassName="text-xs text-slate-500"
-            subtitle="Navbar ve login ekranı görünümü"
-            iconWrapperClassName="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-600"
-            imageClassName="h-11 w-auto max-w-[140px] object-contain"
-          />
-        </div>
-
-        <div className="rounded-[24px] border border-slate-200 bg-slate-950 p-5 text-white">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-violet-200">Bakım Modu</div>
-          <div className="mt-2 text-xl font-black">
-            {settings.maintenance_title || 'Kısa bir bakım molasındayız'}
-          </div>
-          <div className="mt-2 text-sm leading-6 text-slate-300">
-            {settings.maintenance_message || 'Sitemizi daha iyi hale getirmek için kısa süreli bakım çalışması yapıyoruz.'}
-          </div>
-          <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold text-violet-100">
-            {maintenanceMode ? 'Aktif' : 'Kapalı'}
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-slate-200 bg-white p-4">
-          <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Footer</div>
-          <div className="mt-2 text-sm font-semibold text-slate-700">
-            {settings.footer_tagline || 'Oyuncular için güvenli alım satım platformu.'}
-          </div>
-          <div className="mt-1 text-xs text-slate-400">
-            {settings.footer_copyright || '© Oyuncu Kantinim. Tüm hakları saklıdır.'}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function SettingField({ field, value, onChange, onUpload, imageUploading }) {
@@ -579,8 +520,6 @@ export default function AdminSettings() {
                 );
               })}
             </div>
-
-            <SettingsPreview settings={settings} />
           </aside>
 
           <section className="space-y-4">
