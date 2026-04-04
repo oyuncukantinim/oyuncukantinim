@@ -27,7 +27,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
         </div>
       )}
 
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-2.5">
+      <div className="absolute inset-x-0 bottom-3 px-2.5">
         <div className="line-clamp-2 text-center text-[13px] font-bold leading-tight text-white" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>
           {category.name}
         </div>
