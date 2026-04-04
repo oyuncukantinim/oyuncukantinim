@@ -544,7 +544,7 @@ export default function AdminCategories() {
                   if (!file) return;
                   setBannerUploading(true);
                   try {
-                    const url = await adminUploadImage(file, 'categories');
+                    const url = await adminUploadImage(file, 'categories', { preserveOriginal: true });
                     setCatForm(f => ({ ...f, banner_image: url }));
                     showToast('Banner yüklendi.');
                   } catch (err) {
