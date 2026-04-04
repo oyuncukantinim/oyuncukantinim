@@ -203,6 +203,10 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
   const peakPoint = points.reduce((best, current) => (current.value > (best?.value ?? -1) ? current : best), null);
   const latestPoint = points[points.length - 1];
   const gradientId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const pointPositions = points.map((point) => ({
+    ...point,
+    left: `${(point.x / width) * 100}%`,
+  }));
 
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
@@ -274,11 +278,15 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
           ))}
         </svg>
 
-        <div className="mt-1 grid grid-cols-7 gap-2">
-          {series.map((item) => (
-            <div key={item.day} className="text-center">
-              <div className="text-[11px] font-bold text-slate-600">{formatter(item.value)}</div>
-              <div className="mt-1 text-[11px] font-semibold text-slate-400">{item.label}</div>
+        <div className="relative mt-1 h-9">
+          {pointPositions.map((point) => (
+            <div
+              key={point.day}
+              className="absolute top-0 -translate-x-1/2 text-center"
+              style={{ left: point.left }}
+            >
+              <div className="text-[11px] font-bold text-slate-600">{formatter(point.value)}</div>
+              <div className="mt-1 text-[11px] font-semibold text-slate-400">{point.label}</div>
             </div>
           ))}
         </div>
