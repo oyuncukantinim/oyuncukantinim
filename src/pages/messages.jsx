@@ -180,13 +180,13 @@ function SharedOrdersPanel({ userId }) {
   if (!loading && orders.length === 0) return null;
 
   return (
-    <div className="hidden xl:flex flex-col w-56 flex-shrink-0 border-l border-gray-100 bg-gray-50/30">
-      <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
+    <div className="hidden xl:flex flex-col w-48 flex-shrink-0 border-l border-gray-100 bg-gray-50/30">
+      <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-2">
         <ShoppingBag size={14} className="text-violet-500" />
         <span className="text-xs font-extrabold text-gray-700">Ortak Siparişler</span>
         {!loading && <span className="ml-auto text-[10px] text-gray-400 font-semibold">{orders.length}</span>}
       </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div className="flex-1 overflow-y-auto p-1.5 space-y-1.5">
         {loading ? (
           <div className="flex justify-center py-6">
             <div className="w-5 h-5 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
@@ -196,19 +196,19 @@ function SharedOrdersPanel({ userId }) {
           return (
             <div key={o.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
               {o.item_image && (
-                <img src={o.item_image} alt="" className="w-full h-20 object-cover"/>
+                <img src={o.item_image} alt="" className="w-full h-16 object-cover"/>
               )}
-              <div className="p-2">
+              <div className="p-1.5">
                 <div className="mb-1 text-[10px] font-bold text-gray-700 line-clamp-2">{o.item_title || '—'}</div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-extrabold text-emerald-600">{Number(o.amount).toFixed(2)} ₺</span>
-                  <span className={`text-[9px] font-bold ${ORDER_STATUS_COLORS[o.delivery_status] || 'text-gray-400'}`}>
+                  <span className="text-[9px] font-extrabold text-emerald-600">{Number(o.amount).toFixed(2)} ₺</span>
+                  <span className={`text-[8px] font-bold ${ORDER_STATUS_COLORS[o.delivery_status] || 'text-gray-400'}`}>
                     {ORDER_STATUS[o.delivery_status] || '—'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-gray-400">#{o.id}</span>
-                  <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-full ${isBuyer ? 'bg-violet-50 text-violet-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                  <span className="text-[8px] text-gray-400">#{o.id}</span>
+                  <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-full ${isBuyer ? 'bg-violet-50 text-violet-600' : 'bg-emerald-50 text-emerald-700'}`}>
                     {isBuyer ? 'Alıcı' : 'Satıcı'}
                   </span>
                 </div>

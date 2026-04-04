@@ -87,7 +87,10 @@ function getLastNDays(count) {
   for (let index = count - 1; index >= 0; index -= 1) {
     const date = new Date(today);
     date.setDate(today.getDate() - index);
-    dates.push(date.toISOString().slice(0, 10));
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
   }
 
   return dates;
