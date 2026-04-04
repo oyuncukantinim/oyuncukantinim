@@ -207,7 +207,7 @@ function SharedOrdersPanel({ userId }) {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[8px] text-gray-400">#{o.id}</span>
+                  <span className="text-[8px] text-gray-400">{o.id}</span>
                   <span className={`text-[8px] font-extrabold px-1.5 py-0.5 rounded-full ${isBuyer ? 'bg-violet-50 text-violet-600' : 'bg-emerald-50 text-emerald-700'}`}>
                     {isBuyer ? 'Alıcı' : 'Satıcı'}
                   </span>

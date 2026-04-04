@@ -176,10 +176,10 @@ function ProgressCard({ title, value, helper, progress, toneClass }) {
 
 function buildChartGeometry(series = []) {
   const width = 320;
-  const height = 168;
+  const height = 188;
   const paddingX = 18;
   const paddingTop = 18;
-  const paddingBottom = 26;
+  const paddingBottom = 46;
   const chartWidth = width - (paddingX * 2);
   const chartHeight = height - paddingTop - paddingBottom;
   const maxValue = Math.max(...series.map((item) => item.value), 1);
@@ -206,10 +206,6 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
   const peakPoint = points.reduce((best, current) => (current.value > (best?.value ?? -1) ? current : best), null);
   const latestPoint = points[points.length - 1];
   const gradientId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  const pointPositions = points.map((point) => ({
-    ...point,
-    left: `${(point.x / width) * 100}%`,
-  }));
 
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
@@ -237,7 +233,7 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
           </div>
         </div>
 
-        <svg viewBox={`0 0 ${width} ${height}`} className="h-40 w-full overflow-visible">
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full overflow-visible">
           <defs>
             <linearGradient id={`${gradientId}-fill`} x1="0%" x2="0%" y1="0%" y2="100%">
               <stop offset="0%" stopColor={tone.fill} stopOpacity="0.3" />
@@ -277,22 +273,25 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
             <g key={point.day}>
               <circle cx={point.x} cy={point.y} r="5.5" fill="white" />
               <circle cx={point.x} cy={point.y} r="3.5" fill={tone.stroke} />
+              <text
+                x={point.x}
+                y={height - 18}
+                textAnchor="middle"
+                className="fill-slate-600 text-[11px] font-bold"
+              >
+                {formatter(point.value)}
+              </text>
+              <text
+                x={point.x}
+                y={height - 4}
+                textAnchor="middle"
+                className="fill-slate-400 text-[11px] font-semibold"
+              >
+                {point.label}
+              </text>
             </g>
           ))}
         </svg>
-
-        <div className="relative mt-1 h-9">
-          {pointPositions.map((point) => (
-            <div
-              key={point.day}
-              className="absolute top-0 -translate-x-1/2 text-center"
-              style={{ left: point.left }}
-            >
-              <div className="text-[11px] font-bold text-slate-600">{formatter(point.value)}</div>
-              <div className="mt-1 text-[11px] font-semibold text-slate-400">{point.label}</div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
