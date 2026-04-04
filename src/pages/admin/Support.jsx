@@ -479,14 +479,20 @@ export default function AdminSupportPage() {
                   </div>
                 </div>
 
-                <div className="flex-1 space-y-3 overflow-y-auto py-5">
-                  {messages.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">
-                      Bu destekte henüz mesaj yok.
-                    </div>
-                  ) : messages.map((message) => (
-                    <TicketMessage key={message.id} message={message} />
-                  ))}
+                <div className="py-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3>
+                    <span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span>
+                  </div>
+                  <div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">
+                    {messages.length === 0 ? (
+                      <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                        Bu destekte henüz mesaj yok.
+                      </div>
+                    ) : messages.map((message) => (
+                      <TicketMessage key={message.id} message={message} />
+                    ))}
+                  </div>
                 </div>
 
                 <form onSubmit={handleReply} className="border-t border-slate-100 pt-4">
