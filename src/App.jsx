@@ -19,6 +19,7 @@ import ProfilePage from './pages/profile';
 import CreatePage from './pages/create';
 import MessagesPage from './pages/messages';
 import NotificationsPage from './pages/notifications';
+import SupportPage from './pages/support';
 import SellerPage from './pages/seller';
 import CategoriesPage from './pages/categories';
 import CategoryListingsPage from './pages/category-listings';
@@ -33,6 +34,7 @@ import AdminCategories from './pages/admin/Categories';
 import AdminEpins from './pages/admin/Epins';
 import AdminAnnouncements from './pages/admin/Announcements';
 import AdminMessages from './pages/admin/Messages';
+import AdminSupport from './pages/admin/Support';
 import AdminSettings from './pages/admin/Settings';
 import AdminPopularGames from './pages/admin/PopularGames';
 import AdminFinance from './pages/admin/Finance';
@@ -154,6 +156,7 @@ function SiteLayout() {
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/messages/:userId" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/support" element={<SupportPage />} />
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
           <Route path="/p/:username" element={<SellerPage />} />
@@ -183,6 +186,7 @@ export default function App() {
             <Route path="/admin/epins" element={<AdminRoute><AdminEpins /></AdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+            <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
             <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />

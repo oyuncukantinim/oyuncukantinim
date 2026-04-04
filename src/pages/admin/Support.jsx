@@ -1,0 +1,523 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Clock3,
+  LifeBuoy,
+  MessageSquare,
+  Search,
+  Send,
+  Settings2,
+  ShieldCheck,
+  UserCircle2,
+} from 'lucide-react';
+import AdminLayout from '../../components/AdminLayout';
+import {
+  adminGetSupportTicket,
+  adminGetSupportTickets,
+  adminReplySupportTicket,
+  adminUpdateSupportTicket,
+} from '../../lib/adminApi';
+
+const STATUS_OPTIONS = [
+  { value: 'open', label: 'Açık', className: 'bg-rose-50 text-rose-700 border border-rose-200' },
+  { value: 'in_review', label: 'İnceleniyor', className: 'bg-amber-50 text-amber-700 border border-amber-200' },
+  { value: 'waiting_user', label: 'Kullanıcı Yanıtı Bekleniyor', className: 'bg-blue-50 text-blue-700 border border-blue-200' },
+  { value: 'resolved', label: 'Çözüldü', className: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+  { value: 'closed', label: 'Kapalı', className: 'bg-slate-100 text-slate-700 border border-slate-200' },
+];
+
+const PRIORITY_OPTIONS = [
+  { value: 'low', label: 'Düşük' },
+  { value: 'normal', label: 'Normal' },
+  { value: 'high', label: 'Yüksek' },
+  { value: 'critical', label: 'Kritik' },
+];
+
+function formatDateTime(value) {
+  if (!value) return 'Tarih yok';
+  return new Date(value).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function statusMeta(status) {
+  return STATUS_OPTIONS.find((item) => item.value === status) || STATUS_OPTIONS[0];
+}
+
+function StatusBadge({ status }) {
+  const meta = statusMeta(status);
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-extrabold ${meta.className}`}>
+      {meta.label}
+    </span>
+  );
+}
+
+function SummaryCard({ title, value, tone }) {
+  return (
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{title}</div>
+      <div className={`mt-2 text-2xl font-black ${tone}`}>{value}</div>
+    </div>
+  );
+}
+
+function TicketMessage({ message }) {
+  const isAdmin = message.author_role === 'admin';
+  return (
+    <div className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[88%] rounded-2xl px-4 py-3 shadow-sm ${isAdmin ? 'bg-violet-600 text-white' : 'border border-slate-200 bg-white text-slate-700'}`}>
+        <div className={`mb-1 flex items-center gap-2 text-[11px] font-bold ${isAdmin ? 'text-white/80' : 'text-slate-500'}`}>
+          {isAdmin ? <ShieldCheck size={12} /> : <UserCircle2 size={12} />}
+          <span>{message.author_name || (isAdmin ? 'Admin' : 'Kullanıcı')}</span>
+          <span className={isAdmin ? 'text-white/60' : 'text-slate-400'}>•</span>
+          <span className={isAdmin ? 'text-white/60' : 'text-slate-400'}>{formatDateTime(message.created_at)}</span>
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-6">{message.message}</p>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminSupportPage() {
+  const [filters, setFilters] = useState({
+    search: '',
+    status: '',
+    category: '',
+    assigned_admin_id: '',
+  });
+  const [tickets, setTickets] = useState([]);
+  const [summary, setSummary] = useState({ all: 0, open: 0, in_review: 0, waiting_user: 0, resolved: 0, closed: 0 });
+  const [categories, setCategories] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
+  const [detail, setDetail] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  const [savingMeta, setSavingMeta] = useState(false);
+  const [replying, setReplying] = useState(false);
+  const [metaDraft, setMetaDraft] = useState({
+    status: 'open',
+    priority: 'normal',
+    assigned_admin_id: '',
+    internal_note: '',
+  });
+  const [replyMessage, setReplyMessage] = useState('');
+
+  const loadTickets = async (preferredId = null) => {
+    setLoadingList(true);
+    try {
+      const response = await adminGetSupportTickets(filters);
+      const rows = response.data?.tickets || [];
+      setTickets(rows);
+      setSummary(response.data?.summary || { all: 0, open: 0, in_review: 0, waiting_user: 0, resolved: 0, closed: 0 });
+      setCategories(response.data?.categories || []);
+      setAdmins(response.data?.admins || []);
+      const nextId = preferredId || selectedId;
+      const stillExists = rows.find((ticket) => String(ticket.id) === String(nextId));
+      const fallback = rows[0]?.id || null;
+      setSelectedId(stillExists ? stillExists.id : fallback);
+    } catch {
+      setTickets([]);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  const loadDetail = async (ticketId) => {
+    if (!ticketId) {
+      setDetail(null);
+      setMessages([]);
+      return;
+    }
+
+    setLoadingDetail(true);
+    try {
+      const response = await adminGetSupportTicket(ticketId);
+      const ticket = response.data?.ticket || null;
+      setDetail(ticket);
+      setMessages(response.data?.messages || []);
+      setAdmins(response.data?.admins || []);
+      setMetaDraft({
+        status: ticket?.status || 'open',
+        priority: ticket?.priority || 'normal',
+        assigned_admin_id: ticket?.assigned_admin_id ? String(ticket.assigned_admin_id) : '',
+        internal_note: ticket?.internal_note || '',
+      });
+    } finally {
+      setLoadingDetail(false);
+    }
+  };
+
+  useEffect(() => {
+    loadTickets();
+  }, [filters.status, filters.category, filters.assigned_admin_id]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadTickets();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  useEffect(() => {
+    if (!selectedId) {
+      setDetail(null);
+      setMessages([]);
+      return;
+    }
+    loadDetail(selectedId);
+  }, [selectedId]);
+
+  const filteredStatusChips = useMemo(() => (
+    [
+      { id: '', label: 'Tümü', count: summary.all || 0 },
+      { id: 'open', label: 'Açık', count: summary.open || 0 },
+      { id: 'in_review', label: 'İnceleniyor', count: summary.in_review || 0 },
+      { id: 'waiting_user', label: 'Bekleyen', count: summary.waiting_user || 0 },
+      { id: 'resolved', label: 'Çözüldü', count: summary.resolved || 0 },
+      { id: 'closed', label: 'Kapalı', count: summary.closed || 0 },
+    ]
+  ), [summary]);
+
+  const handleSaveMeta = async () => {
+    if (!detail) return;
+    setSavingMeta(true);
+    try {
+      await adminUpdateSupportTicket({
+        ticket_id: detail.id,
+        status: metaDraft.status,
+        priority: metaDraft.priority,
+        assigned_admin_id: metaDraft.assigned_admin_id || null,
+        internal_note: metaDraft.internal_note,
+      });
+      await loadTickets(detail.id);
+      await loadDetail(detail.id);
+    } finally {
+      setSavingMeta(false);
+    }
+  };
+
+  const handleReply = async (event) => {
+    event.preventDefault();
+    if (!detail || !replyMessage.trim()) return;
+    setReplying(true);
+    try {
+      await adminReplySupportTicket({ ticket_id: detail.id, message: replyMessage.trim() });
+      setReplyMessage('');
+      await loadTickets(detail.id);
+      await loadDetail(detail.id);
+    } finally {
+      setReplying(false);
+    }
+  };
+
+  return (
+    <AdminLayout>
+      <div className="space-y-4">
+        <section className="rounded-[28px] bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950 p-6 text-white shadow-xl shadow-slate-900/10">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-3xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-100">
+                <LifeBuoy size={13} />
+                Destek Sistemi
+              </div>
+              <h1 className="text-3xl font-black tracking-tight">Tüm destek taleplerini tek akışta yönet</h1>
+              <p className="mt-2 text-sm leading-6 text-violet-100/80">
+                Kullanıcı cevapları, ilişkilendirilmiş siparişler ve iç notlar tek panelde. Durum değişimlerinde bildirim gitmez; yalnızca yeni talep ve yeni yanıt için bildirim üretilir.
+              </p>
+            </div>
+            <div className="grid min-w-[280px] grid-cols-3 gap-3">
+              <SummaryCard title="Toplam" value={summary.all || 0} tone="text-slate-900" />
+              <SummaryCard title="Açık" value={(summary.open || 0) + (summary.in_review || 0)} tone="text-rose-600" />
+              <SummaryCard title="Yanıt Bekleyen" value={summary.waiting_user || 0} tone="text-blue-600" />
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
+          <section className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-black text-slate-900">Talep Listesi</h2>
+                <p className="text-xs text-slate-500">Kullanıcı, bilet no veya konuya göre filtrele.</p>
+              </div>
+            </div>
+
+            <div className="relative mb-3">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                value={filters.search}
+                onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
+                placeholder="Ara..."
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+              />
+            </div>
+
+            <div className="mb-3 flex flex-wrap gap-2">
+              {filteredStatusChips.map((item) => (
+                <button
+                  key={item.id || 'all'}
+                  onClick={() => setFilters((prev) => ({ ...prev, status: item.id }))}
+                  className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${filters.status === item.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                >
+                  {item.label} {item.count ? `(${item.count})` : ''}
+                </button>
+              ))}
+            </div>
+
+            <div className="mb-3 grid gap-2">
+              <select
+                value={filters.category}
+                onChange={(event) => setFilters((prev) => ({ ...prev, category: event.target.value }))}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+              >
+                <option value="">Tüm kategoriler</option>
+                {categories.map((category) => (
+                  <option key={category.value} value={category.value}>{category.label}</option>
+                ))}
+              </select>
+
+              <select
+                value={filters.assigned_admin_id}
+                onChange={(event) => setFilters((prev) => ({ ...prev, assigned_admin_id: event.target.value }))}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+              >
+                <option value="">Tüm atamalar</option>
+                {admins.map((admin) => (
+                  <option key={admin.id} value={admin.id}>{admin.username}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              {loadingList ? (
+                <div className="py-10 text-center text-sm font-semibold text-slate-400">Talepler yükleniyor...</div>
+              ) : tickets.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">
+                  Bu filtrede destek talebi bulunamadı.
+                </div>
+              ) : tickets.map((ticket) => (
+                <button
+                  key={ticket.id}
+                  onClick={() => setSelectedId(ticket.id)}
+                  className={`w-full rounded-2xl border p-4 text-left transition-all ${String(selectedId) === String(ticket.id) ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}
+                >
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">{ticket.ticket_no}</div>
+                      <div className="mt-1 truncate text-sm font-black text-slate-900">{ticket.subject}</div>
+                    </div>
+                    <StatusBadge status={ticket.status} />
+                  </div>
+                  <div className="mb-2 text-xs font-semibold text-slate-500">{ticket.username}</div>
+                  <p className="line-clamp-2 text-xs leading-5 text-slate-500">{ticket.last_message || 'Henüz mesaj yok.'}</p>
+                  <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                    <span>{formatDateTime(ticket.last_reply_at || ticket.created_at)}</span>
+                    {ticket.assigned_admin_name ? <span>{ticket.assigned_admin_name}</span> : <span>Atanmadı</span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="min-w-0 rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+            {!selectedId ? (
+              <div className="flex min-h-[720px] flex-col items-center justify-center gap-4 text-center text-slate-400">
+                <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100">
+                  <LifeBuoy size={28} className="text-slate-300" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-500">Bir bilet seç</h2>
+                  <p className="mt-1 text-sm">Soldaki listeden bir destek talebi açarak ayrıntıya geçebilirsin.</p>
+                </div>
+              </div>
+            ) : loadingDetail || !detail ? (
+              <div className="flex min-h-[720px] items-center justify-center text-sm font-semibold text-slate-400">
+                Destek talebi yükleniyor...
+              </div>
+            ) : (
+              <div className="flex min-h-[720px] flex-col">
+                <div className="border-b border-slate-100 pb-4">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div>
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">
+                          {detail.ticket_no}
+                        </span>
+                        <StatusBadge status={detail.status} />
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold text-slate-500">
+                          {PRIORITY_OPTIONS.find((item) => item.value === detail.priority)?.label || 'Normal'}
+                        </span>
+                      </div>
+                      <h2 className="text-2xl font-black tracking-tight text-slate-950">{detail.subject}</h2>
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500">
+                        <span className="inline-flex items-center gap-1.5">
+                          <UserCircle2 size={14} />
+                          {detail.username}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <Clock3 size={14} />
+                          {formatDateTime(detail.created_at)}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <MessageSquare size={14} />
+                          {messages.length} mesaj
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[320px]">
+                      <SummaryCard title="Kullanıcı" value={detail.username || '-'} tone="text-slate-900" />
+                      <SummaryCard title="Atanan" value={detail.assigned_admin_name || 'Atanmadı'} tone="text-violet-600" />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">İlgili Sipariş</div>
+                        {detail.related_order_id ? (
+                          <div>
+                            <div className="font-bold text-slate-800">Sipariş {detail.related_order_id}</div>
+                            <div className="mt-1 text-sm text-slate-500">{detail.related_order_title || 'Sipariş başlığı yok'}</div>
+                            {detail.related_order_amount ? (
+                              <div className="mt-2 text-xs font-semibold text-emerald-600">{Number(detail.related_order_amount).toFixed(2)} ₺</div>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-slate-400">Bağlı sipariş yok.</div>
+                        )}
+                      </div>
+
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">İlgili İlan</div>
+                        {detail.related_listing_id ? (
+                          <div>
+                            <div className="font-bold text-slate-800">{detail.related_listing_title || 'İlan'}</div>
+                            {detail.related_listing_price ? (
+                              <div className="mt-2 text-xs font-semibold text-emerald-600">{Number(detail.related_listing_price).toFixed(2)} ₺</div>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-slate-400">Bağlı ilan yok.</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Settings2 size={15} className="text-violet-600" />
+                        <div className="text-sm font-black text-slate-900">Yönetim Ayarları</div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Durum</label>
+                          <select
+                            value={metaDraft.status}
+                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, status: event.target.value }))}
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
+                          >
+                            {STATUS_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Öncelik</label>
+                          <select
+                            value={metaDraft.priority}
+                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, priority: event.target.value }))}
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
+                          >
+                            {PRIORITY_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Atanan Admin</label>
+                          <select
+                            value={metaDraft.assigned_admin_id}
+                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, assigned_admin_id: event.target.value }))}
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
+                          >
+                            <option value="">Atama yok</option>
+                            {admins.map((admin) => (
+                              <option key={admin.id} value={admin.id}>{admin.username}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-xs font-bold text-slate-500">İç Not</label>
+                          <textarea
+                            rows={4}
+                            value={metaDraft.internal_note}
+                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, internal_note: event.target.value }))}
+                            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400"
+                            placeholder="Yalnızca admin panelinde görünür."
+                          />
+                        </div>
+
+                        <button
+                          onClick={handleSaveMeta}
+                          disabled={savingMeta}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Settings2 size={15} />
+                          {savingMeta ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-3 overflow-y-auto py-5">
+                  {messages.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">
+                      Bu destekte henüz mesaj yok.
+                    </div>
+                  ) : messages.map((message) => (
+                    <TicketMessage key={message.id} message={message} />
+                  ))}
+                </div>
+
+                <form onSubmit={handleReply} className="border-t border-slate-100 pt-4">
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-3">
+                    <textarea
+                      rows={4}
+                      value={replyMessage}
+                      onChange={(event) => setReplyMessage(event.target.value)}
+                      placeholder="Kullanıcıya yazılacak yanıtı gir..."
+                      className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none transition-colors focus:ring-2 focus:ring-violet-200"
+                    />
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="text-xs text-slate-400">
+                        Bu yanıt kullanıcıya bildirim üretir. Durum değişiklikleri ve kapanış için bildirim gönderilmez.
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={replying || !replyMessage.trim()}
+                        className="inline-flex flex-shrink-0 items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Send size={15} />
+                        {replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}
+          </section>
+        </div>
+      </div>
+    </AdminLayout>
+  );
+}

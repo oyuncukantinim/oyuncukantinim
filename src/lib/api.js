@@ -175,6 +175,31 @@ export function getUnreadNotificationsCount() {
   return request('unread_notifications_count', { auth: true });
 }
 
+// --- SUPPORT ---
+export function getSupportMeta() {
+  return request('get_support_meta', { auth: true });
+}
+
+export function createSupportTicket(payload) {
+  return request('create_support_ticket', { method: 'POST', body: payload, auth: true });
+}
+
+export function getMySupportTickets() {
+  return request('get_my_support_tickets', { auth: true });
+}
+
+export function getSupportTicket(id) {
+  return request('get_support_ticket', { query: { id }, auth: true });
+}
+
+export function replySupportTicket(payload) {
+  return request('reply_support_ticket', { method: 'POST', body: payload, auth: true });
+}
+
+export function closeSupportTicket(ticketId) {
+  return request('close_support_ticket', { method: 'POST', body: { ticket_id: ticketId }, auth: true });
+}
+
 // --- SELLER PROFILE ---
 export function getSellerProfile(username) {
   return request('get_seller_profile', { query: { username } });

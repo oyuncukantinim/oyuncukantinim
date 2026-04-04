@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell, Menu, MessageCircle, Plus, ShoppingCart, Store, Users, X } from 'lucide-react';
+import { Bell, LifeBuoy, Menu, MessageCircle, Plus, ShoppingCart, Store, Users, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getUnreadNotificationsCount, markNotificationsRead } from '../lib/api';
@@ -11,6 +11,7 @@ const NAV_LINKS = [
   { to: '/store', label: 'E-Pin', icon: Store },
   { to: '/market', label: 'Pazar', icon: Users },
   { to: '/categories', label: 'Kategoriler' },
+  { to: '/support', label: 'Destek', icon: LifeBuoy },
 ];
 
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {

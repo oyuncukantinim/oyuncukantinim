@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Bell, CheckCheck, ShoppingBag, ShoppingCart, MessageCircle,
-  Wallet, Megaphone, Info, TrendingDown, Star, Gift, Trash2
+  Wallet, Megaphone, Info, TrendingDown, Star, Gift, Trash2, LifeBuoy
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { clearNotifications, deleteNotification, getNotifications, markNotificationsRead } from '../lib/api';
@@ -17,6 +17,7 @@ const TYPE_CONFIG = {
   review:       { icon: Star,          bg: 'bg-yellow-100',  text: 'text-yellow-600',  label: 'Yorum' },
   refund:       { icon: Gift,          bg: 'bg-blue-100',    text: 'text-blue-600',    label: 'İade' },
   price_drop:   { icon: TrendingDown,  bg: 'bg-rose-100',    text: 'text-rose-600',    label: 'Fiyat Düştü' },
+  support:      { icon: LifeBuoy,      bg: 'bg-sky-100',     text: 'text-sky-600',     label: 'Destek' },
   info:         { icon: Info,          bg: 'bg-gray-100',    text: 'text-gray-500',    label: 'Bilgi' },
 };
 

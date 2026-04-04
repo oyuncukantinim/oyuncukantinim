@@ -45,6 +45,16 @@ export const adminGetUser = (id) =>
 export const adminUpdateUser = (body) =>
   adminRequest('admin_update_user', { method: 'POST', body });
 
+// Support
+export const adminGetSupportTickets = (params = {}) =>
+  adminRequest('admin_get_support_tickets', { query: params });
+export const adminGetSupportTicket = (id) =>
+  adminRequest('admin_get_support_ticket', { query: { id } });
+export const adminReplySupportTicket = (body) =>
+  adminRequest('admin_reply_support_ticket', { method: 'POST', body });
+export const adminUpdateSupportTicket = (body) =>
+  adminRequest('admin_update_support_ticket', { method: 'POST', body });
+
 // Listings
 export const adminGetListings = (params = {}) =>
   adminRequest('admin_get_listings', { query: params });
