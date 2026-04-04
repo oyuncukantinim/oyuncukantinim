@@ -15,17 +15,17 @@ import {
 
 const ATTR_TYPES = [
   { value: 'text',        label: 'Metin' },
-  { value: 'number',      label: 'SayÄ±' },
-  { value: 'select',      label: 'Tekli SeÃ§im' },
-  { value: 'multiselect', label: 'Ã‡oklu SeÃ§im' },
-  { value: 'range',       label: 'AralÄ±k (min-max)' },
-  { value: 'boolean',     label: 'Evet/HayÄ±r' },
+  { value: 'number',      label: 'Sayı' },
+  { value: 'select',      label: 'Tekli Seçim' },
+  { value: 'multiselect', label: 'Çoklu Seçim' },
+  { value: 'range',       label: 'Aralık (min-max)' },
+  { value: 'boolean',     label: 'Evet/Hayır' },
 ];
 
 function slugify(str) {
   return str.toLowerCase()
-    .replace(/Ä°/g,'i').replace(/I/g,'i').replace(/Ä/g,'g').replace(/Ãœ/g,'u').replace(/Å/g,'s').replace(/Ã–/g,'o').replace(/Ã‡/g,'c')
-    .replace(/ÄŸ/g,'g').replace(/Ã¼/g,'u').replace(/ÅŸ/g,'s').replace(/Ä±/g,'i').replace(/Ã¶/g,'o').replace(/Ã§/g,'c')
+    .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ü/g,'u').replace(/Ş/g,'s').replace(/Ö/g,'o').replace(/Ç/g,'c')
+    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 }
 
@@ -74,7 +74,7 @@ export default function AdminCategories() {
   const [typesList, setTypesList] = useState([]);
   const [typeModal, setTypeModal] = useState(false);
   const [editType, setEditType] = useState(null);
-  const [typeForm, setTypeForm] = useState({ name: '', slug: '', icon: 'ğŸ·ï¸', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
+  const [typeForm, setTypeForm] = useState({ name: '', slug: '', icon: '🏷️', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
   const [typeSaving, setTypeSaving] = useState(false);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
@@ -114,7 +114,7 @@ export default function AdminCategories() {
 
     const orders = reordered.map((c, i) => ({ id: c.id, sort_order: i }));
     adminReorderCategories(orders)
-      .then(() => { showToast('SÄ±ralama gÃ¼ncellendi.'); loadCategories(); })
+      .then(() => { showToast('Sıralama güncellendi.'); loadCategories(); })
       .catch(e => showToast(e.message));
   };
 
@@ -136,7 +136,7 @@ export default function AdminCategories() {
 
   const openNewType = () => {
     setEditType(null);
-    setTypeForm({ name: '', slug: '', icon: 'ğŸ·ï¸', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
+    setTypeForm({ name: '', slug: '', icon: '🏷️', color: 'from-violet-500 to-purple-600', sort_order: 0, is_active: 1 });
     setTypeModal(true);
   };
 
@@ -147,28 +147,28 @@ export default function AdminCategories() {
   };
 
   const handleSaveType = async () => {
-    if (!typeForm.name || !typeForm.slug) { showToast('Ä°sim ve slug gerekli.'); return; }
+    if (!typeForm.name || !typeForm.slug) { showToast('İsim ve slug gerekli.'); return; }
     setTypeSaving(true);
     try {
       await adminSaveCategoryType({ ...typeForm, id: editType?.id || null });
-      showToast(editType ? 'TÃ¼r gÃ¼ncellendi.' : 'TÃ¼r oluÅŸturuldu.');
+      showToast(editType ? 'Tür güncellendi.' : 'Tür oluşturuldu.');
       setTypeModal(false); loadTypes();
     } catch (e) { showToast(e.message); }
     finally { setTypeSaving(false); }
   };
 
   const handleDeleteType = async (type) => {
-    if (!confirm(`"${type.name}" tÃ¼rÃ¼nÃ¼ sil? Bu tÃ¼re baÄŸlÄ± kategorilerin tÃ¼rÃ¼ kaldÄ±rÄ±lacak.`)) return;
-    try { await adminDeleteCategoryType(type.id); showToast('TÃ¼r silindi.'); loadTypes(); }
+    if (!confirm(`"${type.name}" türünü sil? Bu türe bağlı kategorilerin türü kaldırılacak.`)) return;
+    try { await adminDeleteCategoryType(type.id); showToast('Tür silindi.'); loadTypes(); }
     catch (e) { showToast(e.message); }
   };
 
   const handleSaveCat = async () => {
-    if (!catForm.name) { showToast('Ä°sim gerekli.'); return; }
+    if (!catForm.name) { showToast('İsim gerekli.'); return; }
     setCatSaving(true);
     try {
       await adminSaveCategory({ ...catForm, id: editCat?.id || null, parent_id: catForm.parent_id || null });
-      showToast(editCat ? 'Kategori gÃ¼ncellendi.' : 'Kategori oluÅŸturuldu.');
+      showToast(editCat ? 'Kategori güncellendi.' : 'Kategori oluşturuldu.');
       setCatModal(false); loadCategories();
     } catch (e) { showToast(e.message); }
     finally { setCatSaving(false); }
@@ -176,7 +176,7 @@ export default function AdminCategories() {
 
   const handleDeleteCat = async (cat) => {
     const hasChildren = categories.some(c => c.parent_id == cat.id);
-    if (hasChildren && !confirm(`"${cat.name}" altÄ±nda alt kategoriler var. Silerken onlar da silinecek. Devam?`)) return;
+    if (hasChildren && !confirm(`"${cat.name}" altında alt kategoriler var. Silerken onlar da silinecek. Devam?`)) return;
     else if (!hasChildren && !confirm(`"${cat.name}" kategorisini sil?`)) return;
     try { await adminDeleteCategory(cat.id); showToast('Silindi.'); loadCategories(); if (attrCat?.id === cat.id) setAttrCat(null); }
     catch (e) { showToast(e.message); }
@@ -208,7 +208,7 @@ export default function AdminCategories() {
   };
 
   const handleSaveAttr = async () => {
-    if (!attrForm.name || !attrForm.type) { showToast('Ä°sim ve tÃ¼r gerekli.'); return; }
+    if (!attrForm.name || !attrForm.type) { showToast('İsim ve tür gerekli.'); return; }
     setAttrSaving(true);
     try {
       let options = null;
@@ -221,14 +221,14 @@ export default function AdminCategories() {
         ...attrForm, id: editAttr?.id || null,
         category_id: attrCat.id, options,
       });
-      showToast(editAttr ? 'Ã–zellik gÃ¼ncellendi.' : 'Ã–zellik eklendi.');
+      showToast(editAttr ? 'Özellik güncellendi.' : 'Özellik eklendi.');
       setAttrModal(false); loadAttrs(attrCat.id);
     } catch (e) { showToast(e.message); }
     finally { setAttrSaving(false); }
   };
 
   const handleDeleteAttr = async (id) => {
-    if (!confirm('Ã–zelliÄŸi sil?')) return;
+    if (!confirm('Özelliği sil?')) return;
     try { await adminDeleteCategoryAttribute(id); showToast('Silindi.'); loadAttrs(attrCat.id); }
     catch (e) { showToast(e.message); }
   };
@@ -263,17 +263,17 @@ export default function AdminCategories() {
               <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
               {!cat.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
               {kids.length > 0 && <span className="text-[10px] text-gray-400">{kids.length} alt kategori</span>}
-              {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} Ã¶zellik</span>}
+              {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
               {cat.type_id && (() => { const t = typesList.find(x => x.id == cat.type_id); return t ? <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t.name}</span> : null; })()}
               {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
-              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}â‚º</span>}
+              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
             </div>
             <div className="text-xs text-gray-400">{cat.slug}</div>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => openAttrPanel(cat)} title="Ã–zellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
+            <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
             <button onClick={() => openNewCat(cat.id)} title="Alt Kategori Ekle" className="p-1.5 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-600"><Plus size={13} /></button>
-            <button onClick={() => openEditCat(cat)} title="DÃ¼zenle" className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
+            <button onClick={() => openEditCat(cat)} title="Düzenle" className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
             <button onClick={() => handleDeleteCat(cat)} title="Sil" className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
           </div>
         </div>
@@ -287,7 +287,7 @@ export default function AdminCategories() {
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Kategori AÄŸacÄ± */}
+        {/* Kategori Ağacı */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -300,24 +300,24 @@ export default function AdminCategories() {
           </div>
           <div>
             {roots.length === 0
-              ? <div className="px-5 py-8 text-center text-gray-400 text-sm">HenÃ¼z kategori yok.</div>
+              ? <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz kategori yok.</div>
               : roots.map(cat => <CategoryRow key={cat.id} cat={cat} />)
             }
           </div>
         </div>
 
-        {/* Ã–zellik EditÃ¶rÃ¼ */}
+        {/* Özellik Editörü */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Filter size={18} className="text-violet-600" />
               <h3 className="font-extrabold text-gray-800">
-                {attrCat ? `"${attrCat.name}" Ã–zellikleri` : 'Ã–zellik Filtreleri'}
+                {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
               </h3>
             </div>
             {attrCat && (
               <button onClick={openNewAttr} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-                <Plus size={13} /> Ã–zellik Ekle
+                <Plus size={13} /> Özellik Ekle
               </button>
             )}
           </div>
@@ -325,10 +325,10 @@ export default function AdminCategories() {
           {!attrCat ? (
             <div className="px-5 py-12 text-center text-gray-400">
               <Filter size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Bir kategoriye tÄ±klayarak <br /> Ã¶zelliklerini dÃ¼zenleyebilirsiniz.</p>
+              <p className="text-sm">Bir kategoriye tıklayarak <br /> özelliklerini düzenleyebilirsiniz.</p>
             </div>
           ) : attrs.length === 0 ? (
-            <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henÃ¼z Ã¶zellik eklenmemiÅŸ.</div>
+            <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henüz özellik eklenmemiş.</div>
           ) : (
             <div className="divide-y divide-gray-50">
               {attrs.map(attr => (
@@ -353,7 +353,7 @@ export default function AdminCategories() {
                       </div>
                     )}
                     {attr.type === 'range' && attr.options && (
-                      <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} â€” {attr.options.max}</div>
+                      <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} — {attr.options.max}</div>
                     )}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -367,22 +367,22 @@ export default function AdminCategories() {
         </div>
       </div>
 
-      {/* Kategori TÃ¼rleri Paneli */}
+      {/* Kategori Türleri Paneli */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Tag size={18} className="text-purple-600" />
             <div>
-              <h3 className="font-extrabold text-gray-800">Kategori TÃ¼rleri</h3>
-              <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. tÃ¼rleri yÃ¶netin</p>
+              <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
+              <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
             </div>
           </div>
           <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-            <Plus size={13} /> Yeni TÃ¼r
+            <Plus size={13} /> Yeni Tür
           </button>
         </div>
         {typesList.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-400 text-sm">HenÃ¼z tÃ¼r yok.</div>
+          <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
         ) : (
           <div className="divide-y divide-gray-50">
             {typesList.map(type => (
@@ -396,7 +396,7 @@ export default function AdminCategories() {
                     {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
                     <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
                   </div>
-                  <div className="text-xs text-gray-400 font-mono">{type.slug} Â· {type.color}</div>
+                  <div className="text-xs text-gray-400 font-mono">{type.slug} · {type.color}</div>
                 </div>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
@@ -410,16 +410,16 @@ export default function AdminCategories() {
 
       {/* Kategori Modal */}
       {catModal && (
-        <Modal title={editCat ? 'Kategori DÃ¼zenle' : 'Yeni Kategori'} onClose={() => setCatModal(false)}>
+        <Modal title={editCat ? 'Kategori Düzenle' : 'Yeni Kategori'} onClose={() => setCatModal(false)}>
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-3">
               <div className="col-span-1">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Ä°kon</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">İkon</label>
                 <input value={catForm.icon} onChange={e => setCatForm(f => ({...f, icon: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-center text-2xl focus:outline-none focus:border-violet-400" />
               </div>
               <div className="col-span-3">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori AdÄ± *</label>
-                <input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Ã–rn: Hesap SatÄ±ÅŸÄ±" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Adı *</label>
+                <input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Hesap Satışı" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
             </div>
 
@@ -429,9 +429,9 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Ãœst Kategori</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Üst Kategori</label>
               <select value={catForm.parent_id} onChange={e => setCatForm(f => ({...f, parent_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
-                <option value="">â€” Ana Kategori â€”</option>
+                <option value="">— Ana Kategori —</option>
                 {categories.filter(c => !c.parent_id && c.id !== editCat?.id).map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -439,9 +439,9 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori TÃ¼rÃ¼</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Türü</label>
               <select value={catForm.type_id} onChange={e => setCatForm(f => ({...f, type_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
-                <option value="">â€” TÃ¼r Yok â€”</option>
+                <option value="">— Tür Yok —</option>
                 {typesList.map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
@@ -450,11 +450,11 @@ export default function AdminCategories() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon OranÄ± (%)</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon Oranı (%)</label>
                 <input type="number" step="0.01" min="0" max="100" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Site geneli" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (â‚º)</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
                 <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
             </div>
@@ -473,7 +473,7 @@ export default function AdminCategories() {
                   try {
                     const url = await adminUploadImage(file, 'categories');
                     setCatForm(f => ({ ...f, image: url }));
-                    showToast('Kategori Görseli yÃ¼klendi.');
+                    showToast('Kategori Görseli yüklendi.');
                   } catch (err) {
                     showToast(err.message);
                   } finally {
@@ -492,14 +492,14 @@ export default function AdminCategories() {
                       onClick={() => fileInputRef.current?.click()}
                       className="bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
                     >
-                      <Upload size={12} /> DeÄŸiÅŸtir
+                      <Upload size={12} /> Değiştir
                     </button>
                     <button
                       type="button"
                       onClick={() => setCatForm(f => ({ ...f, image: '' }))}
                       className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1"
                     >
-                      <X size={12} /> KaldÄ±r
+                      <X size={12} /> Kaldır
                     </button>
                   </div>
                 </div>
@@ -513,13 +513,13 @@ export default function AdminCategories() {
                   {imageUploading ? (
                     <>
                       <Loader2 size={22} className="text-violet-500 animate-spin" />
-                      <span className="text-xs text-gray-500 font-semibold">YÃ¼kleniyor...</span>
+                      <span className="text-xs text-gray-500 font-semibold">Yükleniyor...</span>
                     </>
                   ) : (
                     <>
                       <ImageIcon size={22} className="text-gray-400" />
-                      <span className="text-xs text-gray-500 font-semibold">Kategori Görseli seÃ§ veya sÃ¼rÃ¼kle</span>
-                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF â†’ otomatik WebP</span>
+                      <span className="text-xs text-gray-500 font-semibold">Kategori Görseli seç veya sürükle</span>
+                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF → otomatik WebP</span>
                     </>
                   )}
                 </button>
@@ -595,7 +595,7 @@ export default function AdminCategories() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">SÄ±ra</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Sıra</label>
                 <input type="number" value={catForm.sort_order} onChange={e => setCatForm(f => ({...f, sort_order: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
               <div>
@@ -607,20 +607,20 @@ export default function AdminCategories() {
             </div>
 
             <button onClick={handleSaveCat} disabled={catSaving} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
-              {catSaving ? 'Kaydediliyor...' : (editCat ? 'GÃ¼ncelle' : 'OluÅŸtur')}
+              {catSaving ? 'Kaydediliyor...' : (editCat ? 'Güncelle' : 'Oluştur')}
             </button>
           </div>
         </Modal>
       )}
 
-      {/* Ã–zellik Modal */}
+      {/* Özellik Modal */}
       {attrModal && attrCat && (
-        <Modal title={editAttr ? 'Ã–zellik DÃ¼zenle' : `"${attrCat.name}" â€” Yeni Ã–zellik`} onClose={() => setAttrModal(false)}>
+        <Modal title={editAttr ? 'Özellik Düzenle' : `"${attrCat.name}" — Yeni Özellik`} onClose={() => setAttrModal(false)}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Ã–zellik AdÄ± *</label>
-                <input value={attrForm.name} onChange={e => setAttrForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Ã–rn: Sunucu" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Özellik Adı *</label>
+                <input value={attrForm.name} onChange={e => setAttrForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Sunucu" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1.5">Slug</label>
@@ -629,7 +629,7 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">TÃ¼r *</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Tür *</label>
               <div className="grid grid-cols-3 gap-2">
                 {ATTR_TYPES.map(t => (
                   <button key={t.value} onClick={() => setAttrForm(f => ({...f, type: t.value}))} className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${attrForm.type === t.value ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
@@ -641,7 +641,7 @@ export default function AdminCategories() {
 
             {['select','multiselect'].includes(attrForm.type) && (
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">SeÃ§enekler (her satÄ±ra bir tane)</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Seçenekler (her satıra bir tane)</label>
                 <textarea value={attrForm.options} onChange={e => setAttrForm(f => ({...f, options: e.target.value}))} rows={5} placeholder="TR&#10;EUW&#10;EUNE&#10;NA" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400 resize-none font-mono" />
               </div>
             )}
@@ -649,11 +649,11 @@ export default function AdminCategories() {
             {attrForm.type === 'range' && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Min DeÄŸer</label>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Min Değer</label>
                   <input type="number" value={attrForm.range_min} onChange={e => setAttrForm(f => ({...f, range_min: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Max DeÄŸer</label>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Max Değer</label>
                   <input type="number" value={attrForm.range_max} onChange={e => setAttrForm(f => ({...f, range_max: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
                 </div>
               </div>
@@ -669,29 +669,29 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">SÄ±ra</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Sıra</label>
               <input type="number" value={attrForm.sort_order} onChange={e => setAttrForm(f => ({...f, sort_order: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
             </div>
 
             <button onClick={handleSaveAttr} disabled={attrSaving} className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
-              {attrSaving ? 'Kaydediliyor...' : (editAttr ? 'GÃ¼ncelle' : 'Ã–zellik Ekle')}
+              {attrSaving ? 'Kaydediliyor...' : (editAttr ? 'Güncelle' : 'Özellik Ekle')}
             </button>
           </div>
         </Modal>
       )}
 
-      {/* Kategori TÃ¼rÃ¼ Modal */}
+      {/* Kategori Türü Modal */}
       {typeModal && (
-        <Modal title={editType ? 'TÃ¼rÃ¼ DÃ¼zenle' : 'Yeni Kategori TÃ¼rÃ¼'} onClose={() => setTypeModal(false)}>
+        <Modal title={editType ? 'Türü Düzenle' : 'Yeni Kategori Türü'} onClose={() => setTypeModal(false)}>
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-3">
               <div className="col-span-1">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Ä°kon</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">İkon</label>
                 <input value={typeForm.icon} onChange={e => setTypeForm(f => ({...f, icon: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-center text-2xl focus:outline-none focus:border-violet-400" />
               </div>
               <div className="col-span-3">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">TÃ¼r AdÄ± *</label>
-                <input value={typeForm.name} onChange={e => setTypeForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Ã–rn: Hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Tür Adı *</label>
+                <input value={typeForm.name} onChange={e => setTypeForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
             </div>
 
@@ -704,13 +704,13 @@ export default function AdminCategories() {
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Gradient Rengi (Tailwind)</label>
               <input value={typeForm.color} onChange={e => setTypeForm(f => ({...f, color: e.target.value}))} placeholder="from-violet-500 to-purple-600" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
               <div className={`mt-2 h-8 rounded-xl bg-gradient-to-br ${typeForm.color || 'from-gray-200 to-gray-300'} flex items-center justify-center text-white text-xs font-bold`}>
-                {typeForm.icon} {typeForm.name || 'Ã–nizleme'}
+                {typeForm.icon} {typeForm.name || 'Önizleme'}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">SÄ±ra</label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Sıra</label>
                 <input type="number" value={typeForm.sort_order} onChange={e => setTypeForm(f => ({...f, sort_order: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
               </div>
               <div>
@@ -722,7 +722,7 @@ export default function AdminCategories() {
             </div>
 
             <button onClick={handleSaveType} disabled={typeSaving} className="w-full bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50">
-              {typeSaving ? 'Kaydediliyor...' : (editType ? 'GÃ¼ncelle' : 'OluÅŸtur')}
+              {typeSaving ? 'Kaydediliyor...' : (editType ? 'Güncelle' : 'Oluştur')}
             </button>
           </div>
         </Modal>
@@ -730,5 +730,6 @@ export default function AdminCategories() {
     </AdminLayout>
   );
 }
+
 
 
