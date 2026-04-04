@@ -30,7 +30,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
       <div className="absolute inset-x-0 bottom-3 px-2.5">
         <div className="text-center">
           <span
-            className="inline-block rounded-xl bg-black/35 px-2.5 py-1.5 text-[13px] font-bold leading-tight text-white shadow-lg backdrop-blur-[2px]"
+            className="inline-block rounded-xl bg-black/35 px-2.5 py-1.5 text-[12px] font-bold leading-tight text-white shadow-lg backdrop-blur-[2px]"
             style={{ textShadow: '0 1px 8px rgba(0,0,0,0.75)' }}
           >
             {category.name}
@@ -111,11 +111,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
         const children = childrenOf(category.id);
         const hasChildren = children.length > 0;
         const isSelected = value === category.id;
-        const subtitle = withPath
-          ? getPath(category.id)
-          : category.min_price != null
-              ? `Min ${category.min_price}₺`
-              : '';
+        const subtitle = withPath ? getPath(category.id) : '';
 
         return (
           <CategoryCard

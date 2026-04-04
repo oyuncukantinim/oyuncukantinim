@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   List, Package, Settings, LogOut, Plus, ShieldCheck,
@@ -34,8 +34,8 @@ async function apiAuth(action, body = null, token) {
 const DELIVERY_STATUS = {
   0: { label: 'Teslimat Bekleniyor', color: 'bg-orange-100 text-orange-700', icon: Clock },
   1: { label: 'Teslim Edildi', color: 'bg-blue-100 text-blue-700', icon: Truck },
-  2: { label: 'Tamamlandı', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  3: { label: 'Anlaşmazlık', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
+  2: { label: 'TamamlandÄ±', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
+  3: { label: 'AnlaÅŸmazlÄ±k', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
 };
 
 function DeliveryBadge({ status }) {
@@ -75,14 +75,14 @@ function OrderLogsModal({ orderId, token, onClose }) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <History size={16} className="text-violet-600" />
-            <h3 className="font-extrabold text-gray-800">Sipariş #{orderId} Geçmişi</h3>
+            <h3 className="font-extrabold text-gray-800">SipariÅŸ #{orderId} GeÃ§miÅŸi</h3>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16} /></button>
         </div>
 
         {disputeReason && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-            <div className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1"><AlertTriangle size={11} /> Anlaşmazlık Nedeni</div>
+            <div className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1"><AlertTriangle size={11} /> AnlaÅŸmazlÄ±k Nedeni</div>
             <p className="text-sm text-red-800">{disputeReason}</p>
           </div>
         )}
@@ -92,7 +92,7 @@ function OrderLogsModal({ orderId, token, onClose }) {
             <div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
           </div>
         ) : logs.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-6">Henüz işlem geçmişi yok.</p>
+          <p className="text-center text-gray-400 text-sm py-6">HenÃ¼z iÅŸlem geÃ§miÅŸi yok.</p>
         ) : (
           <div className="space-y-3">
             {logs.map((log, i) => (
@@ -100,7 +100,7 @@ function OrderLogsModal({ orderId, token, onClose }) {
                 <div className="w-2 h-2 bg-violet-400 rounded-full mt-1.5 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-semibold text-gray-700">{log.action}</p>
-                  <p className="text-xs text-gray-400">{log.admin_name} · {new Date(log.created_at).toLocaleString('tr-TR')}</p>
+                  <p className="text-xs text-gray-400">{log.admin_name} Â· {new Date(log.created_at).toLocaleString('tr-TR')}</p>
                 </div>
               </div>
             ))}
@@ -112,9 +112,9 @@ function OrderLogsModal({ orderId, token, onClose }) {
 }
 
 const REVIEW_CRITERIA = [
-  { key: 'reliability',     label: 'Güvenilirlik' },
+  { key: 'reliability',     label: 'GÃ¼venilirlik' },
   { key: 'satisfaction',    label: 'Memnuniyet' },
-  { key: 'speed',           label: 'Hız' },
+  { key: 'speed',           label: 'HÄ±z' },
   { key: 'service_quality', label: 'Hizmet Kalitesi' },
 ];
 
@@ -177,8 +177,8 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="font-extrabold text-gray-800">Değerlendirme Yap</h3>
-            <p className="text-xs text-gray-400 mt-0.5">Sipariş #{order.id} · {order.seller_name}</p>
+            <h3 className="font-extrabold text-gray-800">DeÄŸerlendirme Yap</h3>
+            <p className="text-xs text-gray-400 mt-0.5">SipariÅŸ #{order.id} Â· {order.seller_name}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16} /></button>
         </div>
@@ -194,7 +194,7 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-600">Yorum (isteğe bağlı)</label>
+              <label className="text-xs font-bold text-gray-600">Yorum (isteÄŸe baÄŸlÄ±)</label>
               <span className={`text-xs font-semibold ${comment.length > commentMax ? 'text-red-500' : comment.length > commentMax * 0.85 ? 'text-orange-500' : 'text-gray-400'}`}>
                 {comment.length}/{commentMax}
               </span>
@@ -202,7 +202,7 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
             <textarea
               value={comment}
               onChange={e => setComment(e.target.value)}
-              placeholder="Deneyimini paylaş..."
+              placeholder="Deneyimini paylaÅŸ..."
               rows={3}
               maxLength={commentMax}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:border-violet-400"
@@ -213,7 +213,7 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
             disabled={loading}
             className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors"
           >
-            {loading ? 'Gönderiliyor...' : 'Değerlendirmeyi Gönder'}
+            {loading ? 'GÃ¶nderiliyor...' : 'DeÄŸerlendirmeyi GÃ¶nder'}
           </button>
         </form>
       </div>
@@ -236,11 +236,11 @@ function MyReviewViewModal({ orderId, token, onClose }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-extrabold text-gray-800">Değerlendirmem</h3>
+          <h3 className="font-extrabold text-gray-800">DeÄŸerlendirmem</h3>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16}/></button>
         </div>
         {loading ? <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
-        : !review ? <p className="text-center text-gray-400 py-6 text-sm">Değerlendirme bulunamadı.</p>
+        : !review ? <p className="text-center text-gray-400 py-6 text-sm">DeÄŸerlendirme bulunamadÄ±.</p>
         : (
           <div className="space-y-4">
             {review.item_image && (
@@ -253,7 +253,7 @@ function MyReviewViewModal({ orderId, token, onClose }) {
               {[1,2,3,4,5].map(n => <Star key={n} size={22} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              {[{label:'Güvenilirlik',val:review.reliability},{label:'Memnuniyet',val:review.satisfaction},{label:'Hız',val:review.speed},{label:'Hizmet',val:review.service_quality}].map(c => (
+              {[{label:'GÃ¼venilirlik',val:review.reliability},{label:'Memnuniyet',val:review.satisfaction},{label:'HÄ±z',val:review.speed},{label:'Hizmet',val:review.service_quality}].map(c => (
                 <div key={c.label} className="bg-gray-50 rounded-xl px-3 py-2 flex items-center justify-between">
                   <span className="text-gray-500 font-semibold">{c.label}</span>
                   <span className="font-extrabold text-violet-700">{c.val}/5</span>
@@ -281,7 +281,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
     setLoading(true);
     try {
       await apiAuth(action, body, token);
-      showToast('İşlem başarılı!');
+      showToast('Ä°ÅŸlem baÅŸarÄ±lÄ±!');
       onRefresh();
     } catch (e) { showToast(e.message); }
     finally { setLoading(false); }
@@ -293,18 +293,18 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   return (
     <>
     {showLogs && <OrderLogsModal orderId={order.id} token={token} onClose={() => setShowLogs(false)} />}
-    {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
+    {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('DeÄŸerlendirme gÃ¶nderildi!'); onRefresh(); }} />}
     {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
-          {order.item_type === 'epin' ? '💎' : '🎮'}
+          {order.item_type === 'epin' ? 'ğŸ’' : 'ğŸ®'}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
+          <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'ÃœrÃ¼n'}</div>
           <div className="text-xs text-gray-400 mt-0.5">
-            {isSellerView ? `Alıcı: ${order.buyer_username || '—'}` : (order.seller_name ? `Satıcı: ${order.seller_name}` : '')}
-            {order.game_name ? ` • ${order.game_name}` : ''}
+            {isSellerView ? `AlÄ±cÄ±: ${order.buyer_username || 'â€”'}` : (order.seller_name ? `SatÄ±cÄ±: ${order.seller_name}` : '')}
+            {order.game_name ? ` â€¢ ${order.game_name}` : ''}
           </div>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
             <DeliveryBadge status={status} />
@@ -312,9 +312,9 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
           </div>
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-1.5">
-          <div className="font-extrabold text-emerald-600">{Number(order.amount).toFixed(2)} ₺</div>
+          <div className="font-extrabold text-emerald-600">{Number(order.amount).toFixed(2)} â‚º</div>
           <button onClick={() => setShowLogs(true)} className="text-[11px] text-violet-500 hover:text-violet-700 flex items-center gap-1 font-semibold">
-            <History size={11}/> Geçmiş
+            <History size={11}/> GeÃ§miÅŸ
           </button>
           <button onClick={() => setExpanded(e => !e)} className="text-xs text-gray-400 hover:text-violet-600 flex items-center gap-1">
             Detay {expanded ? <ChevronUp size={12}/> : <ChevronDown size={12}/>}
@@ -325,31 +325,31 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
       {expanded && (
         <div className="border-t border-gray-50 p-4 space-y-3 bg-gray-50/50">
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-gray-400">Sipariş #</span><div className="font-bold text-gray-700">{order.id}</div></div>
+            <div><span className="text-gray-400">SipariÅŸ #</span><div className="font-bold text-gray-700">{order.id}</div></div>
             <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div></div>
-            <div><span className="text-gray-400">Ödenen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} ₺</div></div>
+            <div><span className="text-gray-400">Ã–denen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} â‚º</div></div>
             </div>
 
-          {/* Teslimat içeriği */}
+          {/* Teslimat iÃ§eriÄŸi */}
           {order.delivery_content && (
             <div>
-              <div className="text-xs font-bold text-gray-600 mb-1">📦 Teslimat İçeriği</div>
+              <div className="text-xs font-bold text-gray-600 mb-1">ğŸ“¦ Teslimat Ä°Ã§eriÄŸi</div>
               <div className="bg-white border border-emerald-200 rounded-xl p-3 text-sm font-mono text-gray-800 whitespace-pre-wrap break-all">{order.delivery_content}</div>
             </div>
           )}
 
-          {/* Aksiyon butonları */}
+          {/* Aksiyon butonlarÄ± */}
           {!isSellerView && order.item_type === 'listing' && (
             <div className="flex flex-wrap gap-2">
               {status === 1 && (
                 <>
                   <button onClick={() => act('confirm_delivery', { order_id: order.id })} disabled={loading}
                     className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors disabled:opacity-50">
-                    <Check size={13}/> Teslimatı Onayla
+                    <Check size={13}/> TeslimatÄ± Onayla
                   </button>
                   <button onClick={() => setDisputeOpen(true)} disabled={loading}
                     className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold px-3 py-2 rounded-xl border border-red-200 transition-colors">
-                    <AlertTriangle size={13}/> Anlaşmazlık Bildir
+                    <AlertTriangle size={13}/> AnlaÅŸmazlÄ±k Bildir
                   </button>
                 </>
               )}
@@ -361,7 +361,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
               )}
               {status === 0 && (
                 <div className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                  <Clock size={11}/> Satıcı teslimat bildirince burada görünecek
+                  <Clock size={11}/> SatÄ±cÄ± teslimat bildirince burada gÃ¶rÃ¼necek
                 </div>
               )}
             </div>
@@ -375,32 +375,32 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
           )}
 
           {status === 2 && !order.seller_paid && (
-            <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg">⏳ Ödeme bekleniyor (onay sürecinde)</div>
+            <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg">â³ Ã–deme bekleniyor (onay sÃ¼recinde)</div>
           )}
           {!isSellerView && status === 2 && !order.has_reviewed && (
             <button onClick={() => setShowReview(true)}
               className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
-              <MessageSquarePlus size={13}/> Değerlendir
+              <MessageSquarePlus size={13}/> DeÄŸerlendir
             </button>
           )}
           {!isSellerView && status === 2 && order.has_reviewed == 1 && (
             <button onClick={() => setShowMyReview(true)}
               className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
-              <Star size={13} className="fill-yellow-500 text-yellow-500"/> Değerlendirmem
+              <Star size={13} className="fill-yellow-500 text-yellow-500"/> DeÄŸerlendirmem
             </button>
           )}
 
-          {/* Anlaşmazlık formu */}
+          {/* AnlaÅŸmazlÄ±k formu */}
           {disputeOpen && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
-              <div className="text-xs font-bold text-red-700">Anlaşmazlık Nedeni</div>
+              <div className="text-xs font-bold text-red-700">AnlaÅŸmazlÄ±k Nedeni</div>
               <textarea value={disputeReason} onChange={e => setDisputeReason(e.target.value)}
-                placeholder="Yaşadığınız sorunu açıklayın..." rows={3}
+                placeholder="YaÅŸadÄ±ÄŸÄ±nÄ±z sorunu aÃ§Ä±klayÄ±n..." rows={3}
                 className="w-full border border-red-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none" />
               <div className="flex gap-2">
                 <button onClick={() => act('dispute_order', { order_id: order.id, reason: disputeReason })} disabled={!disputeReason.trim() || loading}
-                  className="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-xl disabled:opacity-50">Gönder</button>
-                <button onClick={() => setDisputeOpen(false)} className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-2 rounded-xl">İptal</button>
+                  className="bg-red-600 text-white text-xs font-bold px-3 py-2 rounded-xl disabled:opacity-50">GÃ¶nder</button>
+                <button onClick={() => setDisputeOpen(false)} className="bg-gray-100 text-gray-600 text-xs font-bold px-3 py-2 rounded-xl">Ä°ptal</button>
               </div>
             </div>
           )}
@@ -442,7 +442,7 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setBannerImage(user.banner_image || '');
-    setSelectedAvatar(user.avatar || '👤');
+    setSelectedAvatar(user.avatar || 'ğŸ‘¤');
     setPersonalInfo({
       full_name: user.full_name || '',
       country:   user.country   || '',
@@ -503,7 +503,7 @@ export default function ProfilePage() {
         return;
       }
       if (!normalizedUsername) {
-        showToast('Kullanıcı adı boş bırakılamaz.');
+        showToast('KullanÄ±cÄ± adÄ± boÅŸ bÄ±rakÄ±lamaz.');
         setSaving(false);
         return;
       }
@@ -511,36 +511,36 @@ export default function ProfilePage() {
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
       if (normalizedBannerImage !== (user.banner_image || '')) payload.banner_image = normalizedBannerImage;
       if (newPassword) payload.new_password = newPassword;
-      if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
+      if (Object.keys(payload).length === 0) { showToast('DeÄŸiÅŸiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditUsername(res.data.username || '');
       setBannerImage(res.data.banner_image || '');
-      setSelectedAvatar(res.data.avatar || '👤');
+      setSelectedAvatar(res.data.avatar || 'ğŸ‘¤');
       setNewPassword('');
       setShowPassword(false);
-      showToast('Profil güncellendi!');
+      showToast('Profil gÃ¼ncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
   };
 
   const handleAddBalance = async () => {
     const amt = parseFloat(balanceAmount);
-    if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
+    if (!amt || amt <= 0) { showToast('GeÃ§erli bir tutar girin.'); return; }
     try {
       const res = await addBalance(amt);
       updateUser({ ...user, balance: res.data.new_balance });
       setBalanceAmount('');
-      showToast(amt.toFixed(2) + ' ₺ yüklendi!');
+      showToast(amt.toFixed(2) + ' â‚º yÃ¼klendi!');
     } catch (err) { showToast(err.message); }
   };
 
   const handleDeleteListing = async (listingId) => {
-    if (!confirm('Bu ilanı silmek istediğinize emin misiniz?')) return;
+    if (!confirm('Bu ilanÄ± silmek istediÄŸinize emin misiniz?')) return;
     try {
       await deleteListing({ listing_id: listingId });
       setMyListings(prev => prev.filter(l => l.id !== listingId));
-      showToast('İlan silindi.');
+      showToast('Ä°lan silindi.');
     } catch (err) { showToast(err.message); }
   };
 
@@ -548,40 +548,40 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       await apiAuth('update_listing', data, token);
-      showToast('İlan güncellendi!');
+      showToast('Ä°lan gÃ¼ncellendi!');
       setEditModal(null);
       loadListings();
     } catch (e) { showToast(e.message); }
     finally { setSaving(false); }
   };
 
-  const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
+  const handleLogout = () => { logout(); showToast('GÃ¶rÃ¼ÅŸÃ¼rÃ¼z!'); navigate('/'); };
 
   const handleSavePersonalInfo = async () => {
     setSaving(true);
     try {
       if (!personalDirty) {
-        showToast('Değişiklik yok.');
+        showToast('DeÄŸiÅŸiklik yok.');
         setSaving(false);
         return;
       }
       const res = await updateProfile(personalInfo);
       updateUser(res.data);
-      showToast('Kişisel bilgiler güncellendi!');
+      showToast('KiÅŸisel bilgiler gÃ¼ncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
   };
 
   const tabs = [
-    { id: 'listings',      label: 'İlanlarım',        icon: List },
-    { id: 'orders',        label: 'Siparişlerim',      icon: Package },
-    { id: 'sales',         label: 'Satışlarım',        icon: Store },
+    { id: 'listings',      label: 'Ä°lanlarÄ±m',        icon: List },
+    { id: 'orders',        label: 'SipariÅŸlerim',      icon: Package },
+    { id: 'sales',         label: 'SatÄ±ÅŸlarÄ±m',        icon: Store },
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
-    { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
+    { id: 'reviews',       label: 'DeÄŸerlendirmeler',  icon: Star },
     { id: 'balance',       label: 'Bakiye',            icon: Wallet },
     { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
     { id: 'profile',       label: 'Profil',            icon: User },
-    { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
+    { id: 'personal',      label: 'KiÅŸisel Bilgiler',  icon: MapPin },
   ];
 
   const filteredListings = myListings.filter(l => {
@@ -610,7 +610,7 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 mb-4">
             <div className="relative">
               <div className="w-20 h-20 bg-gray-50 border-4 border-white rounded-2xl flex items-center justify-center text-4xl shadow-lg">
-                {user.avatar || '👤'}
+                {user.avatar || 'ğŸ‘¤'}
               </div>
               <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-white">
                 Lv.{user.level || 1}
@@ -619,7 +619,7 @@ export default function ProfilePage() {
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-xl font-extrabold text-gray-800">{user.username}</h1>
               <p className="text-gray-400 text-xs flex items-center justify-center sm:justify-start gap-1 mt-0.5">
-                <ShieldCheck size={12} className="text-emerald-500" /> Doğrulanmış Üye
+                <ShieldCheck size={12} className="text-emerald-500" /> DoÄŸrulanmÄ±ÅŸ Ãœye
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
@@ -629,7 +629,7 @@ export default function ProfilePage() {
                 </Link>
               )}
               <Link to={`/p/${user.username}`} className="btn-secondary py-1.5 px-4 text-xs flex items-center gap-1.5">
-                🏪 Mağazamı Gör
+                ğŸª MaÄŸazamÄ± GÃ¶r
               </Link>
             </div>
           </div>
@@ -659,36 +659,36 @@ export default function ProfilePage() {
             </button>
           ))}
           <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all mt-3">
-            <LogOut size={16} /> Çıkış Yap
+            <LogOut size={16} /> Ã‡Ä±kÄ±ÅŸ Yap
           </button>
         </div>
 
         <div className="flex-1 card p-5 sm:p-6 min-h-[400px]">
 
-          {/* İLANLARIM */}
+          {/* Ä°LANLARIM */}
           {activeTab === 'listings' && (
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-extrabold text-gray-800">İlanlarım</h2>
+                <h2 className="text-lg font-extrabold text-gray-800">Ä°lanlarÄ±m</h2>
                 <div className="flex items-center gap-2">
                   <div className="flex border border-gray-200 rounded-xl overflow-hidden">
                     <button
                       onClick={() => { setListingsView('list'); localStorage.setItem('listingsView', 'list'); }}
                       className={`p-1.5 transition-colors ${listingsView === 'list' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
-                      title="Liste görünümü"
+                      title="Liste gÃ¶rÃ¼nÃ¼mÃ¼"
                     >
                       <LayoutList size={14} />
                     </button>
                     <button
                       onClick={() => { setListingsView('grid'); localStorage.setItem('listingsView', 'grid'); }}
                       className={`p-1.5 transition-colors ${listingsView === 'grid' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
-                      title="Grid görünümü"
+                      title="Grid gÃ¶rÃ¼nÃ¼mÃ¼"
                     >
                       <LayoutGrid size={14} />
                     </button>
                   </div>
                   <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1.5">
-                    <Plus size={15}/> Yeni İlan
+                    <Plus size={15}/> Yeni Ä°lan
                   </Link>
                 </div>
               </div>
@@ -696,8 +696,8 @@ export default function ProfilePage() {
                 {[
                   { key: 'active',  label: 'Aktif' },
                   { key: 'passive', label: 'Pasif' },
-                  { key: 'expired', label: 'Süresi Dolmuş' },
-                  { key: 'all',     label: 'Tümü' },
+                  { key: 'expired', label: 'SÃ¼resi DolmuÅŸ' },
+                  { key: 'all',     label: 'TÃ¼mÃ¼' },
                 ].map(f => (
                   <button key={f.key} onClick={() => setListingFilter(f.key)}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${listingFilter === f.key ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
@@ -707,7 +707,7 @@ export default function ProfilePage() {
               </div>
               {filteredListings.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-4xl mb-3">🏪</div>
+                  <div className="text-4xl mb-3">ğŸª</div>
                   <p className="text-gray-400 font-semibold">Bu durumda ilan yok.</p>
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
@@ -723,9 +723,9 @@ export default function ProfilePage() {
                       </div>
                       <div className="p-1.5 flex flex-col gap-0.5 flex-1">
                         <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
-                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} â‚º</div>
                         <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
+                          {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'SÃ¼resi Doldu' : listing.status === 'sold' ? 'SatÄ±ldÄ±' : listing.status}
                         </span>
                         <div className="flex gap-1 mt-auto pt-0.5">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
@@ -757,15 +757,15 @@ export default function ProfilePage() {
                         <div className="text-xs text-gray-400 mt-0.5">{listing.category}</div>
                         {listing.expires_at && (
                           <div className="text-xs text-gray-400 mt-0.5">
-                            Bitiş: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
+                            BitiÅŸ: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
                           </div>
                         )}
                       </div>
                       <div className="text-right flex-shrink-0 space-y-0.5">
-                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} â‚º</div>
                         <div className="flex gap-1.5 justify-end">
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
-                            {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
+                            {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'SÃ¼resi Doldu' : listing.status === 'sold' ? 'SatÄ±ldÄ±' : listing.status}
                           </span>
                         </div>
                         <div className="flex gap-1 justify-end">
@@ -792,15 +792,15 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* SİPARİŞLERİM */}
+          {/* SÄ°PARÄ°ÅLERÄ°M */}
           {activeTab === 'orders' && (
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Siparişlerim</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5">SipariÅŸlerim</h2>
               {orders.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-4xl mb-3">📦</div>
-                  <p className="text-gray-400 font-semibold">Henüz siparişin yok.</p>
-                  <Link to="/market" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Pazara göz at</Link>
+                  <div className="text-4xl mb-3">ğŸ“¦</div>
+                  <p className="text-gray-400 font-semibold">HenÃ¼z sipariÅŸin yok.</p>
+                  <Link to="/market" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Pazara gÃ¶z at</Link>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -812,14 +812,14 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* SATIŞLARIM */}
+          {/* SATIÅLARIM */}
           {activeTab === 'sales' && (
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Satışlarım</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5">SatÄ±ÅŸlarÄ±m</h2>
               {sales.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-4xl mb-3">🏪</div>
-                  <p className="text-gray-400 font-semibold">Henüz satışın yok.</p>
+                  <div className="text-4xl mb-3">ğŸª</div>
+                  <p className="text-gray-400 font-semibold">HenÃ¼z satÄ±ÅŸÄ±n yok.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -831,7 +831,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* FAVORİLERİM */}
+          {/* FAVORÄ°LERÄ°M */}
           {activeTab === 'favorites' && (
             <div>
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2">
@@ -840,8 +840,8 @@ export default function ProfilePage() {
               {favorites.length === 0 ? (
                 <div className="text-center py-16 text-gray-400">
                   <Heart size={40} className="mx-auto mb-3 opacity-20" />
-                  <p className="font-semibold">Henüz favori ilanın yok.</p>
-                  <p className="text-sm mt-1">İlan detay sayfasında ♡ butonuna bas.</p>
+                  <p className="font-semibold">HenÃ¼z favori ilanÄ±n yok.</p>
+                  <p className="text-sm mt-1">Ä°lan detay sayfasÄ±nda â™¡ butonuna bas.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -861,9 +861,9 @@ export default function ProfilePage() {
                             {fav.title}
                           </Link>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-sm font-extrabold text-neon-green">{Number(fav.price).toFixed(2)} ₺</span>
-                            {dropped && <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg"><TrendingDown size={11}/> {Math.abs(fav.price_diff).toFixed(2)} ₺ düştü</span>}
-                            {risen  && <span className="flex items-center gap-0.5 text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-lg"><TrendingUp size={11}/> {fav.price_diff.toFixed(2)} ₺ arttı</span>}
+                            <span className="text-sm font-extrabold text-neon-green">{Number(fav.price).toFixed(2)} â‚º</span>
+                            {dropped && <span className="flex items-center gap-0.5 text-xs font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-lg"><TrendingDown size={11}/> {Math.abs(fav.price_diff).toFixed(2)} â‚º dÃ¼ÅŸtÃ¼</span>}
+                            {risen  && <span className="flex items-center gap-0.5 text-xs font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-lg"><TrendingUp size={11}/> {fav.price_diff.toFixed(2)} â‚º arttÄ±</span>}
                           </div>
                         </div>
                         {/* Butonlar */}
@@ -881,7 +881,7 @@ export default function ProfilePage() {
                               setFavorites(prev => prev.filter(f => f.fav_id !== fav.fav_id));
                             }}
                             className="p-2 bg-red-50 hover:bg-red-100 text-red-400 rounded-xl transition-colors"
-                            title="Favorilerden çıkar"
+                            title="Favorilerden Ã§Ä±kar"
                           >
                             <Heart size={15} className="fill-current" />
                           </button>
@@ -896,16 +896,16 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* DEĞERLENDİRMELERİM */}
+          {/* DEÄERLENDÄ°RMELERÄ°M */}
           {activeTab === 'reviews' && (
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><Star size={18} className="text-yellow-400 fill-yellow-400"/> Değerlendirmelerim</h2>
+                <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><Star size={18} className="text-yellow-400 fill-yellow-400"/> DeÄŸerlendirmelerim</h2>
                 <div className="flex gap-1.5">
                   {[0,1,2,3,4,5].map(n => (
                     <button key={n} onClick={() => setReviewStarFilter(n)}
                       className={`w-8 h-8 rounded-xl text-xs font-extrabold border transition-all ${reviewStarFilter === n ? 'bg-yellow-400 text-white border-yellow-400' : 'bg-gray-50 text-gray-500 border-gray-200 hover:border-yellow-300'}`}>
-                      {n === 0 ? '★' : n}
+                      {n === 0 ? 'â˜…' : n}
                     </button>
                   ))}
                 </div>
@@ -913,7 +913,7 @@ export default function ProfilePage() {
               {myReviews.length === 0 ? (
                 <div className="text-center py-16 text-gray-400">
                   <Star size={40} className="mx-auto mb-3 opacity-20"/>
-                  <p className="font-semibold">Henüz değerlendirme yapmadın.</p>
+                  <p className="font-semibold">HenÃ¼z deÄŸerlendirme yapmadÄ±n.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -927,15 +927,15 @@ export default function ProfilePage() {
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <span className="text-sm font-bold text-gray-700 line-clamp-1">{r.item_title || 'İlan'}</span>
+                            <span className="text-sm font-bold text-gray-700 line-clamp-1">{r.item_title || 'Ä°lan'}</span>
                             <div className="flex gap-0.5 flex-shrink-0">
                               {[1,2,3,4,5].map(n => <Star key={n} size={13} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-400 mb-1.5">Satıcı: <span className="font-semibold text-gray-600">{r.seller_username}</span> · {fmtDate(r.created_at)}</div>
+                          <div className="text-xs text-gray-400 mb-1.5">SatÄ±cÄ±: <span className="font-semibold text-gray-600">{r.seller_username}</span> Â· {fmtDate(r.created_at)}</div>
                           {r.comment && <p className="text-xs text-gray-500 italic line-clamp-2">"{r.comment}"</p>}
                           <div className="flex gap-2 mt-2 flex-wrap">
-                            {[{l:'Güvenilirlik',v:r.reliability},{l:'Memnuniyet',v:r.satisfaction},{l:'Hız',v:r.speed},{l:'Hizmet',v:r.service_quality}].map(c => (
+                            {[{l:'GÃ¼venilirlik',v:r.reliability},{l:'Memnuniyet',v:r.satisfaction},{l:'HÄ±z',v:r.speed},{l:'Hizmet',v:r.service_quality}].map(c => (
                               <span key={c.l} className="text-[10px] bg-white border border-gray-200 rounded-lg px-2 py-0.5 font-semibold text-gray-500">{c.l}: <span className="text-violet-600 font-extrabold">{c.v}</span></span>
                             ))}
                           </div>
@@ -948,53 +948,53 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {/* FİNANSAL HAREKETLERİM */}
+          {/* FÄ°NANSAL HAREKETLERÄ°M */}
           {activeTab === 'finance' && <FinanceTabContent token={token} />}
 
-          {/* BAKİYE */}
+          {/* BAKÄ°YE */}
           {activeTab === 'balance' && (
             <div className="max-w-md">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5">Bakiye</h2>
               <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 mb-5">
                 <div className="text-sm text-gray-500 mb-1">Mevcut Bakiye</div>
-                <div className="text-4xl font-extrabold text-emerald-600">{Number(user.balance || 0).toFixed(2)} ₺</div>
+                <div className="text-4xl font-extrabold text-emerald-600">{Number(user.balance || 0).toFixed(2)} â‚º</div>
               </div>
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-2">
                   {[50, 100, 250, 500, 1000, 2500].map(amt => (
                     <button key={amt} onClick={() => setBalanceAmount(String(amt))}
                       className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                      {amt} ₺
+                      {amt} â‚º
                     </button>
                   ))}
                 </div>
                 <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
-                  placeholder="Özel tutar (₺)..." className="input-field" />
+                  placeholder="Ã–zel tutar (â‚º)..." className="input-field" />
                 <button onClick={handleAddBalance} className="btn-primary w-full">
-                  <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
+                  <Wallet size={16} className="inline mr-2" /> Bakiye YÃ¼kle
                 </button>
-                <p className="text-xs text-gray-400 text-center">Test aşamasında anlık yüklenir. Gerçek ödeme entegrasyonu yakında.</p>
+                <p className="text-xs text-gray-400 text-center">Test aÅŸamasÄ±nda anlÄ±k yÃ¼klenir. GerÃ§ek Ã¶deme entegrasyonu yakÄ±nda.</p>
               </div>
             </div>
           )}
 
-          {/* PROFİL BİLGİLERİM */}
+          {/* PROFÄ°L BÄ°LGÄ°LERÄ°M */}
           {activeTab === 'profile' && (
             <div className="max-w-3xl space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
-                  <p className="text-sm text-gray-400 mt-1">Kullanıcı adı, avatar ve giriş güvenliğini buradan yönetebilirsin.</p>
+                  <p className="text-sm text-gray-400 mt-1">KullanÄ±cÄ± adÄ±, avatar ve giriÅŸ gÃ¼venliÄŸini buradan yÃ¶netebilirsin.</p>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${profileDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {profileDirty ? 'Kaydedilmemiş değişiklik var' : 'Profil güncel'}
+                  {profileDirty ? 'KaydedilmemiÅŸ deÄŸiÅŸiklik var' : 'Profil gÃ¼ncel'}
                 </span>
               </div>
 
               <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-5">
                   <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-                    <label className="block text-sm font-bold text-gray-600 mb-3">Avatar Seçimi</label>
+                    <label className="block text-sm font-bold text-gray-600 mb-3">Avatar SeÃ§imi</label>
                     <div className="flex flex-wrap gap-2">
                       {AVATARS.map(av => (
                         <button key={av} onClick={() => setSelectedAvatar(av)}
@@ -1044,31 +1044,31 @@ export default function ProfilePage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Kullanıcı Adı</label>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">KullanÄ±cÄ± AdÄ±</label>
                     <input
                       type="text"
                       value={editUsername}
                       onChange={e => setEditUsername(e.target.value)}
-                      placeholder="Kullanıcı adın"
+                      placeholder="KullanÄ±cÄ± adÄ±n"
                       className="input-field"
                     />
-                    <p className="text-xs text-gray-400 mt-1">3-20 karakter, harf, rakam ve alt çizgi kullanabilirsin.</p>
+                    <p className="text-xs text-gray-400 mt-1">3-20 karakter, harf, rakam ve alt Ã§izgi kullanabilirsin.</p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
                     <input type="email" value={user.email} disabled className="input-field opacity-50 cursor-not-allowed" />
-                    <p className="text-xs text-gray-400 mt-1">Güvenlik gereği e-posta bu ekrandan değiştirilemez.</p>
+                    <p className="text-xs text-gray-400 mt-1">GÃ¼venlik gereÄŸi e-posta bu ekrandan deÄŸiÅŸtirilemez.</p>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Åifre</label>
                     <div className="relative">
                       <input
                         type={showPassword ? 'text' : 'password'}
                         value={newPassword}
                         onChange={e => setNewPassword(e.target.value)}
-                        placeholder="Değiştirmek istemiyorsan boş bırak"
+                        placeholder="DeÄŸiÅŸtirmek istemiyorsan boÅŸ bÄ±rak"
                         className="input-field pr-11"
                       />
                       <button
@@ -1085,21 +1085,21 @@ export default function ProfilePage() {
                 <div className="bg-gradient-to-br from-violet-50 via-white to-cyan-50 border border-violet-100 rounded-2xl p-5 flex flex-col">
                   <div className="flex items-center gap-3">
                     <div className="w-16 h-16 rounded-2xl bg-white border border-violet-100 shadow-sm flex items-center justify-center text-3xl">
-                      {selectedAvatar || '👤'}
+                      {selectedAvatar || 'ğŸ‘¤'}
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Profil önizleme</div>
-                      <div className="text-lg font-extrabold text-gray-800">{normalizedUsername || 'Kullanıcı adı'}</div>
+                      <div className="text-sm text-gray-500">Profil Ã¶nizleme</div>
+                      <div className="text-lg font-extrabold text-gray-800">{normalizedUsername || 'KullanÄ±cÄ± adÄ±'}</div>
                       <div className="text-xs text-gray-400">{user.email}</div>
                     </div>
                   </div>
 
                   <div className="mt-5 space-y-3 text-sm text-gray-500">
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      Avatar ve kullanıcı adı değişiklikleri anında profil kartına yansır.
+                      Avatar ve kullanÄ±cÄ± adÄ± deÄŸiÅŸiklikleri anÄ±nda profil kartÄ±na yansÄ±r.
                     </div>
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      Şifre alanını boş bırakırsan mevcut şifren korunur.
+                      Åifre alanÄ±nÄ± boÅŸ bÄ±rakÄ±rsan mevcut ÅŸifren korunur.
                     </div>
                   </div>
 
@@ -1108,23 +1108,23 @@ export default function ProfilePage() {
                     disabled={saving || !profileDirty}
                     className="btn-primary w-full disabled:opacity-50 mt-auto"
                   >
-                    {saving ? 'Kaydediliyor...' : profileDirty ? 'Profili Kaydet' : 'Profil Güncel'}
+                    {saving ? 'Kaydediliyor...' : profileDirty ? 'Profili Kaydet' : 'Profil GÃ¼ncel'}
                   </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* KİŞİSEL BİLGİLER */}
+          {/* KÄ°ÅÄ°SEL BÄ°LGÄ°LER */}
           {activeTab === 'personal' && (
             <div className="max-w-3xl space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-extrabold text-gray-800">Kişisel Bilgiler</h2>
-                  <p className="text-sm text-gray-400 mt-1">Adres ve kimlik bilgileri yalnızca senin ve site yöneticisinin erişimine açıktır.</p>
+                  <h2 className="text-lg font-extrabold text-gray-800">KiÅŸisel Bilgiler</h2>
+                  <p className="text-sm text-gray-400 mt-1">Adres ve kimlik bilgileri yalnÄ±zca senin ve site yÃ¶neticisinin eriÅŸimine aÃ§Ä±ktÄ±r.</p>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${personalDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {personalDirty ? 'Kaydedilmemiş değişiklik var' : 'Bilgiler güncel'}
+                  {personalDirty ? 'KaydedilmemiÅŸ deÄŸiÅŸiklik var' : 'Bilgiler gÃ¼ncel'}
                 </span>
               </div>
 
@@ -1132,32 +1132,32 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
-                    <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="Adınız Soyadınız" className="input-field" />
+                    <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="AdÄ±nÄ±z SoyadÄ±nÄ±z" className="input-field" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Ülke</label>
-                      <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="Türkiye" className="input-field" />
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Ãœlke</label>
+                      <input type="text" value={personalInfo.country} onChange={e => setPersonalInfo(f => ({...f, country: e.target.value}))} placeholder="TÃ¼rkiye" className="input-field" />
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Şehir</label>
-                      <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="İstanbul" className="input-field" />
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Åehir</label>
+                      <input type="text" value={personalInfo.city} onChange={e => setPersonalInfo(f => ({...f, city: e.target.value}))} placeholder="Ä°stanbul" className="input-field" />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-gray-600 mb-1.5">İlçe</label>
-                    <input type="text" value={personalInfo.district} onChange={e => setPersonalInfo(f => ({...f, district: e.target.value}))} placeholder="Kadıköy" className="input-field" />
+                    <label className="block text-sm font-bold text-gray-600 mb-1.5">Ä°lÃ§e</label>
+                    <input type="text" value={personalInfo.district} onChange={e => setPersonalInfo(f => ({...f, district: e.target.value}))} placeholder="KadÄ±kÃ¶y" className="input-field" />
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
-                    <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={4} placeholder="Açık adresiniz..." className="input-field resize-none" />
+                    <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={4} placeholder="AÃ§Ä±k adresiniz..." className="input-field resize-none" />
                   </div>
                 </div>
 
                 <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col">
                   <div className="flex items-center gap-2 text-gray-700 font-bold">
                     <MapPin size={16} className="text-cyan-600" />
-                    Kayıt Özeti
+                    KayÄ±t Ã–zeti
                   </div>
 
                   <div className="mt-4 space-y-3 text-sm">
@@ -1178,7 +1178,7 @@ export default function ProfilePage() {
                   </div>
 
                   <button onClick={handleSavePersonalInfo} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
-                    {saving ? 'Kaydediliyor...' : personalDirty ? 'Kişisel Bilgileri Kaydet' : 'Bilgiler Güncel'}
+                    {saving ? 'Kaydediliyor...' : personalDirty ? 'KiÅŸisel Bilgileri Kaydet' : 'Bilgiler GÃ¼ncel'}
                   </button>
                 </div>
               </div>
@@ -1201,7 +1201,7 @@ export default function ProfilePage() {
   );
 }
 
-// Fiyat analiz modalı
+// Fiyat analiz modalÄ±
 function PriceAnalyzeModal({ listing, onClose }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1231,8 +1231,8 @@ function PriceAnalyzeModal({ listing, onClose }) {
           <div className="flex justify-center py-10"><div className="w-8 h-8 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
         ) : history.length < 2 ? (
           <div className="text-center py-10 text-gray-400">
-            <p className="text-sm">Henüz yeterli fiyat geçmişi yok.</p>
-            <p className="text-xs mt-1">Fiyat değişikliklerinden sonra burada grafik oluşur.</p>
+            <p className="text-sm">HenÃ¼z yeterli fiyat geÃ§miÅŸi yok.</p>
+            <p className="text-xs mt-1">Fiyat deÄŸiÅŸikliklerinden sonra burada grafik oluÅŸur.</p>
           </div>
         ) : (
           <>
@@ -1270,19 +1270,19 @@ function PriceAnalyzeModal({ listing, onClose }) {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="text-center bg-emerald-50 rounded-xl p-3">
-                <div className="text-xs text-emerald-600 font-semibold">En Düşük</div>
-                <div className="font-extrabold text-emerald-700">{minP.toFixed(2)} ₺</div>
+                <div className="text-xs text-emerald-600 font-semibold">En DÃ¼ÅŸÃ¼k</div>
+                <div className="font-extrabold text-emerald-700">{minP.toFixed(2)} â‚º</div>
               </div>
               <div className="text-center bg-violet-50 rounded-xl p-3">
-                <div className="text-xs text-violet-600 font-semibold">Güncel</div>
-                <div className="font-extrabold text-violet-700">{prices[prices.length-1]?.toFixed(2)} ₺</div>
+                <div className="text-xs text-violet-600 font-semibold">GÃ¼ncel</div>
+                <div className="font-extrabold text-violet-700">{prices[prices.length-1]?.toFixed(2)} â‚º</div>
               </div>
               <div className="text-center bg-red-50 rounded-xl p-3">
-                <div className="text-xs text-red-600 font-semibold">En Yüksek</div>
-                <div className="font-extrabold text-red-700">{maxP.toFixed(2)} ₺</div>
+                <div className="text-xs text-red-600 font-semibold">En YÃ¼ksek</div>
+                <div className="font-extrabold text-red-700">{maxP.toFixed(2)} â‚º</div>
               </div>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-3">Son 30 günlük fiyat hareketi</p>
+            <p className="text-xs text-gray-400 text-center mt-3">Son 30 gÃ¼nlÃ¼k fiyat hareketi</p>
           </>
         )}
       </div>
@@ -1290,8 +1290,8 @@ function PriceAnalyzeModal({ listing, onClose }) {
   );
 }
 
-// ── Finansal Hareketler (profil içi) ─────────────────────────
-const FINANCE_DELIVERY_LABELS = ['Bekliyor', 'Teslim Edildi', 'Tamamlandı', 'Anlaşmazlık', 'İptal'];
+// â”€â”€ Finansal Hareketler (profil iÃ§i) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const FINANCE_DELIVERY_LABELS = ['Bekliyor', 'Teslim Edildi', 'TamamlandÄ±', 'AnlaÅŸmazlÄ±k', 'Ä°ptal'];
 const FINANCE_STATUS_COLORS   = ['text-gray-500', 'text-blue-500', 'text-emerald-600', 'text-red-500', 'text-gray-400'];
 
 function FinanceTabContent() {
@@ -1309,7 +1309,7 @@ function FinanceTabContent() {
 
   const transactions = data?.transactions || [];
   const summary      = data?.summary || {};
-  const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+  const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : 'â€”';
 
   return (
     <div className="space-y-5">
@@ -1317,22 +1317,22 @@ function FinanceTabContent() {
         <FinanceIcon size={18} className="text-emerald-500"/> Finansal Hareketler
       </h2>
 
-      {/* Özet */}
+      {/* Ã–zet */}
       {!loading && (
         <div className="grid grid-cols-3 gap-3">
           <div className="bg-red-50 border border-red-100 rounded-2xl p-4 text-center">
             <TrendingDown size={16} className="text-red-400 mx-auto mb-1"/>
-            <div className="font-extrabold text-red-600 text-lg">{Number(summary.total_spent || 0).toFixed(2)} ₺</div>
+            <div className="font-extrabold text-red-600 text-lg">{Number(summary.total_spent || 0).toFixed(2)} â‚º</div>
             <div className="text-[11px] text-gray-400 font-semibold">Harcama</div>
           </div>
           <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-center">
             <TrendingUp size={16} className="text-emerald-500 mx-auto mb-1"/>
-            <div className="font-extrabold text-emerald-600 text-lg">{Number(summary.total_earned || 0).toFixed(2)} ₺</div>
-            <div className="text-[11px] text-gray-400 font-semibold">Kazanç</div>
+            <div className="font-extrabold text-emerald-600 text-lg">{Number(summary.total_earned || 0).toFixed(2)} â‚º</div>
+            <div className="text-[11px] text-gray-400 font-semibold">KazanÃ§</div>
           </div>
           <div className="bg-yellow-50 border border-yellow-100 rounded-2xl p-4 text-center">
             <Clock size={16} className="text-yellow-500 mx-auto mb-1"/>
-            <div className="font-extrabold text-yellow-600 text-lg">{Number(summary.pending_earn || 0).toFixed(2)} ₺</div>
+            <div className="font-extrabold text-yellow-600 text-lg">{Number(summary.pending_earn || 0).toFixed(2)} â‚º</div>
             <div className="text-[11px] text-gray-400 font-semibold">Bekleyen</div>
           </div>
         </div>
@@ -1340,7 +1340,7 @@ function FinanceTabContent() {
 
       {/* Filtreler */}
       <div className="flex gap-2">
-        {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'}].map(f => (
+        {[{v:'all',l:'TÃ¼mÃ¼'},{v:'purchase',l:'AlÄ±mlar'},{v:'sale',l:'SatÄ±ÅŸlar'}].map(f => (
           <button key={f.v} onClick={() => setTypeFilter(f.v)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${typeFilter === f.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
             {f.l}
@@ -1354,7 +1354,7 @@ function FinanceTabContent() {
       ) : transactions.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <FinanceIcon size={36} className="mx-auto mb-3 opacity-20"/>
-          <p className="font-semibold">Bu kategoride işlem yok.</p>
+          <p className="font-semibold">Bu kategoride iÅŸlem yok.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -1363,24 +1363,24 @@ function FinanceTabContent() {
             const isBalance = tx.tx_type === 'balance';
             const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
             const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
-            const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
+            const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || 'â€”';
             return (
               <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
                 <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${isBalance ? 'bg-violet-50 text-violet-700' : isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
+                  {isBalance ? 'Bakiye' : isPurchase ? 'AlÄ±m' : 'SatÄ±ÅŸ'}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
+                  <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || 'â€”'}</p>
                   <p className="text-[10px] text-gray-400">
                     {isBalance
-                      ? `${tx.counterparty || 'Sistem'}${tx.balance_after != null ? ` · Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ₺` : ''}`
-                      : `${tx.counterparty || ''} · `}
+                      ? `${tx.counterparty || 'Sistem'}${tx.balance_before != null ? ` · Eski bakiye: ${Number(tx.balance_before).toFixed(2)} ₺` : ''}${tx.balance_after != null ? ` · Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ₺` : ''}`
+                      : `${tx.counterparty || ''} Â· `}
                     {!isBalance && <span className={delivColor}>{delivLabel}</span>}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <div className={`text-sm font-extrabold ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                    {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                    {net < 0 ? '' : '+'}{Number(net).toFixed(2)} â‚º
                   </div>
                   <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
                 </div>
@@ -1445,41 +1445,41 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-extrabold text-gray-800">İlanı Düzenle</h2>
+          <h2 className="text-lg font-extrabold text-gray-800">Ä°lanÄ± DÃ¼zenle</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18}/></button>
         </div>
 
         <div className="space-y-4">
-          {/* Başlık */}
+          {/* BaÅŸlÄ±k */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-600">Başlık *</label>
+              <label className="text-xs font-bold text-gray-600">BaÅŸlÄ±k *</label>
               <span className={`text-[11px] font-semibold ${title.length > titleMax ? 'text-red-500' : 'text-gray-400'}`}>{title.length}/{titleMax}</span>
             </div>
             <input value={title} onChange={e => e.target.value.length <= titleMax && setTitle(e.target.value)}
-              className={inputCls + (title.length >= titleMax ? ' border-orange-300' : '')} placeholder="İlan başlığı..." />
+              className={inputCls + (title.length >= titleMax ? ' border-orange-300' : '')} placeholder="Ä°lan baÅŸlÄ±ÄŸÄ±..." />
           </div>
 
           {/* Fiyat */}
           <div>
-            <label className="block text-xs font-bold text-gray-600 mb-1.5">Fiyat (₺) *</label>
+            <label className="block text-xs font-bold text-gray-600 mb-1.5">Fiyat (â‚º) *</label>
             <input type="number" value={price} onChange={e => setPrice(e.target.value)} step="0.01" min="0" className={inputCls} />
           </div>
 
-          {/* Açıklama */}
+          {/* AÃ§Ä±klama */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-600">Açıklama</label>
+              <label className="text-xs font-bold text-gray-600">AÃ§Ä±klama</label>
               <span className={`text-[11px] font-semibold ${description.length > descMax ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/{descMax}</span>
             </div>
             <textarea value={description} onChange={e => e.target.value.length <= descMax && setDesc(e.target.value)} rows={4}
-              className={inputCls + ' resize-none' + (description.length >= descMax ? ' border-orange-300' : '')} placeholder="İlanı detaylı açıklayın..." />
+              className={inputCls + ' resize-none' + (description.length >= descMax ? ' border-orange-300' : '')} placeholder="Ä°lanÄ± detaylÄ± aÃ§Ä±klayÄ±n..." />
           </div>
 
-          {/* Görseller */}
+          {/* GÃ¶rseller */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-600">Görseller (URL)</label>
+              <label className="text-xs font-bold text-gray-600">GÃ¶rseller (URL)</label>
               <span className="text-[11px] text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
             </div>
             <div className="space-y-2">
@@ -1491,7 +1491,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                       <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                     </button>
                     <input value={img} onChange={e => setImage(idx, e.target.value)}
-                      placeholder={`Görsel ${idx + 1} URL`}
+                      placeholder={`GÃ¶rsel ${idx + 1} URL`}
                       className={inputCls + ` flex-1 text-xs ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
                     {images.length > 1 && (
                       <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
@@ -1500,22 +1500,22 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                     )}
                   </div>
                   {img && !isValidImageUrl(img) && (
-                    <p className="text-[11px] text-red-500 pl-10">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
+                    <p className="text-[11px] text-red-500 pl-10">GeÃ§ersiz URL. Ä°zin verilen: {ALLOWED_DOMAINS_LABEL}</p>
                   )}
                 </div>
               ))}
               {images.length < maxImages && (
                 <button onClick={addImage} className="text-xs text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
-                  <Plus size={13} /> Görsel Ekle
+                  <Plus size={13} /> GÃ¶rsel Ekle
                 </button>
               )}
             </div>
           </div>
 
-          {/* Teslimat süresi */}
+          {/* Teslimat sÃ¼resi */}
           {listing.delivery_type === 'manual' && (
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Teslimat Süresi</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Teslimat SÃ¼resi</label>
               <div className="flex flex-wrap gap-2">
                 {DELIVERY_HOURS_OPTS.map(h => (
                   <button key={h} onClick={() => setDelHours(h)}
@@ -1527,12 +1527,12 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
           )}
 
-          {/* Durum — sadece aktif ilanlar için göster */}
+          {/* Durum â€” sadece aktif ilanlar iÃ§in gÃ¶ster */}
           {listing.status !== 'passive' && (
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Durum</label>
               <div className="flex gap-2">
-                {[{ v: 'active', l: '✅ Aktif' }, { v: 'passive', l: '⏸ Pasif' }].map(opt => (
+                {[{ v: 'active', l: 'âœ… Aktif' }, { v: 'passive', l: 'â¸ Pasif' }].map(opt => (
                   <button key={opt.v} onClick={() => setStatus(opt.v)}
                     className={`flex-1 py-2 rounded-xl text-sm font-bold border transition-all ${status === opt.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                     {opt.l}
@@ -1545,12 +1545,12 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           {listing.status === 'passive' ? (
             <button onClick={() => handleSave('active')} disabled={saving || !title.trim() || !price}
               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-              {saving ? 'Kaydediliyor...' : '✅ Kaydet ve Yayınla'}
+              {saving ? 'Kaydediliyor...' : 'âœ… Kaydet ve YayÄ±nla'}
             </button>
           ) : (
             <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
               className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
-              {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
+              {saving ? 'Kaydediliyor...' : 'DeÄŸiÅŸiklikleri Kaydet'}
             </button>
           )}
         </div>
@@ -1558,6 +1558,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     </div>
   );
 }
+
 
 
 
