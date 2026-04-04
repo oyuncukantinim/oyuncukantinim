@@ -164,6 +164,26 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
     );
   }
 
+  if (scope === 'mine') {
+    return (
+      <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
+        <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.5fr)_120px_130px_140px_28px]">
+          <div className="text-[11px] font-black text-slate-500">#{item.id || '-'}</div>
+          <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
+            {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+          </div>
+          <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
+          <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
+          <div className="text-[11px] font-semibold text-slate-500">{item.status || 'Durum yok'}</div>
+          <div className="text-[11px] font-semibold text-slate-400">{fmtDate(item.last_updated_at)}</div>
+          <div className="flex justify-end">
+            {selected ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : <span className="inline-flex h-5 w-5 rounded-full border border-slate-200 bg-white" />}
+          </div>
+        </div>
+      </button>
+    );
+  }
+
   return (
     <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
       <div className="flex items-center gap-3">
