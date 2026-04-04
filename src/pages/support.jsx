@@ -344,7 +344,16 @@ export default function SupportPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useCart();
-  const [meta, setMeta] = useState({ categories: [], orders: [], listing_groups: { purchased: [], sold: [], mine: [] } });
+  const [meta, setMeta] = useState({
+    categories: [],
+    orders: [],
+    listing_groups: { purchased: [], sold: [], mine: [] },
+    settings: {
+      max_linked_listings: 5,
+      intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
+      closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
+    },
+  });
   const [tickets, setTickets] = useState([]);
   const [summary, setSummary] = useState({ all: 0, open: 0, in_review: 0, waiting_user: 0, resolved: 0, closed: 0 });
   const [selectedId, setSelectedId] = useState(null);
@@ -368,6 +377,7 @@ export default function SupportPage() {
   const showListingStep = form.category === 'listing';
   const visibleCategories = useMemo(() => meta.categories.filter((item) => item.value === 'listing'), [meta.categories]);
   const activeListingPool = meta.listing_groups?.[form.related_scope] || [];
+  const maxLinkedListings = Number(meta.settings?.max_linked_listings || 5);
   const selectedListingRows = useMemo(() => {
     const ids = new Set(form.selected_listing_ids.map(Number));
     return activeListingPool.filter((item) => ids.has(Number(item.id)));
@@ -383,7 +393,16 @@ export default function SupportPage() {
     setLoadingMeta(true);
     try {
       const response = await getSupportMeta();
-      setMeta(response.data || { categories: [], orders: [], listing_groups: { purchased: [], sold: [], mine: [] } });
+      setMeta(response.data || {
+        categories: [],
+        orders: [],
+        listing_groups: { purchased: [], sold: [], mine: [] },
+        settings: {
+          max_linked_listings: 5,
+          intro_text: 'İlan sorunları için doğru ilanları seçip destek talebi oluşturabilirsiniz.',
+          closed_note: 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.',
+        },
+      });
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -441,14 +460,14 @@ export default function SupportPage() {
     if (next.has(Number(id))) {
       next.delete(Number(id));
     } else {
-      if (next.size >= 5) {
-        showToast('Bir destek talebine en fazla 5 ilan bağlayabilirsiniz.');
+      if (next.size >= maxLinkedListings) {
+        showToast(`Bir destek talebine en fazla ${maxLinkedListings} ilan bağlayabilirsiniz.`);
         return prev;
       }
       next.add(Number(id));
     }
     return { ...prev, selected_listing_ids: Array.from(next) };
-  });
+  }, [maxLinkedListings]);
 
   const submitTicket = async (event) => {
     event.preventDefault();
@@ -525,7 +544,7 @@ export default function SupportPage() {
       </section>
 
       <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between"><div className="flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">Wizard akışıyla daha rahat seçim yap.</p></div></div><div className="flex items-center gap-3 xl:justify-end">
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between"><div className="flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">{meta.settings?.intro_text || 'Wizard akışıyla daha rahat seçim yap.'}</p></div></div><div className="flex items-center gap-3 xl:justify-end">
           <button type="button" onClick={() => setWizardStep((prev) => Math.max(0, prev - 1))} disabled={wizardStep === 0} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 disabled:opacity-40">Geri</button>
           {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{wizardStep === 1 ? `Devam Et (${form.selected_listing_ids.length} ilan seçtin)` : 'Devam Et'}</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
         </div></div>
@@ -544,7 +563,7 @@ export default function SupportPage() {
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
                   <div className="mb-3">
                     <div className="text-sm font-black text-slate-900">İlgili İlanlar</div>
-                    <div className="text-xs text-slate-500">En fazla 5 ilan seçebilirsin. Seçtiğin satırlar tik ile işaretlenir.</div>
+                    <div className="text-xs text-slate-500">En fazla {maxLinkedListings} ilan seçebilirsin. Seçtiğin satırlar tik ile işaretlenir.</div>
                   </div>
                   <div className="space-y-2">
                     <ListingPickerHeader scope={form.related_scope} />
@@ -592,7 +611,7 @@ export default function SupportPage() {
                 {selectedTicket.category === 'listing' ? <div className="mt-4"><LinkedListingsTable rows={selectedListings} scope={selectedTicket.related_scope} title="Bağlı İlanlar" /></div> : null}
               </div>
               <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
-              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
+              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{meta.settings?.closed_note || 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.'}</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
             </div>
           )}
         </section>

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getConversations, getMessages, sendMessage, getSharedOrders } from '../lib/api';
+import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
 
 const AVATAR_COLORS = [
   'from-violet-400 to-purple-500',
@@ -33,6 +33,10 @@ export default function MessagesPage() {
   const [conversations, setConversations] = useState([]);
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [search, setSearch] = useState('');
+  const [messageSettings, setMessageSettings] = useState({
+    maxLength: 2000,
+    sharedOrdersEnabled: true,
+  });
   // On mobile: if userId in URL, show chat; else show list
   const [mobileShowChat, setMobileShowChat] = useState(!!userId);
 
@@ -43,6 +47,19 @@ export default function MessagesPage() {
       .catch(() => {})
       .finally(() => setLoadingConvs(false));
   }, [user, navigate]);
+
+  useEffect(() => {
+    getSiteSettings()
+      .then((response) => {
+        const data = response.data || {};
+        const sharedOrdersEnabledValue = data.conversation_order_panel_enabled;
+        setMessageSettings({
+          maxLength: Number(data.message_max_length || 2000),
+          sharedOrdersEnabled: !(sharedOrdersEnabledValue === 0 || sharedOrdersEnabledValue === '0' || sharedOrdersEnabledValue === false),
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => { setMobileShowChat(!!userId); }, [userId]);
 
@@ -138,7 +155,7 @@ export default function MessagesPage() {
         <div className={`flex-1 flex min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
           <div className="flex-1 flex flex-col min-w-0">
             {activeUserId
-              ? <ChatPanel userId={activeUserId} currentUser={user} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
+              ? <ChatPanel userId={activeUserId} currentUser={user} messageMaxLength={messageSettings.maxLength} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
               : (
                 <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
@@ -152,7 +169,7 @@ export default function MessagesPage() {
               )
             }
           </div>
-          {activeUserId && <SharedOrdersPanel userId={activeUserId} />}
+          {activeUserId && messageSettings.sharedOrdersEnabled ? <SharedOrdersPanel userId={activeUserId} /> : null}
         </div>
       </div>
     </div>
@@ -222,10 +239,11 @@ function SharedOrdersPanel({ userId }) {
 }
 
 /* ── Chat Panel ──────────────────────────────────────────────── */
-function ChatPanel({ userId, currentUser, onBack }) {
+function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [otherName, setOtherName] = useState(`Kullanıcı #${userId}`);
   const [initialized, setInitialized] = useState(false);
   const inputRef = useRef(null);
@@ -268,13 +286,20 @@ function ChatPanel({ userId, currentUser, onBack }) {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!text.trim() || sending) return;
+    if (text.trim().length > messageMaxLength) {
+      setSendError(`Mesaj en fazla ${messageMaxLength} karakter olabilir.`);
+      return;
+    }
     setSending(true);
+    setSendError('');
     try {
       await sendMessage({ receiver_id: parseInt(userId), message: text.trim() });
       setText('');
       fetchMessages(false);
       setTimeout(() => scrollMessagesToBottom('smooth'), 100);
-    } catch { }
+    } catch (error) {
+      setSendError(error?.message || 'Mesaj gönderilemedi.');
+    }
     finally { setSending(false); inputRef.current?.focus(); }
   };
 
@@ -380,12 +405,16 @@ function ChatPanel({ userId, currentUser, onBack }) {
         onSubmit={handleSend}
         className="flex items-center gap-2.5 px-4 py-3 border-t border-gray-100 bg-white flex-shrink-0"
       >
+        <div className="flex-1 min-w-0">
+          {sendError ? <div className="mb-2 text-xs font-semibold text-rose-600">{sendError}</div> : null}
+          <div className="flex items-center gap-2.5">
         <input
           ref={inputRef}
           type="text"
           value={text}
-          onChange={e => setText(e.target.value)}
+          onChange={e => { setText(e.target.value); if (sendError) setSendError(''); }}
           placeholder="Mesajını yaz..."
+          maxLength={messageMaxLength}
           className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-violet-400"
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend(e)}
         />
@@ -396,6 +425,11 @@ function ChatPanel({ userId, currentUser, onBack }) {
         >
           <Send size={16} />
         </button>
+          </div>
+          <div className="mt-1 text-right text-[11px] font-semibold text-gray-400">
+            {text.length}/{messageMaxLength}
+          </div>
+        </div>
       </form>
     </div>
   );

@@ -16,6 +16,7 @@ import {
   adminDeleteSupportTicket,
   adminGetSupportTicket,
   adminGetSupportTickets,
+  adminGetSettings,
   adminReplySupportTicket,
   adminUpdateSupportTicket,
 } from '../../lib/adminApi';
@@ -270,6 +271,7 @@ export default function AdminSupportPage() {
   const [replying, setReplying] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [supportDeleteEnabled, setSupportDeleteEnabled] = useState(true);
   const [metaDraft, setMetaDraft] = useState({
     status: 'open',
     priority: 'normal',
@@ -328,6 +330,14 @@ export default function AdminSupportPage() {
   useEffect(() => {
     loadTickets();
   }, [filters.status, filters.category, filters.assigned_admin_id]);
+
+  useEffect(() => {
+    adminGetSettings()
+      .then((response) => {
+        setSupportDeleteEnabled(response.data?.support_ticket_delete_enabled !== '0');
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -742,15 +752,17 @@ export default function AdminSupportPage() {
                 {savingMeta ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
               </button>
 
-              <button
-                type="button"
-                onClick={handleDeleteTicket}
-                disabled={deleting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <X size={15} />
-                {deleting ? 'Siliniyor...' : 'Bileti Sil'}
-              </button>
+              {supportDeleteEnabled ? (
+                <button
+                  type="button"
+                  onClick={handleDeleteTicket}
+                  disabled={deleting}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <X size={15} />
+                  {deleting ? 'Siliniyor...' : 'Bileti Sil'}
+                </button>
+              ) : null}
             </div>
           </aside>
         </div>

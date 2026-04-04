@@ -47,7 +47,7 @@ function AdminRoute({ children }) {
   return children;
 }
 
-function MaintenancePage({ siteName, siteLogo, siteLogoText }) {
+function MaintenancePage({ siteName, siteLogo, siteLogoText, maintenanceTitle, maintenanceMessage }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 to-purple-100 px-4">
       <div className="max-w-md text-center">
@@ -62,9 +62,9 @@ function MaintenancePage({ siteName, siteLogo, siteLogoText }) {
             titleClassName="text-2xl font-extrabold text-gray-900"
           />
         </div>
-        <h1 className="mb-3 text-3xl font-extrabold text-gray-900">Bakım Çalışması</h1>
+        <h1 className="mb-3 text-3xl font-extrabold text-gray-900">{maintenanceTitle || 'Bakım Çalışması'}</h1>
         <p className="mb-6 text-lg text-gray-500">
-          Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.
+          {maintenanceMessage || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.'}
         </p>
         <div className="rounded-2xl border border-violet-100 bg-white/70 px-6 py-4 text-sm font-semibold text-violet-700 backdrop-blur">
           {siteName} yakında tekrar burada.
@@ -101,6 +101,10 @@ function SiteLayout() {
     siteName: 'Oyuncu Kantinim',
     siteLogo: '',
     siteLogoText: '',
+    maintenanceTitle: 'Bakım Çalışması',
+    maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
+    footerTagline: 'Oyuncular için güvenli alım satım platformu.',
+    footerCopyright: '© Oyuncu Kantinim. Tüm hakları saklıdır.',
   });
 
   useEffect(() => {
@@ -117,6 +121,10 @@ function SiteLayout() {
           siteName: data.site_name || 'Oyuncu Kantinim',
           siteLogo: data.site_logo || '',
           siteLogoText: data.site_logo_text || '',
+          maintenanceTitle: data.maintenance_title || 'Bakım Çalışması',
+          maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
+          footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
+          footerCopyright: data.footer_copyright || '© Oyuncu Kantinim. Tüm hakları saklıdır.',
         });
       })
       .catch(() => {
@@ -133,6 +141,8 @@ function SiteLayout() {
         siteName={siteState.siteName}
         siteLogo={siteState.siteLogo}
         siteLogoText={siteState.siteLogoText}
+        maintenanceTitle={siteState.maintenanceTitle}
+        maintenanceMessage={siteState.maintenanceMessage}
       />
     );
   }
@@ -163,7 +173,13 @@ function SiteLayout() {
           <Route path="/finance" element={<FinancePage />} />
         </Routes>
       </main>
-      <Footer siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
+      <Footer
+        siteName={siteState.siteName}
+        siteLogo={siteState.siteLogo}
+        siteLogoText={siteState.siteLogoText}
+        footerTagline={siteState.footerTagline}
+        footerCopyright={siteState.footerCopyright}
+      />
       <KantinBot />
       <Toast />
     </div>
