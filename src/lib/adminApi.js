@@ -54,6 +54,8 @@ export const adminReplySupportTicket = (body) =>
   adminRequest('admin_reply_support_ticket', { method: 'POST', body });
 export const adminUpdateSupportTicket = (body) =>
   adminRequest('admin_update_support_ticket', { method: 'POST', body });
+export const adminDeleteSupportTicket = (ticket_id) =>
+  adminRequest('admin_delete_support_ticket', { method: 'POST', body: { ticket_id } });
 
 // Listings
 export const adminGetListings = (params = {}) =>

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
+  adminDeleteSupportTicket,
   adminGetSupportTicket,
   adminGetSupportTickets,
   adminReplySupportTicket,
@@ -267,6 +268,7 @@ export default function AdminSupportPage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
   const [replying, setReplying] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [metaDraft, setMetaDraft] = useState({
     status: 'open',
@@ -404,6 +406,24 @@ export default function AdminSupportPage() {
       await loadDetail(detail.id);
     } finally {
       setReplying(false);
+    }
+  };
+
+  const handleDeleteTicket = async () => {
+    if (!detail || deleting) return;
+    const approved = window.confirm(`"${detail.ticket_no}" numaralı destek talebini kalıcı olarak silmek istediğine emin misin?`);
+    if (!approved) return;
+
+    setDeleting(true);
+    try {
+      await adminDeleteSupportTicket(detail.id);
+      setSettingsOpen(false);
+      setDetail(null);
+      setSelectedListings([]);
+      setMessages([]);
+      await loadTickets();
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -720,6 +740,16 @@ export default function AdminSupportPage() {
               >
                 <Settings2 size={15} />
                 {savingMeta ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDeleteTicket}
+                disabled={deleting}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X size={15} />
+                {deleting ? 'Siliniyor...' : 'Bileti Sil'}
               </button>
             </div>
           </aside>
