@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   UserCircle2,
+  X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -67,6 +68,31 @@ function SummaryCard({ title, value, tone }) {
 
 function formatMoney(value) {
   return `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
+}
+
+function listingStatusMeta(status) {
+  const map = {
+    active: ['Aktif', 'bg-emerald-50 text-emerald-700 border border-emerald-200'],
+    sold: ['Satıldı', 'bg-slate-100 text-slate-700 border border-slate-200'],
+    passive: ['Pasif', 'bg-amber-50 text-amber-700 border border-amber-200'],
+    pending: ['Onay Bekliyor', 'bg-blue-50 text-blue-700 border border-blue-200'],
+    draft: ['Taslak', 'bg-slate-100 text-slate-600 border border-slate-200'],
+    rejected: ['Reddedildi', 'bg-rose-50 text-rose-700 border border-rose-200'],
+    expired: ['Süresi Doldu', 'bg-slate-100 text-slate-700 border border-slate-200'],
+  };
+
+  if (map[status]) return map[status];
+  if (!status) return ['Belirsiz', 'bg-slate-100 text-slate-600 border border-slate-200'];
+  return [status, 'bg-slate-100 text-slate-600 border border-slate-200'];
+}
+
+function ListingStatusBadge({ status }) {
+  const [label, className] = listingStatusMeta(status);
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${className}`}>
+      {label}
+    </span>
+  );
 }
 
 function TicketMessage({ message }) {
@@ -141,7 +167,7 @@ function RelatedListingsTable({ rows, scope }) {
                   </div>
                 </td>
                 <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
-                <td className="px-4 py-3 text-slate-600">{item.status || '-'}</td>
+                <td className="px-4 py-3"><ListingStatusBadge status={item.status} /></td>
                 <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>
               </tr>
             ))}
@@ -171,6 +197,7 @@ export default function AdminSupportPage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [savingMeta, setSavingMeta] = useState(false);
   const [replying, setReplying] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [metaDraft, setMetaDraft] = useState({
     status: 'open',
     priority: 'normal',
@@ -242,6 +269,7 @@ export default function AdminSupportPage() {
       setDetail(null);
       setSelectedListings([]);
       setMessages([]);
+      setSettingsOpen(false);
       return;
     }
     loadDetail(selectedId);
@@ -459,83 +487,28 @@ export default function AdminSupportPage() {
                       </div>
                     </div>
 
-                    <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[320px]">
+                    <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[420px]">
                       <SummaryCard title="Kullanıcı" value={detail.username || '-'} tone="text-slate-900" />
-                      <SummaryCard title="Atanan" value={detail.assigned_admin_name || 'Atanmadı'} tone="text-violet-600" />
+                      <div className="flex items-stretch gap-2">
+                        <div className="min-w-0 flex-1 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+                          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Atanan</div>
+                          <div className="mt-2 truncate text-2xl font-black text-violet-600">{detail.assigned_admin_name || 'Atanmadı'}</div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSettingsOpen(true)}
+                          className="inline-flex shrink-0 items-center gap-2 rounded-[24px] border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-black text-violet-700 transition-colors hover:bg-violet-100"
+                        >
+                          <Settings2 size={16} />
+                          Yönetim Ayarları
+                        </button>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
+                  <div className="mt-4">
                     <div className="min-w-0">
                       <RelatedListingsTable rows={relatedListingRows} scope={detail.related_scope} />
-                    </div>
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        <Settings2 size={15} className="text-violet-600" />
-                        <div className="text-sm font-black text-slate-900">Yönetim Ayarları</div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div>
-                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Durum</label>
-                          <select
-                            value={metaDraft.status}
-                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, status: event.target.value }))}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
-                          >
-                            {STATUS_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Öncelik</label>
-                          <select
-                            value={metaDraft.priority}
-                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, priority: event.target.value }))}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
-                          >
-                            {PRIORITY_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs font-bold text-slate-500">Atanan Admin</label>
-                          <select
-                            value={metaDraft.assigned_admin_id}
-                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, assigned_admin_id: event.target.value }))}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none transition-colors focus:border-violet-400"
-                          >
-                            <option value="">Atama yok</option>
-                            {admins.map((admin) => (
-                              <option key={admin.id} value={admin.id}>{admin.username}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <label className="mb-1.5 block text-xs font-bold text-slate-500">İç Not</label>
-                          <textarea
-                            rows={4}
-                            value={metaDraft.internal_note}
-                            onChange={(event) => setMetaDraft((prev) => ({ ...prev, internal_note: event.target.value }))}
-                            className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400"
-                            placeholder="Yalnızca admin panelinde görünür."
-                          />
-                        </div>
-
-                        <button
-                          onClick={handleSaveMeta}
-                          disabled={savingMeta}
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          <Settings2 size={15} />
-                          {savingMeta ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -585,6 +558,112 @@ export default function AdminSupportPage() {
           </section>
         </div>
       </div>
+      {settingsOpen && detail ? (
+        <div className="fixed inset-0 z-50">
+          <button
+            type="button"
+            aria-label="Yönetim ayarlarını kapat"
+            onClick={() => setSettingsOpen(false)}
+            className="absolute inset-0 bg-slate-950/35 backdrop-blur-[1px]"
+          />
+          <aside className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto border-l border-slate-200 bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/95 px-5 py-4 backdrop-blur">
+              <div>
+                <div className="text-sm font-black text-slate-900">Yönetim Ayarları</div>
+                <div className="text-xs text-slate-500">{detail.ticket_no} için moderasyon ve atama alanı</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(false)}
+                className="rounded-2xl border border-slate-200 p-2 text-slate-500 transition-colors hover:bg-slate-50"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-5 py-5">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Bilet Özeti</div>
+                <div className="mt-3 space-y-3 text-sm">
+                  <div>
+                    <div className="text-slate-400">Kullanıcı</div>
+                    <div className="font-black text-slate-900">{detail.username || '-'}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-400">Atanan</div>
+                    <div className="font-black text-slate-900">{detail.assigned_admin_name || 'Atanmadı'}</div>
+                  </div>
+                  <div>
+                    <div className="text-slate-400">Bağlı ilan</div>
+                    <div className="font-black text-slate-900">{relatedListingRows.length} ilan</div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-slate-500">Durum</label>
+                <select
+                  value={metaDraft.status}
+                  onChange={(event) => setMetaDraft((prev) => ({ ...prev, status: event.target.value }))}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+                >
+                  {STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-slate-500">Öncelik</label>
+                <select
+                  value={metaDraft.priority}
+                  onChange={(event) => setMetaDraft((prev) => ({ ...prev, priority: event.target.value }))}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+                >
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-slate-500">Atanan Admin</label>
+                <select
+                  value={metaDraft.assigned_admin_id}
+                  onChange={(event) => setMetaDraft((prev) => ({ ...prev, assigned_admin_id: event.target.value }))}
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+                >
+                  <option value="">Atama yok</option>
+                  {admins.map((admin) => (
+                    <option key={admin.id} value={admin.id}>{admin.username}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-slate-500">İç Not</label>
+                <textarea
+                  rows={8}
+                  value={metaDraft.internal_note}
+                  onChange={(event) => setMetaDraft((prev) => ({ ...prev, internal_note: event.target.value }))}
+                  className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition-colors focus:border-violet-400 focus:bg-white"
+                  placeholder="Yalnızca admin panelinde görünür."
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveMeta}
+                disabled={savingMeta}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-black text-white transition-colors hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Settings2 size={15} />
+                {savingMeta ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
+              </button>
+            </div>
+          </aside>
+        </div>
+      ) : null}
     </AdminLayout>
   );
 }
