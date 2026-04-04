@@ -116,6 +116,23 @@ export default function CreatePage() {
   const commission = priceNum * ((selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10) / 100);
   const earnings   = priceNum - commission;
 
+  const handlePriceChange = (value) => {
+    if (value === '') {
+      setPrice('');
+      return;
+    }
+
+    setPrice(value);
+  };
+
+  const handlePriceBlur = () => {
+    if (price === '' || effectiveMinPrice === null) return;
+    const numeric = parseFloat(price);
+    if (!Number.isNaN(numeric) && numeric < effectiveMinPrice) {
+      setPrice(String(effectiveMinPrice));
+    }
+  };
+
   const canNext = () => {
     if (step === 1) return !!selectedCategory;
     if (step === 2) {
@@ -192,9 +209,9 @@ export default function CreatePage() {
             {selectedCategory && (
               <div className="bg-violet-50 border border-violet-100 rounded-xl p-4 text-sm space-y-1">
                 <div className="font-bold text-violet-800">{selectedCategory.icon} {selectedCategory.name} seçildi</div>
-                <div className="text-violet-600 flex gap-4 text-xs">
+                <div className="text-violet-600 flex flex-wrap gap-4 text-xs">
                   <span>Komisyon: <strong>%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10}</strong></span>
-                  {effectiveMinPrice && <span>Min fiyat: <strong>{effectiveMinPrice}₺</strong></span>}
+                  {effectiveMinPrice !== null && <span>Minimum ilan fiyatı: <strong>{effectiveMinPrice}₺</strong></span>}
                 </div>
               </div>
             )}
@@ -220,9 +237,23 @@ export default function CreatePage() {
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1.5">
                 Fiyat (₺) *
-                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Min: {effectiveMinPrice}₺</span>}
+                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Minimum ilan fiyatı: {effectiveMinPrice}₺</span>}
               </label>
-              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" min={effectiveMinPrice || 1} step="0.01" className="input-field" />
+              <input
+                type="number"
+                value={price}
+                onChange={e => handlePriceChange(e.target.value)}
+                onBlur={handlePriceBlur}
+                placeholder={effectiveMinPrice !== null ? `${effectiveMinPrice}` : '0.00'}
+                min={effectiveMinPrice || 1}
+                step="0.01"
+                className="input-field"
+              />
+              {effectiveMinPrice !== null && (
+                <div className="mt-1 text-[11px] font-medium text-gray-400">
+                  Bu alanda {effectiveMinPrice}₺ altına inilirse değer otomatik olarak minimum fiyata çekilir.
+                </div>
+              )}
               {priceNum > 0 && (
                 <div className="mt-2 flex gap-4 text-xs text-gray-500">
                   <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10})</span>
