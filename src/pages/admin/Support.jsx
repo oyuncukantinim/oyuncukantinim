@@ -7,6 +7,7 @@ import {
   Send,
   Settings2,
   ShieldCheck,
+  ShoppingBag,
   UserCircle2,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
@@ -64,6 +65,10 @@ function SummaryCard({ title, value, tone }) {
   );
 }
 
+function formatMoney(value) {
+  return `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
+}
+
 function TicketMessage({ message }) {
   const isAdmin = message.author_role === 'admin';
   return (
@@ -76,6 +81,72 @@ function TicketMessage({ message }) {
           <span className={isAdmin ? 'text-white/60' : 'text-slate-400'}>{formatDateTime(message.created_at)}</span>
         </div>
         <p className="whitespace-pre-wrap text-sm leading-6">{message.message}</p>
+      </div>
+    </div>
+  );
+}
+
+function RelatedListingsTable({ rows, scope }) {
+  if (!rows.length) {
+    return (
+      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-400">
+        Bu talebe bağlı ilan bulunmuyor.
+      </div>
+    );
+  }
+
+  const scopeLabel = {
+    purchased: 'Satın Alınan',
+    sold: 'Satılan',
+    mine: 'İlanlarım',
+  }[scope] || 'Seçili İlanlar';
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+        <div>
+          <div className="text-sm font-black text-slate-900">Bağlı İlanlar</div>
+          <div className="text-xs text-slate-500">{scopeLabel} grubundan seçilen kayıtlar</div>
+        </div>
+        <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-extrabold text-violet-700">{rows.length} ilan</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left text-sm">
+          <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+            <tr>
+              <th className="px-4 py-3">İlan</th>
+              <th className="px-4 py-3">Fiyat</th>
+              <th className="px-4 py-3">İlan Durumu</th>
+              <th className="px-4 py-3">Son Güncelleme</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((item) => (
+              <tr key={item.id} className="border-t border-slate-200/80">
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
+                      {item.item_image ? (
+                        <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-slate-400">
+                          <ShoppingBag size={18} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate font-bold text-slate-800">{item.title || `İlan ${item.id}`}</div>
+                      <div className="text-xs text-slate-400">#{item.id}</div>
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
+                <td className="px-4 py-3 text-slate-600">{item.status || '-'}</td>
+                <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -94,6 +165,7 @@ export default function AdminSupportPage() {
   const [admins, setAdmins] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [detail, setDetail] = useState(null);
+  const [selectedListings, setSelectedListings] = useState([]);
   const [messages, setMessages] = useState([]);
   const [loadingList, setLoadingList] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -130,6 +202,7 @@ export default function AdminSupportPage() {
   const loadDetail = async (ticketId) => {
     if (!ticketId) {
       setDetail(null);
+      setSelectedListings([]);
       setMessages([]);
       return;
     }
@@ -139,6 +212,7 @@ export default function AdminSupportPage() {
       const response = await adminGetSupportTicket(ticketId);
       const ticket = response.data?.ticket || null;
       setDetail(ticket);
+      setSelectedListings(response.data?.selected_listings || []);
       setMessages(response.data?.messages || []);
       setAdmins(response.data?.admins || []);
       setMetaDraft({
@@ -166,11 +240,26 @@ export default function AdminSupportPage() {
   useEffect(() => {
     if (!selectedId) {
       setDetail(null);
+      setSelectedListings([]);
       setMessages([]);
       return;
     }
     loadDetail(selectedId);
   }, [selectedId]);
+
+  const relatedListingRows = useMemo(() => {
+    if (selectedListings.length) return selectedListings;
+    if (!detail?.related_listing_id) return [];
+    return [{
+      id: detail.related_listing_id,
+      title: detail.related_listing_title || `İlan ${detail.related_listing_id}`,
+      price: detail.related_listing_price || 0,
+      status: detail.related_listing_status || '-',
+      updated_at: detail.updated_at,
+      last_updated_at: detail.updated_at,
+      item_image: detail.related_listing_image || '',
+    }];
+  }, [detail, selectedListings]);
 
   const filteredStatusChips = useMemo(() => (
     [
@@ -225,9 +314,9 @@ export default function AdminSupportPage() {
                 <LifeBuoy size={13} />
                 Destek Sistemi
               </div>
-              <h1 className="text-3xl font-black tracking-tight">Tüm destek taleplerini tek akışta yönet</h1>
+              <h1 className="text-3xl font-black tracking-tight">İlan odaklı destek taleplerini tek akışta yönet</h1>
               <p className="mt-2 text-sm leading-6 text-violet-100/80">
-                Kullanıcı cevapları, ilişkilendirilmiş siparişler ve iç notlar tek panelde. Durum değişimlerinde bildirim gitmez; yalnızca yeni talep ve yeni yanıt için bildirim üretilir.
+                Kullanıcı cevapları, seçilmiş ilanlar ve iç notlar tek panelde. Durum değişimlerinde bildirim gitmez; yalnızca yeni talep ve yeni yanıt için bildirim üretilir.
               </p>
             </div>
             <div className="grid min-w-[280px] grid-cols-3 gap-3">
@@ -377,37 +466,9 @@ export default function AdminSupportPage() {
                   </div>
 
                   <div className="mt-4 grid gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
-                    <div className="grid gap-3 md:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">İlgili Sipariş</div>
-                        {detail.related_order_id ? (
-                          <div>
-                            <div className="font-bold text-slate-800">Sipariş {detail.related_order_id}</div>
-                            <div className="mt-1 text-sm text-slate-500">{detail.related_order_title || 'Sipariş başlığı yok'}</div>
-                            {detail.related_order_amount ? (
-                              <div className="mt-2 text-xs font-semibold text-emerald-600">{Number(detail.related_order_amount).toFixed(2)} ₺</div>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-slate-400">Bağlı sipariş yok.</div>
-                        )}
-                      </div>
-
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">İlgili İlan</div>
-                        {detail.related_listing_id ? (
-                          <div>
-                            <div className="font-bold text-slate-800">{detail.related_listing_title || 'İlan'}</div>
-                            {detail.related_listing_price ? (
-                              <div className="mt-2 text-xs font-semibold text-emerald-600">{Number(detail.related_listing_price).toFixed(2)} ₺</div>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <div className="text-sm text-slate-400">Bağlı ilan yok.</div>
-                        )}
-                      </div>
+                    <div className="min-w-0">
+                      <RelatedListingsTable rows={relatedListingRows} scope={detail.related_scope} />
                     </div>
-
                     <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                       <div className="mb-3 flex items-center gap-2">
                         <Settings2 size={15} className="text-violet-600" />

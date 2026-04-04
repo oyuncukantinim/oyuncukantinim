@@ -38,7 +38,6 @@ const LISTING_SCOPE_OPTIONS = [
   { value: 'mine', label: 'İlanlarım' },
 ];
 
-const ORDER_CATEGORIES = new Set(['order', 'delivery', 'refund']);
 const STEP_TITLES = ['Kategori', 'İlgili Kayıt', 'Detay'];
 
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');
@@ -116,14 +115,14 @@ function ListingsTable({ rows, title }) {
 
 function ListingCard({ item, selected, onToggle }) {
   return (
-    <button type="button" onClick={() => onToggle(item.id)} className={`overflow-hidden rounded-[22px] border text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
-      <div className="relative h-36 overflow-hidden bg-slate-100">
+    <button type="button" onClick={() => onToggle(item.id)} className={`overflow-hidden rounded-[18px] border text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
+      <div className="relative h-28 overflow-hidden bg-slate-100">
         {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={26} /></div>}
-        {selected ? <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-1 text-[11px] font-extrabold text-white"><CheckCircle2 size={12} />Seçildi</span> : null}
+        {selected ? <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-extrabold text-white"><CheckCircle2 size={11} />Seçildi</span> : null}
       </div>
-      <div className="space-y-2 p-3">
-        <div className="line-clamp-2 text-sm font-black text-slate-900">{item.title}</div>
-        <div className="flex items-center justify-between gap-2 text-xs">
+      <div className="space-y-1.5 p-2.5">
+        <div className="line-clamp-2 text-[13px] font-black leading-5 text-slate-900">{item.title}</div>
+        <div className="flex items-center justify-between gap-2 text-[11px]">
           <span className="font-extrabold text-emerald-600">{fmtMoney(item.price)}</span>
           <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{item.status || 'Durum yok'}</span>
         </div>
@@ -154,12 +153,12 @@ export default function SupportPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
-  const [form, setForm] = useState({ subject: '', category: 'order', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
+  const [form, setForm] = useState({ subject: '', category: 'listing', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
 
   useEffect(() => { if (!user) navigate('/login'); }, [navigate, user]);
 
-  const showOrderStep = ORDER_CATEGORIES.has(form.category);
   const showListingStep = form.category === 'listing';
+  const visibleCategories = useMemo(() => meta.categories.filter((item) => item.value === 'listing'), [meta.categories]);
   const activeListingPool = meta.listing_groups?.[form.related_scope] || [];
   const selectedListingRows = useMemo(() => {
     const ids = new Set(form.selected_listing_ids.map(Number));
@@ -169,7 +168,7 @@ export default function SupportPage() {
   const canAdvance = wizardStep === 0
     ? Boolean(form.category)
     : wizardStep === 1
-      ? (showListingStep ? form.selected_listing_ids.length > 0 : true)
+      ? form.selected_listing_ids.length > 0
       : form.subject.trim().length >= 5 && form.message.trim().length >= 10;
 
   const loadMeta = async () => {
@@ -244,14 +243,14 @@ export default function SupportPage() {
         subject: form.subject,
         category: form.category,
         message: form.message,
-        related_order_id: showOrderStep ? (form.related_order_id || null) : null,
+        related_order_id: null,
         related_scope: showListingStep ? form.related_scope : null,
         selected_listing_ids: showListingStep ? form.selected_listing_ids : [],
       });
       showToast('Destek talebin oluşturuldu.');
       setWizardStep(0);
       setPickerOpen(false);
-      setForm({ subject: '', category: 'order', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
+      setForm({ subject: '', category: 'listing', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
       await loadTickets(response.data?.id || null);
     } catch (error) {
       showToast(error.message);
@@ -300,8 +299,8 @@ export default function SupportPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-violet-100"><LifeBuoy size={13} />Destek Merkezi</div>
-            <h1 className="text-3xl font-black tracking-tight">Yeni talebi adım adım ve daha geniş alanda oluştur</h1>
-            <p className="mt-2 text-sm leading-6 text-violet-100/80">Sipariş odaklı kategoriler yalnızca sipariş alanını gösterir. İlan seçimi sadece ilan sorunu akışında açılır.</p>
+            <h1 className="text-3xl font-black tracking-tight">İlan sorunları için daha net bir destek akışı</h1>
+            <p className="mt-2 text-sm leading-6 text-violet-100/80">Kategoriyi seç, doğru ilan grubunu aç ve ilgili ilanları görselli olarak bağlayıp talebini hızlıca oluştur.</p>
           </div>
           <div className="grid min-w-[280px] grid-cols-3 gap-3">
             <SummaryCard title="Toplam" value={summary.all || 0} tone="text-slate-900" />
@@ -313,34 +312,22 @@ export default function SupportPage() {
 
       <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">Wizard akışıyla daha rahat seçim yap.</p></div></div>
-        <div className="mb-5 grid gap-3 md:grid-cols-3">{STEP_TITLES.map((title, index) => <div key={title} className={`rounded-2xl border px-4 py-3 ${wizardStep === index ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}><div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Adım {index + 1}</div><div className="mt-1 text-sm font-black text-slate-900">{title}</div></div>)}</div>
+        <div className="mb-4 grid gap-2 md:grid-cols-3">{STEP_TITLES.map((title, index) => <div key={title} className={`rounded-xl border px-3 py-2.5 ${wizardStep === index ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}><div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Adım {index + 1}</div><div className="mt-1 text-[13px] font-black text-slate-900">{title}</div></div>)}</div>
         <form onSubmit={submitTicket} className="space-y-5">
           {wizardStep === 0 ? (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{meta.categories.map((category) => <button key={category.value} type="button" onClick={() => setCategory(category.value)} className={`rounded-[22px] border p-4 text-left transition-all ${form.category === category.value ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}><div className="text-sm font-black text-slate-900">{category.label}</div><div className="mt-2 text-xs text-slate-500">{category.value === 'listing' ? 'İlan alt kategorisi ve görselli ilan seçimi açılır.' : ORDER_CATEGORIES.has(category.value) ? 'İlgili siparişi seçebilirsin; ilan seçimi açılmaz.' : 'Doğrudan detay adımına geçersin.'}</div></button>)}</div>
+            <div className="max-w-sm"><button type="button" onClick={() => setCategory('listing')} className={`w-full rounded-[20px] border p-4 text-left transition-all ${form.category === 'listing' ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}><div className="text-sm font-black text-slate-900">{visibleCategories[0]?.label || 'İlan Sorunu'}</div><div className="mt-2 text-xs text-slate-500">İlan grubunu seçer, görselli ilan seçim ekranından ilgili kayıtları bağlarsın.</div></button></div>
           ) : null}
 
           {wizardStep === 1 ? (
             <div className="space-y-4">
-              {showOrderStep ? (
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-slate-500">İlgili Sipariş</label>
-                  <select value={form.related_order_id} onChange={(e) => setForm((prev) => ({ ...prev, related_order_id: e.target.value }))} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-violet-400 focus:bg-white">
-                    <option value="">Sipariş seçmeden devam et</option>
-                    {meta.orders.map((order) => <option key={order.id} value={order.id}>{order.id} • {order.item_title || 'Sipariş'} • {fmtMoney(order.amount)}</option>)}
-                  </select>
+              <div className="space-y-4">
+                <div className="grid gap-2 md:grid-cols-3">{LISTING_SCOPE_OPTIONS.map((item) => <button key={item.value} type="button" onClick={() => { setPickerOpen(false); setForm((prev) => ({ ...prev, related_scope: item.value, selected_listing_ids: [] })); }} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${form.related_scope === item.value ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{item.label}</button>)}</div>
+                <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
+                  <button type="button" onClick={() => setPickerOpen((prev) => !prev)} className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left shadow-sm"><div><div className="text-sm font-black text-slate-900">İlan Seç</div><div className="text-xs text-slate-500">{form.selected_listing_ids.length > 0 ? `${form.selected_listing_ids.length} ilan seçildi` : 'Uygun ilanları açıp seç'}</div></div><ChevronDown size={18} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} /></button>
+                  {pickerOpen ? <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{activeListingPool.length ? activeListingPool.map((item) => <ListingCard key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}</div> : null}
                 </div>
-              ) : null}
-
-              {showListingStep ? (
-                <div className="space-y-4">
-                  <div className="grid gap-2 md:grid-cols-3">{LISTING_SCOPE_OPTIONS.map((item) => <button key={item.value} type="button" onClick={() => { setPickerOpen(false); setForm((prev) => ({ ...prev, related_scope: item.value, selected_listing_ids: [] })); }} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${form.related_scope === item.value ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{item.label}</button>)}</div>
-                  <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
-                    <button type="button" onClick={() => setPickerOpen((prev) => !prev)} className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left shadow-sm"><div><div className="text-sm font-black text-slate-900">İlan Seç</div><div className="text-xs text-slate-500">{form.selected_listing_ids.length > 0 ? `${form.selected_listing_ids.length} ilan seçildi` : 'Uygun ilanları açıp seç'}</div></div><ChevronDown size={18} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} /></button>
-                    {pickerOpen ? <div className="mt-3 grid gap-3 sm:grid-cols-2">{activeListingPool.length ? activeListingPool.map((item) => <ListingCard key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}</div> : null}
-                  </div>
-                  <ListingsTable rows={selectedListingRows} title="Seçilen İlanlar" />
-                </div>
-              ) : !showOrderStep ? <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-400">Bu kategori için ilgili sipariş veya ilan seçimi gerekmiyor.</div> : null}
+                <ListingsTable rows={selectedListingRows} title="Seçilen İlanlar" />
+              </div>
             </div>
           ) : null}
 
@@ -353,8 +340,7 @@ export default function SupportPage() {
               <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-4">
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Özet</div>
                 <div className="mt-3 space-y-3 text-sm">
-                  <div><div className="text-slate-400">Kategori</div><div className="font-black text-slate-900">{meta.categories.find((item) => item.value === form.category)?.label || '-'}</div></div>
-                  {showOrderStep ? <div><div className="text-slate-400">İlgili Sipariş</div><div className="font-black text-slate-900">{form.related_order_id ? `Sipariş ${form.related_order_id}` : 'Seçilmedi'}</div></div> : null}
+                  <div><div className="text-slate-400">Kategori</div><div className="font-black text-slate-900">{visibleCategories[0]?.label || 'İlan Sorunu'}</div></div>
                   {showListingStep ? <div><div className="text-slate-400">Seçilen İlan</div><div className="font-black text-slate-900">{selectedListingRows.length ? `${selectedListingRows.length} ilan` : 'Henüz seçilmedi'}</div></div> : null}
                 </div>
               </div>
@@ -386,7 +372,6 @@ export default function SupportPage() {
                   <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">{selectedTicket.ticket_no}</span><StatusBadge value={selectedTicket.status} /></div><h2 className="text-2xl font-black tracking-tight text-slate-950">{selectedTicket.subject}</h2><div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Clock3 size={14} />{fmtDate(selectedTicket.created_at)}</span><span className="inline-flex items-center gap-1.5"><Package size={14} />Ticket {selectedTicket.id}</span></div></div>
                   {selectedTicket.status !== 'closed' ? <button onClick={closeTicket} disabled={closing} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 disabled:opacity-40"><XCircle size={16} />{closing ? 'Kapatılıyor...' : 'Talebi Kapat'}</button> : null}
                 </div>
-                {selectedTicket.related_order_id && ORDER_CATEGORIES.has(selectedTicket.category) ? <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4"><div className="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">İlgili Sipariş</div><div className="font-bold text-slate-800">Sipariş {selectedTicket.related_order_id}</div><div className="mt-1 text-sm text-slate-500">{selectedTicket.related_order_title || 'Sipariş başlığı yok'}</div>{selectedTicket.related_order_amount ? <div className="mt-2 text-xs font-semibold text-emerald-600">{fmtMoney(selectedTicket.related_order_amount)}</div> : null}</div> : null}
                 {selectedTicket.category === 'listing' ? <div className="mt-4"><ListingsTable rows={selectedListings} title="Bağlı İlanlar" /></div> : null}
               </div>
               <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
