@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2,
@@ -79,7 +79,7 @@ export default function CreatePage() {
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '', label: '' }]);
 
-  // Admin tarafından belirlenen limitler
+  // Admin tarafÄ±ndan belirlenen limitler
   const [maxImages, setMaxImages] = useState(5);
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
@@ -179,12 +179,12 @@ export default function CreatePage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="mx-auto max-w-6xl">
       <div className="card p-6 sm:p-8">
         <h1 className="text-2xl font-extrabold text-gray-900 mb-6">Yeni İlan Oluştur</h1>
         <StepBar current={step} />
 
-        {/* ── ADIM 1: KATEGORİ ── */}
+        {/* ADIM 1: KATEGORİ */}
         {step === 1 && (
           <div className="space-y-4">
             <p className="text-sm text-gray-500 mb-4">İlanınıza en uygun kategoriyi seçin. Varsa alt kategorilere devam edebilirsiniz.</p>
@@ -201,56 +201,56 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* ── ADIM 2: İLAN BİLGİLERİ ── */}
+        {/* â”€â”€ ADIM 2: Ä°LAN BÄ°LGÄ°LERÄ° â”€â”€ */}
         {step === 2 && (
           <div className="space-y-5">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-bold text-gray-700">İlan Başlığı *</label>
+                <label className="block text-sm font-bold text-gray-700">Ä°lan BaÅŸlÄ±ÄŸÄ± *</label>
                 <span className={`text-xs font-semibold ${title.length > titleMax ? 'text-red-500' : 'text-gray-400'}`}>{title.length}/{titleMax}</span>
               </div>
               <input
                 value={title}
                 onChange={e => e.target.value.length <= titleMax && setTitle(e.target.value)}
-                placeholder="Örn: Platin Rank Valorant Hesabı"
+                placeholder="Ã–rn: Platin Rank Valorant HesabÄ±"
                 className={`input-field ${title.length >= titleMax ? 'border-orange-300' : ''}`}
               />
             </div>
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-1.5">
-                Fiyat (₺) *
-                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Min: {effectiveMinPrice}₺</span>}
+                Fiyat (â‚º) *
+                {effectiveMinPrice !== null && <span className="text-xs text-gray-400 font-normal ml-2">Min: {effectiveMinPrice}â‚º</span>}
               </label>
               <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" min={effectiveMinPrice || 1} step="0.01" className="input-field" />
               {priceNum > 0 && (
                 <div className="mt-2 flex gap-4 text-xs text-gray-500">
-                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}₺</strong> (%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10})</span>
-                  <span>Kazancınız: <strong className="text-emerald-600">{earnings.toFixed(2)}₺</strong></span>
+                  <span>Komisyon: <strong className="text-orange-500">-{commission.toFixed(2)}â‚º</strong> (%{selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? 10})</span>
+                  <span>KazancÄ±nÄ±z: <strong className="text-emerald-600">{earnings.toFixed(2)}â‚º</strong></span>
                 </div>
               )}
               {effectiveMinPrice !== null && priceNum > 0 && priceNum < effectiveMinPrice && (
-                <div className="mt-2 text-xs text-red-500 font-semibold">⚠ Bu kategorinin minimum fiyatı {effectiveMinPrice}₺'dir.</div>
+                <div className="mt-2 text-xs text-red-500 font-semibold">âš  Bu kategorinin minimum fiyatÄ± {effectiveMinPrice}â‚º'dir.</div>
               )}
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-sm font-bold text-gray-700">Açıklama</label>
+                <label className="block text-sm font-bold text-gray-700">AÃ§Ä±klama</label>
                 <span className={`text-xs font-semibold ${description.length > descMax ? 'text-red-500' : 'text-gray-400'}`}>{description.length}/{descMax}</span>
               </div>
               <textarea
                 value={description}
                 onChange={e => e.target.value.length <= descMax && setDescription(e.target.value)}
                 rows={5}
-                placeholder="İlanınızı detaylıca açıklayın..."
+                placeholder="Ä°lanÄ±nÄ±zÄ± detaylÄ±ca aÃ§Ä±klayÄ±n..."
                 className={`input-field resize-none ${description.length >= descMax ? 'border-orange-300' : ''}`}
               />
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-bold text-gray-700">Görseller (URL)</label>
+                <label className="block text-sm font-bold text-gray-700">GÃ¶rseller (URL)</label>
                 <span className="text-xs text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
               </div>
               <div className="space-y-2">
@@ -260,33 +260,33 @@ export default function CreatePage() {
                       <button onClick={() => setCoverIndex(idx)} title="Kapak yap" className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
                         <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                       </button>
-                      <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className={`input-field flex-1 text-sm ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
+                      <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`GÃ¶rsel ${idx + 1} URL`} className={`input-field flex-1 text-sm ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
                       {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
                     </div>
                     {img && !isValidImageUrl(img) && (
-                      <p className="text-[11px] text-red-500 pl-10">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
+                      <p className="text-[11px] text-red-500 pl-10">GeÃ§ersiz URL. Ä°zin verilen: {ALLOWED_DOMAINS_LABEL}</p>
                     )}
                   </div>
                 ))}
                 {images.length < maxImages && (
                   <button onClick={addImage} className="text-sm text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
-                    <Plus size={14} /> Görsel Ekle
+                    <Plus size={14} /> GÃ¶rsel Ekle
                   </button>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
+              <p className="text-xs text-gray-400 mt-1.5">Kamera ikonuna tÄ±klayarak kapak gÃ¶rselini seÃ§ebilirsiniz.</p>
             </div>
           </div>
         )}
 
-        {/* ── ADIM 3: KATEGORİ ÖZELLİKLERİ ── */}
+        {/* â”€â”€ ADIM 3: KATEGORÄ° Ã–ZELLÄ°KLERÄ° â”€â”€ */}
         {step === 3 && (
           <div className="space-y-5">
             {catAttrs.length === 0 ? (
               <div className="text-center py-12 text-gray-400">
                 <Layers size={36} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm font-semibold">Bu kategori için özel özellik tanımlanmamış.</p>
-                <p className="text-xs mt-1">Teslimat adımına geçebilirsiniz.</p>
+                <p className="text-sm font-semibold">Bu kategori iÃ§in Ã¶zel Ã¶zellik tanÄ±mlanmamÄ±ÅŸ.</p>
+                <p className="text-xs mt-1">Teslimat adÄ±mÄ±na geÃ§ebilirsiniz.</p>
               </div>
             ) : catAttrs.map(attr => (
               <div key={attr.slug}>
@@ -306,7 +306,7 @@ export default function CreatePage() {
                 )}
                 {attr.type === 'boolean' && (
                   <div className="flex gap-3">
-                    {['Evet', 'Hayır'].map(opt => (
+                    {['Evet', 'HayÄ±r'].map(opt => (
                       <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                         {opt}
                       </button>
@@ -337,7 +337,7 @@ export default function CreatePage() {
                 {attr.type === 'range' && (
                   <div className="flex items-center gap-3">
                     <input type="number" value={(attrValues[attr.slug] || {}).min || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), min: e.target.value })} placeholder={`Min${attr.options?.min !== undefined ? ` (${attr.options.min})` : ''}`} className="input-field flex-1" />
-                    <span className="text-gray-400 font-bold">—</span>
+                    <span className="text-gray-400 font-bold">â€”</span>
                     <input type="number" value={(attrValues[attr.slug] || {}).max || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), max: e.target.value })} placeholder={`Max${attr.options?.max !== undefined ? ` (${attr.options.max})` : ''}`} className="input-field flex-1" />
                   </div>
                 )}
@@ -346,13 +346,13 @@ export default function CreatePage() {
           </div>
         )}
 
-        {/* ── ADIM 4: TESLİMAT ── */}
+        {/* â”€â”€ ADIM 4: TESLÄ°MAT â”€â”€ */}
         {step === 4 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               {[
-                { id: 'manual', icon: Clock,   title: 'Manuel Teslimat', desc: 'Alıcı ödedikten sonra belirttiğin sürede teslim edersin' },
-                { id: 'stock',  icon: Package, title: 'Stoklu (Otomatik)', desc: 'Ödeme anında sistem otomatik teslim eder' },
+                { id: 'manual', icon: Clock,   title: 'Manuel Teslimat', desc: 'AlÄ±cÄ± Ã¶dedikten sonra belirttiÄŸin sÃ¼rede teslim edersin' },
+                { id: 'stock',  icon: Package, title: 'Stoklu (Otomatik)', desc: 'Ã–deme anÄ±nda sistem otomatik teslim eder' },
               ].map(opt => (
                 <button key={opt.id} onClick={() => setDeliveryType(opt.id)} className={`p-4 rounded-2xl border-2 text-left transition-all ${deliveryType === opt.id ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-200'}`}>
                   <opt.icon size={22} className={`mb-2 ${deliveryType === opt.id ? 'text-violet-600' : 'text-gray-400'}`} />
@@ -364,16 +364,16 @@ export default function CreatePage() {
 
             {deliveryType === 'manual' && (
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Teslimat Süresi</label>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Teslimat SÃ¼resi</label>
                 <div className="flex flex-wrap gap-2">
                   {DELIVERY_HOURS.map(h => (
                     <button key={h} onClick={() => setDeliveryHours(h)} className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                      {h < 24 ? `${h} saat` : `${h / 24} gün`}
+                      {h < 24 ? `${h} saat` : `${h / 24} gÃ¼n`}
                     </button>
                   ))}
                 </div>
                 <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700 font-medium">
-                  ⚠️ Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir.
+                  âš ï¸ BelirlediÄŸiniz sÃ¼rede teslim etmezseniz hesabÄ±nÄ±z uyarÄ± alabilir.
                 </div>
               </div>
             )}
@@ -392,7 +392,7 @@ export default function CreatePage() {
                         {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400"><Trash2 size={13} /></button>}
                       </div>
                       <input value={stock.label} onChange={e => setStockField(idx, 'label', e.target.value)} placeholder="Etiket (opsiyonel)" className="input-field text-xs mb-2" />
-                      <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
+                      <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok iÃ§eriÄŸi â€” alÄ±cÄ± satÄ±n alÄ±nca bunu gÃ¶recek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
                     </div>
                   ))}
                 </div>
@@ -400,7 +400,7 @@ export default function CreatePage() {
                   <Plus size={16} /> Stok Ekle
                 </button>
                 <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 font-medium">
-                  💡 Stok bitince ilan otomatik kapanır. Yeni stok ekleyerek tekrar aktifleştirebilirsiniz.
+                  ğŸ’¡ Stok bitince ilan otomatik kapanÄ±r. Yeni stok ekleyerek tekrar aktifleÅŸtirebilirsiniz.
                 </div>
               </div>
             )}
@@ -423,7 +423,7 @@ export default function CreatePage() {
             <button onClick={handleSubmit} disabled={saving || !canNext()} className="flex items-center gap-2 btn-primary py-2.5 px-6 disabled:opacity-40 disabled:cursor-not-allowed">
               {saving
                 ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <><Check size={16} /> İlanı Yayınla</>
+                : <><Check size={16} /> Ä°lanÄ± YayÄ±nla</>
               }
             </button>
           )}
@@ -432,3 +432,4 @@ export default function CreatePage() {
     </div>
   );
 }
+
