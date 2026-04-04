@@ -138,10 +138,13 @@ export const adminDeleteCategoryType = (type_id) =>
   adminRequest('admin_delete_category_type', { method: 'POST', body: { type_id } });
 
 // Image Upload
-export async function adminUploadImage(file, folder = 'misc') {
+export async function adminUploadImage(file, folder = 'misc', options = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', 'admin_upload_image');
   url.searchParams.set('folder', folder);
+  if (options.preserveOriginal) {
+    url.searchParams.set('preserve_original', '1');
+  }
 
   const formData = new FormData();
   formData.append('image', file);

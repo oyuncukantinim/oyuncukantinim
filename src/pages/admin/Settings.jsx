@@ -48,7 +48,8 @@ const SETTINGS_TABS = [
             label: 'Favicon',
             type: 'image',
             placeholder: 'https://...',
-            desc: 'Tarayıcı sekmesinde kullanılacak küçük simge.',
+            accept: '.png,.svg,.webp,.jpg,.jpeg,.ico,image/png,image/svg+xml,image/webp,image/jpeg,image/x-icon,image/vnd.microsoft.icon',
+            desc: 'Tarayıcı sekmesinde kullanılacak küçük simge. SVG, PNG ve ICO kullanabilirsin.',
           },
         ],
       },
@@ -270,7 +271,7 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={field.accept || 'image/*'}
             className="hidden"
             onChange={async (event) => {
               const file = event.target.files?.[0];
@@ -413,7 +414,7 @@ export default function AdminSettings() {
   const handleUpload = async (key, file) => {
     setImageUploading(key);
     try {
-      const url = await adminUploadImage(file, 'branding');
+      const url = await adminUploadImage(file, 'branding', { preserveOriginal: key === 'site_favicon' });
       set(key, url);
       showToast('Görsel yüklendi.');
     } catch (error) {

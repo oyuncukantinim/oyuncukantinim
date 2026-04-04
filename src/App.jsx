@@ -137,6 +137,10 @@ function SiteLayout() {
   useEffect(() => {
     const faviconHref = siteState.siteFavicon?.trim();
     if (!faviconHref) return;
+    const lowerHref = faviconHref.toLowerCase();
+    const faviconType = lowerHref.endsWith('.svg')
+      ? 'image/svg+xml'
+      : (lowerHref.endsWith('.ico') ? 'image/x-icon' : undefined);
 
     let link = document.querySelector("link[rel='icon']");
     if (!link) {
@@ -145,6 +149,11 @@ function SiteLayout() {
       document.head.appendChild(link);
     }
     link.setAttribute('href', faviconHref);
+    if (faviconType) {
+      link.setAttribute('type', faviconType);
+    } else {
+      link.removeAttribute('type');
+    }
   }, [siteState.siteFavicon]);
 
   if (!siteState.checked) return null;
