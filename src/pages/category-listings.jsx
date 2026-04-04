@@ -109,9 +109,9 @@ export default function CategoryListingsPage() {
           <span key={bc.id} className="flex items-center gap-1.5">
             <ChevronRight size={12} />
             {i === breadcrumb.length - 1 ? (
-              <span className="text-gray-700 font-bold">{bc.icon} {bc.name}</span>
+              <span className="text-gray-700 font-bold">{bc.name}</span>
             ) : (
-              <Link to={`/categories/${bc.slug}-${bc.id}`} className="hover:text-violet-600 font-semibold">{bc.icon} {bc.name}</Link>
+              <Link to={`/categories/${bc.slug}-${bc.id}`} className="hover:text-violet-600 font-semibold">{bc.name}</Link>
             )}
           </span>
         ))}
@@ -119,24 +119,20 @@ export default function CategoryListingsPage() {
 
       {/* Category Header */}
       <div className="card overflow-hidden">
-        {category?.image ? (
+        {category?.banner_image ? (
           <div className="relative h-40">
-            <img src={category.image} alt={category.name} className="w-full h-full object-cover" />
+            <img src={category.banner_image} alt={category.name} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center px-8">
               <div>
-                <div className="text-4xl mb-1">{category?.icon}</div>
                 <h1 className="text-3xl font-extrabold text-white">{category?.name}</h1>
                 <p className="text-white/70 text-sm mt-1">{filtered.length} ilan bulundu</p>
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-8 flex items-center gap-4">
-            <span className="text-5xl">{category?.icon || <Tag size={40} />}</span>
-            <div>
-              <h1 className="text-3xl font-extrabold text-white">{category?.name || 'Kategori'}</h1>
-              <p className="text-white/70 text-sm mt-1">{filtered.length} ilan bulundu</p>
-            </div>
+          <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-8">
+            <h1 className="text-3xl font-extrabold text-white">{category?.name || 'Kategori'}</h1>
+            <p className="text-white/70 text-sm mt-1">{filtered.length} ilan bulundu</p>
           </div>
         )}
       </div>
@@ -156,7 +152,7 @@ export default function CategoryListingsPage() {
               onClick={() => setSubCatFilter(subCatFilter === c.id ? null : c.id)}
               className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold transition-all border ${subCatFilter === c.id ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-gray-600 border-gray-200 hover:border-violet-300'}`}
             >
-              {c.icon} {c.name}
+              {c.name}
             </button>
           ))}
         </div>

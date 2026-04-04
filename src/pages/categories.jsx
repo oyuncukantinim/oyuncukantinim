@@ -129,12 +129,7 @@ export default function CategoriesPage() {
             <ChevronLeft size={16} /> Tüm Kategoriler
           </button>
           <ChevronRight size={14} className="text-gray-300" />
-          <span className="text-sm font-extrabold text-gray-800">
-            {rootCat.icon} {rootCat.name}
-          </span>
-          {subCats.length > 0 && (
-            <span className="text-xs text-gray-400">{subCats.length} alt kategori</span>
-          )}
+          <span className="text-sm font-extrabold text-gray-800">{rootCat.name}</span>
         </div>
       )}
 
@@ -147,9 +142,9 @@ export default function CategoriesPage() {
               <p className="font-semibold">Kategori bulunamadı.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
               {searchResults.map(cat => (
-                <CategoryCard key={cat.id} cat={cat} isRoot={!cat.parent_id} kidCount={childrenOf(cat.id).length} onClick={null} />
+                <CategoryCard key={cat.id} cat={cat} isRoot={!cat.parent_id} onClick={null} />
               ))}
             </div>
           )}
@@ -167,7 +162,7 @@ export default function CategoriesPage() {
                 <p className="font-semibold">Bu türde kategori bulunamadı.</p>
               </div>
             ) : (
-              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
                 {filteredAll.map(cat => {
                   const kids = childrenOf(cat.id);
                   const isRoot = !cat.parent_id;
@@ -176,7 +171,6 @@ export default function CategoriesPage() {
                       key={cat.id}
                       cat={cat}
                       isRoot={isRoot}
-                      kidCount={kids.length}
                       onClick={isRoot && kids.length > 0 ? () => setActiveRoot(cat) : null}
                     />
                   );
@@ -191,7 +185,7 @@ export default function CategoriesPage() {
                 <p className="font-semibold">Kategori bulunamadı.</p>
               </div>
             ) : (
-              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
                 {filteredRoots.map(cat => {
                   const kids = childrenOf(cat.id);
                   return (
@@ -199,7 +193,6 @@ export default function CategoriesPage() {
                       key={cat.id}
                       cat={cat}
                       isRoot={true}
-                      kidCount={kids.length}
                       onClick={kids.length > 0 ? () => setActiveRoot(cat) : null}
                     />
                   );
@@ -228,17 +221,15 @@ export default function CategoriesPage() {
                 to={`/categories/${buildCatSlug(rootCat)}`}
                 className="flex items-center gap-3 px-4 py-3 bg-violet-50 border border-violet-200 rounded-2xl hover:bg-violet-100 transition-colors text-sm font-bold text-violet-700"
               >
-                <span className="text-xl">{rootCat.icon}</span>
                 Tüm "{rootCat.name}" İlanlarını Gör
                 <ChevronRight size={15} className="ml-auto" />
               </Link>
-              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
                 {subCats.map(cat => (
                   <CategoryCard
                     key={cat.id}
                     cat={cat}
                     isRoot={false}
-                    kidCount={childrenOf(cat.id).length}
                     onClick={null}
                   />
                 ))}
@@ -255,7 +246,7 @@ function CategoryCard({ cat, isRoot, onClick }) {
   const slug = `${cat.slug}-${cat.id}`;
   const inner = (
     <div
-      className="group relative mx-auto flex h-[275px] w-[185px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer"
+      className="group relative mx-auto flex h-[250px] w-[160px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer"
     >
       {/* Image / Gradient background */}
       {cat.image ? (
@@ -274,7 +265,7 @@ function CategoryCard({ cat, isRoot, onClick }) {
 
       {/* Alt içerik */}
       <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
-        <div className="max-w-full rounded-xl bg-black/28 px-3 py-1.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-[1px]">
+        <div className="max-w-full rounded-xl bg-black/42 px-3 py-1.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-[1px]">
           <div className="line-clamp-2 text-sm font-bold leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
             {cat.name}
           </div>
