@@ -120,8 +120,8 @@ export default function CategoryListingsPage() {
       {/* Category Header */}
       <div className="card overflow-hidden">
         {category?.banner_image ? (
-          <div className="relative h-40">
-            <img src={category.banner_image} alt={category.name} className="w-full h-full object-cover" />
+          <div className="relative h-40 bg-slate-100">
+            <img src={category.banner_image} alt={category.name} className="w-full h-full object-contain" />
             <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-transparent flex items-center px-8">
               <div>
                 <h1 className="text-3xl font-extrabold text-white">{category?.name}</h1>

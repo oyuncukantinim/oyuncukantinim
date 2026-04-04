@@ -557,8 +557,8 @@ export default function AdminCategories() {
               />
 
               {catForm.banner_image ? (
-                <div className="relative overflow-hidden rounded-xl border border-gray-200 group aspect-[4/1] w-full">
-                  <img src={catForm.banner_image} alt="" className="w-full h-full object-cover" />
+                <div className="relative overflow-hidden rounded-xl border border-gray-200 group aspect-[4/1] w-full bg-slate-100">
+                  <img src={catForm.banner_image} alt="" className="w-full h-full object-contain" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                     <button
                       type="button"
