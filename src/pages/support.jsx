@@ -53,6 +53,17 @@ const orderStatusLabel = (status, deliveryStatus) => {
   return 'Bekliyor';
 };
 
+const listingStatusLabel = (status) => {
+  if (status === 'active') return 'Aktif';
+  if (status === 'sold') return 'Satıldı';
+  if (status === 'passive') return 'Pasif';
+  if (status === 'pending') return 'Onay Bekliyor';
+  if (status === 'draft') return 'Taslak';
+  if (status === 'rejected') return 'Reddedildi';
+  if (status === 'expired') return 'Süresi Doldu';
+  return status || 'Durum yok';
+};
+
 function StatusBadge({ value }) {
   const [label, style] = STATUS[value] || STATUS.open;
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${style}`}>{label}</span>;
@@ -176,7 +187,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
           </div>
           <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
-          <div className="text-[11px] font-semibold text-slate-500">{item.status || 'Durum yok'}</div>
+          <div className="text-[11px] font-semibold text-slate-500">{listingStatusLabel(item.status)}</div>
           <div className="text-[11px] font-semibold text-slate-400">{fmtDate(item.last_updated_at)}</div>
           <div className="flex justify-end">
             {selected ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : <span className="inline-flex h-5 w-5 rounded-full border border-slate-200 bg-white" />}
