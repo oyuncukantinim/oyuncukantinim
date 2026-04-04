@@ -11,7 +11,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
           ? 'border-violet-400 ring-2 ring-violet-200'
           : 'border-gray-200 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-md'
       }`}
-      style={{ aspectRatio: '360 / 510' }}
+      style={{ width: '360px', height: '510px' }}
     >
       {category.image ? (
         <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
@@ -101,7 +101,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const currentLevel = childrenOf(currentParentId);
 
   const renderCards = (items, withPath = false) => (
-    <div className="grid grid-cols-3 gap-3 p-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+    <div className="flex flex-wrap gap-4 p-3">
       {items.map((category) => {
         const children = childrenOf(category.id);
         const hasChildren = children.length > 0;
