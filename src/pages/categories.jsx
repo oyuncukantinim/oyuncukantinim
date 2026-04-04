@@ -167,7 +167,7 @@ export default function CategoriesPage() {
                 <p className="font-semibold">Bu türde kategori bulunamadı.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
                 {filteredAll.map(cat => {
                   const kids = childrenOf(cat.id);
                   const isRoot = !cat.parent_id;
@@ -191,7 +191,7 @@ export default function CategoriesPage() {
                 <p className="font-semibold">Kategori bulunamadı.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
                 {filteredRoots.map(cat => {
                   const kids = childrenOf(cat.id);
                   return (
@@ -232,7 +232,7 @@ export default function CategoriesPage() {
                 Tüm "{rootCat.name}" İlanlarını Gör
                 <ChevronRight size={15} className="ml-auto" />
               </Link>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+              <div className="grid [grid-template-columns:repeat(auto-fill,minmax(185px,1fr))] gap-4">
                 {subCats.map(cat => (
                   <CategoryCard
                     key={cat.id}
@@ -251,12 +251,11 @@ export default function CategoriesPage() {
   );
 }
 
-function CategoryCard({ cat, isRoot, kidCount, onClick }) {
+function CategoryCard({ cat, isRoot, onClick }) {
   const slug = `${cat.slug}-${cat.id}`;
   const inner = (
     <div
-      className="group relative flex flex-col rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200 bg-white cursor-pointer"
-      style={{ aspectRatio: '190/240' }}
+      className="group relative mx-auto flex h-[275px] w-[185px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer"
     >
       {/* Image / Gradient background */}
       {cat.image ? (
@@ -270,21 +269,14 @@ function CategoryCard({ cat, isRoot, kidCount, onClick }) {
       )}
 
       {/* Sadece alt kısımda hafif gradient */}
-      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/70 to-transparent" />
 
       {/* Badge */}
-      {kidCount > 0 && (
-        <div className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-          {kidCount} alt
-        </div>
-      )}
 
       {/* Alt içerik */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <div className="flex items-end gap-2">
-          <span className="text-2xl drop-shadow flex-shrink-0">{cat.icon}</span>
-          <div className="min-w-0">
-            <div className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.name}</div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
+        <div className="max-w-full rounded-xl bg-black/28 px-3 py-1.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.28)] backdrop-blur-[1px]">
+          <div className="line-clamp-2 text-sm font-bold leading-tight text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+            {cat.name}
           </div>
         </div>
       </div>
