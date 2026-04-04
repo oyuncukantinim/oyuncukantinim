@@ -159,6 +159,14 @@ export function markNotificationsRead() {
   return request('mark_notifications_read', { method: 'POST', auth: true });
 }
 
+export function deleteNotification(id) {
+  return request('delete_notification', { method: 'POST', body: { id }, auth: true });
+}
+
+export function clearNotifications() {
+  return request('clear_notifications', { method: 'POST', auth: true });
+}
+
 export function getUnreadNotificationsCount() {
   return request('unread_notifications_count', { auth: true });
 }

@@ -228,8 +228,14 @@ function ChatPanel({ userId, currentUser, onBack }) {
   const [sending, setSending] = useState(false);
   const [otherName, setOtherName] = useState(`Kullanıcı #${userId}`);
   const [initialized, setInitialized] = useState(false);
-  const endRef = useRef(null);
   const inputRef = useRef(null);
+  const messageListRef = useRef(null);
+
+  const scrollMessagesToBottom = (behavior = 'auto') => {
+    const container = messageListRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior });
+  };
 
   const fetchMessages = useCallback((isInitial = false) => {
     getMessages(userId).then(r => {
@@ -239,7 +245,7 @@ function ChatPanel({ userId, currentUser, onBack }) {
       if (other) setOtherName(other.sender_name || `Kullanıcı #${userId}`);
       if (isInitial) {
         setTimeout(() => {
-          endRef.current?.scrollIntoView({ behavior: 'instant' });
+          scrollMessagesToBottom('auto');
           setInitialized(true);
         }, 50);
       }
@@ -256,7 +262,7 @@ function ChatPanel({ userId, currentUser, onBack }) {
 
   useEffect(() => {
     if (!initialized) return;
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    scrollMessagesToBottom('smooth');
   }, [messages.length]);
 
   const handleSend = async (e) => {
@@ -267,7 +273,7 @@ function ChatPanel({ userId, currentUser, onBack }) {
       await sendMessage({ receiver_id: parseInt(userId), message: text.trim() });
       setText('');
       fetchMessages(false);
-      setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+      setTimeout(() => scrollMessagesToBottom('smooth'), 100);
     } catch { }
     finally { setSending(false); inputRef.current?.focus(); }
   };
@@ -300,7 +306,7 @@ function ChatPanel({ userId, currentUser, onBack }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50/40">
+      <div ref={messageListRef} className="flex-1 overflow-y-auto p-4 bg-gray-50/40">
         {grouped.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-3">
             <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center border border-gray-100 shadow-sm">
@@ -363,7 +369,6 @@ function ChatPanel({ userId, currentUser, onBack }) {
             </div>
           );
         })}
-        <div ref={endRef} />
       </div>
 
       {/* Input */}

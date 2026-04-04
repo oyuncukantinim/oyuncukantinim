@@ -312,6 +312,9 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
             {isSellerView ? `Alıcı: ${order.buyer_username || '—'}` : (order.seller_name ? `Satıcı: ${order.seller_name}` : '')}
             {order.game_name ? ` • ${order.game_name}` : ''}
           </div>
+          <div className="text-[11px] text-gray-400 mt-1">
+            Sipariş #{order.id} • {new Date(order.created_at).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}
+          </div>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
             <DeliveryBadge status={status} />
             {order.item_type === 'epin' && <span className="text-[10px] bg-yellow-100 text-yellow-700 font-bold px-2 py-0.5 rounded-lg">E-Pin</span>}
@@ -330,12 +333,6 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
       {expanded && (
         <div className="border-t border-gray-50 p-4 space-y-3 bg-gray-50/50">
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div><span className="text-gray-400">Sipariş #</span><div className="font-bold text-gray-700">{order.id}</div></div>
-            <div><span className="text-gray-400">Tarih</span><div className="font-bold text-gray-700">{new Date(order.created_at).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}</div></div>
-            <div><span className="text-gray-400">Ödenen</span><div className="font-bold text-gray-700">{Number(order.amount).toFixed(2)} ₺</div></div>
-            </div>
-
           {/* Teslimat içeriği */}
           {order.delivery_content && (
             <div>
@@ -431,6 +428,7 @@ export default function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [bannerImage, setBannerImage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -567,12 +565,18 @@ export default function ProfilePage() {
         return;
       }
       const payload = { ...personalInfo };
+      if (newPassword && newPassword !== confirmPassword) {
+        showToast('Şifre tekrar alanı eşleşmiyor.');
+        setSaving(false);
+        return;
+      }
       if (normalizedEmail !== (user.email || '')) payload.email = normalizedEmail;
       if (newPassword) payload.new_password = newPassword;
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditEmail(res.data.email || '');
       setNewPassword('');
+      setConfirmPassword('');
       setShowPassword(false);
       showToast('Kişisel bilgiler güncellendi!');
     } catch (err) { showToast(err.message); }
@@ -1057,7 +1061,7 @@ export default function ProfilePage() {
                       readOnly
                       className="input-field bg-gray-50 text-gray-500 cursor-not-allowed"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Kullanıcı adı artık sabittir; alt çizgi de kullanılamaz.</p>
+                    <p className="text-xs text-gray-400 mt-1">Kullanıcı adı tekrar değiştirilemez.</p>
                   </div>
                 </div>
 
@@ -1170,6 +1174,29 @@ export default function ProfilePage() {
                         </button>
                       </div>
                       <p className="text-xs text-gray-400 mt-1">Şifre alanını boş bırakırsan mevcut şifren korunur.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre Tekrar</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          placeholder="Yeni şifreyi tekrar yaz"
+                          className={`input-field pr-11 ${confirmPassword && newPassword !== confirmPassword ? 'border-red-300 focus:border-red-400' : ''}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {confirmPassword && newPassword !== confirmPassword && (
+                        <p className="text-xs text-red-500 mt-1">Şifreler eşleşmiyor.</p>
+                      )}
                     </div>
                   </div>
 
