@@ -5,9 +5,11 @@ import { getListings } from '../lib/api';
 import { GAMES, SORT_OPTIONS } from '../data/catalog';
 import { useAuth } from '../context/AuthContext';
 import ListingCard from '../components/ListingCard';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 export default function MarketPage() {
   const { user } = useAuth();
+  const { defaultListingImage } = useSiteBrand();
   const [searchParams] = useSearchParams();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +85,7 @@ export default function MarketPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {listings.map(listing => <ListingCard key={listing.id} listing={listing} />)}
+          {listings.map(listing => <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />)}
         </div>
       )}
     </div>

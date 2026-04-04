@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Plus, Search, SlidersHorizontal, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import ListingCard from '../components/ListingCard';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -23,6 +24,7 @@ function idFromCatSlug(slug) {
 export default function CategoryListingsPage() {
   const { catSlug } = useParams();
   const { user } = useAuth();
+  const { defaultListingImage } = useSiteBrand();
   const catId = idFromCatSlug(catSlug);
 
   const [category, setCategory] = useState(null);
@@ -242,7 +244,7 @@ export default function CategoryListingsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filtered.map(listing => <ListingCard key={listing.id} listing={listing} />)}
+        {filtered.map(listing => <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />)}
         </div>
       )}
     </div>

@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import { listingSlug } from '../lib/api';
+import { getListingCoverImage } from '../lib/listingMedia';
 
-export default function ListingCard({ listing, compact = false }) {
-  const coverImg = listing.images?.[listing.cover_index || 0];
+export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
+  const coverImg = getListingCoverImage(listing, fallbackImage);
 
   return (
     <Link

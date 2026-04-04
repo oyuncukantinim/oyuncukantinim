@@ -11,6 +11,7 @@ import {
 
 const FinanceIcon = TrendingUp;
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
+import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions } from '../lib/api';
@@ -418,7 +419,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { showToast } = useCart();
-  const { defaultAvatar, defaultProfileBanner, balanceAddEnabled } = useSiteBrand();
+  const { defaultAvatar, defaultProfileBanner, defaultListingImage, balanceAddEnabled } = useSiteBrand();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('listings');
@@ -739,8 +740,8 @@ export default function ProfilePage() {
                   {filteredListings.map(listing => (
                     <div key={listing.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex flex-col">
                       <div className="aspect-[4/3] bg-white">
-                        {listing.images?.[0]
-                          ? <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
+                        {getListingCoverImage(listing, defaultListingImage)
+                          ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                           : <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon size={24}/></div>
                         }
                       </div>
@@ -769,8 +770,8 @@ export default function ProfilePage() {
 	                  {filteredListings.map(listing => (
 	                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2.5 border border-gray-100">
 	                      <div className="w-14 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
-	                        {listing.images?.[0] ? (
-	                          <img src={listing.images[0]} alt="" className="w-full h-full object-cover"/>
+	                        {getListingCoverImage(listing, defaultListingImage) ? (
+	                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={20}/></div>
                         )}
@@ -869,7 +870,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {favorites.map(fav => {
-                    const coverImg = fav.images?.[fav.cover_index || 0];
+                    const coverImg = getListingCoverImage(fav, defaultListingImage);
                     const dropped = fav.price_diff < -0.009;
                     const risen   = fav.price_diff > 0.009;
                     return (

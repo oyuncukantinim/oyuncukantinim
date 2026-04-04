@@ -7,6 +7,8 @@ import {
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import useSiteBrand from '../hooks/useSiteBrand';
+import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -16,6 +18,7 @@ export default function ListingDetailPage() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { user } = useAuth();
+  const { defaultListingImage } = useSiteBrand();
   const [listing, setListing] = useState(null);
   const [catAttrs, setCatAttrs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,17 +65,17 @@ export default function ListingDetailPage() {
   );
   if (!listing) return null;
 
-  const images = listing.images?.length > 0 ? listing.images : [];
+  const images = getListingImageSet(listing, defaultListingImage);
   const isSeller = user && user.id === listing.seller_id;
   const isUnavailable = listing.status === 'sold' || listing.status === 'passive' || listing.status === 'expired' || listing.status === 'inactive';
 
   const handleBuy = () => {
     if (isUnavailable) return;
-    const coverImg = listing.images?.[listing.cover_index || 0] || listing.images?.[0] || null;
+    const coverImg = getListingCoverImage(listing, defaultListingImage);
     addToCart({
       id: listing.id, itemType: 'listing', title: listing.title,
       price: Number(listing.price), game: listing.game_name,
-      image: coverImg || listing.avatar, listing_id: listing.id, seller: listing.seller,
+      image: coverImg || '', listing_id: listing.id, seller: listing.seller,
     });
   };
 

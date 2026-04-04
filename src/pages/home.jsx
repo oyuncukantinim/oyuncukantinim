@@ -4,8 +4,10 @@ import { Flame, Zap, ChevronRight, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { getListings, getEpins } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import EPinCard from '../components/EPinCard';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 export default function Home() {
+  const { defaultListingImage } = useSiteBrand();
   const [listings, setListings] = useState([]);
   const [epins, setEpins] = useState([]);
   const [popularGames, setPopularGames] = useState([]);
@@ -140,7 +142,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {listings.slice(0, 4).map(listing => (
-              <ListingCard key={listing.id} listing={listing} />
+              <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
             ))}
           </div>
         </section>

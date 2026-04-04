@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { getSiteSettings } from '../lib/api';
 
 const DEFAULT_BRAND = {
@@ -6,8 +6,9 @@ const DEFAULT_BRAND = {
   siteLogo: '',
   siteLogoText: '',
   siteFavicon: '',
-  defaultAvatar: '👤',
+  defaultAvatar: 'ğŸ‘¤',
   defaultProfileBanner: '',
+  defaultListingImage: '',
   registrationEnabled: true,
   balanceAddEnabled: true,
   usernameMinLength: 3,
@@ -40,6 +41,7 @@ export default function useSiteBrand() {
           siteFavicon: response.data?.site_favicon || '',
           defaultAvatar: response.data?.default_avatar || DEFAULT_BRAND.defaultAvatar,
           defaultProfileBanner: response.data?.default_profile_banner || '',
+          defaultListingImage: response.data?.default_listing_image || '',
           registrationEnabled: !(response.data?.registration_enabled === 0 || response.data?.registration_enabled === '0' || response.data?.registration_enabled === false),
           balanceAddEnabled: !(response.data?.balance_add_enabled === 0 || response.data?.balance_add_enabled === '0' || response.data?.balance_add_enabled === false),
           usernameMinLength: Number(response.data?.username_min_length || DEFAULT_BRAND.usernameMinLength),
@@ -70,3 +72,4 @@ export default function useSiteBrand() {
 
   return { ...brand, checked };
 }
+
