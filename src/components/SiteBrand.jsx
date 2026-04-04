@@ -4,6 +4,7 @@ import { Gamepad2, Shield } from 'lucide-react';
 export default function SiteBrand({
   siteName = 'Oyuncu Kantinim',
   siteLogo = '',
+  siteLogoText = '',
   to,
   fallback = 'gamepad',
   subtitle = '',
@@ -16,13 +17,15 @@ export default function SiteBrand({
 }) {
   const FallbackIcon = fallback === 'shield' ? Shield : Gamepad2;
   const hasLogo = Boolean(siteLogo);
+  const visibleTitle = siteLogoText || siteName;
+  const shouldShowTitle = !hasLogo || showNameWithLogo || Boolean(subtitle) || Boolean(siteLogoText);
 
   const content = (
     <div className={`flex items-center gap-3 ${containerClassName}`.trim()}>
       {hasLogo ? (
         <img
           src={siteLogo}
-          alt={siteName}
+          alt={visibleTitle}
           className={imageClassName || 'h-10 w-auto object-contain'}
         />
       ) : (
@@ -31,10 +34,10 @@ export default function SiteBrand({
         </div>
       )}
 
-      {(!hasLogo || showNameWithLogo || subtitle) && (
+      {shouldShowTitle && (
         <div className="min-w-0">
-          {(!hasLogo || showNameWithLogo) && (
-            <div className={titleClassName}>{siteName}</div>
+          {shouldShowTitle && (
+            <div className={titleClassName}>{visibleTitle}</div>
           )}
           {subtitle ? <div className={subtitleClassName}>{subtitle}</div> : null}
         </div>

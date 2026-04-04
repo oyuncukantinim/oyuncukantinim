@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import SiteBrand from './SiteBrand';
 
-export default function Footer({ siteName = 'Oyuncu Kantinim', siteLogo = '' }) {
+export default function Footer({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   return (
     <footer className="mt-16 border-t border-gray-200 bg-white py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -11,6 +11,7 @@ export default function Footer({ siteName = 'Oyuncu Kantinim', siteLogo = '' }) 
               to="/"
               siteName={siteName}
               siteLogo={siteLogo}
+              siteLogoText={siteLogoText}
               imageClassName="h-10 w-auto max-w-[220px] object-contain"
               iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
               titleClassName="text-lg font-extrabold"

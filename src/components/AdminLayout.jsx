@@ -41,7 +41,7 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { siteName, siteLogo } = useSiteBrand();
+  const { siteName, siteLogo, siteLogoText } = useSiteBrand();
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
@@ -64,6 +64,7 @@ export default function AdminLayout({ children }) {
           to="/admin"
           siteName={siteName}
           siteLogo={siteLogo}
+          siteLogoText={siteLogoText}
           fallback="shield"
           subtitle="Admin Paneli"
           imageClassName="h-10 w-auto max-w-[180px] object-contain"

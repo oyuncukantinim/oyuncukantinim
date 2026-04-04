@@ -13,7 +13,7 @@ const NAV_LINKS = [
   { to: '/categories', label: 'Kategoriler' },
 ];
 
-export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '' }) {
+export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   const { user } = useAuth();
   const { cart } = useCart();
   const location = useLocation();
@@ -70,6 +70,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '' }) 
             to="/"
             siteName={siteName}
             siteLogo={siteLogo}
+            siteLogoText={siteLogoText}
             containerClassName="items-center"
             imageClassName="h-10 w-auto max-w-[220px] object-contain transition-transform group-hover:scale-[1.02]"
             iconWrapperClassName="rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2 shadow-neon-purple transition-transform group-hover:rotate-12"

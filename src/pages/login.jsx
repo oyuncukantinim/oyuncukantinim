@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { siteName, siteLogo } = useSiteBrand();
+  const { siteName, siteLogo, siteLogoText } = useSiteBrand();
   const { login } = useAuth();
   const { showToast } = useCart();
   const navigate = useNavigate();
@@ -52,6 +52,7 @@ export default function LoginPage() {
               <SiteBrand
                 siteName={siteName}
                 siteLogo={siteLogo}
+                siteLogoText={siteLogoText}
                 containerClassName="justify-center"
                 imageClassName="h-16 w-auto max-w-[280px] object-contain"
                 iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"

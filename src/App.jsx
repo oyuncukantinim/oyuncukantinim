@@ -45,7 +45,7 @@ function AdminRoute({ children }) {
   return children;
 }
 
-function MaintenancePage({ siteName, siteLogo }) {
+function MaintenancePage({ siteName, siteLogo, siteLogoText }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 to-purple-100 px-4">
       <div className="max-w-md text-center">
@@ -53,11 +53,11 @@ function MaintenancePage({ siteName, siteLogo }) {
           <SiteBrand
             siteName={siteName}
             siteLogo={siteLogo}
+            siteLogoText={siteLogoText}
             containerClassName="justify-center"
             imageClassName="h-16 w-auto max-w-[280px] object-contain"
             iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
             titleClassName="text-2xl font-extrabold text-gray-900"
-            showNameWithLogo={false}
           />
         </div>
         <h1 className="mb-3 text-3xl font-extrabold text-gray-900">Bakım Çalışması</h1>
@@ -98,6 +98,7 @@ function SiteLayout() {
     announcement: { active: false, text: '' },
     siteName: 'Oyuncu Kantinim',
     siteLogo: '',
+    siteLogoText: '',
   });
 
   useEffect(() => {
@@ -113,6 +114,7 @@ function SiteLayout() {
           },
           siteName: data.site_name || 'Oyuncu Kantinim',
           siteLogo: data.site_logo || '',
+          siteLogoText: data.site_logo_text || '',
         });
       })
       .catch(() => {
@@ -124,7 +126,13 @@ function SiteLayout() {
 
   const isAdmin = Boolean(localStorage.getItem('admin_token'));
   if (siteState.maintenance && !isAdmin) {
-    return <MaintenancePage siteName={siteState.siteName} siteLogo={siteState.siteLogo} />;
+    return (
+      <MaintenancePage
+        siteName={siteState.siteName}
+        siteLogo={siteState.siteLogo}
+        siteLogoText={siteState.siteLogoText}
+      />
+    );
   }
 
   return (
@@ -132,7 +140,7 @@ function SiteLayout() {
       {siteState.announcement.active && siteState.announcement.text ? (
         <AnnouncementBanner text={siteState.announcement.text} />
       ) : null}
-      <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} />
+      <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -152,7 +160,7 @@ function SiteLayout() {
           <Route path="/finance" element={<FinancePage />} />
         </Routes>
       </main>
-      <Footer siteName={siteState.siteName} siteLogo={siteState.siteLogo} />
+      <Footer siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
       <KantinBot />
       <Toast />
     </div>

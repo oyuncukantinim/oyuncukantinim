@@ -4,6 +4,7 @@ import { getSiteSettings } from '../lib/api';
 const DEFAULT_BRAND = {
   siteName: 'Oyuncu Kantinim',
   siteLogo: '',
+  siteLogoText: '',
 };
 
 export default function useSiteBrand() {
@@ -19,6 +20,7 @@ export default function useSiteBrand() {
         setBrand({
           siteName: response.data?.site_name || DEFAULT_BRAND.siteName,
           siteLogo: response.data?.site_logo || '',
+          siteLogoText: response.data?.site_logo_text || '',
         });
       })
       .catch(() => {

@@ -7,7 +7,7 @@ import SiteBrand from '../../components/SiteBrand';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { siteName, siteLogo } = useSiteBrand();
+  const { siteName, siteLogo, siteLogoText } = useSiteBrand();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -43,6 +43,7 @@ export default function AdminLogin() {
             <SiteBrand
               siteName={siteName}
               siteLogo={siteLogo}
+              siteLogoText={siteLogoText}
               fallback="shield"
               containerClassName="justify-center"
               imageClassName="h-16 w-auto max-w-[260px] object-contain"

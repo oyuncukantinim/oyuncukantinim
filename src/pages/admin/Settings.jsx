@@ -16,6 +16,12 @@ const SETTINGS_ROWS = [
           placeholder: 'https://...',
           desc: 'Navbar, footer ve admin alanlarındaki logo bu görselden beslenir.',
         },
+        {
+          key: 'site_logo_text',
+          label: 'Logo Metni',
+          type: 'text',
+          placeholder: 'Oyuncu Kantinim',
+        },
       ],
     },
     {
