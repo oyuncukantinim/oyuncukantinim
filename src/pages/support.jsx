@@ -53,15 +53,18 @@ const orderStatusLabel = (status, deliveryStatus) => {
   return 'Bekliyor';
 };
 
-const listingStatusLabel = (status) => {
-  if (status === 'active') return 'Aktif';
-  if (status === 'sold') return 'Satıldı';
-  if (status === 'passive') return 'Pasif';
+const listingLifecycleLabel = (item) => {
+  const status = item?.status;
+  const expiresAt = item?.expires_at ? new Date(item.expires_at).getTime() : null;
+  if ((status === 'active' || !status) && expiresAt && expiresAt < Date.now()) return 'İlan Süresi Doldu';
+  if (status === 'expired') return 'İlan Süresi Doldu';
+  if (status === 'passive') return 'İlan Pasifleştirildi';
+  if (status === 'active') return 'İlan Aktif';
   if (status === 'pending') return 'Onay Bekliyor';
   if (status === 'draft') return 'Taslak';
   if (status === 'rejected') return 'Reddedildi';
-  if (status === 'expired') return 'Süresi Doldu';
-  return status || 'Durum yok';
+  if (status === 'sold') return 'İlan Aktif Değil';
+  return 'Durum Belirsiz';
 };
 
 function StatusBadge({ value }) {
@@ -95,7 +98,7 @@ function TicketMessage({ item }) {
   );
 }
 
-function ListingsTable({ rows, title }) {
+function LinkedListingsTable({ rows, title, scope }) {
   if (!rows.length) return null;
   return (
     <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
@@ -107,28 +110,100 @@ function ListingsTable({ rows, title }) {
         <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-extrabold text-violet-700">{rows.length} ilan</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
-            <tr><th className="px-4 py-3">İlan</th><th className="px-4 py-3">Fiyat</th><th className="px-4 py-3">İlan Durumu</th><th className="px-4 py-3">Son Güncelleme</th></tr>
-          </thead>
-          <tbody>
-            {rows.map((item) => (
-              <tr key={item.id} className="border-t border-slate-100">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
+        {scope === 'purchased' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Satıcı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={`${item.id}-${item.order_id || 'listing'}`} className="border-t border-slate-100">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
+                  <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
                       {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
-                    <div className="font-bold text-slate-800">{item.title}</div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
-                <td className="px-4 py-3 text-slate-600">{item.status || '-'}</td>
-                <td className="px-4 py-3 text-slate-500">{fmtDate(item.last_updated_at)}</td>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
+                  <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
+                  <td className="px-4 py-3 text-slate-500">{fmtDate(item.order_created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {scope === 'sold' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Alıcı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={`${item.id}-${item.order_id || 'listing'}`} className="border-t border-slate-100">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
+                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
+                  <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
+                  <td className="px-4 py-3 text-slate-500">{fmtDate(item.order_created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {scope === 'mine' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">İlan No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">İlan Durumu</th>
+                <th className="px-4 py-3">Son Güncelleme</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={item.id} className="border-t border-slate-100">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
+                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
+                  <td className="px-4 py-3 text-slate-600">{listingLifecycleLabel(item)}</td>
+                  <td className="px-4 py-3 text-slate-500">{fmtDate(item.last_updated_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
       </div>
     </div>
   );
@@ -187,7 +262,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
           </div>
           <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
-          <div className="text-[11px] font-semibold text-slate-500">{listingStatusLabel(item.status)}</div>
+          <div className="text-[11px] font-semibold text-slate-500">{listingLifecycleLabel(item)}</div>
           <div className="text-[11px] font-semibold text-slate-400">{fmtDate(item.last_updated_at)}</div>
           <div className="flex justify-end">
             {selected ? <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : <span className="inline-flex h-5 w-5 rounded-full border border-slate-200 bg-white" />}
@@ -516,7 +591,7 @@ export default function SupportPage() {
                   <div><div className="mb-2 flex flex-wrap items-center gap-2"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-500">{selectedTicket.ticket_no}</span><StatusBadge value={selectedTicket.status} /></div><h2 className="text-2xl font-black tracking-tight text-slate-950">{selectedTicket.subject}</h2><div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-500"><span className="inline-flex items-center gap-1.5"><Clock3 size={14} />{fmtDate(selectedTicket.created_at)}</span><span className="inline-flex items-center gap-1.5"><Package size={14} />Ticket {selectedTicket.id}</span></div></div>
                   {selectedTicket.status !== 'closed' ? <button onClick={closeTicket} disabled={closing} className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-black text-rose-700 disabled:opacity-40"><XCircle size={16} />{closing ? 'Kapatılıyor...' : 'Talebi Kapat'}</button> : null}
                 </div>
-                {selectedTicket.category === 'listing' ? <div className="mt-4"><ListingsTable rows={selectedListings} title="Bağlı İlanlar" /></div> : null}
+                {selectedTicket.category === 'listing' ? <div className="mt-4"><LinkedListingsTable rows={selectedListings} scope={selectedTicket.related_scope} title="Bağlı İlanlar" /></div> : null}
               </div>
               <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
               {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}

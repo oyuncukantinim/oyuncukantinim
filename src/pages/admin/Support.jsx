@@ -70,24 +70,36 @@ function formatMoney(value) {
   return `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 }
 
-function listingStatusMeta(status) {
-  const map = {
-    active: ['Aktif', 'bg-emerald-50 text-emerald-700 border border-emerald-200'],
-    sold: ['Satıldı', 'bg-slate-100 text-slate-700 border border-slate-200'],
-    passive: ['Pasif', 'bg-amber-50 text-amber-700 border border-amber-200'],
-    pending: ['Onay Bekliyor', 'bg-blue-50 text-blue-700 border border-blue-200'],
-    draft: ['Taslak', 'bg-slate-100 text-slate-600 border border-slate-200'],
-    rejected: ['Reddedildi', 'bg-rose-50 text-rose-700 border border-rose-200'],
-    expired: ['Süresi Doldu', 'bg-slate-100 text-slate-700 border border-slate-200'],
-  };
-
-  if (map[status]) return map[status];
-  if (!status) return ['Belirsiz', 'bg-slate-100 text-slate-600 border border-slate-200'];
-  return [status, 'bg-slate-100 text-slate-600 border border-slate-200'];
+function orderStatusLabel(status, deliveryStatus) {
+  if (status === 'refunded') return 'İade';
+  if (status === 'cancelled') return 'İptal';
+  if (Number(deliveryStatus) === 3) return 'Anlaşmazlık';
+  if (Number(deliveryStatus) === 2) return 'Tamamlandı';
+  if (Number(deliveryStatus) === 1) return 'Teslim Edildi';
+  if (Number(deliveryStatus) === 0) return 'Teslimat Bekleniyor';
+  if (status === 'pending') return 'Bekliyor';
+  return 'Bekliyor';
 }
 
-function ListingStatusBadge({ status }) {
-  const [label, className] = listingStatusMeta(status);
+function listingLifecycleMeta(item) {
+  const status = item?.status;
+  const expiresAt = item?.expires_at ? new Date(item.expires_at).getTime() : null;
+
+  if ((status === 'active' || !status) && expiresAt && expiresAt < Date.now()) {
+    return ['İlan Süresi Doldu', 'bg-slate-100 text-slate-700 border border-slate-200'];
+  }
+  if (status === 'expired') return ['İlan Süresi Doldu', 'bg-slate-100 text-slate-700 border border-slate-200'];
+  if (status === 'passive') return ['İlan Pasifleştirildi', 'bg-amber-50 text-amber-700 border border-amber-200'];
+  if (status === 'active') return ['İlan Aktif', 'bg-emerald-50 text-emerald-700 border border-emerald-200'];
+  if (status === 'pending') return ['Onay Bekliyor', 'bg-blue-50 text-blue-700 border border-blue-200'];
+  if (status === 'draft') return ['Taslak', 'bg-slate-100 text-slate-600 border border-slate-200'];
+  if (status === 'rejected') return ['Reddedildi', 'bg-rose-50 text-rose-700 border border-rose-200'];
+  if (status === 'sold') return ['İlan Aktif Değil', 'bg-slate-100 text-slate-700 border border-slate-200'];
+  return ['Durum Belirsiz', 'bg-slate-100 text-slate-600 border border-slate-200'];
+}
+
+function ListingLifecycleBadge({ item }) {
+  const [label, className] = listingLifecycleMeta(item);
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${className}`}>
       {label}
@@ -137,46 +149,100 @@ function RelatedListingsTable({ rows, scope }) {
         <span className="rounded-full bg-violet-50 px-2.5 py-1 text-[11px] font-extrabold text-violet-700">{rows.length} ilan</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="min-w-full text-left text-sm">
-          <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
-            <tr>
-              <th className="px-4 py-3">İlan</th>
-              <th className="px-4 py-3">Fiyat</th>
-              <th className="px-4 py-3">İlan Durumu</th>
-              <th className="px-4 py-3">Satıcı</th>
-              <th className="px-4 py-3">Alıcı</th>
-              <th className="px-4 py-3">Son Güncelleme</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((item) => (
-              <tr key={item.id} className="border-t border-slate-200/80">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? (
-                        <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-slate-400">
-                          <ShoppingBag size={18} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <div className="truncate font-bold text-slate-800">{item.title || `İlan ${item.id}`}</div>
-                      <div className="text-xs text-slate-400">#{item.id}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
-                <td className="px-4 py-3"><ListingStatusBadge status={item.status} /></td>
-                <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
-                <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
-                <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>
+        {scope === 'purchased' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Satıcı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={`${item.id}-${item.order_id || 'listing'}`} className="border-t border-slate-200/80">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
+                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
+                  <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
+                  <td className="px-4 py-3 text-slate-500">{formatDateTime(item.order_created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {scope === 'sold' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">Sipariş No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Alıcı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">Sipariş Durumu</th>
+                <th className="px-4 py-3">Sipariş Tarihi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={`${item.id}-${item.order_id || 'listing'}`} className="border-t border-slate-200/80">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
+                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
+                  <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
+                  <td className="px-4 py-3 text-slate-500">{formatDateTime(item.order_created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {scope === 'mine' ? (
+          <table className="min-w-full text-left text-sm">
+            <thead className="bg-slate-50 text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+              <tr>
+                <th className="px-4 py-3">İlan No</th>
+                <th className="px-4 py-3">Görsel</th>
+                <th className="px-4 py-3">İlan Adı</th>
+                <th className="px-4 py-3">Fiyat</th>
+                <th className="px-4 py-3">İlan Durumu</th>
+                <th className="px-4 py-3">Son Güncelleme</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((item) => (
+                <tr key={item.id} className="border-t border-slate-200/80">
+                  <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
+                  <td className="px-4 py-3">
+                    <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
+                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
+                  <td className="px-4 py-3"><ListingLifecycleBadge item={item} /></td>
+                  <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
       </div>
     </div>
   );
