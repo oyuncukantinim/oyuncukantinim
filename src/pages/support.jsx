@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle2,
-  ChevronDown,
   Clock3,
   LifeBuoy,
   Package,
@@ -113,18 +112,21 @@ function ListingsTable({ rows, title }) {
   );
 }
 
-function ListingCard({ item, selected, onToggle }) {
+function ListingPickerRow({ item, selected, onToggle }) {
   return (
-    <button type="button" onClick={() => onToggle(item.id)} className={`overflow-hidden rounded-[18px] border text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
-      <div className="relative h-28 overflow-hidden bg-slate-100">
-        {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={26} /></div>}
-        {selected ? <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-emerald-500 px-2 py-1 text-[10px] font-extrabold text-white"><CheckCircle2 size={11} />Seçildi</span> : null}
-      </div>
-      <div className="space-y-1.5 p-2.5">
-        <div className="line-clamp-2 text-[13px] font-black leading-5 text-slate-900">{item.title}</div>
-        <div className="flex items-center justify-between gap-2 text-[11px]">
-          <span className="font-extrabold text-emerald-600">{fmtMoney(item.price)}</span>
-          <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{item.status || 'Durum yok'}</span>
+    <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
+      <div className="flex items-center gap-3">
+        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
+          {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={20} /></div>}
+          {selected ? <span className="absolute right-1.5 top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : null}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="line-clamp-2 text-[13px] font-black leading-5 text-slate-900">{item.title}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px]">
+            <span className="font-extrabold text-emerald-600">{fmtMoney(item.price)}</span>
+            <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{item.status || 'Durum yok'}</span>
+            <span className="text-slate-400">{fmtDate(item.last_updated_at)}</span>
+          </div>
         </div>
       </div>
     </button>
@@ -149,7 +151,6 @@ export default function SupportPage() {
   const [replying, setReplying] = useState(false);
   const [closing, setClosing] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [replyMessage, setReplyMessage] = useState('');
@@ -220,11 +221,10 @@ export default function SupportPage() {
   const filteredTickets = useMemo(() => tickets.filter((item) => {
     const keyword = search.trim().toLowerCase();
     return (filterStatus === 'all' || item.status === filterStatus)
-      && (!keyword || item.ticket_no?.toLowerCase().includes(keyword) || item.subject?.toLowerCase().includes(keyword) || item.last_message?.toLowerCase().includes(keyword));
+      && (!keyword || item.ticket_no?.toLowerCase().includes(keyword) || item.subject?.toLowerCase().includes(keyword));
   }), [tickets, filterStatus, search]);
 
   const setCategory = (value) => {
-    setPickerOpen(false);
     setWizardStep(0);
     setForm((prev) => ({ ...prev, category: value, related_order_id: '', related_scope: 'purchased', selected_listing_ids: [] }));
   };
@@ -257,7 +257,6 @@ export default function SupportPage() {
       });
       showToast('Destek talebin oluşturuldu.');
       setWizardStep(0);
-      setPickerOpen(false);
       setForm({ subject: '', category: 'listing', related_order_id: '', related_scope: 'purchased', selected_listing_ids: [], message: '' });
       await loadTickets(response.data?.id || null);
     } catch (error) {
@@ -329,12 +328,16 @@ export default function SupportPage() {
           {wizardStep === 1 ? (
             <div className="space-y-4">
               <div className="space-y-4">
-                <div className="grid gap-2 md:grid-cols-3">{LISTING_SCOPE_OPTIONS.map((item) => <button key={item.value} type="button" onClick={() => { setPickerOpen(false); setForm((prev) => ({ ...prev, related_scope: item.value, selected_listing_ids: [] })); }} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${form.related_scope === item.value ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{item.label}</button>)}</div>
+                <div className="grid gap-2 md:grid-cols-3">{LISTING_SCOPE_OPTIONS.map((item) => <button key={item.value} type="button" onClick={() => { setForm((prev) => ({ ...prev, related_scope: item.value, selected_listing_ids: [] })); }} className={`rounded-2xl border px-4 py-3 text-sm font-bold ${form.related_scope === item.value ? 'border-violet-300 bg-violet-50 text-violet-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>{item.label}</button>)}</div>
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 p-3">
-                  <button type="button" onClick={() => setPickerOpen((prev) => !prev)} className="flex w-full items-center justify-between rounded-2xl bg-white px-4 py-3 text-left shadow-sm"><div><div className="text-sm font-black text-slate-900">İlan Seç</div><div className="text-xs text-slate-500">{form.selected_listing_ids.length > 0 ? `${form.selected_listing_ids.length} / 5 ilan seçildi` : 'Uygun ilanları açıp en fazla 5 ilan seç'}</div></div><ChevronDown size={18} className={`text-slate-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`} /></button>
-                  {pickerOpen ? <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">{activeListingPool.length ? activeListingPool.map((item) => <ListingCard key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}</div> : null}
+                  <div className="mb-3">
+                    <div className="text-sm font-black text-slate-900">İlgili İlanlar</div>
+                    <div className="text-xs text-slate-500">En fazla 5 ilan seçebilirsin. Seçtiğin satırlar tik ile işaretlenir.</div>
+                  </div>
+                  <div className="space-y-2">
+                    {activeListingPool.length ? activeListingPool.map((item) => <ListingPickerRow key={item.id} item={item} selected={form.selected_listing_ids.includes(Number(item.id))} onToggle={toggleListing} />) : <div className="px-2 py-6 text-sm text-slate-400">Bu alt kategoride seçilebilir ilan bulunamadı.</div>}
+                  </div>
                 </div>
-                <ListingsTable rows={selectedListingRows} title="Seçilen İlanlar" />
               </div>
             </div>
           ) : null}
@@ -349,7 +352,7 @@ export default function SupportPage() {
                 <div className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Özet</div>
                 <div className="mt-3 space-y-3 text-sm">
                   <div><div className="text-slate-400">Kategori</div><div className="font-black text-slate-900">{visibleCategories[0]?.label || 'İlan Sorunu'}</div></div>
-                  {showListingStep ? <div><div className="text-slate-400">Seçilen İlan</div><div className="font-black text-slate-900">{selectedListingRows.length ? `${selectedListingRows.length} ilan` : 'Henüz seçilmedi'}</div></div> : null}
+                  {showListingStep ? <div><div className="text-slate-400">Seçilen İlan</div><div className="font-black text-slate-900">{form.selected_listing_ids.length ? `${form.selected_listing_ids.length} ilan` : 'Henüz seçilmedi'}</div></div> : null}
                 </div>
               </div>
             </div>
@@ -358,7 +361,7 @@ export default function SupportPage() {
           <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
             <button type="button" onClick={() => setWizardStep((prev) => Math.max(0, prev - 1))} disabled={wizardStep === 0} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 disabled:opacity-40">Geri</button>
             <div className="flex items-center gap-3">
-              {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">Devam Et</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
+              {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{wizardStep === 1 ? `Devam Et (${form.selected_listing_ids.length} ilan seçtin)` : 'Devam Et'}</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
             </div>
           </div>
         </form>
