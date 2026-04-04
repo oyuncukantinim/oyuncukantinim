@@ -28,8 +28,13 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
       )}
 
       <div className="absolute inset-x-0 bottom-3 px-2.5">
-        <div className="line-clamp-2 text-center text-[13px] font-bold leading-tight text-white" style={{ textShadow: '0 1px 10px rgba(0,0,0,0.85)' }}>
-          {category.name}
+        <div className="text-center">
+          <span
+            className="inline-block rounded-xl bg-black/35 px-2.5 py-1.5 text-[13px] font-bold leading-tight text-white shadow-lg backdrop-blur-[2px]"
+            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.75)' }}
+          >
+            {category.name}
+          </span>
         </div>
         {subtitle ? (
           <div className="mt-0.5 line-clamp-1 text-center text-[10px] text-white/90" style={{ textShadow: '0 1px 8px rgba(0,0,0,0.8)' }}>
