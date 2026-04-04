@@ -77,7 +77,7 @@ export default function MessagesPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="mx-auto max-w-[1800px]">
       <div className="flex bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 9rem)' }}>
 
         {/* ── LEFT: Conversation List ── */}
