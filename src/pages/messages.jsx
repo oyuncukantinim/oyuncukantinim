@@ -313,6 +313,13 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
   });
 
   const otherInitial = otherName?.[0]?.toUpperCase() || '?';
+  const remainingCharacters = Math.max(messageMaxLength - text.length, 0);
+  const counterTone =
+    text.length >= messageMaxLength
+      ? 'text-rose-600'
+      : text.length >= Math.max(Math.floor(messageMaxLength * 0.85), messageMaxLength - 50)
+        ? 'text-amber-600'
+        : 'text-gray-400';
 
   return (
     <div className="flex flex-col h-full">
@@ -359,12 +366,12 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
           if (isAdmin) {
             return (
               <div key={msg.id} className="flex justify-center py-1 mb-1">
-                <div className="max-w-[80%] bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-center">
+                <div className="max-w-[80%] min-w-0 overflow-hidden bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2.5 text-center">
                   <div className="flex items-center justify-center gap-1.5 mb-1">
                     <Shield size={11} className="text-amber-600" />
                     <span className="text-[10px] font-extrabold text-amber-600 uppercase tracking-wide">Yönetici Mesajı</span>
                   </div>
-                  <p className="text-sm text-amber-900 font-medium">{msg.message}</p>
+                  <p className="text-sm font-medium text-amber-900 whitespace-pre-wrap break-all [overflow-wrap:anywhere]">{msg.message}</p>
                   <p className="text-[10px] text-amber-500 mt-1">{formatTime(msg.created_at)}</p>
                 </div>
               </div>
@@ -379,7 +386,7 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
                 </div>
               )}
               <div className={`max-w-[70%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
-                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${
+                <div className={`min-w-0 max-w-full px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-all [overflow-wrap:anywhere] ${
                   isMine
                     ? 'bg-gradient-to-br from-violet-500 to-purple-600 text-white rounded-br-sm shadow-sm shadow-violet-200'
                     : 'bg-white text-gray-800 border border-gray-100 rounded-bl-sm shadow-sm'
@@ -426,8 +433,9 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
           <Send size={16} />
         </button>
           </div>
-          <div className="mt-1 text-right text-[11px] font-semibold text-gray-400">
-            {text.length}/{messageMaxLength}
+          <div className={`mt-1 flex items-center justify-between text-[11px] font-semibold ${counterTone}`}>
+            <span className="text-gray-400">Karakter limiti</span>
+            <span>{text.length}/{messageMaxLength} · Kalan {remainingCharacters}</span>
           </div>
         </div>
       </form>
