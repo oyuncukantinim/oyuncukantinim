@@ -57,11 +57,11 @@ function StatusBadge({ status }) {
   );
 }
 
-function SummaryCard({ title, value, tone }) {
+function SummaryCard({ title, value, tone, compact = false }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+    <div className={`rounded-[24px] border border-slate-200 bg-white shadow-sm ${compact ? 'p-3' : 'p-4'}`}>
       <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">{title}</div>
-      <div className={`mt-2 text-2xl font-black ${tone}`}>{value}</div>
+      <div className={`${compact ? 'mt-1.5 text-lg' : 'mt-2 text-2xl'} font-black ${tone}`}>{value}</div>
     </div>
   );
 }
@@ -487,19 +487,19 @@ export default function AdminSupportPage() {
                       </div>
                     </div>
 
-                    <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[420px]">
-                      <SummaryCard title="Kullanıcı" value={detail.username || '-'} tone="text-slate-900" />
+                    <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[360px]">
+                      <SummaryCard title="Kullanıcı" value={detail.username || '-'} tone="text-slate-900" compact />
                       <div className="flex items-stretch gap-2">
-                        <div className="min-w-0 flex-1 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+                        <div className="min-w-0 flex-1 rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm">
                           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">Atanan</div>
-                          <div className="mt-2 truncate text-2xl font-black text-violet-600">{detail.assigned_admin_name || 'Atanmadı'}</div>
+                          <div className="mt-1.5 truncate text-lg font-black text-violet-600">{detail.assigned_admin_name || 'Atanmadı'}</div>
                         </div>
                         <button
                           type="button"
                           onClick={() => setSettingsOpen(true)}
-                          className="inline-flex shrink-0 items-center gap-2 rounded-[24px] border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-black text-violet-700 transition-colors hover:bg-violet-100"
+                          className="inline-flex shrink-0 items-center gap-1.5 rounded-[20px] border border-violet-200 bg-violet-50 px-3 py-2.5 text-[13px] font-black text-violet-700 transition-colors hover:bg-violet-100"
                         >
-                          <Settings2 size={16} />
+                          <Settings2 size={15} />
                           Yönetim Ayarları
                         </button>
                       </div>
