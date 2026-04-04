@@ -49,6 +49,26 @@ const normalizeSupportCategoryLabel = (item) => {
   return item;
 };
 
+const normalizeTurkishText = (value, fallback = '') => {
+  const text = String(value || fallback || '').trim();
+  if (!text) return fallback;
+
+  return text
+    .replaceAll('Ä°', 'İ')
+    .replaceAll('Ä±', 'ı')
+    .replaceAll('Ã¼', 'ü')
+    .replaceAll('Ãœ', 'Ü')
+    .replaceAll('Ã¶', 'ö')
+    .replaceAll('Ã–', 'Ö')
+    .replaceAll('Ã§', 'ç')
+    .replaceAll('Ã‡', 'Ç')
+    .replaceAll('ÅŸ', 'ş')
+    .replaceAll('Åž', 'Ş')
+    .replaceAll('ÄŸ', 'ğ')
+    .replaceAll('Äž', 'Ğ')
+    .replaceAll('â‚º', '₺');
+};
+
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');
 const fmtMoney = (value) => `${Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
 
@@ -390,6 +410,14 @@ export default function SupportPage() {
     () => meta.categories.filter((item) => item.value === 'listing').map(normalizeSupportCategoryLabel),
     [meta.categories],
   );
+  const introText = useMemo(
+    () => normalizeTurkishText(meta.settings?.intro_text, 'Wizard akışıyla daha rahat seçim yap.'),
+    [meta.settings?.intro_text],
+  );
+  const closedNote = useMemo(
+    () => normalizeTurkishText(meta.settings?.closed_note, 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.'),
+    [meta.settings?.closed_note],
+  );
   const activeListingPool = meta.listing_groups?.[form.related_scope] || [];
   const maxLinkedListings = Number(meta.settings?.max_linked_listings || 5);
   const selectedListingRows = useMemo(() => {
@@ -561,7 +589,7 @@ export default function SupportPage() {
       </section>
 
       <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between"><div className="flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">{meta.settings?.intro_text || 'Wizard akışıyla daha rahat seçim yap.'}</p></div></div><div className="flex items-center gap-3 xl:justify-end">
+        <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between"><div className="flex items-center gap-2"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><Plus size={18} /></div><div><h2 className="text-lg font-black text-slate-900">Yeni Destek Talebi</h2><p className="text-xs text-slate-500">{introText}</p></div></div><div className="flex items-center gap-3 xl:justify-end">
           <button type="button" onClick={() => setWizardStep((prev) => Math.max(0, prev - 1))} disabled={wizardStep === 0} className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-600 disabled:opacity-40">Geri</button>
           {wizardStep < 2 ? <button type="button" disabled={!canAdvance} onClick={() => setWizardStep((prev) => prev + 1)} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{wizardStep === 1 ? `Devam Et (${form.selected_listing_ids.length} ilan seçtin)` : 'Devam Et'}</button> : <button type="submit" disabled={creating || !canAdvance} className="rounded-2xl bg-violet-600 px-5 py-3 text-sm font-black text-white disabled:opacity-40">{creating ? 'Oluşturuluyor...' : 'Destek Talebi Oluştur'}</button>}
         </div></div>
@@ -628,7 +656,7 @@ export default function SupportPage() {
             {selectedTicket.category === 'listing' ? <div className="mt-4"><LinkedListingsTable rows={selectedListings} scope={selectedTicket.related_scope} title="Bağlı İlanlar" /></div> : null}
               </div>
               <div className="py-5"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm font-black text-slate-900">Yazışma Geçmişi</h3><span className="text-xs font-semibold text-slate-400">{messages.length} mesaj</span></div><div className="h-[360px] space-y-3 overflow-y-auto rounded-[22px] border border-slate-200 bg-slate-50 p-4">{messages.length === 0 ? <div className="flex h-full items-center justify-center text-sm text-slate-400">Bu bilette henüz yazışma yok.</div> : messages.map((item) => <TicketMessage key={item.id} item={item} />)}</div></div>
-              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{meta.settings?.closed_note || 'Bu destek talebi kapatıldı. Müşteri tarafından yeniden açılamaz.'}</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
+              {selectedTicket.status === 'closed' ? <div className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 px-4 py-5 text-sm font-semibold text-slate-500">{closedNote}</div></div> : <form onSubmit={sendReply} className="border-t border-slate-100 pt-4"><div className="rounded-3xl border border-slate-200 bg-slate-50 p-3"><textarea rows={4} value={replyMessage} onChange={(e) => setReplyMessage(e.target.value)} placeholder="Destek ekibine yanıt yaz..." className="w-full resize-none rounded-2xl bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-violet-200" /><div className="mt-3 flex items-center justify-between gap-3"><div className="text-xs text-slate-400">Durum değişikliklerinde bildirim göndermiyoruz; yalnızca yeni yanıtlar için bilgilendirme yapılır.</div><button type="submit" disabled={replying || !replyMessage.trim()} className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white disabled:opacity-40"><Send size={15} />{replying ? 'Gönderiliyor...' : 'Yanıt Gönder'}</button></div></div></form>}
             </div>
           )}
         </section>
