@@ -1,11 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 import KantinBot from './components/KantinBot';
+import SiteBrand from './components/SiteBrand';
+import { getSiteSettings } from './lib/api';
 
 import Home from './pages/home';
 import StorePage from './pages/store';
@@ -21,7 +23,6 @@ import SellerPage from './pages/seller';
 import CategoriesPage from './pages/categories';
 import CategoryListingsPage from './pages/category-listings';
 
-// Admin pages
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminUsers from './pages/admin/Users';
@@ -44,15 +45,27 @@ function AdminRoute({ children }) {
   return children;
 }
 
-function MaintenancePage() {
+function MaintenancePage({ siteName, siteLogo }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center px-4">
-      <div className="text-center max-w-md">
-        <div className="text-6xl mb-6">🔧</div>
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Bakım Çalışması</h1>
-        <p className="text-gray-500 text-lg mb-6">Sitemiz şu an bakımda. Kısa süre içinde geri döneceğiz.</p>
-        <div className="bg-white/70 backdrop-blur rounded-2xl px-6 py-4 border border-violet-100 text-sm text-violet-700 font-semibold">
-          Oyuncu Kantinim — Yakında Görüşmek Üzere 🎮
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 to-purple-100 px-4">
+      <div className="max-w-md text-center">
+        <div className="mb-6 flex justify-center">
+          <SiteBrand
+            siteName={siteName}
+            siteLogo={siteLogo}
+            containerClassName="justify-center"
+            imageClassName="h-16 w-auto max-w-[280px] object-contain"
+            iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
+            titleClassName="text-2xl font-extrabold text-gray-900"
+            showNameWithLogo={false}
+          />
+        </div>
+        <h1 className="mb-3 text-3xl font-extrabold text-gray-900">Bakım Çalışması</h1>
+        <p className="mb-6 text-lg text-gray-500">
+          Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.
+        </p>
+        <div className="rounded-2xl border border-violet-100 bg-white/70 px-6 py-4 text-sm font-semibold text-violet-700 backdrop-blur">
+          {siteName} yakında tekrar burada.
         </div>
       </div>
     </div>
@@ -61,48 +74,66 @@ function MaintenancePage() {
 
 function AnnouncementBanner({ text }) {
   const [visible, setVisible] = useState(true);
+
   if (!visible) return null;
+
   return (
-    <div className="relative bg-gradient-to-r from-violet-600 to-cyan-600 text-white text-sm font-semibold text-center py-2.5 px-10">
+    <div className="relative bg-gradient-to-r from-violet-600 to-cyan-600 px-10 py-2.5 text-center text-sm font-semibold text-white">
       {text}
       <button
         onClick={() => setVisible(false)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-lg leading-none"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-lg leading-none text-white/70 hover:text-white"
         aria-label="Kapat"
-      >×</button>
+      >
+        ×
+      </button>
     </div>
   );
 }
 
 function SiteLayout() {
-  const [maintenance, setMaintenance] = useState(false);
-  const [announcement, setAnnouncement] = useState({ active: false, text: '' });
-  const [checked, setChecked] = useState(false);
+  const [siteState, setSiteState] = useState({
+    checked: false,
+    maintenance: false,
+    announcement: { active: false, text: '' },
+    siteName: 'Oyuncu Kantinim',
+    siteLogo: '',
+  });
 
   useEffect(() => {
-    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
-      .then(r => r.json())
-      .then(j => {
-        if (j.status === 'success') {
-          setMaintenance(j.data.maintenance_mode == 1);
-          setAnnouncement({ active: j.data.announcement_active == 1, text: j.data.announcement_text || '' });
-        }
+    getSiteSettings()
+      .then((response) => {
+        const data = response.data || {};
+        setSiteState({
+          checked: true,
+          maintenance: data.maintenance_mode === 1,
+          announcement: {
+            active: data.announcement_active === 1,
+            text: data.announcement_text || '',
+          },
+          siteName: data.site_name || 'Oyuncu Kantinim',
+          siteLogo: data.site_logo || '',
+        });
       })
-      .catch(() => {})
-      .finally(() => setChecked(true));
+      .catch(() => {
+        setSiteState((prev) => ({ ...prev, checked: true }));
+      });
   }, []);
 
-  if (!checked) return null;
+  if (!siteState.checked) return null;
 
-  // Admin token varsa bakım modunu atla
-  const isAdmin = !!localStorage.getItem('admin_token');
-  if (maintenance && !isAdmin) return <MaintenancePage />;
+  const isAdmin = Boolean(localStorage.getItem('admin_token'));
+  if (siteState.maintenance && !isAdmin) {
+    return <MaintenancePage siteName={siteState.siteName} siteLogo={siteState.siteLogo} />;
+  }
 
   return (
     <div className="min-h-screen bg-surface-50 font-sans">
-      {announcement.active && announcement.text && <AnnouncementBanner text={announcement.text} />}
-      <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {siteState.announcement.active && siteState.announcement.text ? (
+        <AnnouncementBanner text={siteState.announcement.text} />
+      ) : null}
+      <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} />
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/store" element={<StorePage />} />
@@ -121,7 +152,7 @@ function SiteLayout() {
           <Route path="/finance" element={<FinancePage />} />
         </Routes>
       </main>
-      <Footer />
+      <Footer siteName={siteState.siteName} siteLogo={siteState.siteLogo} />
       <KantinBot />
       <Toast />
     </div>
@@ -134,7 +165,6 @@ export default function App() {
       <AuthProvider>
         <CartProvider>
           <Routes>
-            {/* Admin — kendi layout'u var */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
@@ -149,8 +179,6 @@ export default function App() {
             <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
             <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
             <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
-
-            {/* Site — Navbar + Footer */}
             <Route path="/*" element={<SiteLayout />} />
           </Routes>
         </CartProvider>

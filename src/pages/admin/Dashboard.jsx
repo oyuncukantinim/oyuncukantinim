@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -108,14 +108,14 @@ function normalizeSeries(rows = [], valueKey) {
 function DashboardSkeleton() {
   return (
     <AdminLayout>
-      <div className="space-y-4 animate-pulse">
+      <div className="space-y-3 animate-pulse">
         <div className="h-52 rounded-[24px] bg-slate-200" />
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-28 rounded-[24px] bg-slate-200" />
           ))}
         </div>
-        <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-4">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr]">
           <div className="h-80 rounded-[24px] bg-slate-200" />
           <div className="h-80 rounded-[24px] bg-slate-200" />
         </div>
@@ -171,8 +171,38 @@ function ProgressCard({ title, value, helper, progress, toneClass }) {
   );
 }
 
-function TrendCard({ title, subtitle, series, formatter, toneClass }) {
+function buildChartGeometry(series = []) {
+  const width = 320;
+  const height = 168;
+  const paddingX = 18;
+  const paddingTop = 18;
+  const paddingBottom = 26;
+  const chartWidth = width - (paddingX * 2);
+  const chartHeight = height - paddingTop - paddingBottom;
   const maxValue = Math.max(...series.map((item) => item.value), 1);
+
+  const points = series.map((item, index) => {
+    const x = paddingX + ((chartWidth / Math.max(series.length - 1, 1)) * index);
+    const y = paddingTop + chartHeight - ((item.value / maxValue) * chartHeight);
+    return { ...item, x, y };
+  });
+
+  const linePath = points
+    .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+    .join(' ');
+
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height - paddingBottom} L ${points[0].x} ${height - paddingBottom} Z`
+    : '';
+
+  return { width, height, points, linePath, areaPath };
+}
+
+function TrendCard({ title, subtitle, series, formatter, tone }) {
+  const { width, height, points, linePath, areaPath } = buildChartGeometry(series);
+  const peakPoint = points.reduce((best, current) => (current.value > (best?.value ?? -1) ? current : best), null);
+  const latestPoint = points[points.length - 1];
+  const gradientId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
@@ -186,26 +216,77 @@ function TrendCard({ title, subtitle, series, formatter, toneClass }) {
         </div>
       </div>
 
-      <div className="mt-4 flex h-44 items-end gap-2">
-        {series.map((item) => {
-          const height = 16 + ((item.value / maxValue) * 100);
-          return (
-            <div key={item.day} className="flex flex-1 flex-col items-center gap-2">
-              <div className="text-[11px] font-bold text-slate-400">{formatter(item.value)}</div>
-              <div className="flex h-32 w-full items-end">
-                <div
-                  className={`w-full rounded-t-2xl ${toneClass}`}
-                  style={{ height: `${height}%` }}
-                />
-              </div>
-              <div className="text-[11px] font-semibold text-slate-500">{item.label}</div>
+      <div className="mt-3 rounded-[22px] border border-slate-100 bg-slate-50/80 p-3">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Güncel</div>
+            <div className="mt-1 text-xl font-black text-slate-950">{formatter(latestPoint?.value || 0)}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Tepe</div>
+            <div className="mt-1 text-sm font-bold text-slate-700">
+              {peakPoint ? `${formatter(peakPoint.value)} · ${peakPoint.label}` : '-'}
             </div>
-          );
-        })}
+          </div>
+        </div>
+
+        <svg viewBox={`0 0 ${width} ${height}`} className="h-40 w-full overflow-visible">
+          <defs>
+            <linearGradient id={`${gradientId}-fill`} x1="0%" x2="0%" y1="0%" y2="100%">
+              <stop offset="0%" stopColor={tone.fill} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={tone.fill} stopOpacity="0.02" />
+            </linearGradient>
+          </defs>
+
+          {[0, 1, 2].map((index) => {
+            const y = 24 + (index * 42);
+            return (
+              <line
+                key={index}
+                x1="16"
+                y1={y}
+                x2={width - 16}
+                y2={y}
+                stroke="#E2E8F0"
+                strokeDasharray="4 6"
+                strokeWidth="1"
+              />
+            );
+          })}
+
+          {areaPath ? <path d={areaPath} fill={`url(#${gradientId}-fill)`} /> : null}
+          {linePath ? (
+            <path
+              d={linePath}
+              fill="none"
+              stroke={tone.stroke}
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ) : null}
+
+          {points.map((point) => (
+            <g key={point.day}>
+              <circle cx={point.x} cy={point.y} r="5.5" fill="white" />
+              <circle cx={point.x} cy={point.y} r="3.5" fill={tone.stroke} />
+            </g>
+          ))}
+        </svg>
+
+        <div className="mt-1 grid grid-cols-7 gap-2">
+          {series.map((item) => (
+            <div key={item.day} className="text-center">
+              <div className="text-[11px] font-bold text-slate-600">{formatter(item.value)}</div>
+              <div className="mt-1 text-[11px] font-semibold text-slate-400">{item.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+
 
 function InsightCard({ items }) {
   return (
@@ -586,13 +667,13 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <section className="relative overflow-hidden rounded-[26px] bg-slate-950 px-5 py-5 text-white shadow-2xl shadow-slate-900/10 sm:px-6">
           <div className="absolute -left-16 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
           <div className="absolute right-0 top-10 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
           <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-amber-400/10 blur-3xl" />
 
-          <div className="relative grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+          <div className="relative grid gap-4 xl:grid-cols-[1.5fr_1fr]">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
                 <BarChart3 size={14} />
@@ -713,22 +794,22 @@ export default function AdminDashboard() {
           />
         </section>
 
-        <section className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-4">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr]">
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               <TrendCard
                 title="Sipariş Akışı"
                 subtitle="Gün bazında sipariş yoğunluğu"
                 series={orderCountSeries}
                 formatter={(value) => formatNumber(value)}
-                toneClass="bg-gradient-to-t from-violet-600 to-cyan-400"
+                tone={{ stroke: '#7C3AED', fill: '#A78BFA' }}
               />
               <TrendCard
                 title="Kullanıcı Kazanımı"
                 subtitle="Son 7 günde yeni kayıtlar"
                 series={userSeries}
                 formatter={(value) => formatNumber(value)}
-                toneClass="bg-gradient-to-t from-slate-900 to-slate-500"
+                tone={{ stroke: '#0F172A', fill: '#94A3B8' }}
               />
             </div>
 
@@ -757,13 +838,13 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <InsightCard items={insightItems} />
             <FocusList items={focusItems} />
           </div>
         </section>
 
-        <section className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.1fr_0.9fr]">
           <QuickLinks items={quickLinks} />
 
           <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
@@ -821,7 +902,7 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           <LeaderboardCard
             title="Kategori Bazli Kazanc"
             subtitle="Yalnizca listing siparislerinden gelen kategori performansi"
@@ -849,7 +930,7 @@ export default function AdminDashboard() {
           />
         </section>
 
-        <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
           <ActivitySection
             title="Yeni Kullanıcılar"
             subtitle="Son kayıt olan hesaplar ve durum bilgileri"
@@ -863,7 +944,7 @@ export default function AdminDashboard() {
                 {stats.recent_users.map((user) => (
                   <div key={user.id} className="flex items-center gap-3 py-2.5">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base">
-                      {user.avatar || '👤'}
+                      {user.avatar || 'ğŸ‘¤'}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[13px] font-bold text-slate-900">{user.username}</div>
@@ -973,3 +1054,5 @@ export default function AdminDashboard() {
     </AdminLayout>
   );
 }
+
+

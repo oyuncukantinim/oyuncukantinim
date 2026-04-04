@@ -1,24 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Shield } from 'lucide-react';
 import { adminLogin } from '../../lib/adminApi';
+import useSiteBrand from '../../hooks/useSiteBrand';
+import SiteBrand from '../../components/SiteBrand';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { siteName, siteLogo } = useSiteBrand();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
+
     try {
-      const res = await adminLogin(email, password);
-      localStorage.setItem('admin_token', res.data.token);
-      localStorage.setItem('admin_user', JSON.stringify(res.data.user));
+      const response = await adminLogin(email, password);
+      localStorage.setItem('admin_token', response.data.token);
+      localStorage.setItem('admin_user', JSON.stringify(response.data.user));
       navigate('/admin');
     } catch (err) {
       setError(err.message);
@@ -28,53 +32,58 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4">
-      {/* Background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
+    <div className="flex min-h-screen items-center justify-center bg-gray-900 px-4">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-1/2 top-1/3 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/20 blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-sm">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-violet-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/30">
-            <Shield size={32} className="text-white" />
+        <div className="mb-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <SiteBrand
+              siteName={siteName}
+              siteLogo={siteLogo}
+              fallback="shield"
+              containerClassName="justify-center"
+              imageClassName="h-16 w-auto max-w-[260px] object-contain"
+              iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 shadow-lg shadow-violet-500/30"
+              titleClassName="text-2xl font-extrabold text-white"
+            />
           </div>
           <h1 className="text-2xl font-extrabold text-white">Admin Girişi</h1>
-          <p className="text-gray-400 text-sm mt-1">Oyuncu Kantinim Yönetim Paneli</p>
+          <p className="mt-1 text-sm text-gray-400">{siteName} yönetim paneli</p>
         </div>
 
-        {/* Card */}
-        <div className="bg-gray-800 border border-white/10 rounded-2xl p-6 shadow-2xl">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-semibold rounded-xl px-4 py-3 mb-4">
+        <div className="rounded-2xl border border-white/10 bg-gray-800 p-6 shadow-2xl">
+          {error ? (
+            <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-400">
               {error}
             </div>
-          )}
+          ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-1.5">E-posta</label>
+              <label className="mb-1.5 block text-sm font-bold text-gray-300">E-posta</label>
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(event) => setEmail(event.target.value)}
                 required
                 placeholder="admin@example.com"
-                className="w-full bg-gray-700 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                className="w-full rounded-xl border border-white/10 bg-gray-700 px-4 py-2.5 text-sm text-white placeholder-gray-500 transition-colors focus:border-violet-500 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-gray-300 mb-1.5">Şifre</label>
+              <label className="mb-1.5 block text-sm font-bold text-gray-300">Şifre</label>
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full bg-gray-700 border border-white/10 text-white placeholder-gray-500 rounded-xl px-4 py-2.5 pr-10 text-sm focus:outline-none focus:border-violet-500 transition-colors"
+                  className="w-full rounded-xl border border-white/10 bg-gray-700 px-4 py-2.5 pr-10 text-sm text-white placeholder-gray-500 transition-colors focus:border-violet-500 focus:outline-none"
                 />
                 <button
                   type="button"
@@ -89,12 +98,15 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-bold py-2.5 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 py-2.5 font-bold text-white transition-all hover:from-violet-500 hover:to-cyan-500 disabled:opacity-50"
             >
-              {loading
-                ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                : <><Shield size={16} /> Giriş Yap</>
-              }
+              {loading ? (
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                <>
+                  <Shield size={16} /> Giriş Yap
+                </>
+              )}
             </button>
           </form>
         </div>

@@ -84,6 +84,10 @@ export function getMe() {
   return request('me', { auth: true });
 }
 
+export function getSiteSettings() {
+  return request('get_site_settings');
+}
+
 // --- PROFILE ---
 export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
