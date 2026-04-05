@@ -21,6 +21,9 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
+  const vitrineListings = listings.filter((listing) => listing.active_doping_type === 'vitrine');
+  const recentListings = listings.filter((listing) => listing.active_doping_type !== 'vitrine');
+
   return (
     <div className="space-y-16">
 
@@ -126,8 +129,30 @@ export default function Home() {
         </section>
       )}
 
+      {/* VITRIN ILANLAR */}
+      {vitrineListings.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-1 h-8 bg-gradient-to-b from-amber-400 to-orange-500 rounded-full" />
+              <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <Zap className="text-amber-500" /> Vitrin İlanlar
+              </h2>
+            </div>
+            <Link to="/market" className="flex items-center gap-1 text-sm font-bold text-amber-600 bg-amber-50 hover:bg-amber-500 hover:text-white px-4 py-2 rounded-full transition-all">
+              Tümünü Gör <ChevronRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {vitrineListings.slice(0, 8).map((listing) => (
+              <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* SON ILANLAR */}
-      {listings.length > 0 && (
+      {recentListings.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -141,7 +166,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {listings.slice(0, 4).map(listing => (
+            {recentListings.slice(0, 4).map(listing => (
               <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
             ))}
           </div>

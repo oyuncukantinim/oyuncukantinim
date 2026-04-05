@@ -12,6 +12,9 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import useSiteBrand from '../hooks/useSiteBrand';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+const DEFAULT_DOPING_DAYS = 7;
+const DEFAULT_VITRINE_PRICE = 149;
+const DEFAULT_FEATURED_PRICE = 79;
 
 async function fetchPublic(action, params = {}) {
   const url = new URL(API_URL);
@@ -27,7 +30,8 @@ const DELIVERY_HOURS = [1, 2, 4, 6, 12, 24, 48, 72];
 const STEPS = [
   { id: 1, label: 'Kategori',       icon: Tag },
   { id: 2, label: 'İlan Bilgileri', icon: Info },
-  { id: 3, label: 'Teslimat',       icon: Truck },
+  { id: 3, label: 'Doping',         icon: Package },
+  { id: 4, label: 'Teslimat',       icon: Truck },
 ];
 
 function StepBar({ current }) {
@@ -57,7 +61,7 @@ function StepBar({ current }) {
 }
 
 export default function CreatePage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { showToast } = useCart();
   const {
     maxListingImages: defaultMaxImages,
@@ -88,6 +92,10 @@ export default function CreatePage() {
   const [deliveryType, setDeliveryType] = useState('manual');
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '' }]);
+  const [dopingType, setDopingType] = useState('none');
+  const [dopingDays, setDopingDays] = useState(DEFAULT_DOPING_DAYS);
+  const [vitrinePrice, setVitrinePrice] = useState(DEFAULT_VITRINE_PRICE);
+  const [featuredPrice, setFeaturedPrice] = useState(DEFAULT_FEATURED_PRICE);
 
   // Admin tarafından belirlenen limitler
   const [maxImages, setMaxImages] = useState(defaultMaxImages);
@@ -117,6 +125,15 @@ export default function CreatePage() {
           if (j.data.stock_item_max_count) {
             setStockItemMaxCount(Number(j.data.stock_item_max_count));
           }
+          if (j.data.listing_doping_days) {
+            setDopingDays(Number(j.data.listing_doping_days));
+          }
+          if (j.data.listing_doping_vitrine_price !== undefined && j.data.listing_doping_vitrine_price !== null && j.data.listing_doping_vitrine_price !== '') {
+            setVitrinePrice(Number(j.data.listing_doping_vitrine_price));
+          }
+          if (j.data.listing_doping_featured_price !== undefined && j.data.listing_doping_featured_price !== null && j.data.listing_doping_featured_price !== '') {
+            setFeaturedPrice(Number(j.data.listing_doping_featured_price));
+          }
           if (j.data.min_listing_price !== undefined && j.data.min_listing_price !== null && j.data.min_listing_price !== '') {
             setSiteMinPrice(Number(j.data.min_listing_price));
           }
@@ -141,6 +158,9 @@ export default function CreatePage() {
   const priceNum   = parseFloat(price) || 0;
   const commission = priceNum * ((effectiveCommission ?? 10) / 100);
   const earnings   = priceNum - commission;
+  const selectedDopingPrice =
+    dopingType === 'vitrine' ? vitrinePrice :
+    dopingType === 'featured' ? featuredPrice : 0;
 
   const handlePriceChange = (value) => {
     if (value === '') {
@@ -162,7 +182,8 @@ export default function CreatePage() {
   const canNext = () => {
     if (step === 1) return !!selectedCategory;
     if (step === 2) return canProceedFromInfo();
-    if (step === 3) {
+    if (step === 3) return true;
+    if (step === 4) {
       if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) return false;
       if (deliveryType === 'stock' && stocks.length > stockItemMaxCount) return false;
       if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
@@ -195,7 +216,7 @@ export default function CreatePage() {
       if (deliveryType === 'stock' && validStocks.length > stockItemMaxCount) {
         throw new Error(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
       }
-      await addListing({
+      const res = await addListing({
         title,
         price: priceNum,
         description,
@@ -205,9 +226,13 @@ export default function CreatePage() {
         cover_index: coverIndex,
         delivery_type:  deliveryType,
         delivery_hours: deliveryHours,
+        doping_type:    dopingType,
         attributes:     attrValues,
         stocks: deliveryType === 'stock' ? validStocks : [],
       });
+      if (selectedDopingPrice > 0 && res.data?.new_balance !== undefined) {
+        updateUser({ ...user, balance: Number(res.data.new_balance) });
+      }
       showToast('İlan başarıyla yayınlandı!');
       navigate('/profile');
     } catch (err) {
@@ -424,8 +449,86 @@ export default function CreatePage() {
             </div>
           </div>
         )}
-        {/* ADIM 3: TESLİMAT */}
+        {/* ADIM 3: DOPING */}
         {step === 3 && (
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800">İlan Doping Seçimi</h3>
+                  <p className="mt-1 text-xs text-slate-500">Dilersen ilanını yayınlarken öne çıkarabilirsin. Ücret seçilen paket kadar bakiyenden düşer.</p>
+                </div>
+                <div className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">
+                  Bakiye: {Number(user?.balance || 0).toFixed(2)}₺
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              {[
+                {
+                  id: 'none',
+                  title: 'Dopingsiz',
+                  price: 0,
+                  badge: 'Standart',
+                  desc: 'İlan normal sıralamada gösterilir.',
+                  details: ['Ek ücret yok', 'Standart listeleme'],
+                },
+                {
+                  id: 'vitrine',
+                  title: 'Vitrin',
+                  price: vitrinePrice,
+                  badge: `${dopingDays} gün`,
+                  desc: 'Kategoride en üstte yer alır ve ana sayfada Son İlanlar üstünde ayrı vitrin alanında görünür.',
+                  details: ['Kategori üst sırası', 'Ana sayfa vitrin alanı', 'Vitrin ilanlar kendi içinde karışık sıralanır'],
+                },
+                {
+                  id: 'featured',
+                  title: 'Öne Çıkar',
+                  price: featuredPrice,
+                  badge: `${dopingDays} gün`,
+                  desc: 'Kategoride vitrin ilanlardan sonra listelenir.',
+                  details: ['Vitrinden sonra sıralanır', 'Ana sayfada vitrin alanına çıkmaz', 'Daha uygun maliyetli'],
+                },
+              ].map((option) => {
+                const selected = dopingType === option.id;
+                const insufficient = option.price > 0 && Number(user?.balance || 0) < option.price;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setDopingType(option.id)}
+                    className={`rounded-2xl border p-4 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}
+                  >
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-base font-black text-slate-900">{option.title}</div>
+                        <div className="mt-1 text-xs font-semibold text-slate-500">{option.badge}</div>
+                      </div>
+                      <div className={`rounded-full px-2.5 py-1 text-xs font-bold ${selected ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        {option.price > 0 ? `${option.price}₺` : 'Ücretsiz'}
+                      </div>
+                    </div>
+                    <p className="text-sm leading-6 text-slate-600">{option.desc}</p>
+                    <div className="mt-3 space-y-1.5 text-xs font-medium text-slate-500">
+                      {option.details.map((detail) => (
+                        <div key={detail}>• {detail}</div>
+                      ))}
+                    </div>
+                    {insufficient ? (
+                      <div className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
+                        Yetersiz bakiye
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ADIM 4: TESLİMAT */}
+        {step === 4 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               {[

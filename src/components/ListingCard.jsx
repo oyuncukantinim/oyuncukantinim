@@ -5,6 +5,12 @@ import { getListingCoverImage } from '../lib/listingMedia';
 
 export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
+  const dopingBadge =
+    listing.active_doping_type === 'vitrine'
+      ? { label: 'Vitrin', className: 'bg-amber-500/90 text-white' }
+      : listing.active_doping_type === 'featured'
+        ? { label: 'Öne Çıkar', className: 'bg-violet-600/90 text-white' }
+        : null;
 
   return (
     <Link
@@ -23,6 +29,11 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
             <ImageIcon size={compact ? 30 : 40} />
           </div>
         )}
+        {dopingBadge ? (
+          <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide shadow-sm ${dopingBadge.className}`}>
+            {dopingBadge.label}
+          </span>
+        ) : null}
       </div>
 
       <div className={`flex items-center justify-between ${compact ? 'mb-1.5' : 'mb-3'}`}>
