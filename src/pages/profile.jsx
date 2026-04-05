@@ -896,9 +896,6 @@ export default function ProfilePage() {
                       <div className="p-1.5 flex flex-col gap-0.5 flex-1">
                         <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
                         <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
-                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md self-start ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
-                        </span>
                         <div className="flex gap-1 mt-auto pt-0.5">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
@@ -935,11 +932,6 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-right flex-shrink-0 space-y-0.5">
                         <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex gap-1.5 justify-end">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-lg ${listing.status === 'active' ? 'bg-emerald-100 text-emerald-700' : listing.status === 'expired' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
-                            {listing.status === 'active' ? 'Aktif' : listing.status === 'expired' ? 'Süresi Doldu' : listing.status === 'sold' ? 'Satıldı' : listing.status}
-                          </span>
-                        </div>
                         <div className="flex gap-1 justify-end">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button
