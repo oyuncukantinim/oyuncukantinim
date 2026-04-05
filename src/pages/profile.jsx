@@ -1775,7 +1775,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
             return (
               <div
                 key={type}
-                className={`w-full rounded-2xl border p-3 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : 'border-slate-200 bg-white'}`}
+                className={`w-full rounded-2xl border p-3 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : `${meta.accentClass} opacity-95`}`}
               >
                 <button
                   type="button"
