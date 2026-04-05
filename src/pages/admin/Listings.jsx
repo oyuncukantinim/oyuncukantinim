@@ -47,6 +47,18 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
 
   const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR') : '—';
 
+  const handleDeleteListingModal = async (listing) => {
+    if (!confirm(`"${listing.title}" ilanını kalıcı olarak sil?`)) return;
+    try {
+      await adminDeleteListing(listing.id);
+      if (selectedListing?.id === listing.id) setSelectedListing(null);
+      showToast('İlan silindi.');
+      load();
+    } catch (e) {
+      showToast(e.message);
+    }
+  };
+
   const handleDeleteListing = async (listing) => {
     if (!confirm(`"${listing.title}" ilanını kalıcı olarak sil?`)) return;
     try {
