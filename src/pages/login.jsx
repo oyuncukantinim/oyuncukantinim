@@ -104,14 +104,15 @@ export default function LoginPage() {
                 siteName={siteName}
                 siteLogo={siteLogo}
                 siteLogoText={siteLogoText}
+                showNameWithLogo
                 containerClassName="justify-center"
-                imageClassName="h-16 w-auto max-w-[280px] object-contain"
-                iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
-                titleClassName="text-3xl font-extrabold text-slate-900"
+                imageClassName="h-14 w-auto max-w-[240px] object-contain"
+                iconWrapperClassName="rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2 shadow-neon-purple"
+                titleClassName="text-xl font-extrabold glow-text"
               />
             </div>
             <h1 className="mb-2 text-3xl font-extrabold text-white">
-              {isLogin ? 'Giriş Yap' : awaitingVerification ? 'Mail Kodunu Doğrula' : 'Kayıt Ol'}
+              {isLogin ? 'Giriş Yap' : awaitingVerification ? 'E-posta Kodunu Doğrula' : 'Kayıt Ol'}
             </h1>
             <p className="font-medium text-gray-500">
               {isLogin

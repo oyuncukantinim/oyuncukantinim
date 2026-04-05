@@ -6,7 +6,7 @@ const DEFAULT_BRAND = {
   siteLogo: '',
   siteLogoText: '',
   siteFavicon: '',
-  defaultAvatar: 'ğŸ‘¤',
+  defaultAvatar: '👤',
   defaultProfileBanner: '',
   defaultListingImage: '',
   registrationEnabled: true,
