@@ -892,27 +892,19 @@ export default function ProfilePage() {
                           ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
                           : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
                         }
-                        <div className="absolute left-2 top-2 rounded-full bg-slate-950/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
-                          İlan #{listing.id}
-                        </div>
                       </div>
                       <div className="flex flex-1 flex-col gap-2 p-3">
                         <div className="space-y-1">
                           <div className="text-[11px] font-semibold text-slate-400">
                             {(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}
                           </div>
-                          <Link to={listingSlug(listing.title, listing.id)} className="line-clamp-2 text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
+                          <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
                             {listing.title}
                           </Link>
                         </div>
                         <div className="mt-auto space-y-2">
                           <div className="flex items-end justify-between gap-2">
                             <div className="text-lg font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
-                            {listing.expires_at ? (
-                              <div className="text-right text-[11px] font-semibold text-slate-400">
-                                Bitiş {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
-                              </div>
-                            ) : null}
                           </div>
                           <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
@@ -946,11 +938,6 @@ export default function ProfilePage() {
                             <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
                           </div>
 	                        <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold text-slate-800 hover:text-violet-600">{listing.title}</Link>
-	                        {listing.expires_at && (
-                          <div className="mt-1 text-xs font-medium text-slate-400">
-                            Bitiş: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
-                          </div>
-                        )}
                       </div>
                       <div className="flex-shrink-0 space-y-2 text-right">
                         <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
