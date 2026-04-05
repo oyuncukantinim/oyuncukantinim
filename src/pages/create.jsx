@@ -501,8 +501,7 @@ export default function CreatePage() {
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <div className="text-sm font-black text-slate-900">🛇 Doping yok</div>
-                                  <div className="mt-1 text-xs font-semibold text-slate-500">Standart yayın</div>
+                                  <div className="text-lg font-black leading-none text-slate-900">🛇</div>
                                 </div>
                                 {dopingType === 'none' ? <span className="rounded-full bg-slate-700 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
                               </div>
