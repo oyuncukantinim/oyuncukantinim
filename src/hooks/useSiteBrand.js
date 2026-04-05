@@ -23,6 +23,7 @@ const DEFAULT_BRAND = {
   manualDeliveryMaxHours: 72,
   stockItemMaxCount: 500,
   registrationEmailVerificationEnabled: false,
+  registrationEmailCodeExpiryMinutes: 10,
 };
 
 export default function useSiteBrand() {
@@ -57,6 +58,7 @@ export default function useSiteBrand() {
           manualDeliveryMaxHours: Number(response.data?.manual_delivery_max_hours || DEFAULT_BRAND.manualDeliveryMaxHours),
           stockItemMaxCount: Number(response.data?.stock_item_max_count || DEFAULT_BRAND.stockItemMaxCount),
           registrationEmailVerificationEnabled: !(response.data?.registration_email_verification_enabled === 0 || response.data?.registration_email_verification_enabled === '0' || response.data?.registration_email_verification_enabled === false),
+          registrationEmailCodeExpiryMinutes: Number(response.data?.registration_email_code_expiry_minutes || DEFAULT_BRAND.registrationEmailCodeExpiryMinutes),
         });
       })
       .catch(() => {
