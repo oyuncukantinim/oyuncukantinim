@@ -33,38 +33,38 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {['vitrine', 'featured'].map((type) => {
         const options = getDopingOptionsFromSettings(settings, type);
         const meta = getDopingTypeMeta(type);
 
         return (
-          <div key={type} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
+          <div key={type} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-2 border-b border-slate-100 px-4 py-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>
+                <div className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>
                   <Package size={13} />
                   {meta.label}
                 </div>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{meta.description}</p>
+                <p className="mt-1.5 max-w-2xl text-xs leading-5 text-slate-500">{meta.description}</p>
               </div>
               <button
                 type="button"
                 onClick={() => addOption(type)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
               >
                 <Plus size={14} />
                 Paket Ekle
               </button>
             </div>
 
-            <div className="grid gap-4 p-5 xl:grid-cols-2">
+            <div className="grid gap-3 p-4 lg:grid-cols-2 2xl:grid-cols-3">
               {options.map((option, index) => (
-                <div key={`${type}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="mb-4 flex items-center justify-between gap-3">
+                <div key={`${type}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
+                  <div className="mb-3 flex items-start justify-between gap-3">
                     <div>
-                      <div className="text-sm font-black text-slate-900">{meta.label} Paketi</div>
-                      <div className="mt-1 text-xs font-semibold text-slate-400">
+                      <div className="text-[13px] font-black text-slate-900">{meta.label} Paketi</div>
+                      <div className="mt-1 text-[11px] font-semibold text-slate-400">
                         {formatDopingDuration(option.hours)} · {Number(option.price || 0).toFixed(2)} ₺
                       </div>
                     </div>
@@ -72,23 +72,23 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                       <button
                         type="button"
                         onClick={() => removeOption(type, index)}
-                        className="rounded-xl border border-rose-200 bg-white p-2 text-rose-500 transition-colors hover:bg-rose-50"
+                        className="rounded-lg border border-rose-200 bg-white p-1.5 text-rose-500 transition-colors hover:bg-rose-50"
                         title="Paketi sil"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={13} />
                       </button>
                     ) : null}
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Sure (saat)</label>
+                      <label className="mb-1 block text-[11px] font-bold text-slate-600">Sure (saat)</label>
                       <input
                         type="number"
                         min="1"
                         value={option.hours}
                         onChange={(event) => updateOption(type, index, { hours: Math.max(1, Number(event.target.value || 1)) })}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -99,30 +99,30 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                         step="0.01"
                         value={option.price}
                         onChange={(event) => updateOption(type, index, { price: Math.max(0, Number(event.target.value || 0)) })}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="mt-3">
                     <label className="mb-1.5 block text-xs font-bold text-slate-600">Paket Görseli</label>
                     <input
                       type="text"
                       value={option.image || ''}
                       onChange={(event) => updateOption(type, index, { image: event.target.value })}
                       placeholder="https://..."
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                     />
-                    <div className="mt-3 space-y-3">
+                    <div className="mt-2.5 space-y-2.5">
                       {option.image ? (
-                        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                          <div className="flex h-40 items-center justify-center bg-slate-50 p-3">
+                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                          <div className="flex h-28 items-center justify-center bg-slate-50 p-2">
                             <img src={option.image} alt={`${meta.label} paketi`} className="h-full w-full object-contain" />
                           </div>
                         </div>
                       ) : (
-                        <div className="flex h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-slate-400">
-                          <ImageIcon size={22} />
+                        <div className="flex h-28 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white text-slate-400">
+                          <ImageIcon size={18} />
                           <span className="mt-2 text-xs font-semibold">Henüz görsel yok</span>
                         </div>
                       )}
@@ -142,7 +142,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                         />
                         <label
                           htmlFor={`doping-image-input-${type}-${index}`}
-                          className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
                         >
                           {imageUploading === `listing_doping_${type}_options_${index}` ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
                           Görsel Yükle
@@ -151,7 +151,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                           <button
                             type="button"
                             onClick={() => updateOption(type, index, { image: '' })}
-                            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
+                            className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50"
                           >
                             <X size={13} />
                             Görseli Kaldır
