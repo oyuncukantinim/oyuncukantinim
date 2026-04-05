@@ -1748,8 +1748,8 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-5 flex items-center justify-between">
+      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-extrabold text-gray-800">İlan Doping Seç</h2>
             <p className="mt-0.5 text-xs text-gray-400">{listing.title}</p>
@@ -1757,18 +1757,18 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
         </div>
 
-        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-slate-600">
             Aktif bakiye: <span className="font-black text-slate-900">{Number(balance || 0).toFixed(2)} ₺</span>
           </div>
           {listing.active_doping_type && listing.doping_expires_at ? (
-            <div className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600">
+            <div className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
               Mevcut doping: {getDopingTypeMeta(listing.active_doping_type).label} · {new Date(listing.doping_expires_at).toLocaleString('tr-TR')}
             </div>
           ) : null}
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
             const meta = getDopingTypeMeta(type);
             const active = selectedType === type;
@@ -1777,26 +1777,26 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                 key={type}
                 type="button"
                 onClick={() => setSelectedType(type)}
-                className={`rounded-2xl border p-4 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200'}`}
+                className={`rounded-2xl border p-3 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200'}`}
               >
-                <div className="mb-3 flex items-center justify-between gap-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
                   <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
                   <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
                 </div>
                 {optionList[0]?.image ? (
-                  <img src={optionList[0].image} alt={meta.label} className="mb-3 h-32 w-full rounded-2xl object-cover" />
+                  <img src={optionList[0].image} alt={meta.label} className="mb-2 h-24 w-full rounded-xl object-cover" />
                 ) : (
-                  <div className="mb-3 flex h-32 items-center justify-center rounded-2xl bg-slate-50 text-sm font-black text-slate-400">{meta.label}</div>
+                  <div className="mb-2 flex h-24 items-center justify-center rounded-xl bg-slate-50 text-sm font-black text-slate-400">{meta.label}</div>
                 )}
-                <p className="text-sm leading-6 text-slate-600">{meta.description}</p>
+                <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
               </button>
             );
           })}
         </div>
 
-        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
           <div className="mb-3 text-sm font-extrabold text-slate-800">Süre Seç</div>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2">
             {options.map((option) => {
               const selected = Number(selectedHours) === Number(option.hours);
               const insufficient = Number(balance || 0) < Number(option.price || 0);
@@ -1805,18 +1805,18 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                   key={`${selectedType}-${option.hours}`}
                   type="button"
                   onClick={() => setSelectedHours(option.hours)}
-                  className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/70 hover:border-violet-200 hover:bg-white'}`}
+                  className={`rounded-xl border px-3 py-2.5 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/70 hover:border-violet-200 hover:bg-white'}`}
                 >
                   <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
                   <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
-                  {insufficient ? <div className="mt-3 rounded-xl bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
+                  {insufficient ? <div className="mt-2 rounded-lg bg-red-50 px-2 py-1.5 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
                 </button>
               );
             })}
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-sm font-black text-violet-900">{selectedMeta.label}</div>
             <div className="mt-1 text-xs font-semibold text-violet-700">
@@ -1827,7 +1827,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
             type="button"
             onClick={() => selectedOption && onSubmit({ listingId: listing.id, type: selectedType, hours: selectedOption.hours })}
             disabled={saving || !selectedOption || Number(balance || 0) < Number(selectedOption.price || 0)}
-            className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
           >
             {saving ? 'Uygulanıyor...' : 'Doping Uygula'}
           </button>
