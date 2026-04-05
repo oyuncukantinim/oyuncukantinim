@@ -1349,7 +1349,7 @@ export default function ProfilePage() {
                         <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50/80 p-3">
                           <div className="mb-2 flex items-center justify-between gap-3">
                             <label className="block text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
-                              Doğrulama kodu:
+                              Doğrulama kodu
                             </label>
                             {verificationCanResend ? (
                               <button
