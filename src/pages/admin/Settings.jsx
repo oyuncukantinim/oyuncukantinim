@@ -208,6 +208,15 @@ const SETTINGS_TABS = [
           { key: 'audit_log_enabled', label: 'Ayar Değişiklik Logu', type: 'toggle', desc: 'Açıksa kritik admin ayar değişiklikleri ayrı loglanır.' },
         ],
       },
+      {
+        section: 'Telefon Doğrulama',
+        fields: [
+          { key: 'phone_verification_enabled', label: 'Telefon Doğrulama Aktif', type: 'toggle', desc: 'Açıksa profil alanında SMS ile telefon doğrulama akışı kullanılabilir.' },
+          { key: 'twilio_account_sid', label: 'Twilio Account SID', type: 'text', placeholder: 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', desc: 'Twilio Console içindeki hesap kimliği. Public tarafta paylaşılmaz.' },
+          { key: 'twilio_verify_service_sid', label: 'Twilio Verify Service SID', type: 'text', placeholder: 'VAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', desc: 'Verify servis kimliği. Telefon kodu gönderme ve doğrulama bu servis üzerinden çalışır.' },
+          { key: 'twilio_auth_token', label: 'Twilio Auth Token', type: 'password', placeholder: 'Twilio gizli token', desc: 'Gizli anahtar alanı. Sadece admin ayarlarında tutulur; public endpointlerde döndürülmez.' },
+        ],
+      },
     ],
   },
   {
@@ -355,7 +364,7 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
       <label className="mb-1.5 block text-sm font-semibold text-slate-700">{field.label}</label>
       {field.desc ? <div className="mb-2 text-xs leading-5 text-slate-400">{field.desc}</div> : null}
       <input
-        type={field.type === 'number' ? 'number' : 'text'}
+        type={field.type === 'number' ? 'number' : field.type === 'password' ? 'password' : 'text'}
         value={value || ''}
         onChange={(event) => onChange(event.target.value)}
         placeholder={field.placeholder}
