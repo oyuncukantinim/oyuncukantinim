@@ -37,7 +37,7 @@ export function getDopingTypeMeta(type) {
   if (type === 'vitrine') {
     return {
       label: 'Vitrin',
-      description: 'Kategoride en ustte yer alir ve ana sayfadaki vitrin alaninda gosterilir.',
+      description: 'Kategoride en üstte yer alır ve ana sayfadaki vitrin alanında gösterilir.',
       badgeClass: 'bg-amber-500/90 text-white',
       accentClass: 'border-amber-200 bg-amber-50',
       buttonClass: 'border-amber-300 bg-amber-50 text-amber-700',
@@ -46,8 +46,8 @@ export function getDopingTypeMeta(type) {
 
   if (type === 'featured') {
     return {
-      label: 'One Cikar',
-      description: 'Kategoride vitrinden sonra gorunur, ana sayfa vitrininine cikmaz.',
+      label: 'Öne Çıkar',
+      description: 'Kategoride vitrinden sonra görünür, ana sayfa vitrininine çıkmaz.',
       badgeClass: 'bg-violet-600/90 text-white',
       accentClass: 'border-violet-200 bg-violet-50',
       buttonClass: 'border-violet-300 bg-violet-50 text-violet-700',
@@ -73,7 +73,7 @@ export function formatDopingDuration(hours) {
   const normalizedHours = Math.max(0, Number(hours) || 0);
   if (normalizedHours <= 0) return '0 saat';
   if (normalizedHours < 24) return `${normalizedHours} saat`;
-  if (normalizedHours % 24 === 0) return `${normalizedHours / 24} gun`;
+  if (normalizedHours % 24 === 0) return `${normalizedHours / 24} gün`;
   return `${normalizedHours} saat`;
 }
 
