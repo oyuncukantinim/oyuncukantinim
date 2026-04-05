@@ -93,14 +93,6 @@ export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
 }
 
-export function sendPhoneVerification(phone) {
-  return request('send_phone_verification', { method: 'POST', body: { phone }, auth: true });
-}
-
-export function verifyPhoneCode(phone, code) {
-  return request('verify_phone_code', { method: 'POST', body: { phone, code }, auth: true });
-}
-
 // --- LISTINGS ---
 export function getListings(query = {}) {
   return request('get_listings', { query });

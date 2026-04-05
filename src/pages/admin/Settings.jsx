@@ -208,16 +208,6 @@ const SETTINGS_TABS = [
           { key: 'audit_log_enabled', label: 'Ayar Değişiklik Logu', type: 'toggle', desc: 'Açıksa kritik admin ayar değişiklikleri ayrı loglanır.' },
         ],
       },
-      {
-        section: 'Telefon Doğrulama',
-        fields: [
-          { key: 'phone_verification_enabled', label: 'Telefon Doğrulama Aktif', type: 'toggle', desc: 'Açıksa profil alanında SMS ile telefon doğrulama akışı kullanılabilir.' },
-          { key: 'vatansms_customer_no', label: 'Vatan SMS Müşteri No', type: 'text', placeholder: '1000760', desc: 'Panelde Hesap Ayarları > API Bilgilerimi Görüntüle alanındaki müşteri kodu.' },
-          { key: 'vatansms_username', label: 'Vatan SMS Kullanıcı Adı', type: 'text', placeholder: 'api_kullanici_adi', desc: 'Vatan SMS API kullanıcı adın. Public tarafta paylaşılmaz.' },
-          { key: 'vatansms_password', label: 'Vatan SMS Şifre', type: 'password', placeholder: 'Vatan SMS API şifresi', desc: 'Gizli anahtar alanı. Sadece admin ayarlarında tutulur; public endpointlerde döndürülmez.' },
-          { key: 'vatansms_sender', label: 'Vatan SMS Gönderen', type: 'text', placeholder: 'OYUNKM', desc: 'Onaylı orjinatör/gönderen adı. SMS bu başlıkla çıkar.' },
-        ],
-      },
     ],
   },
   {
