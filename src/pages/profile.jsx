@@ -673,6 +673,30 @@ export default function ProfilePage() {
     }
   };
 
+  const handleStartPersonalEmailVerification = async () => {
+    if (!normalizedEmail) {
+      showToast('Önce e-posta adresini girin.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await sendProfileEmailVerification({ email: normalizedEmail });
+      setPendingEmailVerification(normalizedEmail);
+      setEmailVerificationCode('');
+      setEmailVerificationExpiresAt(
+        response.data?.expires_at ||
+        new Date(Date.now() + registrationEmailCodeExpiryMinutes * 60 * 1000).toISOString()
+      );
+      setVerificationNow(Date.now());
+      showToast(emailChanged ? 'Yeni e-posta adresine doğrulama kodu gönderildi.' : 'Mail doğrulama kodu gönderildi.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleVerifyPersonalEmailCode = async () => {
     if (!emailVerificationCode.trim()) {
       showToast('Doğrulama kodunu girin.');
@@ -1294,9 +1318,14 @@ export default function ProfilePage() {
                             Mail doğrulandı
                           </span>
                         ) : (
-                          <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-600">
+                          <button
+                            type="button"
+                            onClick={handleStartPersonalEmailVerification}
+                            disabled={saving || !normalizedEmail}
+                            className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
                             Mail doğrula
-                          </span>
+                          </button>
                         )}
                       </div>
                       <input
