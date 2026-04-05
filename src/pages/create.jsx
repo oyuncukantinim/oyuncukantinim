@@ -381,9 +381,9 @@ export default function CreatePage() {
                         <input type="number" value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
                       )}
                       {attr.type === 'boolean' && (
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap gap-2">
                           {['Evet', 'Hayır'].map(opt => (
-                            <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                            <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`min-w-[92px] rounded-lg border px-3 py-2 text-xs font-bold transition-all ${attrValues[attr.slug] === opt ? 'border-violet-600 bg-violet-600 text-white shadow-sm shadow-violet-200' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300 hover:bg-violet-50/50'}`}>
                               {opt}
                             </button>
                           ))}
