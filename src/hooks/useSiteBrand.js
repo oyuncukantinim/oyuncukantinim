@@ -1,5 +1,6 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getSiteSettings } from '../lib/api';
+import { normalizeDopingOptions } from '../lib/doping';
 
 const DEFAULT_BRAND = {
   siteName: 'Oyuncu Kantinim',
@@ -24,6 +25,8 @@ const DEFAULT_BRAND = {
   stockItemMaxCount: 500,
   registrationEmailVerificationEnabled: false,
   registrationEmailCodeExpiryMinutes: 10,
+  dopingVitrineOptions: normalizeDopingOptions(null, 'vitrine'),
+  dopingFeaturedOptions: normalizeDopingOptions(null, 'featured'),
 };
 
 export default function useSiteBrand() {
@@ -59,6 +62,8 @@ export default function useSiteBrand() {
           stockItemMaxCount: Number(response.data?.stock_item_max_count || DEFAULT_BRAND.stockItemMaxCount),
           registrationEmailVerificationEnabled: !(response.data?.registration_email_verification_enabled === 0 || response.data?.registration_email_verification_enabled === '0' || response.data?.registration_email_verification_enabled === false),
           registrationEmailCodeExpiryMinutes: Number(response.data?.registration_email_code_expiry_minutes || DEFAULT_BRAND.registrationEmailCodeExpiryMinutes),
+          dopingVitrineOptions: normalizeDopingOptions(response.data?.listing_doping_vitrine_options, 'vitrine'),
+          dopingFeaturedOptions: normalizeDopingOptions(response.data?.listing_doping_featured_options, 'featured'),
         });
       })
       .catch(() => {
@@ -76,4 +81,3 @@ export default function useSiteBrand() {
 
   return { ...brand, checked };
 }
-

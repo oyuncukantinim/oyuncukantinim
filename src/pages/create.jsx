@@ -10,11 +10,9 @@ import { addListing } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { findDopingOption, formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../lib/doping';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
-const DEFAULT_DOPING_DAYS = 7;
-const DEFAULT_VITRINE_PRICE = 149;
-const DEFAULT_FEATURED_PRICE = 79;
 
 async function fetchPublic(action, params = {}) {
   const url = new URL(API_URL);
@@ -72,6 +70,8 @@ export default function CreatePage() {
     maxListingsPerUser,
     manualDeliveryMaxHours: defaultManualDeliveryMaxHours,
     stockItemMaxCount: defaultStockItemMaxCount,
+    dopingVitrineOptions: defaultVitrineOptions,
+    dopingFeaturedOptions: defaultFeaturedOptions,
   } = useSiteBrand();
   const navigate = useNavigate();
 
@@ -93,9 +93,9 @@ export default function CreatePage() {
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '' }]);
   const [dopingType, setDopingType] = useState('none');
-  const [dopingDays, setDopingDays] = useState(DEFAULT_DOPING_DAYS);
-  const [vitrinePrice, setVitrinePrice] = useState(DEFAULT_VITRINE_PRICE);
-  const [featuredPrice, setFeaturedPrice] = useState(DEFAULT_FEATURED_PRICE);
+  const [dopingDays, setDopingDays] = useState(null);
+  const [vitrineOptions, setVitrineOptions] = useState(defaultVitrineOptions);
+  const [featuredOptions, setFeaturedOptions] = useState(defaultFeaturedOptions);
 
   // Admin tarafından belirlenen limitler
   const [maxImages, setMaxImages] = useState(defaultMaxImages);
@@ -125,15 +125,8 @@ export default function CreatePage() {
           if (j.data.stock_item_max_count) {
             setStockItemMaxCount(Number(j.data.stock_item_max_count));
           }
-          if (j.data.listing_doping_days) {
-            setDopingDays(Number(j.data.listing_doping_days));
-          }
-          if (j.data.listing_doping_vitrine_price !== undefined && j.data.listing_doping_vitrine_price !== null && j.data.listing_doping_vitrine_price !== '') {
-            setVitrinePrice(Number(j.data.listing_doping_vitrine_price));
-          }
-          if (j.data.listing_doping_featured_price !== undefined && j.data.listing_doping_featured_price !== null && j.data.listing_doping_featured_price !== '') {
-            setFeaturedPrice(Number(j.data.listing_doping_featured_price));
-          }
+          setVitrineOptions(normalizeDopingOptions(j.data.listing_doping_vitrine_options, 'vitrine'));
+          setFeaturedOptions(normalizeDopingOptions(j.data.listing_doping_featured_options, 'featured'));
           if (j.data.min_listing_price !== undefined && j.data.min_listing_price !== null && j.data.min_listing_price !== '') {
             setSiteMinPrice(Number(j.data.min_listing_price));
           }
@@ -153,14 +146,27 @@ export default function CreatePage() {
       });
   }, [selectedCategory]);
 
+  useEffect(() => {
+    if (dopingType === 'none') return;
+    const options = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
+    if (!options.length) return;
+    if (!findDopingOption(options, dopingDays)) {
+      setDopingDays(options[0].days);
+    }
+  }, [dopingDays, dopingType, featuredOptions, vitrineOptions]);
+
   const effectiveCommission = selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? null;
   const effectiveMinPrice   = selectedCategory?.effective_min_price ?? selectedCategory?.min_price ?? siteMinPrice;
   const priceNum   = parseFloat(price) || 0;
   const commission = priceNum * ((effectiveCommission ?? 10) / 100);
   const earnings   = priceNum - commission;
-  const selectedDopingPrice =
-    dopingType === 'vitrine' ? vitrinePrice :
-    dopingType === 'featured' ? featuredPrice : 0;
+  const selectedDopingOption =
+    dopingType === 'vitrine'
+      ? findDopingOption(vitrineOptions, dopingDays)
+      : dopingType === 'featured'
+        ? findDopingOption(featuredOptions, dopingDays)
+        : null;
+  const selectedDopingPrice = selectedDopingOption?.price || 0;
 
   const handlePriceChange = (value) => {
     if (value === '') {
@@ -227,6 +233,7 @@ export default function CreatePage() {
         delivery_type:  deliveryType,
         delivery_hours: deliveryHours,
         doping_type:    dopingType,
+        doping_days:    dopingDays,
         attributes:     attrValues,
         stocks: deliveryType === 'stock' ? validStocks : [],
       });
@@ -456,7 +463,7 @@ export default function CreatePage() {
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-800">İlan Doping Seçimi</h3>
-                  <p className="mt-1 text-xs text-slate-500">Dilersen ilanını yayınlarken öne çıkarabilirsin. Ücret seçilen paket kadar bakiyenden düşer.</p>
+                  <p className="mt-1 text-xs text-slate-500">İlanını yayınlarken istediğin paket ve süreyi seçebilirsin. Ücret seçilen paket kadar bakiyenden düşer.</p>
                 </div>
                 <div className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">
                   Bakiye: {Number(user?.balance || 0).toFixed(2)}₺
@@ -464,66 +471,100 @@ export default function CreatePage() {
               </div>
             </div>
 
-            <div className="grid gap-3 lg:grid-cols-3">
-              {[
-                {
-                  id: 'none',
-                  title: 'Dopingsiz',
-                  price: 0,
-                  badge: 'Standart',
-                  desc: 'İlan normal sıralamada gösterilir.',
-                  details: ['Ek ücret yok', 'Standart listeleme'],
-                },
-                {
-                  id: 'vitrine',
-                  title: 'Vitrin',
-                  price: vitrinePrice,
-                  badge: `${dopingDays} gün`,
-                  desc: 'Kategoride en üstte yer alır ve ana sayfada Son İlanlar üstünde ayrı vitrin alanında görünür.',
-                  details: ['Kategori üst sırası', 'Ana sayfa vitrin alanı', 'Vitrin ilanlar kendi içinde karışık sıralanır'],
-                },
-                {
-                  id: 'featured',
-                  title: 'Öne Çıkar',
-                  price: featuredPrice,
-                  badge: `${dopingDays} gün`,
-                  desc: 'Kategoride vitrin ilanlardan sonra listelenir.',
-                  details: ['Vitrinden sonra sıralanır', 'Ana sayfada vitrin alanına çıkmaz', 'Daha uygun maliyetli'],
-                },
-              ].map((option) => {
-                const selected = dopingType === option.id;
-                const insufficient = option.price > 0 && Number(user?.balance || 0) < option.price;
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    onClick={() => setDopingType(option.id)}
-                    className={`rounded-2xl border p-4 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}
-                  >
-                    <div className="mb-3 flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-base font-black text-slate-900">{option.title}</div>
-                        <div className="mt-1 text-xs font-semibold text-slate-500">{option.badge}</div>
-                      </div>
-                      <div className={`rounded-full px-2.5 py-1 text-xs font-bold ${selected ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                        {option.price > 0 ? `${option.price}₺` : 'Ücretsiz'}
+            <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
+              <button
+                type="button"
+                onClick={() => {
+                  setDopingType('none');
+                  setDopingDays(null);
+                }}
+                className={`rounded-2xl border p-4 text-left transition-all ${dopingType === 'none' ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}
+              >
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-base font-black text-slate-900">Dopingsiz</div>
+                    <div className="mt-1 text-xs font-semibold text-slate-500">Standart yayın</div>
+                  </div>
+                  <div className={`rounded-full px-2.5 py-1 text-xs font-bold ${dopingType === 'none' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                    Ücretsiz
+                  </div>
+                </div>
+                <p className="text-sm leading-6 text-slate-600">İlan normal sıralamada gösterilir, bakiyenden ücret düşmez.</p>
+              </button>
+
+              <div className="space-y-4">
+                {[
+                  { type: 'vitrine', options: vitrineOptions },
+                  { type: 'featured', options: featuredOptions },
+                ].map(({ type, options }) => {
+                  const meta = getDopingTypeMeta(type);
+                  return (
+                    <div key={type} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                      <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
+                        <div className={`overflow-hidden rounded-2xl border ${meta.accentClass} lg:w-56`}>
+                          {options[0]?.image ? (
+                            <img src={options[0].image} alt={meta.label} className="h-36 w-full object-cover" />
+                          ) : (
+                            <div className="flex h-36 items-center justify-center bg-slate-50 text-sm font-black text-slate-400">
+                              {meta.label}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>
+                            {meta.label}
+                          </div>
+                          <p className="mt-2 text-sm leading-6 text-slate-600">{meta.description}</p>
+                          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            {options.map((option) => {
+                              const selected = dopingType === type && Number(dopingDays) === Number(option.days);
+                              const insufficient = Number(user?.balance || 0) < Number(option.price || 0);
+                              return (
+                                <button
+                                  key={`${type}-${option.days}`}
+                                  type="button"
+                                  onClick={() => {
+                                    setDopingType(type);
+                                    setDopingDays(option.days);
+                                  }}
+                                  className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/60 hover:border-violet-200 hover:bg-white'}`}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                                      <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)}₺</div>
+                                    </div>
+                                    {selected ? <span className="rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
+                                  </div>
+                                  {insufficient ? (
+                                    <div className="mt-3 rounded-xl bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-600">
+                                      Yetersiz bakiye
+                                    </div>
+                                  ) : null}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <p className="text-sm leading-6 text-slate-600">{option.desc}</p>
-                    <div className="mt-3 space-y-1.5 text-xs font-medium text-slate-500">
-                      {option.details.map((detail) => (
-                        <div key={detail}>• {detail}</div>
-                      ))}
-                    </div>
-                    {insufficient ? (
-                      <div className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-bold text-red-600">
-                        Yetersiz bakiye
-                      </div>
-                    ) : null}
-                  </button>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+
+            {selectedDopingOption ? (
+              <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm font-bold text-violet-900">
+                    Seçili paket: {getDopingTypeMeta(dopingType).label} · {formatDopingDuration(selectedDopingOption.days)}
+                  </div>
+                  <div className="text-sm font-black text-violet-700">
+                    {Number(selectedDopingOption.price).toFixed(2)}₺
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         )}
 

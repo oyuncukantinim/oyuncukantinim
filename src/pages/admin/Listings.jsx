@@ -1,19 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Search,
   CheckCircle,
-  XCircle,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  X,
-  Pencil,
   Package,
+  Pencil,
+  Search,
+  Trash2,
+  X,
+  XCircle,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminAddStocks,
+  adminApplyListingDoping,
+  adminClearListingDoping,
   adminDeleteListing,
   adminDeleteStock,
   adminGetListings,
@@ -22,16 +24,30 @@ import {
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
+import { formatDopingDuration, getDopingTypeMeta } from '../../lib/doping';
+import useSiteBrand from '../../hooks/useSiteBrand';
 
 const STATUS_MAP = {
   active: { label: 'Aktif', colorClass: 'text-emerald-600 bg-emerald-50' },
-  sold: { label: 'Satıldı', colorClass: 'text-blue-600 bg-blue-50' },
-  expired: { label: 'Süresi Doldu', colorClass: 'text-orange-600 bg-orange-50' },
+  sold: { label: 'Satildi', colorClass: 'text-blue-600 bg-blue-50' },
+  expired: { label: 'Suresi Doldu', colorClass: 'text-orange-600 bg-orange-50' },
   pending: { label: 'Bekliyor', colorClass: 'text-yellow-700 bg-yellow-50' },
-  removed: { label: 'Kaldırıldı', colorClass: 'text-red-600 bg-red-50' },
+  removed: { label: 'Kaldirildi', colorClass: 'text-red-600 bg-red-50' },
   inactive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
   passive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
 };
+
+function fmtDate(value) {
+  return value ? new Date(value).toLocaleDateString('tr-TR') : '-';
+}
+
+function fmtDateTime(value) {
+  return value ? new Date(value).toLocaleString('tr-TR') : '-';
+}
+
+function fmtMoney(value) {
+  return `${Number(value || 0).toFixed(2)} ₺`;
+}
 
 function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
   const [stocks, setStocks] = useState([]);
@@ -55,7 +71,6 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
     loadStocks();
   }, [loadStocks]);
 
-  const fmtDateTime = (value) => (value ? new Date(value).toLocaleString('tr-TR') : '—');
   const availableStockCount = stocks.filter((stock) => Number(stock.is_sold) !== 1).length;
   const soldStockCount = stocks.filter((stock) => Number(stock.is_sold) === 1).length;
 
@@ -75,7 +90,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
       .filter((item) => item.content);
 
     if (parsedStocks.length === 0) {
-      showToast('Eklemek için en az bir stok satırı girin.');
+      showToast('Eklemek icin en az bir stok satiri gir.');
       return;
     }
 
@@ -114,9 +129,9 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
       <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900">Stok Yönetimi</h2>
+            <h2 className="text-lg font-extrabold text-gray-900">Stok Yonetimi</h2>
             <p className="mt-0.5 text-xs text-gray-400">
-              İlan #{listing.id} · {listing.title}
+              Ilan #{listing.id} · {listing.title}
             </p>
           </div>
           <button onClick={onClose} className="rounded-xl p-1.5 hover:bg-gray-100">
@@ -127,9 +142,9 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
         <div className="rounded-xl border border-gray-200">
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <div>
-              <h3 className="text-sm font-extrabold text-gray-800">Stok Özeti</h3>
+              <h3 className="text-sm font-extrabold text-gray-800">Stok Ozeti</h3>
               <p className="mt-0.5 text-xs text-gray-400">
-                Toplam {stocks.length} kayıt · {availableStockCount} aktif · {soldStockCount} satıldı
+                Toplam {stocks.length} kayit · {availableStockCount} aktif · {soldStockCount} satildi
               </p>
             </div>
           </div>
@@ -141,11 +156,11 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                 value={stockInput}
                 onChange={(e) => setStockInput(e.target.value)}
                 rows={5}
-                placeholder={'Her satıra bir stok gir.\nİstersen Etiket|İçerik formatını kullan.'}
+                placeholder={'Her satira bir stok gir.\nIstersen Etiket|Icerik formatini kullan.'}
                 className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
               />
               <div className="mt-2 flex items-center justify-between gap-3">
-                <p className="text-[11px] text-gray-400">Örnek: Hesap 1|eposta:sifre veya doğrudan stok içeriği</p>
+                <p className="text-[11px] text-gray-400">Ornek: Hesap 1|eposta:sifre veya dogrudan stok icerigi</p>
                 <button
                   type="button"
                   onClick={handleAddStocks}
@@ -160,32 +175,31 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
             <div className="overflow-hidden rounded-xl border border-gray-100">
               <div className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 bg-gray-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
                 <span>ID</span>
-                <span>İçerik</span>
+                <span>Icerik</span>
                 <span>Etiket</span>
                 <span>Durum</span>
-                <span className="text-right">İşlem</span>
+                <span className="text-right">Islem</span>
               </div>
               <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 bg-white">
                 {stocksLoading ? (
-                  <div className="px-3 py-6 text-center text-sm text-gray-400">Stoklar yükleniyor...</div>
+                  <div className="px-3 py-6 text-center text-sm text-gray-400">Stoklar yukleniyor...</div>
                 ) : stocks.length === 0 ? (
-                  <div className="px-3 py-6 text-center text-sm text-gray-400">Bu ilanda henüz stok yok.</div>
+                  <div className="px-3 py-6 text-center text-sm text-gray-400">Bu ilanda henuz stok yok.</div>
                 ) : (
                   stocks.map((stock) => {
                     const sold = Number(stock.is_sold) === 1;
-
                     return (
                       <div key={stock.id} className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
                         <span className="font-semibold text-gray-500">#{stock.id}</span>
                         <div className="min-w-0">
-                          <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '—'}</div>
+                          <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '-'}</div>
                           {sold && stock.sold_at ? (
-                            <div className="mt-1 text-[11px] text-gray-400">Satış: {fmtDateTime(stock.sold_at)}</div>
+                            <div className="mt-1 text-[11px] text-gray-400">Satis: {fmtDateTime(stock.sold_at)}</div>
                           ) : null}
                         </div>
-                        <span className="break-words text-gray-600 [overflow-wrap:anywhere]">{stock.label || '—'}</span>
+                        <span className="break-words text-gray-600 [overflow-wrap:anywhere]">{stock.label || '-'}</span>
                         <span className={`inline-flex w-fit rounded-full px-2 py-1 text-[11px] font-bold ${sold ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                          {sold ? 'Satıldı' : 'Aktif'}
+                          {sold ? 'Satildi' : 'Aktif'}
                         </span>
                         <div className="flex justify-end">
                           {!sold ? (
@@ -199,7 +213,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                               <Trash2 size={13} />
                             </button>
                           ) : (
-                            <span className="px-1.5 py-1 text-[11px] text-gray-300">—</span>
+                            <span className="px-1.5 py-1 text-[11px] text-gray-300">-</span>
                           )}
                         </div>
                       </div>
@@ -215,7 +229,15 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
   );
 }
 
-function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showToast }) {
+function ListingDetailModal({
+  listing,
+  onClose,
+  onRefresh,
+  onManageStocks,
+  showToast,
+  vitrineOptions,
+  featuredOptions,
+}) {
   const [form, setForm] = useState({
     title: listing.title,
     price: listing.price,
@@ -223,13 +245,29 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
     description: listing.description || '',
   });
   const [saving, setSaving] = useState(false);
+  const [dopingType, setDopingType] = useState(listing.active_doping_type || 'vitrine');
+  const [dopingDays, setDopingDays] = useState(null);
   const coverImage = getListingCoverImage(listing);
+  const activeDopingMeta = listing.active_doping_type ? getDopingTypeMeta(listing.active_doping_type) : null;
+  const currentDopingOptions = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
+  const selectedDopingOption =
+    currentDopingOptions.find((option) => Number(option.days) === Number(dopingDays)) || currentDopingOptions[0] || null;
+
+  useEffect(() => {
+    if (!currentDopingOptions.length) {
+      setDopingDays(null);
+      return;
+    }
+    if (!currentDopingOptions.some((option) => Number(option.days) === Number(dopingDays))) {
+      setDopingDays(currentDopingOptions[0].days);
+    }
+  }, [currentDopingOptions, dopingDays]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
       await adminUpdateListing({ listing_id: listing.id, ...form });
-      showToast('İlan güncellendi.');
+      showToast('Ilan guncellendi.');
       onRefresh();
       onClose();
     } catch (e) {
@@ -240,11 +278,11 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
   };
 
   const handleDelete = async () => {
-    if (!confirm('İlanı kalıcı olarak sil?')) return;
+    if (!confirm('Ilani kalici olarak sil?')) return;
     setSaving(true);
     try {
       await adminDeleteListing(listing.id);
-      showToast('İlan silindi.');
+      showToast('Ilan silindi.');
       onRefresh();
       onClose();
     } catch (e) {
@@ -254,15 +292,50 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
     }
   };
 
-  const fmtDateTime = (value) => (value ? new Date(value).toLocaleString('tr-TR') : '—');
+  const handleApplyDoping = async () => {
+    if (!selectedDopingOption) {
+      showToast('Once bir doping paketi sec.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await adminApplyListingDoping({
+        listing_id: listing.id,
+        doping_type: dopingType,
+        doping_days: selectedDopingOption.days,
+      });
+      showToast('Doping uygulandi.');
+      onRefresh();
+      onClose();
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClearDoping = async () => {
+    setSaving(true);
+    try {
+      await adminClearListingDoping(listing.id);
+      showToast('Doping kaldirildi.');
+      onRefresh();
+      onClose();
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900">İlan #{listing.id}</h2>
+            <h2 className="text-lg font-extrabold text-gray-900">Ilan #{listing.id}</h2>
             <p className="mt-0.5 text-xs text-gray-400">{fmtDateTime(listing.created_at)}</p>
           </div>
           <button onClick={onClose} className="rounded-xl p-1.5 hover:bg-gray-100">
@@ -270,117 +343,227 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
           </button>
         </div>
 
-        {coverImage ? (
-          <div className="mb-4 overflow-hidden rounded-xl border border-gray-100">
-            <img src={coverImage} alt={listing.title} className="h-40 w-full bg-gray-50 object-contain" />
-          </div>
-        ) : null}
+        <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <div className="space-y-4">
+            {coverImage ? (
+              <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+                <img src={coverImage} alt={listing.title} className="h-48 w-full object-contain" />
+              </div>
+            ) : (
+              <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-sm font-semibold text-gray-400">
+                Gorsel yok
+              </div>
+            )}
 
-        <div className="mb-4 space-y-1.5 rounded-xl bg-gray-50 p-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Satıcı</span>
-            <span className="font-bold text-gray-800">{listing.seller || '—'}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Kategori</span>
-            <span className="font-semibold text-gray-700">{listing.category || '—'}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Teslimat</span>
-            <span className="font-semibold text-gray-700">
-              {listing.delivery_type === 'stock' ? `Stoklu (${listing.stock_count || 0} aktif)` : 'Manuel'}
-            </span>
-          </div>
-          {listing.expires_at ? (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Bitiş</span>
-              <span className="font-semibold text-gray-700">{fmtDateTime(listing.expires_at)}</span>
+            <div className="space-y-1.5 rounded-xl bg-gray-50 p-3">
+              <div className="flex justify-between gap-3 text-sm">
+                <span className="text-gray-500">Satici</span>
+                <span className="text-right font-bold text-gray-800">{listing.seller || '-'}</span>
+              </div>
+              <div className="flex justify-between gap-3 text-sm">
+                <span className="text-gray-500">Kategori</span>
+                <span className="text-right font-semibold text-gray-700">{listing.category || '-'}</span>
+              </div>
+              <div className="flex justify-between gap-3 text-sm">
+                <span className="text-gray-500">Teslimat</span>
+                <span className="text-right font-semibold text-gray-700">
+                  {listing.delivery_type === 'stock' ? `Stoklu (${listing.stock_count || 0} aktif)` : 'Manuel'}
+                </span>
+              </div>
+              {listing.expires_at ? (
+                <div className="flex justify-between gap-3 text-sm">
+                  <span className="text-gray-500">Bitis</span>
+                  <span className="text-right font-semibold text-gray-700">{fmtDateTime(listing.expires_at)}</span>
+                </div>
+              ) : null}
+              <div className="flex justify-between gap-3 text-sm">
+                <span className="text-gray-500">Goruntulenme</span>
+                <span className="text-right font-semibold text-gray-700">{listing.view_count || 0}</span>
+              </div>
+              <div className="flex justify-between gap-3 text-sm">
+                <span className="text-gray-500">Aktif Doping</span>
+                {activeDopingMeta ? (
+                  <div className="text-right">
+                    <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-bold ${activeDopingMeta.buttonClass}`}>
+                      {activeDopingMeta.label}
+                    </span>
+                    {listing.doping_expires_at ? (
+                      <div className="mt-1 text-[11px] font-semibold text-gray-500">{fmtDateTime(listing.doping_expires_at)}</div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <span className="font-semibold text-gray-700">Yok</span>
+                )}
+              </div>
             </div>
-          ) : null}
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Görüntülenme</span>
-            <span className="font-semibold text-gray-700">{listing.view_count || 0}</span>
           </div>
-        </div>
 
-        <div className="mb-4 space-y-3">
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-gray-600">Başlık</label>
-            <input
-              value={form.title}
-              onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-gray-600">Fiyat (₺)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={form.price}
-                onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-              />
+          <div className="space-y-4">
+            <div className="space-y-3 rounded-xl border border-gray-200 p-4">
+              <h3 className="text-sm font-extrabold text-gray-900">Ilan Bilgileri</h3>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Baslik</label>
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Fiyat (₺)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={form.price}
+                    onChange={(e) => setForm((prev) => ({ ...prev, price: e.target.value }))}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Durum</label>
+                  <select
+                    value={form.status}
+                    onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                  >
+                    {Object.entries(STATUS_MAP).map(([key, value]) => (
+                      <option key={key} value={key}>
+                        {value.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Aciklama</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                  rows={4}
+                  className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                />
+              </div>
             </div>
-            <div>
-              <label className="mb-1.5 block text-xs font-bold text-gray-600">Durum</label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+
+            <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-4">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-extrabold text-gray-900">Doping Yonetimi</h3>
+                  <p className="mt-1 text-xs text-gray-500">Ilan icin admin tarafindan vitrin veya one cikar paketi tanimla.</p>
+                </div>
+                {activeDopingMeta ? (
+                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${activeDopingMeta.buttonClass}`}>
+                    {activeDopingMeta.label}
+                  </span>
+                ) : null}
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {[
+                  { key: 'vitrine', options: vitrineOptions },
+                  { key: 'featured', options: featuredOptions },
+                ].map((group) => {
+                  const meta = getDopingTypeMeta(group.key);
+                  const active = dopingType === group.key;
+                  return (
+                    <button
+                      key={group.key}
+                      type="button"
+                      onClick={() => setDopingType(group.key)}
+                      className={`rounded-2xl border p-3 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white/70 hover:border-violet-200'}`}
+                    >
+                      <div className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                      <p className="mt-2 text-xs leading-5 text-slate-500">{meta.description}</p>
+                      <div className="mt-3 text-[11px] font-semibold text-slate-400">{group.options.length} paket tanimli</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4">
+                <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">Sure Paketi</div>
+                {currentDopingOptions.length ? (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {currentDopingOptions.map((option) => {
+                      const active = Number(selectedDopingOption?.days) === Number(option.days);
+                      return (
+                        <button
+                          key={`${dopingType}-${option.days}`}
+                          type="button"
+                          onClick={() => setDopingDays(option.days)}
+                          className={`rounded-xl border px-3 py-2.5 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200'}`}
+                        >
+                          <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                          <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price || 0).toFixed(2)} ₺</div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-400">
+                    Bu doping tipi icin ayar bulunmuyor.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={handleApplyDoping}
+                  disabled={saving || !selectedDopingOption}
+                  className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+                >
+                  {saving ? 'Uygulaniyor...' : 'Doping Uygula'}
+                </button>
+                {listing.active_doping_type ? (
+                  <button
+                    type="button"
+                    onClick={handleClearDoping}
+                    disabled={saving}
+                    className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
+                  >
+                    Doping Kaldir
+                  </button>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {listing.delivery_type === 'stock' ? (
+                <button
+                  type="button"
+                  onClick={() => onManageStocks(listing)}
+                  className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+                >
+                  <Package size={13} /> Stoklari Yonet
+                </button>
+              ) : null}
+              <a
+                href={listingSlug(listing.title, listing.id)}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300"
               >
-                {Object.entries(STATUS_MAP).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {value.label}
-                  </option>
-                ))}
-              </select>
+                <ExternalLink size={13} /> Goruntule
+              </a>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+              >
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={saving}
+                className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+              >
+                <Trash2 size={13} />
+                Sil
+              </button>
             </div>
           </div>
-          <div>
-            <label className="mb-1.5 block text-xs font-bold text-gray-600">Açıklama</label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-              rows={3}
-              className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          {listing.delivery_type === 'stock' ? (
-            <button
-              type="button"
-              onClick={() => onManageStocks(listing)}
-              className="flex flex-shrink-0 items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
-            >
-              <Package size={13} /> Stokları Yönet
-            </button>
-          ) : null}
-          <a
-            href={listingSlug(listing.title, listing.id)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex flex-shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300"
-          >
-            <ExternalLink size={13} /> Görüntüle
-          </a>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex-1 rounded-xl bg-violet-600 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
-          >
-            {saving ? 'Kaydediliyor...' : 'Kaydet'}
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={saving}
-            className="flex flex-shrink-0 items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
-          >
-            <Trash2 size={13} />
-          </button>
         </div>
       </div>
     </div>
@@ -398,6 +581,7 @@ export default function AdminListings() {
   const [toast, setToast] = useState('');
   const [selectedListing, setSelectedListing] = useState(null);
   const [stockListing, setStockListing] = useState(null);
+  const { dopingVitrineOptions, dopingFeaturedOptions } = useSiteBrand();
 
   const showToast = (msg) => {
     setToast(msg);
@@ -407,10 +591,10 @@ export default function AdminListings() {
   const load = useCallback(() => {
     setLoading(true);
     adminGetListings({ page, search, status: filterStatus })
-      .then((r) => {
-        setListings(r.data.listings || []);
-        setTotal(r.data.total || 0);
-        setPages(r.data.pages || 1);
+      .then((response) => {
+        setListings(response.data.listings || []);
+        setTotal(response.data.total || 0);
+        setPages(response.data.pages || 1);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -423,7 +607,7 @@ export default function AdminListings() {
   const handleQuickStatus = async (id, status) => {
     try {
       await adminUpdateListing({ listing_id: id, status });
-      showToast('Durum güncellendi.');
+      showToast('Durum guncellendi.');
       load();
     } catch (e) {
       showToast(e.message);
@@ -431,20 +615,19 @@ export default function AdminListings() {
   };
 
   const handleDeleteListing = async (listing) => {
-    if (!confirm(`"${listing.title}" ilanını kalıcı olarak sil?`)) return;
+    if (!confirm(`"${listing.title}" ilanini kalici olarak sil?`)) return;
     try {
       await adminDeleteListing(listing.id);
       if (selectedListing?.id === listing.id) setSelectedListing(null);
       if (stockListing?.id === listing.id) setStockListing(null);
-      showToast('İlan silindi.');
+      showToast('Ilan silindi.');
       load();
     } catch (e) {
       showToast(e.message);
     }
   };
 
-  const fmtMoney = (value) => `${Number(value || 0).toFixed(2)} ₺`;
-  const fmtDate = (value) => (value ? new Date(value).toLocaleDateString('tr-TR') : '—');
+  const visibleListings = useMemo(() => listings || [], [listings]);
 
   return (
     <AdminLayout>
@@ -464,7 +647,7 @@ export default function AdminListings() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Başlık veya satıcı ara..."
+              placeholder="Baslik veya satici ara..."
               className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-4 text-sm focus:border-violet-400 focus:outline-none"
             />
           </div>
@@ -476,7 +659,7 @@ export default function AdminListings() {
             }}
             className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
           >
-            <option value="">Tüm Durumlar</option>
+            <option value="">Tum Durumlar</option>
             {Object.entries(STATUS_MAP).map(([key, value]) => (
               <option key={key} value={key}>
                 {value.label}
@@ -487,7 +670,7 @@ export default function AdminListings() {
 
         <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-            <h3 className="font-extrabold text-gray-800">İlanlar</h3>
+            <h3 className="font-extrabold text-gray-800">Ilanlar</h3>
             <span className="text-sm text-gray-500">{total} ilan</span>
           </div>
 
@@ -495,34 +678,35 @@ export default function AdminListings() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">İlan</th>
-                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 md:table-cell">Satıcı</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Ilan</th>
+                  <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 md:table-cell">Satici</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 sm:table-cell">Fiyat</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">Tarih</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Durum</th>
-                  <th className="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">İşlemler</th>
+                  <th className="px-4 py-3 text-right text-xs font-bold uppercase text-gray-500">Islemler</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                      Yükleniyor...
+                      Yukleniyor...
                     </td>
                   </tr>
-                ) : listings.length === 0 ? (
+                ) : visibleListings.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                      İlan bulunamadı.
+                      Ilan bulunamadi.
                     </td>
                   </tr>
                 ) : (
-                  listings.map((listing) => {
+                  visibleListings.map((listing) => {
                     const statusMeta = STATUS_MAP[listing.status] || {
                       label: listing.status || 'Belirsiz',
                       colorClass: 'text-gray-600 bg-gray-100',
                     };
                     const coverImage = getListingCoverImage(listing);
+                    const activeDopingMeta = listing.active_doping_type ? getDopingTypeMeta(listing.active_doping_type) : null;
 
                     return (
                       <tr key={listing.id} className="border-t border-gray-50 hover:bg-gray-50/50">
@@ -532,14 +716,21 @@ export default function AdminListings() {
                               {coverImage ? (
                                 <img src={coverImage} alt={listing.title} className="h-full w-full object-cover" />
                               ) : (
-                                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">—</div>
+                                <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">-</div>
                               )}
                             </div>
                             <div className="min-w-0">
-                              <div className="max-w-[180px] truncate font-bold text-gray-800">{listing.title}</div>
+                              <div className="max-w-[200px] truncate font-bold text-gray-800">{listing.title}</div>
                               <div className="text-xs text-gray-400">
-                                #{listing.id} · {listing.delivery_type === 'stock' ? `Stok(${listing.stock_count})` : 'Manuel'}
+                                #{listing.id} · {listing.delivery_type === 'stock' ? `Stok(${listing.stock_count || 0})` : 'Manuel'}
                               </div>
+                              {activeDopingMeta ? (
+                                <div className="mt-1">
+                                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${activeDopingMeta.buttonClass}`}>
+                                    {activeDopingMeta.label}
+                                  </span>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         </td>
@@ -553,7 +744,7 @@ export default function AdminListings() {
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => setSelectedListing(listing)}
-                              title="Detay / Düzenle"
+                              title="Detay / Duzenle"
                               className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-violet-50 hover:text-violet-600"
                             >
                               <Pencil size={14} />
@@ -562,7 +753,7 @@ export default function AdminListings() {
                               href={listingSlug(listing.title, listing.id)}
                               target="_blank"
                               rel="noreferrer"
-                              title="Görüntüle"
+                              title="Goruntule"
                               className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100"
                             >
                               <ExternalLink size={14} />
@@ -570,7 +761,7 @@ export default function AdminListings() {
                             {listing.status !== 'active' ? (
                               <button
                                 onClick={() => handleQuickStatus(listing.id, 'active')}
-                                title="Aktifleştir"
+                                title="Aktiflestir"
                                 className="rounded-lg p-1.5 text-gray-400 hover:bg-emerald-50 hover:text-emerald-600"
                               >
                                 <CheckCircle size={14} />
@@ -578,7 +769,7 @@ export default function AdminListings() {
                             ) : (
                               <button
                                 onClick={() => handleQuickStatus(listing.id, 'removed')}
-                                title="Kaldır"
+                                title="Kaldir"
                                 className="rounded-lg p-1.5 text-gray-400 hover:bg-orange-50 hover:text-orange-500"
                               >
                                 <XCircle size={14} />
@@ -632,8 +823,10 @@ export default function AdminListings() {
           listing={selectedListing}
           onClose={() => setSelectedListing(null)}
           onRefresh={load}
-          onManageStocks={(listing) => setStockListing(listing)}
+          onManageStocks={(nextListing) => setStockListing(nextListing)}
           showToast={showToast}
+          vitrineOptions={dopingVitrineOptions}
+          featuredOptions={dopingFeaturedOptions}
         />
       ) : null}
 

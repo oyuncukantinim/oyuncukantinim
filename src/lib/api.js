@@ -130,6 +130,10 @@ export function deleteListing(payload) {
   return request('delete_listing', { method: 'POST', body: payload, auth: true });
 }
 
+export function applyListingDoping(payload) {
+  return request('apply_listing_doping', { method: 'POST', body: payload, auth: true });
+}
+
 // --- EPINS ---
 export function getEpins() {
   return request('get_epins');

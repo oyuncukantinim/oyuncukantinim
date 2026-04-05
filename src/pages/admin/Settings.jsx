@@ -7,18 +7,22 @@ import {
   Loader2,
   Mail,
   MessageSquare,
+  Package,
+  Plus,
   Save,
   Settings as SettingsIcon,
   Shield,
   ShoppingBag,
   ToggleLeft,
   ToggleRight,
+  Trash2,
   Truck,
   Upload,
   X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
+import { formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../../lib/doping';
 
 const SETTINGS_TABS = [
   {
@@ -115,6 +119,17 @@ const SETTINGS_TABS = [
           { key: 'listing_desc_max', label: 'Açıklama Karakter Limiti', type: 'number', placeholder: '2000' },
           { key: 'review_comment_max', label: 'Yorum Karakter Limiti', type: 'number', placeholder: '500' },
         ],
+      },
+    ],
+  },
+  {
+    id: 'doping',
+    label: 'Doping',
+    icon: Package,
+    sections: [
+      {
+        section: 'Doping Paketleri',
+        fields: [],
       },
     ],
   },
@@ -257,6 +272,10 @@ const SETTINGS_TABS = [
 function normalizeValue(field, value) {
   if (field.type === 'toggle') return value === '1' ? '1' : '0';
   return value ?? '';
+}
+
+function getDopingOptionsFromSettings(settings, type) {
+  return normalizeDopingOptions(settings[`listing_doping_${type}_options`], type);
 }
 
 function SettingField({ field, value, onChange, onUpload, imageUploading }) {
@@ -416,6 +435,180 @@ function SectionCard({ section, settings, set, onUpload, imageUploading }) {
   );
 }
 
+function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUpload }) {
+  const setOptions = (type, nextOptions) => {
+    set(`listing_doping_${type}_options`, JSON.stringify(nextOptions));
+  };
+
+  const updateOption = (type, index, patch) => {
+    const current = getDopingOptionsFromSettings(settings, type);
+    const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, ...patch } : option));
+    setOptions(type, next);
+  };
+
+  const addOption = (type) => {
+    const current = getDopingOptionsFromSettings(settings, type);
+    const nextDays = Math.max(1, ...current.map((option) => Number(option.days) || 0)) + 7;
+    const nextPrice = current[current.length - 1]?.price ?? (type === 'vitrine' ? 149 : 79);
+    setOptions(type, [...current, { days: nextDays, price: nextPrice, image: '' }]);
+  };
+
+  const removeOption = (type, index) => {
+    const current = getDopingOptionsFromSettings(settings, type);
+    if (current.length <= 1) return;
+    setOptions(type, current.filter((_, optionIndex) => optionIndex !== index));
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aktif Sekme</div>
+            <h2 className="mt-1 text-2xl font-black text-slate-950">Doping</h2>
+          </div>
+          <div className="text-xs leading-5 text-slate-400">
+            Burada vitrin ve öne çıkar paketlerinin süre, fiyat ve görsellerini ayrı ayrı yönetebilirsin.
+          </div>
+        </div>
+      </div>
+
+      {['vitrine', 'featured'].map((type) => {
+        const options = getDopingOptionsFromSettings(settings, type);
+        const meta = getDopingTypeMeta(type);
+
+        return (
+          <div key={type} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>
+                  <Package size={13} />
+                  {meta.label}
+                </div>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">{meta.description}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => addOption(type)}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
+              >
+                <Plus size={14} />
+                Paket Ekle
+              </button>
+            </div>
+
+            <div className="grid gap-4 p-5 xl:grid-cols-2">
+              {options.map((option, index) => (
+                <div key={`${type}-${index}`} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-black text-slate-900">{meta.label} Paketi</div>
+                      <div className="mt-1 text-xs font-semibold text-slate-400">
+                        {formatDopingDuration(option.days)} · {Number(option.price || 0).toFixed(2)} ₺
+                      </div>
+                    </div>
+                    {options.length > 1 ? (
+                      <button
+                        type="button"
+                        onClick={() => removeOption(type, index)}
+                        className="rounded-xl border border-rose-200 bg-white p-2 text-rose-500 transition-colors hover:bg-rose-50"
+                        title="Paketi sil"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Süre (gün)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={option.days}
+                        onChange={(event) => updateOption(type, index, { days: Math.max(1, Number(event.target.value || 1)) })}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Fiyat (₺)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={option.price}
+                        onChange={(event) => updateOption(type, index, { price: Math.max(0, Number(event.target.value || 0)) })}
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="mb-1.5 block text-xs font-bold text-slate-600">Paket Görseli</label>
+                    <input
+                      type="text"
+                      value={option.image || ''}
+                      onChange={(event) => updateOption(type, index, { image: event.target.value })}
+                      placeholder="https://..."
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                    />
+                    <div className="mt-3 space-y-3">
+                      {option.image ? (
+                        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                          <div className="flex h-40 items-center justify-center bg-slate-50 p-3">
+                            <img src={option.image} alt={`${meta.label} paketi`} className="h-full w-full object-contain" />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex h-40 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white text-slate-400">
+                          <ImageIcon size={22} />
+                          <span className="mt-2 text-xs font-semibold">Henüz görsel yok</span>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-2">
+                        <input
+                          id={`doping-image-input-${type}-${index}`}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (event) => {
+                            const file = event.target.files?.[0];
+                            if (!file) return;
+                            await onOptionImageUpload(type, index, file);
+                            event.target.value = '';
+                          }}
+                        />
+                        <label
+                          htmlFor={`doping-image-input-${type}-${index}`}
+                          className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
+                        >
+                          {imageUploading === `listing_doping_${type}_options_${index}` ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                          Görsel Yükle
+                        </label>
+                        {option.image ? (
+                          <button
+                            type="button"
+                            onClick={() => updateOption(type, index, { image: '' })}
+                            className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
+                          >
+                            <X size={13} />
+                            Görseli Kaldır
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AdminSettings() {
   const [settings, setSettings] = useState({});
   const [initialSettings, setInitialSettings] = useState({});
@@ -448,6 +641,22 @@ export default function AdminSettings() {
       const url = await adminUploadImage(file, 'branding', { preserveOriginal: key === 'site_favicon' });
       set(key, url);
       showToast('Görsel yüklendi.');
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setImageUploading('');
+    }
+  };
+
+  const handleDopingImageUpload = async (type, index, file) => {
+    const uploadKey = `listing_doping_${type}_options_${index}`;
+    setImageUploading(uploadKey);
+    try {
+      const url = await adminUploadImage(file, 'doping', { preserveOriginal: true });
+      const current = getDopingOptionsFromSettings(settings, type);
+      const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, image: url } : option));
+      set(`listing_doping_${type}_options`, JSON.stringify(next));
+      showToast('Doping görseli yüklendi.');
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -567,16 +776,25 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {activeTabConfig.sections.map((section) => (
-              <SectionCard
-                key={section.section}
-                section={section}
+            {activeTab === 'doping' ? (
+              <DopingSettingsPanel
                 settings={settings}
                 set={set}
-                onUpload={handleUpload}
                 imageUploading={imageUploading}
+                onOptionImageUpload={handleDopingImageUpload}
               />
-            ))}
+            ) : (
+              activeTabConfig.sections.map((section) => (
+                <SectionCard
+                  key={section.section}
+                  section={section}
+                  settings={settings}
+                  set={set}
+                  onUpload={handleUpload}
+                  imageUploading={imageUploading}
+                />
+              ))
+            )}
           </section>
         </div>
       </div>

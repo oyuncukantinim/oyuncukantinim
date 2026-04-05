@@ -14,9 +14,10 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, updateListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { findDopingOption, formatDopingDuration, getDopingTypeMeta } from '../lib/doping';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -419,7 +420,15 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { showToast } = useCart();
-  const { defaultAvatar, defaultProfileBanner, defaultListingImage, balanceAddEnabled, registrationEmailCodeExpiryMinutes } = useSiteBrand();
+  const {
+    defaultAvatar,
+    defaultProfileBanner,
+    defaultListingImage,
+    balanceAddEnabled,
+    registrationEmailCodeExpiryMinutes,
+    dopingVitrineOptions,
+    dopingFeaturedOptions,
+  } = useSiteBrand();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('listings');
@@ -445,6 +454,7 @@ export default function ProfilePage() {
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [favorites, setFavorites] = useState([]);
   const [analyzeModal, setAnalyzeModal] = useState(null); // { listing_id, title }
+  const [dopingModal, setDopingModal] = useState(null);
   const [myReviews, setMyReviews] = useState([]);
   const [reviewStarFilter, setReviewStarFilter] = useState(0);
 
@@ -611,6 +621,23 @@ export default function ProfilePage() {
       showToast(nextStatus === 'passive' ? 'İlan pasife alındı.' : 'İlan aktifleştirildi.');
     } catch (err) {
       showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleApplyListingDoping = async ({ listingId, type, days }) => {
+    setSaving(true);
+    try {
+      const response = await applyListingDoping({ listing_id: listingId, doping_type: type, doping_days: days });
+      if (response.data?.new_balance !== undefined) {
+        updateUser({ ...user, balance: Number(response.data.new_balance) });
+      }
+      setDopingModal(null);
+      showToast('Doping paketi uygulandı.');
+      loadListings();
+    } catch (error) {
+      showToast(error.message);
     } finally {
       setSaving(false);
     }
@@ -916,8 +943,13 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex flex-1 flex-col gap-2 p-3">
                         <div className="space-y-1">
-                          <div className="text-[11px] font-semibold text-slate-400">
-                            {(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-400">
+                            <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                            {listing.active_doping_type ? (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getDopingTypeMeta(listing.active_doping_type).buttonClass}`}>
+                                {getDopingTypeMeta(listing.active_doping_type).label}
+                              </span>
+                            ) : null}
                           </div>
                           <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
                             {listing.title}
@@ -934,6 +966,11 @@ export default function ProfilePage() {
                               {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
                           )}
+                          {listing.status !== 'expired' && listing.status !== 'sold' ? (
+                            <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600" title="Doping">
+                              <Package size={12} />
+                            </button>
+                          ) : null}
                           <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500"><Edit3 size={12}/></button>
                           <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"><Trash2 size={12}/></button>
                           </div>
@@ -957,6 +994,11 @@ export default function ProfilePage() {
                           <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-400">
                             <span>İlan #{listing.id}</span>
                             <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                            {listing.active_doping_type ? (
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getDopingTypeMeta(listing.active_doping_type).buttonClass}`}>
+                                {getDopingTypeMeta(listing.active_doping_type).label}
+                              </span>
+                            ) : null}
                           </div>
 	                        <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold text-slate-800 hover:text-violet-600">{listing.title}</Link>
                       </div>
@@ -971,6 +1013,11 @@ export default function ProfilePage() {
                               {listing.status === 'active' ? <ToggleRight size={15}/> : <ToggleLeft size={15}/>}
                             </button>
                           )}
+                          {listing.status !== 'expired' && listing.status !== 'sold' ? (
+                            <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-violet-50 hover:text-violet-600" title="Doping">
+                              <Package size={13}/>
+                            </button>
+                          ) : null}
                           <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-500">
                             <Edit3 size={13}/>
                           </button>
@@ -1473,6 +1520,18 @@ export default function ProfilePage() {
           saving={saving}
         />
       )}
+
+      {dopingModal && (
+        <ListingDopingModal
+          listing={dopingModal}
+          balance={user?.balance}
+          vitrineOptions={dopingVitrineOptions}
+          featuredOptions={dopingFeaturedOptions}
+          onClose={() => setDopingModal(null)}
+          onSubmit={handleApplyListingDoping}
+          saving={saving}
+        />
+      )}
     </div>
   );
 }
@@ -1670,6 +1729,113 @@ function FinanceTabContent() {
 }
 
 const DELIVERY_HOURS_OPTS = [1, 2, 4, 6, 12, 24, 48, 72];
+
+function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions, onClose, onSubmit, saving }) {
+  const [selectedType, setSelectedType] = useState(listing.active_doping_type || 'vitrine');
+  const [selectedDays, setSelectedDays] = useState(null);
+
+  useEffect(() => {
+    const options = selectedType === 'vitrine' ? vitrineOptions : featuredOptions;
+    if (!options.length) return;
+    const currentDays = selectedDays && findDopingOption(options, selectedDays) ? selectedDays : options[0].days;
+    setSelectedDays(currentDays);
+  }, [featuredOptions, selectedDays, selectedType, vitrineOptions]);
+
+  const options = selectedType === 'vitrine' ? vitrineOptions : featuredOptions;
+  const selectedOption = findDopingOption(options, selectedDays);
+  const selectedMeta = getDopingTypeMeta(selectedType);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-800">İlan Doping Seç</h2>
+            <p className="mt-0.5 text-xs text-gray-400">{listing.title}</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
+        </div>
+
+        <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-slate-600">
+            Aktif bakiye: <span className="font-black text-slate-900">{Number(balance || 0).toFixed(2)} ₺</span>
+          </div>
+          {listing.active_doping_type && listing.doping_expires_at ? (
+            <div className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600">
+              Mevcut doping: {getDopingTypeMeta(listing.active_doping_type).label} · {new Date(listing.doping_expires_at).toLocaleString('tr-TR')}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
+            const meta = getDopingTypeMeta(type);
+            const active = selectedType === type;
+            return (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setSelectedType(type)}
+                className={`rounded-2xl border p-4 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200'}`}
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                  <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                </div>
+                {optionList[0]?.image ? (
+                  <img src={optionList[0].image} alt={meta.label} className="mb-3 h-32 w-full rounded-2xl object-cover" />
+                ) : (
+                  <div className="mb-3 flex h-32 items-center justify-center rounded-2xl bg-slate-50 text-sm font-black text-slate-400">{meta.label}</div>
+                )}
+                <p className="text-sm leading-6 text-slate-600">{meta.description}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+          <div className="mb-3 text-sm font-extrabold text-slate-800">Süre Seç</div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {options.map((option) => {
+              const selected = Number(selectedDays) === Number(option.days);
+              const insufficient = Number(balance || 0) < Number(option.price || 0);
+              return (
+                <button
+                  key={`${selectedType}-${option.days}`}
+                  type="button"
+                  onClick={() => setSelectedDays(option.days)}
+                  className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/70 hover:border-violet-200 hover:bg-white'}`}
+                >
+                  <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                  <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
+                  {insufficient ? <div className="mt-3 rounded-xl bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-col gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-sm font-black text-violet-900">{selectedMeta.label}</div>
+            <div className="mt-1 text-xs font-semibold text-violet-700">
+              {selectedOption ? `${formatDopingDuration(selectedOption.days)} · ${Number(selectedOption.price).toFixed(2)} ₺` : 'Paket seç'}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => selectedOption && onSubmit({ listingId: listing.id, type: selectedType, days: selectedOption.days })}
+            disabled={saving || !selectedOption || Number(balance || 0) < Number(selectedOption.price || 0)}
+            className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+          >
+            {saving ? 'Uygulanıyor...' : 'Doping Uygula'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function EditListingModal({ listing, onClose, onSave, saving }) {
   const imgs = listing.images || [];
