@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, updateListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 
@@ -587,12 +587,33 @@ export default function ProfilePage() {
   const handleUpdateListing = async (data) => {
     setSaving(true);
     try {
-      await apiAuth('update_listing', data, token);
+      await updateListing(data);
       showToast('İlan güncellendi!');
       setEditModal(null);
       loadListings();
     } catch (e) { showToast(e.message); }
     finally { setSaving(false); }
+  };
+
+  const handleToggleListingStatus = async (event, listing) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const nextStatus = listing.status === 'active' ? 'passive' : 'active';
+    setSaving(true);
+    try {
+      await updateListing({ listing_id: listing.id, status: nextStatus });
+      setMyListings((prev) =>
+        prev.map((item) =>
+          item.id === listing.id ? { ...item, status: nextStatus } : item
+        )
+      );
+      showToast(nextStatus === 'passive' ? 'İlan pasife alındı.' : 'İlan aktifleştirildi.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
@@ -908,7 +929,7 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
-                            <button onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
+                            <button onClick={(event) => handleToggleListingStatus(event, listing)}
                               className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
@@ -944,7 +965,7 @@ export default function ProfilePage() {
                         <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button
-                              onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
+                              onClick={(event) => handleToggleListingStatus(event, listing)}
                               title={listing.status === 'active' ? 'Pasif yap' : 'Aktif et'}
                               className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={15}/> : <ToggleLeft size={15}/>}
