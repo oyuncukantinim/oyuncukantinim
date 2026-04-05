@@ -14,11 +14,18 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendPhoneVerification, verifyPhoneCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
+
+function normalizePhoneInput(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return '';
+  const cleaned = trimmed.replace(/[^\d+]/g, '');
+  return cleaned.startsWith('+') ? `+${cleaned.slice(1).replace(/[^\d]/g, '')}` : cleaned.replace(/[^\d]/g, '');
+}
 
 async function apiAuth(action, body = null, token) {
   const url = `${API}?action=${action}`;
@@ -419,7 +426,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 export default function ProfilePage() {
   const { user, logout, updateUser } = useAuth();
   const { showToast } = useCart();
-  const { defaultAvatar, defaultProfileBanner, defaultListingImage, balanceAddEnabled } = useSiteBrand();
+  const { defaultAvatar, defaultProfileBanner, defaultListingImage, balanceAddEnabled, phoneVerificationEnabled } = useSiteBrand();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('listings');
@@ -435,6 +442,10 @@ export default function ProfilePage() {
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [bannerImage, setBannerImage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneCode, setPhoneCode] = useState('');
+  const [phoneSending, setPhoneSending] = useState(false);
+  const [phoneVerifying, setPhoneVerifying] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
@@ -450,6 +461,8 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setEditEmail(user.email || '');
+    setPhoneNumber(user.phone || '');
+    setPhoneCode('');
     setBannerImage(user.banner_image || defaultProfileBanner || '');
     setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
@@ -491,6 +504,10 @@ export default function ProfilePage() {
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
+  const normalizedPhone = normalizePhoneInput(phoneNumber);
+  const storedPhone = user.phone || '';
+  const phoneChanged = normalizedPhone !== storedPhone;
+  const phoneVerified = !phoneChanged && Number(user.phone_verified || 0) === 1;
   const profileDirty =
     selectedAvatar !== (user.avatar || defaultAvatar) ||
     normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '');
@@ -588,6 +605,52 @@ export default function ProfilePage() {
       showToast('Kişisel bilgiler güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
+  };
+
+  const handleSendPhoneCode = async () => {
+    if (!normalizedPhone) {
+      showToast('Telefon numarası gir.');
+      return;
+    }
+    if (!normalizedPhone.startsWith('+')) {
+      showToast('Telefon numarasını uluslararası formatta gir. Örnek: +905551112233');
+      return;
+    }
+
+    setPhoneSending(true);
+    try {
+      await sendPhoneVerification(normalizedPhone);
+      setPhoneCode('');
+      showToast('Doğrulama kodu gönderildi.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setPhoneSending(false);
+    }
+  };
+
+  const handleVerifyPhone = async () => {
+    if (!normalizedPhone) {
+      showToast('Telefon numarası gir.');
+      return;
+    }
+    if (!phoneCode.trim()) {
+      showToast('Doğrulama kodunu gir.');
+      return;
+    }
+
+    setPhoneVerifying(true);
+    try {
+      const res = await verifyPhoneCode(normalizedPhone, phoneCode.trim());
+      updateUser(res.data);
+      setPhoneNumber(res.data.phone || normalizedPhone);
+      setPhoneCode('');
+      showToast('Telefon numarası doğrulandı.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setPhoneVerifying(false);
+    }
   };
 
   const tabs = [
@@ -1211,6 +1274,63 @@ export default function ProfilePage() {
                         <p className="text-xs text-red-500 mt-1">Şifreler eşleşmiyor.</p>
                       )}
                     </div>
+
+                    {phoneVerificationEnabled && (
+                      <div className="rounded-2xl border border-cyan-100 bg-cyan-50/60 p-4 space-y-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-extrabold text-gray-800">Telefon Doğrulama</div>
+                            <p className="mt-1 text-xs text-gray-500">Telefon numaranı SMS ile doğrulayıp hesabına ekleyebilirsin.</p>
+                          </div>
+                          <span className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold ${phoneVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {phoneVerified ? 'Doğrulandı' : storedPhone ? 'Doğrulanmadı' : 'Telefon yok'}
+                          </span>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-gray-600 mb-1.5">Telefon</label>
+                          <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={e => setPhoneNumber(e.target.value)}
+                            placeholder="+905551112233"
+                            className="input-field"
+                          />
+                          <p className="mt-1 text-xs text-gray-400">Uluslararası format kullan. Örnek: +905551112233</p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                          <div>
+                            <label className="block text-sm font-bold text-gray-600 mb-1.5">Doğrulama Kodu</label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={phoneCode}
+                              onChange={e => setPhoneCode(e.target.value.replace(/[^\d]/g, '').slice(0, 6))}
+                              placeholder="SMS ile gelen 6 haneli kod"
+                              className="input-field"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={handleSendPhoneCode}
+                            disabled={phoneSending || !normalizedPhone}
+                            className="rounded-xl border border-cyan-200 bg-white px-4 py-2.5 text-sm font-extrabold text-cyan-700 transition-colors hover:bg-cyan-50 disabled:opacity-50"
+                          >
+                            {phoneSending ? 'Kod gönderiliyor...' : phoneChanged || !storedPhone ? 'Kodu Gönder' : 'Tekrar Kod Gönder'}
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleVerifyPhone}
+                          disabled={phoneVerifying || !normalizedPhone || phoneCode.trim().length < 4}
+                          className="w-full rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-extrabold text-white transition-colors hover:bg-cyan-500 disabled:opacity-50"
+                        >
+                          {phoneVerifying ? 'Doğrulanıyor...' : phoneVerified ? 'Telefon Doğrulandı' : 'Telefonu Doğrula'}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <button onClick={handleSavePersonalInfo} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
