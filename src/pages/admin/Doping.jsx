@@ -8,22 +8,34 @@ function getDopingOptionsFromSettings(settings, type) {
   return normalizeDopingOptions(settings[`listing_doping_${type}_options`], type);
 }
 
-function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUpload }) {
+function getDopingImage(options) {
+  return options.find((option) => option.image)?.image || '';
+}
+
+function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImageUpload }) {
   const setOptions = (type, nextOptions) => {
-    set(`listing_doping_${type}_options`, JSON.stringify(nextOptions));
+    setSetting(`listing_doping_${type}_options`, JSON.stringify(nextOptions));
+  };
+
+  const setTypeImage = (type, image) => {
+    const current = getDopingOptionsFromSettings(settings, type);
+    setOptions(type, current.map((option) => ({ ...option, image })));
   };
 
   const updateOption = (type, index, patch) => {
     const current = getDopingOptionsFromSettings(settings, type);
-    const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, ...patch } : option));
-    setOptions(type, next);
+    setOptions(
+      type,
+      current.map((option, optionIndex) => (optionIndex === index ? { ...option, ...patch } : option)),
+    );
   };
 
   const addOption = (type) => {
     const current = getDopingOptionsFromSettings(settings, type);
+    const currentImage = getDopingImage(current);
     const nextHours = Math.max(1, ...current.map((option) => Number(option.hours) || 0)) + 24;
     const nextPrice = current[current.length - 1]?.price ?? (type === 'vitrine' ? 149 : 79);
-    setOptions(type, [...current, { hours: nextHours, price: nextPrice, image: '' }]);
+    setOptions(type, [...current, { hours: nextHours, price: nextPrice, image: currentImage }]);
   };
 
   const removeOption = (type, index) => {
@@ -37,6 +49,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
       {['vitrine', 'featured'].map((type) => {
         const options = getDopingOptionsFromSettings(settings, type);
         const meta = getDopingTypeMeta(type);
+        const dopingImage = getDopingImage(options);
 
         return (
           <div key={type} className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -56,6 +69,70 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                 <Plus size={14} />
                 Paket Ekle
               </button>
+            </div>
+
+            <div className="border-b border-slate-100 bg-slate-50/60 px-4 py-3">
+              <div className="grid gap-3 lg:grid-cols-[180px_minmax(0,1fr)]">
+                <div>
+                  {dopingImage ? (
+                    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                      <div className="flex h-24 items-center justify-center bg-slate-50 p-2">
+                        <img src={dopingImage} alt={`${meta.label} görseli`} className="h-full w-full object-contain" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex h-24 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white text-slate-400">
+                      <ImageIcon size={18} />
+                      <span className="mt-1.5 text-xs font-semibold">Henüz görsel yok</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div>
+                    <label className="mb-1 block text-[11px] font-bold text-slate-600">Doping görseli</label>
+                    <input
+                      type="text"
+                      value={dopingImage}
+                      onChange={(event) => setTypeImage(type, event.target.value)}
+                      placeholder="https://..."
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <input
+                      id={`doping-image-input-${type}`}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        await onTypeImageUpload(type, file);
+                        event.target.value = '';
+                      }}
+                    />
+                    <label
+                      htmlFor={`doping-image-input-${type}`}
+                      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
+                    >
+                      {imageUploading === `listing_doping_${type}_image` ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                      Görsel Yükle
+                    </label>
+                    {dopingImage ? (
+                      <button
+                        type="button"
+                        onClick={() => setTypeImage(type, '')}
+                        className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50"
+                      >
+                        <X size={13} />
+                        Görseli Kaldır
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-3 p-4 lg:grid-cols-2 2xl:grid-cols-3">
@@ -82,7 +159,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="mb-1 block text-[11px] font-bold text-slate-600">Sure (saat)</label>
+                      <label className="mb-1 block text-[11px] font-bold text-slate-600">Süre (saat)</label>
                       <input
                         type="number"
                         min="1"
@@ -92,7 +169,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                       />
                     </div>
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Fiyat (₺)</label>
+                      <label className="mb-1 block text-[11px] font-bold text-slate-600">Fiyat (₺)</label>
                       <input
                         type="number"
                         min="0"
@@ -101,63 +178,6 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                         onChange={(event) => updateOption(type, index, { price: Math.max(0, Number(event.target.value || 0)) })}
                         className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                       />
-                    </div>
-                  </div>
-
-                  <div className="mt-3">
-                    <label className="mb-1.5 block text-xs font-bold text-slate-600">Paket Görseli</label>
-                    <input
-                      type="text"
-                      value={option.image || ''}
-                      onChange={(event) => updateOption(type, index, { image: event.target.value })}
-                      placeholder="https://..."
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-                    />
-                    <div className="mt-2.5 space-y-2.5">
-                      {option.image ? (
-                        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                          <div className="flex h-28 items-center justify-center bg-slate-50 p-2">
-                            <img src={option.image} alt={`${meta.label} paketi`} className="h-full w-full object-contain" />
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex h-28 flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-white text-slate-400">
-                          <ImageIcon size={18} />
-                          <span className="mt-2 text-xs font-semibold">Henüz görsel yok</span>
-                        </div>
-                      )}
-
-                      <div className="flex flex-wrap gap-2">
-                        <input
-                          id={`doping-image-input-${type}-${index}`}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={async (event) => {
-                            const file = event.target.files?.[0];
-                            if (!file) return;
-                            await onOptionImageUpload(type, index, file);
-                            event.target.value = '';
-                          }}
-                        />
-                        <label
-                          htmlFor={`doping-image-input-${type}-${index}`}
-                          className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[11px] font-bold text-slate-700 transition-colors hover:border-violet-300 hover:text-violet-600"
-                        >
-                          {imageUploading === `listing_doping_${type}_options_${index}` ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-                          Görsel Yükle
-                        </label>
-                        {option.image ? (
-                          <button
-                            type="button"
-                            onClick={() => updateOption(type, index, { image: '' })}
-                            className="inline-flex items-center gap-2 rounded-lg border border-rose-200 bg-white px-3 py-2 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50"
-                          >
-                            <X size={13} />
-                            Görseli Kaldır
-                          </button>
-                        ) : null}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -193,16 +213,15 @@ export default function AdminDoping() {
       .finally(() => setLoading(false));
   }, []);
 
-  const set = (key, value) => setSettings((current) => ({ ...current, [key]: value }));
+  const setSetting = (key, value) => setSettings((current) => ({ ...current, [key]: value }));
 
-  const handleDopingImageUpload = async (type, index, file) => {
-    const uploadKey = `listing_doping_${type}_options_${index}`;
+  const handleDopingImageUpload = async (type, file) => {
+    const uploadKey = `listing_doping_${type}_image`;
     setImageUploading(uploadKey);
     try {
       const url = await adminUploadImage(file, 'doping', { preserveOriginal: true });
       const current = getDopingOptionsFromSettings(settings, type);
-      const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, image: url } : option));
-      set(`listing_doping_${type}_options`, JSON.stringify(next));
+      setSetting(`listing_doping_${type}_options`, JSON.stringify(current.map((option) => ({ ...option, image: url }))));
       showToast('Doping görseli yüklendi.');
     } catch (error) {
       showToast(error.message);
@@ -257,7 +276,7 @@ export default function AdminDoping() {
               </div>
               <h1 className="text-3xl font-black tracking-tight">Vitrin ve öne çıkar paketlerini ayrı bir merkezden yönet</h1>
               <p className="mt-2 text-sm leading-6 text-violet-100/80">
-                Paket süreleri, fiyatları ve her paketin kendi görseli artık bu sayfadan bağımsız olarak yönetilir.
+                Süre ve fiyat paketlerini yönet, her doping tipi için tek görsel kullan ve kullanıcıya daha temiz bir satın alma deneyimi sun.
               </p>
             </div>
 
@@ -280,9 +299,9 @@ export default function AdminDoping() {
 
         <DopingSettingsPanel
           settings={settings}
-          set={set}
+          setSetting={setSetting}
           imageUploading={imageUploading}
-          onOptionImageUpload={handleDopingImageUpload}
+          onTypeImageUpload={handleDopingImageUpload}
         />
       </div>
     </AdminLayout>
