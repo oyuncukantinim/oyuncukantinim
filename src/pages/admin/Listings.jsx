@@ -21,6 +21,7 @@ import {
   adminUpdateListing,
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
+import { getListingCoverImage } from '../../lib/listingMedia';
 
 const STATUS_MAP = {
   active: { label: 'Aktif', colorClass: 'text-emerald-600 bg-emerald-50' },
@@ -172,6 +173,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                 ) : (
                   stocks.map((stock) => {
                     const sold = Number(stock.is_sold) === 1;
+
                     return (
                       <div key={stock.id} className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
                         <span className="font-semibold text-gray-500">#{stock.id}</span>
@@ -221,6 +223,7 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
     description: listing.description || '',
   });
   const [saving, setSaving] = useState(false);
+  const coverImage = getListingCoverImage(listing);
 
   const handleSave = async () => {
     setSaving(true);
@@ -267,9 +270,9 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
           </button>
         </div>
 
-        {listing.images?.[0] ? (
+        {coverImage ? (
           <div className="mb-4 overflow-hidden rounded-xl border border-gray-100">
-            <img src={listing.images[0]} alt={listing.title} className="h-40 w-full bg-gray-50 object-contain" />
+            <img src={coverImage} alt={listing.title} className="h-40 w-full bg-gray-50 object-contain" />
           </div>
         ) : null}
 
@@ -519,14 +522,15 @@ export default function AdminListings() {
                       label: listing.status || 'Belirsiz',
                       colorClass: 'text-gray-600 bg-gray-100',
                     };
+                    const coverImage = getListingCoverImage(listing);
 
                     return (
                       <tr key={listing.id} className="border-t border-gray-50 hover:bg-gray-50/50">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                              {listing.images?.[0] ? (
-                                <img src={listing.images[0]} alt={listing.title} className="h-full w-full object-cover" />
+                              {coverImage ? (
+                                <img src={coverImage} alt={listing.title} className="h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">—</div>
                               )}
