@@ -9,9 +9,17 @@ import {
   ExternalLink,
   X,
   Pencil,
+  Package,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminAddStocks, adminDeleteListing, adminDeleteStock, adminGetListings, adminGetStocks, adminUpdateListing } from '../../lib/adminApi';
+import {
+  adminAddStocks,
+  adminDeleteListing,
+  adminDeleteStock,
+  adminGetListings,
+  adminGetStocks,
+  adminUpdateListing,
+} from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 
 const STATUS_MAP = {
@@ -24,21 +32,13 @@ const STATUS_MAP = {
   passive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
 };
 
-function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
-  const [form, setForm] = useState({
-    title: listing.title,
-    price: listing.price,
-    status: listing.status,
-    description: listing.description || '',
-  });
-  const [saving, setSaving] = useState(false);
+function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
   const [stocks, setStocks] = useState([]);
   const [stocksLoading, setStocksLoading] = useState(false);
   const [stockInput, setStockInput] = useState('');
   const [stockSaving, setStockSaving] = useState(false);
 
   const loadStocks = useCallback(async () => {
-    if (listing.delivery_type !== 'stock') return;
     setStocksLoading(true);
     try {
       const response = await adminGetStocks(listing.id);
@@ -48,45 +48,14 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
     } finally {
       setStocksLoading(false);
     }
-  }, [listing.delivery_type, listing.id, showToast]);
+  }, [listing.id, showToast]);
 
   useEffect(() => {
     loadStocks();
   }, [loadStocks]);
 
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await adminUpdateListing({ listing_id: listing.id, ...form });
-      showToast('İlan güncellendi.');
-      onRefresh();
-      onClose();
-    } catch (e) {
-      showToast(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('İlanı kalıcı olarak sil?')) return;
-    setSaving(true);
-    try {
-      await adminDeleteListing(listing.id);
-      showToast('İlan silindi.');
-      onRefresh();
-      onClose();
-    } catch (e) {
-      showToast(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const fmtDateTime = (value) => (value ? new Date(value).toLocaleString('tr-TR') : '—');
-  const availableStockCount = listing.delivery_type === 'stock'
-    ? stocks.filter((stock) => Number(stock.is_sold) !== 1).length
-    : Number(listing.stock_count || 0);
+  const availableStockCount = stocks.filter((stock) => Number(stock.is_sold) !== 1).length;
   const soldStockCount = stocks.filter((stock) => Number(stock.is_sold) === 1).length;
 
   const handleAddStocks = async () => {
@@ -96,11 +65,10 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
       .filter(Boolean)
       .map((line) => {
         const [labelPart, ...contentParts] = line.includes('|') ? line.split('|') : [null, line];
-        const content = contentParts.join('|').trim();
-        const label = labelPart?.trim() || null;
+        const hasLabel = contentParts.length > 0;
         return {
-          label: contentParts.length > 0 ? label : null,
-          content: contentParts.length > 0 ? content : (labelPart || '').trim(),
+          label: hasLabel ? labelPart?.trim() || null : null,
+          content: hasLabel ? contentParts.join('|').trim() : (labelPart || '').trim(),
         };
       })
       .filter((item) => item.content);
@@ -140,9 +108,155 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
   };
 
   return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/55" onClick={onClose} />
+      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-900">Stok Yönetimi</h2>
+            <p className="mt-0.5 text-xs text-gray-400">
+              İlan #{listing.id} · {listing.title}
+            </p>
+          </div>
+          <button onClick={onClose} className="rounded-xl p-1.5 hover:bg-gray-100">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="rounded-xl border border-gray-200">
+          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+            <div>
+              <h3 className="text-sm font-extrabold text-gray-800">Stok Özeti</h3>
+              <p className="mt-0.5 text-xs text-gray-400">
+                Toplam {stocks.length} kayıt · {availableStockCount} aktif · {soldStockCount} satıldı
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3 p-4">
+            <div>
+              <label className="mb-1.5 block text-xs font-bold text-gray-600">Yeni Stok Ekle</label>
+              <textarea
+                value={stockInput}
+                onChange={(e) => setStockInput(e.target.value)}
+                rows={5}
+                placeholder={'Her satıra bir stok gir.\nİstersen Etiket|İçerik formatını kullan.'}
+                className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+              />
+              <div className="mt-2 flex items-center justify-between gap-3">
+                <p className="text-[11px] text-gray-400">Örnek: Hesap 1|eposta:sifre veya doğrudan stok içeriği</p>
+                <button
+                  type="button"
+                  onClick={handleAddStocks}
+                  disabled={stockSaving}
+                  className="rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+                >
+                  {stockSaving ? 'Ekleniyor...' : 'Stok Ekle'}
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-hidden rounded-xl border border-gray-100">
+              <div className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 bg-gray-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                <span>ID</span>
+                <span>İçerik</span>
+                <span>Etiket</span>
+                <span>Durum</span>
+                <span className="text-right">İşlem</span>
+              </div>
+              <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 bg-white">
+                {stocksLoading ? (
+                  <div className="px-3 py-6 text-center text-sm text-gray-400">Stoklar yükleniyor...</div>
+                ) : stocks.length === 0 ? (
+                  <div className="px-3 py-6 text-center text-sm text-gray-400">Bu ilanda henüz stok yok.</div>
+                ) : (
+                  stocks.map((stock) => {
+                    const sold = Number(stock.is_sold) === 1;
+                    return (
+                      <div key={stock.id} className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
+                        <span className="font-semibold text-gray-500">#{stock.id}</span>
+                        <div className="min-w-0">
+                          <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '—'}</div>
+                          {sold && stock.sold_at ? (
+                            <div className="mt-1 text-[11px] text-gray-400">Satış: {fmtDateTime(stock.sold_at)}</div>
+                          ) : null}
+                        </div>
+                        <span className="break-words text-gray-600 [overflow-wrap:anywhere]">{stock.label || '—'}</span>
+                        <span className={`inline-flex w-fit rounded-full px-2 py-1 text-[11px] font-bold ${sold ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                          {sold ? 'Satıldı' : 'Aktif'}
+                        </span>
+                        <div className="flex justify-end">
+                          {!sold ? (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteStock(stock.id)}
+                              disabled={stockSaving}
+                              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                              title="Stoku sil"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          ) : (
+                            <span className="px-1.5 py-1 text-[11px] text-gray-300">—</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showToast }) {
+  const [form, setForm] = useState({
+    title: listing.title,
+    price: listing.price,
+    status: listing.status,
+    description: listing.description || '',
+  });
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await adminUpdateListing({ listing_id: listing.id, ...form });
+      showToast('İlan güncellendi.');
+      onRefresh();
+      onClose();
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('İlanı kalıcı olarak sil?')) return;
+    setSaving(true);
+    try {
+      await adminDeleteListing(listing.id);
+      showToast('İlan silindi.');
+      onRefresh();
+      onClose();
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fmtDateTime = (value) => (value ? new Date(value).toLocaleString('tr-TR') : '—');
+
+  return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-extrabold text-gray-900">İlan #{listing.id}</h2>
@@ -171,15 +285,9 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Teslimat</span>
             <span className="font-semibold text-gray-700">
-              {listing.delivery_type === 'stock' ? `Stoklu (${availableStockCount} aktif)` : 'Manuel'}
+              {listing.delivery_type === 'stock' ? `Stoklu (${listing.stock_count || 0} aktif)` : 'Manuel'}
             </span>
           </div>
-          {listing.delivery_type === 'stock' ? (
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Satılan Stok</span>
-              <span className="font-semibold text-gray-700">{soldStockCount}</span>
-            </div>
-          ) : null}
           {listing.expires_at ? (
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Bitiş</span>
@@ -238,95 +346,16 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
           </div>
         </div>
 
-        {listing.delivery_type === 'stock' ? (
-          <div className="mb-4 rounded-xl border border-gray-200">
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <div>
-                <h3 className="text-sm font-extrabold text-gray-800">Stok Yönetimi</h3>
-                <p className="mt-0.5 text-xs text-gray-400">
-                  Toplam {stocks.length} kayıt · {availableStockCount} aktif · {soldStockCount} satıldı
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3 p-4">
-              <div>
-                <label className="mb-1.5 block text-xs font-bold text-gray-600">Yeni Stok Ekle</label>
-                <textarea
-                  value={stockInput}
-                  onChange={(e) => setStockInput(e.target.value)}
-                  rows={4}
-                  placeholder={'Her satıra bir stok gir.\nİstersen Etiket|İçerik formatını kullan.'}
-                  className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-                />
-                <div className="mt-2 flex items-center justify-between gap-3">
-                  <p className="text-[11px] text-gray-400">Örnek: Hesap 1|eposta:sifre veya doğrudan stok içeriği</p>
-                  <button
-                    type="button"
-                    onClick={handleAddStocks}
-                    disabled={stockSaving}
-                    className="rounded-xl bg-violet-600 px-3 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
-                  >
-                    {stockSaving ? 'Ekleniyor...' : 'Stok Ekle'}
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-xl border border-gray-100">
-                <div className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 bg-gray-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
-                  <span>ID</span>
-                  <span>İçerik</span>
-                  <span>Etiket</span>
-                  <span>Durum</span>
-                  <span className="text-right">İşlem</span>
-                </div>
-                <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 bg-white">
-                  {stocksLoading ? (
-                    <div className="px-3 py-6 text-center text-sm text-gray-400">Stoklar yükleniyor...</div>
-                  ) : stocks.length === 0 ? (
-                    <div className="px-3 py-6 text-center text-sm text-gray-400">Bu ilanda henüz stok yok.</div>
-                  ) : (
-                    stocks.map((stock) => {
-                      const sold = Number(stock.is_sold) === 1;
-                      return (
-                        <div key={stock.id} className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
-                          <span className="font-semibold text-gray-500">#{stock.id}</span>
-                          <div className="min-w-0">
-                            <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '—'}</div>
-                            {sold && stock.sold_at ? (
-                              <div className="mt-1 text-[11px] text-gray-400">Satış: {fmtDateTime(stock.sold_at)}</div>
-                            ) : null}
-                          </div>
-                          <span className="break-words text-gray-600 [overflow-wrap:anywhere]">{stock.label || '—'}</span>
-                          <span className={`inline-flex w-fit rounded-full px-2 py-1 text-[11px] font-bold ${sold ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
-                            {sold ? 'Satıldı' : 'Aktif'}
-                          </span>
-                          <div className="flex justify-end">
-                            {!sold ? (
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteStock(stock.id)}
-                                disabled={stockSaving}
-                                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
-                                title="Stoku sil"
-                              >
-                                <Trash2 size={13} />
-                              </button>
-                            ) : (
-                              <span className="px-1.5 py-1 text-[11px] text-gray-300">—</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
-
         <div className="flex gap-2">
+          {listing.delivery_type === 'stock' ? (
+            <button
+              type="button"
+              onClick={() => onManageStocks(listing)}
+              className="flex flex-shrink-0 items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              <Package size={13} /> Stokları Yönet
+            </button>
+          ) : null}
           <a
             href={listingSlug(listing.title, listing.id)}
             target="_blank"
@@ -365,6 +394,7 @@ export default function AdminListings() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
   const [selectedListing, setSelectedListing] = useState(null);
+  const [stockListing, setStockListing] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -402,6 +432,7 @@ export default function AdminListings() {
     try {
       await adminDeleteListing(listing.id);
       if (selectedListing?.id === listing.id) setSelectedListing(null);
+      if (stockListing?.id === listing.id) setStockListing(null);
       showToast('İlan silindi.');
       load();
     } catch (e) {
@@ -596,6 +627,16 @@ export default function AdminListings() {
         <ListingDetailModal
           listing={selectedListing}
           onClose={() => setSelectedListing(null)}
+          onRefresh={load}
+          onManageStocks={(listing) => setStockListing(listing)}
+          showToast={showToast}
+        />
+      ) : null}
+
+      {stockListing ? (
+        <StockManagerModal
+          listing={stockListing}
+          onClose={() => setStockListing(null)}
           onRefresh={load}
           showToast={showToast}
         />
