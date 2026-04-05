@@ -460,14 +460,9 @@ export default function CreatePage() {
         {step === 3 && (
           <div className="space-y-5">
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h3 className="text-sm font-extrabold text-slate-800">İlan Doping Seçimi</h3>
-                  <p className="mt-1 text-xs text-slate-500">İlanını yayınlarken istediğin paket ve süreyi seçebilirsin. Ücret seçilen paket kadar bakiyenden düşer.</p>
-                </div>
-                <div className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600 shadow-sm">
-                  Bakiye: {Number(user?.balance || 0).toFixed(2)}₺
-                </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800">İlan Doping Seçimi</h3>
+                <p className="mt-1 text-xs text-slate-500">İlanını yayınlarken istediğin paket ve süreyi seçebilirsin. Ücret seçilen paket kadar bakiyenden düşer.</p>
               </div>
             </div>
 
