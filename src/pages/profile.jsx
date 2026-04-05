@@ -1768,7 +1768,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           ) : null}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-3">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
             const meta = getDopingTypeMeta(type);
             const active = selectedType === type;
@@ -1777,18 +1777,22 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                 key={type}
                 type="button"
                 onClick={() => setSelectedType(type)}
-                className={`rounded-2xl border p-3 text-left transition-all ${active ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200'}`}
+                className={`w-full rounded-2xl border p-3 text-left transition-all ${active ? `${meta.accentClass} shadow-sm` : 'border-slate-200 bg-white hover:border-violet-200'} `}
               >
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
-                  <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                <div className="flex items-center gap-3">
+                  {optionList[0]?.image ? (
+                    <img src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
+                  ) : (
+                    <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-400">{meta.label}</div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                      <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                    </div>
+                    <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
+                  </div>
                 </div>
-                {optionList[0]?.image ? (
-                  <img src={optionList[0].image} alt={meta.label} className="mb-2 h-24 w-full rounded-xl object-cover" />
-                ) : (
-                  <div className="mb-2 flex h-24 items-center justify-center rounded-xl bg-slate-50 text-sm font-black text-slate-400">{meta.label}</div>
-                )}
-                <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
               </button>
             );
           })}
