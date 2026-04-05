@@ -80,6 +80,10 @@ export function registerUser(payload) {
   return request('register', { method: 'POST', body: payload });
 }
 
+export function verifyRegistrationCode(payload) {
+  return request('verify_registration_code', { method: 'POST', body: payload });
+}
+
 export function getMe() {
   return request('me', { auth: true });
 }

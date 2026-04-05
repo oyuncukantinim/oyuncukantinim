@@ -5,6 +5,7 @@ import {
   LayoutTemplate,
   LifeBuoy,
   Loader2,
+  Mail,
   MessageSquare,
   Save,
   Settings as SettingsIcon,
@@ -183,6 +184,33 @@ const SETTINGS_TABS = [
           { key: 'notification_retention_days', label: 'Bildirim Saklama Süresi (gün)', type: 'number', placeholder: '30' },
           { key: 'sale_notification_enabled', label: 'Satış Bildirimleri', type: 'toggle', desc: 'Satış ve yeni sipariş bildirimlerini topluca açıp kapatır.' },
           { key: 'support_notification_enabled', label: 'Destek Bildirimleri', type: 'toggle', desc: 'Yeni destek talebi ve yeni destek yanıtı bildirimlerini kontrol eder.' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'contact',
+    label: 'İletişim',
+    icon: Mail,
+    sections: [
+      {
+        section: 'Kayıt Doğrulama',
+        fields: [
+          { key: 'registration_email_verification_enabled', label: 'Kayıtta Mail Doğrulama', type: 'toggle', desc: 'Açıksa yeni üyelikte mail kodu doğrulamadan hesap açılmaz.' },
+          { key: 'registration_email_code_expiry_minutes', label: 'Kod Geçerlilik Süresi (dk)', type: 'number', placeholder: '10' },
+          { key: 'registration_email_subject', label: 'Doğrulama Mail Konusu', type: 'text', placeholder: 'E-posta doğrulama kodunuz' },
+        ],
+      },
+      {
+        section: 'SMTP Ayarları',
+        fields: [
+          { key: 'smtp_host', label: 'SMTP Sunucu', type: 'text', placeholder: 'smtp.yourmail.com' },
+          { key: 'smtp_port', label: 'SMTP Port', type: 'number', placeholder: '587' },
+          { key: 'smtp_secure', label: 'SMTP Güvenlik', type: 'text', placeholder: 'tls / ssl / none', desc: 'Çoğu servis için tls veya ssl kullanılır.' },
+          { key: 'smtp_username', label: 'SMTP Kullanıcı Adı', type: 'text', placeholder: 'mail@alanadi.com' },
+          { key: 'smtp_password', label: 'SMTP Şifre', type: 'password', placeholder: 'SMTP şifresi' },
+          { key: 'smtp_from_email', label: 'Gönderen E-posta', type: 'text', placeholder: 'noreply@alanadi.com' },
+          { key: 'smtp_from_name', label: 'Gönderen Adı', type: 'text', placeholder: 'Oyuncu Kantinim' },
         ],
       },
     ],

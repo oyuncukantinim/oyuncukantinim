@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, User } from 'lucide-react';
-import { loginUser, registerUser } from '../lib/api';
+import { loginUser, registerUser, verifyRegistrationCode } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -12,6 +12,8 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [awaitingVerification, setAwaitingVerification] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -20,13 +22,35 @@ export default function LoginPage() {
     siteLogo,
     siteLogoText,
     registrationEnabled,
+    registrationEmailVerificationEnabled,
     usernameMinLength,
     usernameMaxLength,
     passwordMinLength,
   } = useSiteBrand();
+
   const { login } = useAuth();
   const { showToast } = useCart();
   const navigate = useNavigate();
+
+  const switchMode = (nextLogin) => {
+    setIsLogin(nextLogin);
+    setAwaitingVerification(false);
+    setVerificationCode('');
+    setError('');
+  };
+
+  const resendVerificationCode = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await registerUser({ username, email, password });
+      showToast('Yeni doğrulama kodu gönderildi.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -38,9 +62,24 @@ export default function LoginPage() {
         throw new Error('Yeni üyelik şu an kapalı.');
       }
 
+      if (!isLogin && awaitingVerification) {
+        const response = await verifyRegistrationCode({ email, code: verificationCode });
+        login(response.data.token, response.data.user);
+        showToast('E-posta doğrulandı. Hoş geldin!');
+        navigate('/profile');
+        return;
+      }
+
       const response = isLogin
         ? await loginUser({ email, password })
         : await registerUser({ username, email, password });
+
+      if (!isLogin && response.data?.verification_required) {
+        setAwaitingVerification(true);
+        setVerificationCode('');
+        showToast('Doğrulama kodu e-posta adresine gönderildi.');
+        return;
+      }
 
       login(response.data.token, response.data.user);
       showToast(isLogin ? 'Hoş geldin!' : 'Kayıt başarılı! Hoş geldin!');
@@ -68,23 +107,25 @@ export default function LoginPage() {
                 containerClassName="justify-center"
                 imageClassName="h-16 w-auto max-w-[280px] object-contain"
                 iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
-                titleClassName="text-3xl font-extrabold text-white"
+                titleClassName="text-3xl font-extrabold text-slate-900"
               />
             </div>
             <h1 className="mb-2 text-3xl font-extrabold text-white">
-              {isLogin ? 'Giriş Yap' : 'Kayıt Ol'}
+              {isLogin ? 'Giriş Yap' : awaitingVerification ? 'Mail Kodunu Doğrula' : 'Kayıt Ol'}
             </h1>
             <p className="font-medium text-gray-500">
-              {isLogin ? 'Kaldığın yerden devam et.' : `${siteName} topluluğuna katıl.`}
+              {isLogin
+                ? 'Kaldığın yerden devam et.'
+                : awaitingVerification
+                  ? `${email} adresine gelen kodu gir.`
+                  : `${siteName} topluluğuna katıl.`}
             </p>
           </div>
 
           <div className="mb-8 flex rounded-xl bg-surface-100 p-1">
             <button
-              onClick={() => {
-                setIsLogin(true);
-                setError('');
-              }}
+              type="button"
+              onClick={() => switchMode(true)}
               className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
                 isLogin ? 'bg-neon-purple text-white shadow-neon-purple' : 'text-gray-500 hover:text-white'
               }`}
@@ -92,10 +133,10 @@ export default function LoginPage() {
               Giriş Yap
             </button>
             <button
+              type="button"
               onClick={() => {
                 if (!registrationEnabled) return;
-                setIsLogin(false);
-                setError('');
+                switchMode(false);
               }}
               disabled={!registrationEnabled}
               className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
@@ -123,19 +164,19 @@ export default function LoginPage() {
           ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin ? (
+            {!isLogin && !awaitingVerification ? (
               <div>
                 <label className="mb-1 block text-sm font-bold text-gray-400">Kullanıcı Adı</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
                   <input
                     required
-                  type="text"
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  minLength={usernameMinLength}
-                  maxLength={usernameMaxLength}
-                  placeholder="Kullanıcı adın..."
+                    type="text"
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
+                    minLength={usernameMinLength}
+                    maxLength={usernameMaxLength}
+                    placeholder="Kullanıcı adın..."
                     className="input-field pl-12"
                   />
                 </div>
@@ -153,6 +194,7 @@ export default function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="E-posta adresin..."
                   className="input-field pl-12"
+                  disabled={awaitingVerification}
                 />
               </div>
             </div>
@@ -169,9 +211,34 @@ export default function LoginPage() {
                   minLength={passwordMinLength}
                   placeholder="Şifren..."
                   className="input-field pl-12"
+                  disabled={awaitingVerification}
                 />
               </div>
             </div>
+
+            {!isLogin && awaitingVerification ? (
+              <div>
+                <label className="mb-1 block text-sm font-bold text-gray-400">Mail Doğrulama Kodu</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                  <input
+                    required
+                    type="text"
+                    value={verificationCode}
+                    onChange={(event) => setVerificationCode(event.target.value.trim().slice(0, 8))}
+                    placeholder="Mail ile gelen kod"
+                    className="input-field pl-12"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={resendVerificationCode}
+                  className="mt-3 text-sm font-bold text-cyan-300 transition-colors hover:text-cyan-200"
+                >
+                  Kodu tekrar gönder
+                </button>
+              </div>
+            ) : null}
 
             <button
               type="submit"
@@ -180,8 +247,14 @@ export default function LoginPage() {
             >
               {loading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : isLogin ? (
+                'Giriş Yap'
+              ) : awaitingVerification ? (
+                'Kodu Doğrula ve Hesap Aç'
+              ) : registrationEmailVerificationEnabled ? (
+                'Kodu Gönder'
               ) : (
-                isLogin ? 'Giriş Yap' : 'Hesap Oluştur'
+                'Hesap Oluştur'
               )}
             </button>
           </form>
