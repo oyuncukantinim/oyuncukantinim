@@ -1433,15 +1433,24 @@ const DELIVERY_HOURS_OPTS = [1, 2, 4, 6, 12, 24, 48, 72];
 
 function EditListingModal({ listing, onClose, onSave, saving }) {
   const imgs = listing.images || [];
-  const [title, setTitle]           = useState(listing.title || '');
-  const [price, setPrice]           = useState(listing.price || '');
-  const [description, setDesc]      = useState(listing.description || '');
-  const [images, setImages]         = useState(imgs.length > 0 ? imgs : ['']);
+  const [title, setTitle] = useState(listing.title || '');
+  const [price, setPrice] = useState(listing.price || '');
+  const [description, setDesc] = useState(listing.description || '');
+  const [images, setImages] = useState(imgs.length > 0 ? imgs : ['']);
   const [coverIndex, setCoverIndex] = useState(listing.cover_index ?? 0);
-  const [deliveryHours, setDelHours]= useState(listing.delivery_hours ?? 24);
-  const [maxImages, setMaxImages]   = useState(5);
-  const [titleMax, setTitleMax]     = useState(100);
-  const [descMax, setDescMax]       = useState(2000);
+  const [deliveryHours, setDelHours] = useState(listing.delivery_hours ?? 24);
+  const [maxImages, setMaxImages] = useState(5);
+  const [titleMax, setTitleMax] = useState(100);
+  const [descMax, setDescMax] = useState(2000);
+  const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
+  const [stocks, setStocks] = useState(
+    listing.delivery_type === 'stock'
+      ? (((listing.stocks || []).filter((stock) => Number(stock.is_sold) !== 1)).map((stock) => ({
+          content: stock.content || '',
+          label: stock.label || '',
+        })) || [{ content: '', label: '' }])
+      : [{ content: '', label: '' }]
+  );
 
   useEffect(() => {
     fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_site_settings')
@@ -1451,24 +1460,35 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           if (j.data.max_listing_images) setMaxImages(Number(j.data.max_listing_images));
           if (j.data.listing_title_max)  setTitleMax(Number(j.data.listing_title_max));
           if (j.data.listing_desc_max)   setDescMax(Number(j.data.listing_desc_max));
+          if (j.data.stock_item_max_count) setStockItemMaxCount(Number(j.data.stock_item_max_count));
         }
       })
       .catch(() => {});
   }, []);
 
-  const addImage    = () => setImages(i => [...i, '']);
+  const addImage = () => setImages(i => [...i, '']);
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
-  const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+  const setImage = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+  const addStock = () => {
+    if (stocks.length >= stockItemMaxCount) return;
+    setStocks((current) => [...current, { content: '', label: '' }]);
+  };
+  const removeStock = (idx) => setStocks((current) => current.filter((_, j) => j !== idx));
+  const setStockField = (idx, field, val) => setStocks((current) => current.map((stock, j) => j === idx ? { ...stock, [field]: val } : stock));
+  const deliveryType = listing.delivery_type === 'stock' ? 'stock' : 'manual';
+  const stockCount = stocks.filter((stock) => stock.content.trim()).length;
+  const soldStockCount = (listing.stocks || []).filter((stock) => Number(stock.is_sold) === 1).length;
 
   const handleSave = () => {
     onSave({
-      listing_id:     listing.id,
-      title:          title.trim(),
-      price:          parseFloat(price) || 0,
-      description:    description.trim(),
-      images:         images.filter(Boolean),
-      cover_index:    coverIndex,
+      listing_id: listing.id,
+      title: title.trim(),
+      price: parseFloat(price) || 0,
+      description: description.trim(),
+      images: images.filter(Boolean),
+      cover_index: coverIndex,
       delivery_hours: deliveryHours,
+      stocks: deliveryType === 'stock' ? stocks.filter((stock) => stock.content.trim()) : [],
     });
   };
 
@@ -1477,14 +1497,24 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[92vh] overflow-y-auto">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl p-6 max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-extrabold text-gray-800">İlanı Düzenle</h2>
           <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={18}/></button>
         </div>
 
         <div className="space-y-4">
-          {/* Başlık */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-violet-500">Kategori</div>
+              <div className="mt-1 text-sm font-extrabold text-violet-800">{listing.category || 'Kategori yok'}</div>
+            </div>
+            <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3">
+              <div className="text-[11px] font-bold uppercase tracking-wide text-cyan-500">Teslimat Türü</div>
+              <div className="mt-1 text-sm font-extrabold text-cyan-800">{deliveryType === 'stock' ? 'Stoklu Teslimat' : 'Manuel Teslimat'}</div>
+            </div>
+          </div>
+
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-gray-600">Başlık *</label>
@@ -1518,7 +1548,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
             <div className="space-y-2">
               {images.map((img, idx) => (
-                <div key={idx} className="space-y-0.5">
+                <div key={idx} className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-3">
                   <div className="flex gap-2 items-center">
                     <button onClick={() => setCoverIndex(idx)} title="Kapak yap"
                       className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
@@ -1533,8 +1563,13 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                       </button>
                     )}
                   </div>
+                  {img ? (
+                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                      <img src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
+                    </div>
+                  ) : null}
                   {img && !isValidImageUrl(img) && (
-                    <p className="text-[11px] text-red-500 pl-10">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
+                    <p className="text-[11px] text-red-500">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
                   )}
                 </div>
               ))}
@@ -1546,8 +1581,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
           </div>
 
-          {/* Teslimat süresi */}
-          {listing.delivery_type === 'manual' && (
+          {deliveryType === 'manual' && (
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Teslimat Süresi</label>
               <div className="flex flex-wrap gap-2">
@@ -1558,6 +1592,41 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {deliveryType === 'stock' && (
+            <div className="space-y-3 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold text-cyan-900">Stok Kalemleri</h3>
+                  <p className="text-xs text-cyan-700 mt-0.5">Satılmış {soldStockCount} stok korunur, burada aktif stoklar düzenlenir.</p>
+                </div>
+                <span className="text-xs text-cyan-700 bg-white px-2 py-1 rounded-full border border-cyan-100 font-bold">
+                  {stockCount}/{stockItemMaxCount}
+                </span>
+              </div>
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                {stocks.map((stock, idx) => (
+                  <div key={idx} className="bg-white rounded-xl p-3 border border-cyan-100">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-gray-500">Stok #{idx + 1}</span>
+                      {stocks.length > 1 ? (
+                        <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400">
+                          <Trash2 size={13} />
+                        </button>
+                      ) : null}
+                    </div>
+                    <input value={stock.label} onChange={e => setStockField(idx, 'label', e.target.value)} placeholder="Etiket (opsiyonel)" className="input-field text-xs mb-2" />
+                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
+                  </div>
+                ))}
+              </div>
+              {stocks.length < stockItemMaxCount ? (
+                <button onClick={addStock} className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-cyan-300 rounded-xl text-cyan-700 font-bold text-sm hover:bg-cyan-50 transition-colors">
+                  <Plus size={16} /> Stok Ekle
+                </button>
+              ) : null}
             </div>
           )}
 

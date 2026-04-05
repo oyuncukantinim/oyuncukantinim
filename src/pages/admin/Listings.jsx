@@ -269,7 +269,7 @@ function ListingDetailModal({ listing, onClose, onRefresh, onManageStocks, showT
 
         {listing.images?.[0] ? (
           <div className="mb-4 overflow-hidden rounded-xl border border-gray-100">
-            <img src={listing.images[0]} alt={listing.title} className="h-40 w-full object-cover" />
+            <img src={listing.images[0]} alt={listing.title} className="h-40 w-full bg-gray-50 object-contain" />
           </div>
         ) : null}
 
