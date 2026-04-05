@@ -1773,10 +1773,17 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                 key={type}
                 className={`w-full rounded-2xl border px-3 py-2.5 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : `${meta.accentClass} opacity-95`}`}
               >
-                <button
-                  type="button"
+                <div
+                  className="w-full"
                   onClick={() => setSelectedType(type)}
-                  className="w-full text-left"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedType(type);
+                    }
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     {optionList[0]?.image ? (
@@ -1790,30 +1797,31 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                         <div className="pt-0.5 text-[11px] font-semibold text-slate-400">{optionList.length} paket</div>
                       </div>
                       <p className="text-[11px] leading-4 text-slate-600">{meta.description}</p>
+
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {optionList.map((option) => {
+                          const selected = Number(selectedHours) === Number(option.hours) && selectedType === type;
+                          const insufficient = Number(balance || 0) < Number(option.price || 0);
+                          return (
+                            <button
+                              key={`${type}-${option.hours}`}
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                setSelectedType(type);
+                                setSelectedHours(option.hours);
+                              }}
+                              className={`inline-flex min-w-fit flex-col rounded-md border px-2.5 py-1.5 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
+                            >
+                              <div className="text-[13px] font-black leading-4 text-slate-900">{formatDopingDuration(option.hours)}</div>
+                              <div className="mt-0.5 text-[11px] font-semibold leading-4 text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
+                              {insufficient ? <div className="mt-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">Yetersiz</div> : null}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </button>
-
-                <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {optionList.map((option) => {
-                    const selected = Number(selectedHours) === Number(option.hours) && selectedType === type;
-                    const insufficient = Number(balance || 0) < Number(option.price || 0);
-                    return (
-                      <button
-                        key={`${type}-${option.hours}`}
-                        type="button"
-                        onClick={() => {
-                          setSelectedType(type);
-                          setSelectedHours(option.hours);
-                        }}
-                        className={`rounded-md border px-2 py-1.5 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
-                      >
-                        <div className="text-xs font-black leading-4 text-slate-900">{formatDopingDuration(option.hours)}</div>
-                        <div className="mt-0.5 text-[10px] font-semibold leading-4 text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
-                        {insufficient ? <div className="mt-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">Yetersiz</div> : null}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
             );
