@@ -135,13 +135,13 @@ function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImage
               </div>
             </div>
 
-            <div className="grid gap-3 p-4 lg:grid-cols-2 2xl:grid-cols-3">
+            <div className="grid gap-2.5 p-3 lg:grid-cols-2 2xl:grid-cols-3">
               {options.map((option, index) => (
-                <div key={`${type}-${index}`} className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">
-                  <div className="mb-3 flex items-start justify-between gap-3">
+                <div key={`${type}-${index}`} className="rounded-lg border border-slate-200 bg-slate-50/70 p-2.5">
+                  <div className="mb-2 flex items-start justify-between gap-2">
                     <div>
-                      <div className="text-[13px] font-black text-slate-900">{meta.label} Paketi</div>
-                      <div className="mt-1 text-[11px] font-semibold text-slate-400">
+                      <div className="text-xs font-black text-slate-900">{meta.label} Paketi</div>
+                      <div className="mt-0.5 text-[10px] font-semibold text-slate-400">
                         {formatDopingDuration(option.hours)} · {Number(option.price || 0).toFixed(2)} ₺
                       </div>
                     </div>
@@ -149,15 +149,15 @@ function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImage
                       <button
                         type="button"
                         onClick={() => removeOption(type, index)}
-                        className="rounded-lg border border-rose-200 bg-white p-1.5 text-rose-500 transition-colors hover:bg-rose-50"
+                        className="rounded-md border border-rose-200 bg-white p-1 text-rose-500 transition-colors hover:bg-rose-50"
                         title="Paketi sil"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={12} />
                       </button>
                     ) : null}
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
+                  <div className="grid gap-2 md:grid-cols-2">
                     <div>
                       <label className="mb-1 block text-[11px] font-bold text-slate-600">Süre (saat)</label>
                       <input
@@ -165,7 +165,7 @@ function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImage
                         min="1"
                         value={option.hours}
                         onChange={(event) => updateOption(type, index, { hours: Math.max(1, Number(event.target.value || 1)) })}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[13px] focus:border-violet-400 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -176,7 +176,7 @@ function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImage
                         step="0.01"
                         value={option.price}
                         onChange={(event) => updateOption(type, index, { price: Math.max(0, Number(event.target.value || 0)) })}
-                        className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                        className="w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-[13px] focus:border-violet-400 focus:outline-none"
                       />
                     </div>
                   </div>
