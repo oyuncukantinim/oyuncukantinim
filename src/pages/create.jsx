@@ -471,39 +471,19 @@ export default function CreatePage() {
               </div>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]">
-              <button
-                type="button"
-                onClick={() => {
-                  setDopingType('none');
-                  setDopingHours(null);
-                }}
-                className={`rounded-2xl border p-4 text-left transition-all ${dopingType === 'none' ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}
-              >
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-base font-black text-slate-900">Dopingsiz</div>
-                    <div className="mt-1 text-xs font-semibold text-slate-500">Standart yayın</div>
-                  </div>
-                  <div className={`rounded-full px-2.5 py-1 text-xs font-bold ${dopingType === 'none' ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                    Ücretsiz
-                  </div>
-                </div>
-                <p className="text-sm leading-6 text-slate-600">İlan normal sıralamada gösterilir, bakiyenden ücret düşmez.</p>
-              </button>
-
-              <div className="space-y-4">
+            <div className="space-y-4">
                 {[
                   { type: 'vitrine', options: vitrineOptions },
                   { type: 'featured', options: featuredOptions },
                 ].map(({ type, options }) => {
                   const meta = getDopingTypeMeta(type);
+                  const dopingImage = options.find((option) => option.image)?.image;
                   return (
                     <div key={type} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
                         <div className={`overflow-hidden rounded-2xl border ${meta.accentClass} lg:w-56`}>
-                          {options[0]?.image ? (
-                            <img src={options[0].image} alt={meta.label} className="h-36 w-full object-cover" />
+                          {dopingImage ? (
+                            <img src={dopingImage} alt={meta.label} className="h-36 w-full object-cover" />
                           ) : (
                             <div className="flex h-36 items-center justify-center bg-slate-50 text-sm font-black text-slate-400">
                               {meta.label}
@@ -516,6 +496,24 @@ export default function CreatePage() {
                           </div>
                           <p className="mt-2 text-sm leading-6 text-slate-600">{meta.description}</p>
                           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setDopingType('none');
+                                setDopingHours(null);
+                              }}
+                              className={`rounded-2xl border p-3 text-left transition-all ${dopingType === 'none' ? 'border-slate-500 bg-slate-100 shadow-sm shadow-slate-200' : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-white'}`}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <div className="text-sm font-black text-slate-900">🛇 Doping yok</div>
+                                  <div className="mt-1 text-xs font-semibold text-slate-500">Standart yayın</div>
+                                </div>
+                                {dopingType === 'none' ? <span className="rounded-full bg-slate-700 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
+                              </div>
+                              <div className="mt-3 text-xs font-bold text-emerald-600">0.00₺</div>
+                            </button>
+
                             {options.map((option) => {
                               const selected = dopingType === type && Number(dopingHours) === Number(option.hours);
                               const insufficient = Number(user?.balance || 0) < Number(option.price || 0);
@@ -550,7 +548,6 @@ export default function CreatePage() {
                     </div>
                   );
                 })}
-              </div>
             </div>
 
             {selectedDopingOption ? (
