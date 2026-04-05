@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions } from '../lib/api';
+import { getMyListings, updateProfile, addBalance, deleteListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 
@@ -432,6 +432,8 @@ export default function ProfilePage() {
   const [editEmail, setEditEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [emailVerificationCode, setEmailVerificationCode] = useState('');
+  const [pendingEmailVerification, setPendingEmailVerification] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [bannerImage, setBannerImage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -450,6 +452,8 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setEditEmail(user.email || '');
+    setEmailVerificationCode('');
+    setPendingEmailVerification('');
     setBannerImage(user.banner_image || defaultProfileBanner || '');
     setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
@@ -491,6 +495,9 @@ export default function ProfilePage() {
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
+  const emailChanged = normalizedEmail !== (user.email || '');
+  const emailVerified = Boolean(user.email_verified_at) && !emailChanged;
+  const emailVerificationPending = pendingEmailVerification !== '' && pendingEmailVerification === normalizedEmail;
   const profileDirty =
     selectedAvatar !== (user.avatar || defaultAvatar) ||
     normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '');
@@ -501,6 +508,13 @@ export default function ProfilePage() {
     personalInfo.district !== (user.district || '') ||
     personalInfo.address !== (user.address || '') ||
     normalizedEmail !== (user.email || '') ||
+    Boolean(newPassword);
+  const personalDirtyWithoutEmail =
+    personalInfo.full_name !== (user.full_name || '') ||
+    personalInfo.country !== (user.country || '') ||
+    personalInfo.city !== (user.city || '') ||
+    personalInfo.district !== (user.district || '') ||
+    personalInfo.address !== (user.address || '') ||
     Boolean(newPassword);
 
   const handleSaveProfile = async () => {
@@ -588,6 +602,70 @@ export default function ProfilePage() {
       showToast('Kişisel bilgiler güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
+  };
+
+  const handleSavePersonalInfoV2 = async () => {
+    setSaving(true);
+    try {
+      if (!personalDirty) {
+        showToast('Değişiklik yok.');
+        setSaving(false);
+        return;
+      }
+
+      const payload = { ...personalInfo };
+      if (newPassword && newPassword !== confirmPassword) {
+        showToast('Şifre tekrar alanı eşleşmiyor.');
+        setSaving(false);
+        return;
+      }
+      if (newPassword) payload.new_password = newPassword;
+
+      let updatedUser = user;
+      if (personalDirtyWithoutEmail) {
+        const res = await updateProfile(payload);
+        updatedUser = res.data;
+        updateUser(res.data);
+        setNewPassword('');
+        setConfirmPassword('');
+        setShowPassword(false);
+      }
+
+      if (emailChanged || !user.email_verified_at) {
+        await sendProfileEmailVerification({ email: normalizedEmail });
+        setPendingEmailVerification(normalizedEmail);
+        setEmailVerificationCode('');
+        showToast(emailChanged ? 'Yeni e-posta adresine doğrulama kodu gönderildi.' : 'Mail doğrulama kodu gönderildi.');
+        return;
+      }
+
+      setEditEmail(updatedUser.email || '');
+      showToast('Kişisel bilgiler güncellendi!');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleVerifyPersonalEmailCode = async () => {
+    if (!emailVerificationCode.trim()) {
+      showToast('Doğrulama kodunu girin.');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await verifyProfileEmailCode({ code: emailVerificationCode.trim() });
+      updateUser(res.data);
+      setEditEmail(res.data.email || '');
+      setEmailVerificationCode('');
+      setPendingEmailVerification('');
+      showToast('E-posta doğrulandı.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const tabs = [
@@ -1158,14 +1236,39 @@ export default function ProfilePage() {
 
                   <div className="mt-4 space-y-4 text-sm">
                     <div>
-                      <label className="block text-sm font-bold text-gray-600 mb-1.5">E-posta</label>
+                      <div className="mb-1.5 flex items-center justify-between gap-3">
+                        <label className="block text-sm font-bold text-gray-600">E-posta</label>
+                        {emailVerificationPending ? (
+                          <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                            Kod bekleniyor
+                          </span>
+                        ) : emailVerified ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                            <CheckCircle size={12} />
+                            Mail doğrulandı
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-bold text-red-600">
+                            Mail doğrula
+                          </span>
+                        )}
+                      </div>
                       <input
                         type="email"
                         value={editEmail}
-                        onChange={e => setEditEmail(e.target.value)}
+                        onChange={e => {
+                          setEditEmail(e.target.value);
+                          if (pendingEmailVerification && pendingEmailVerification !== e.target.value.trim()) {
+                            setPendingEmailVerification('');
+                            setEmailVerificationCode('');
+                          }
+                        }}
                         placeholder="E-posta adresin"
                         className="input-field"
                       />
+                      {!emailVerified ? (
+                        <p className="mt-1 text-xs text-gray-400">Bu maili kullanmak için kod ile doğrulama gerekir.</p>
+                      ) : null}
                     </div>
 
                     <div>
@@ -1214,7 +1317,31 @@ export default function ProfilePage() {
 
                   </div>
 
-                  <button onClick={handleSavePersonalInfo} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
+                  {emailVerificationPending ? (
+                    <div className="mb-3 rounded-2xl border border-amber-100 bg-amber-50/80 p-3">
+                      <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.16em] text-amber-700">
+                        Mail Doğrulama Kodu
+                      </label>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <input
+                          type="text"
+                          value={emailVerificationCode}
+                          onChange={e => setEmailVerificationCode(e.target.value.trim().slice(0, 8))}
+                          placeholder="Mail ile gelen kod"
+                          className="input-field flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyPersonalEmailCode}
+                          disabled={saving}
+                          className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                        >
+                          Kodu Doğrula
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                  <button onClick={handleSavePersonalInfoV2} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
                     {saving ? 'Kaydediliyor...' : personalDirty ? 'Kişisel Bilgileri Kaydet' : 'Bilgiler Güncel'}
                   </button>
                 </div>

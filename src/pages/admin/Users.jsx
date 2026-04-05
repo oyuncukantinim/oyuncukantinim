@@ -682,7 +682,10 @@ export default function AdminUsers() {
                       <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">Banlı</span>
                     )}
                   </div>
-                  <div className="mt-1 text-sm text-slate-500">{detailUser.email}</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
+                    <span>{detailUser.email}</span>
+                    <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} />
+                  </div>
                   <div className="mt-1 text-xs text-slate-400">
                     #{detailUser.id} · Seviye {detailUser.level} · {fmtDateTime(detailUser.created_at)}
                   </div>
@@ -768,7 +771,16 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <InfoRow icon={Mail} label="Mevcut E-posta" value={detailUser.email} />
+                  <InfoRow
+                    icon={Mail}
+                    label="Mevcut E-posta"
+                    value={
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span>{detailUser.email}</span>
+                        <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} />
+                      </div>
+                    }
+                  />
                   <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
                 </div>
 
@@ -1122,6 +1134,18 @@ export default function AdminUsers() {
       )}
 
     </AdminLayout>
+  );
+}
+
+function EmailStatusBadge({ verified }) {
+  return verified ? (
+    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
+      Yeşil tik
+    </span>
+  ) : (
+    <span className="rounded-full bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">
+      Mail Doğrulanmadı
+    </span>
   );
 }
 

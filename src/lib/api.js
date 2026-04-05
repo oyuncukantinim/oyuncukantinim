@@ -97,6 +97,14 @@ export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
 }
 
+export function sendProfileEmailVerification(payload) {
+  return request('send_profile_email_verification', { method: 'POST', body: payload, auth: true });
+}
+
+export function verifyProfileEmailCode(payload) {
+  return request('verify_profile_email_code', { method: 'POST', body: payload, auth: true });
+}
+
 // --- LISTINGS ---
 export function getListings(query = {}) {
   return request('get_listings', { query });
