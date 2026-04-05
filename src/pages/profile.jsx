@@ -884,27 +884,46 @@ export default function ProfilePage() {
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : listingsView === 'grid' ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
                   {filteredListings.map(listing => (
-                    <div key={listing.id} className="bg-gray-50 rounded-xl border border-gray-100 overflow-hidden flex flex-col">
-                      <div className="aspect-[4/3] bg-white">
+                    <div key={listing.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md">
+                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage)
-                          ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
-                          : <div className="w-full h-full flex items-center justify-center text-gray-200"><ImageIcon size={24}/></div>
+                          ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
+                          : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
                         }
+                        <div className="absolute left-2 top-2 rounded-full bg-slate-950/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+                          İlan #{listing.id}
+                        </div>
                       </div>
-                      <div className="p-1.5 flex flex-col gap-0.5 flex-1">
-                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 text-xs leading-tight line-clamp-2">{listing.title}</Link>
-                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex gap-1 mt-auto pt-0.5">
+                      <div className="flex flex-1 flex-col gap-2 p-3">
+                        <div className="space-y-1">
+                          <div className="text-[11px] font-semibold text-slate-400">
+                            {(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}
+                          </div>
+                          <Link to={listingSlug(listing.title, listing.id)} className="line-clamp-2 text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
+                            {listing.title}
+                          </Link>
+                        </div>
+                        <div className="mt-auto space-y-2">
+                          <div className="flex items-end justify-between gap-2">
+                            <div className="text-lg font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
+                            {listing.expires_at ? (
+                              <div className="text-right text-[11px] font-semibold text-slate-400">
+                                Bitiş {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
+                              </div>
+                            ) : null}
+                          </div>
+                          <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
-                              className={`p-1 rounded-lg transition-colors flex-shrink-0 ${listing.status === 'active' ? 'hover:bg-orange-50 text-emerald-500 hover:text-orange-500' : 'hover:bg-emerald-50 text-gray-400 hover:text-emerald-500'}`}>
+                              className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
                           )}
-                          <button onClick={() => setEditModal(listing)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500"><Edit3 size={11}/></button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500"><Trash2 size={11}/></button>
+                          <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500"><Edit3 size={12}/></button>
+                          <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"><Trash2 size={12}/></button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -913,38 +932,41 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
 	                  {filteredListings.map(listing => (
-	                    <div key={listing.id} className="bg-gray-50 rounded-xl p-2.5 flex items-center gap-2.5 border border-gray-100">
-	                      <div className="w-14 h-12 bg-white rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+	                    <div key={listing.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md">
+	                      <div className="h-16 w-[88px] overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 flex-shrink-0">
 	                        {getListingCoverImage(listing, defaultListingImage) ? (
 	                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={20}/></div>
+                          <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={20}/></div>
                         )}
 	                      </div>
 	                      <div className="flex-1 min-w-0">
-	                        <Link to={listingSlug(listing.title, listing.id)} className="font-bold text-gray-800 hover:text-violet-600 truncate block text-xs">{listing.title}</Link>
-	                        <div className="text-xs text-gray-400 mt-0.5">{(listing.category_name || listing.category || '').replace(/-/g, ' ')}</div>
+                          <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-400">
+                            <span>İlan #{listing.id}</span>
+                            <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                          </div>
+	                        <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold text-slate-800 hover:text-violet-600">{listing.title}</Link>
 	                        {listing.expires_at && (
-                          <div className="text-xs text-gray-400 mt-0.5">
+                          <div className="mt-1 text-xs font-medium text-slate-400">
                             Bitiş: {new Date(listing.expires_at).toLocaleDateString('tr-TR')}
                           </div>
                         )}
                       </div>
-                      <div className="text-right flex-shrink-0 space-y-0.5">
-                        <div className="font-bold text-emerald-600 text-xs">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex gap-1 justify-end">
+                      <div className="flex-shrink-0 space-y-2 text-right">
+                        <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
+                        <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button
                               onClick={() => handleUpdateListing({ listing_id: listing.id, status: listing.status === 'active' ? 'passive' : 'active' })}
                               title={listing.status === 'active' ? 'Pasif yap' : 'Aktif et'}
-                              className={`p-1.5 rounded-lg transition-colors ${listing.status === 'active' ? 'hover:bg-orange-50 text-emerald-500 hover:text-orange-500' : 'hover:bg-emerald-50 text-gray-400 hover:text-emerald-500'}`}>
+                              className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={15}/> : <ToggleLeft size={15}/>}
                             </button>
                           )}
-                          <button onClick={() => setEditModal(listing)} className="p-1.5 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500">
+                          <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-500">
                             <Edit3 size={13}/>
                           </button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500">
+                          <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
                             <Trash2 size={13}/>
                           </button>
                         </div>
