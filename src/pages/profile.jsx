@@ -1771,53 +1771,57 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
         <div className="space-y-3">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
             const meta = getDopingTypeMeta(type);
-            const active = selectedType === type;
+            const activeType = selectedType === type;
             return (
-              <button
+              <div
                 key={type}
-                type="button"
-                onClick={() => setSelectedType(type)}
-                className={`w-full rounded-2xl border p-3 text-left transition-all ${active ? `${meta.accentClass} shadow-sm` : 'border-slate-200 bg-white hover:border-violet-200'} `}
+                className={`w-full rounded-2xl border p-3 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : 'border-slate-200 bg-white'}`}
               >
-                <div className="flex items-center gap-3">
-                  {optionList[0]?.image ? (
-                    <img src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
-                  ) : (
-                    <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-400">{meta.label}</div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-2 flex items-center justify-between gap-3">
-                      <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
-                      <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedType(type)}
+                  className="w-full text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    {optionList[0]?.image ? (
+                      <img src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
+                    ) : (
+                      <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-400">{meta.label}</div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex items-center justify-between gap-3">
+                        <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                        <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                      </div>
+                      <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
                     </div>
-                    <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
                   </div>
+                </button>
+
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {optionList.map((option) => {
+                    const selected = Number(selectedHours) === Number(option.hours) && selectedType === type;
+                    const insufficient = Number(balance || 0) < Number(option.price || 0);
+                    return (
+                      <button
+                        key={`${type}-${option.hours}`}
+                        type="button"
+                        onClick={() => {
+                          setSelectedType(type);
+                          setSelectedHours(option.hours);
+                        }}
+                        className={`rounded-xl border px-3 py-2.5 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
+                      >
+                        <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
+                        <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
+                        {insufficient ? <div className="mt-2 rounded-lg bg-red-50 px-2 py-1.5 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
+                      </button>
+                    );
+                  })}
                 </div>
-              </button>
+              </div>
             );
           })}
-        </div>
-
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
-          <div className="mb-3 text-sm font-extrabold text-slate-800">Süre Seç</div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {options.map((option) => {
-              const selected = Number(selectedHours) === Number(option.hours);
-              const insufficient = Number(balance || 0) < Number(option.price || 0);
-              return (
-                <button
-                  key={`${selectedType}-${option.hours}`}
-                  type="button"
-                  onClick={() => setSelectedHours(option.hours)}
-                  className={`rounded-xl border px-3 py-2.5 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/70 hover:border-violet-200 hover:bg-white'}`}
-                >
-                  <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
-                  <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
-                  {insufficient ? <div className="mt-2 rounded-lg bg-red-50 px-2 py-1.5 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
         <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
