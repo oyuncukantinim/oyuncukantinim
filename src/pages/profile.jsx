@@ -1752,15 +1752,11 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-extrabold text-gray-800">İlan Doping Seç</h2>
-            <p className="mt-0.5 text-xs text-gray-400">{listing.title}</p>
           </div>
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
         </div>
 
-        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-slate-600">
-            Aktif bakiye: <span className="font-black text-slate-900">{Number(balance || 0).toFixed(2)} ₺</span>
-          </div>
+        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
           {listing.active_doping_type && listing.doping_expires_at ? (
             <div className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
               Mevcut doping: {getDopingTypeMeta(listing.active_doping_type).label} · {new Date(listing.doping_expires_at).toLocaleString('tr-TR')}
