@@ -25,6 +25,45 @@ function formatTime(dateStr) {
   return d.toLocaleDateString('tr-TR');
 }
 
+const ONLINE_WINDOW_MS = 5 * 60 * 1000;
+
+function isUserOnline(lastSeen) {
+  if (!lastSeen) return false;
+  const seenAt = new Date(lastSeen).getTime();
+  if (Number.isNaN(seenAt)) return false;
+  return Date.now() - seenAt <= ONLINE_WINDOW_MS;
+}
+
+function formatLastSeen(lastSeen) {
+  if (!lastSeen) return 'Son görülme bilgisi yok';
+
+  const seenAt = new Date(lastSeen);
+  if (Number.isNaN(seenAt.getTime())) return 'Son görülme bilgisi yok';
+
+  const diff = Date.now() - seenAt.getTime();
+  if (diff < 60000) return 'Az önce';
+  if (diff < 3600000) return `${Math.floor(diff / 60000)} dk önce`;
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)} sa önce`;
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday =
+    seenAt.getDate() === yesterday.getDate() &&
+    seenAt.getMonth() === yesterday.getMonth() &&
+    seenAt.getFullYear() === yesterday.getFullYear();
+
+  if (isYesterday) {
+    return `Dün ${seenAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  return seenAt.toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 export default function MessagesPage() {
   const { userId } = useParams();
   const { user } = useAuth();
@@ -40,13 +79,20 @@ export default function MessagesPage() {
   // On mobile: if userId in URL, show chat; else show list
   const [mobileShowChat, setMobileShowChat] = useState(!!userId);
 
+  const loadConversations = useCallback(() => {
+    return getConversations()
+      .then(r => setConversations(r.data || []))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
-    getConversations()
-      .then(r => setConversations(r.data || []))
-      .catch(() => {})
+    setLoadingConvs(true);
+    loadConversations()
       .finally(() => setLoadingConvs(false));
-  }, [user, navigate]);
+    const interval = setInterval(loadConversations, 15000);
+    return () => clearInterval(interval);
+  }, [user, navigate, loadConversations]);
 
   useEffect(() => {
     getSiteSettings()
@@ -70,6 +116,7 @@ export default function MessagesPage() {
   );
 
   const activeUserId = userId ? String(userId) : null;
+  const activeConversation = conversations.find(conv => String(conv.user_id) === activeUserId) || null;
 
   const handleSelectConv = (conv) => {
     navigate(`/messages/${conv.user_id}`);
@@ -155,7 +202,7 @@ export default function MessagesPage() {
         <div className={`flex-1 flex min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
           <div className="flex-1 flex flex-col min-w-0">
             {activeUserId
-              ? <ChatPanel userId={activeUserId} currentUser={user} messageMaxLength={messageSettings.maxLength} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
+              ? <ChatPanel userId={activeUserId} currentUser={user} activeConversation={activeConversation} messageMaxLength={messageSettings.maxLength} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
               : (
                 <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
@@ -239,7 +286,7 @@ function SharedOrdersPanel({ userId }) {
 }
 
 /* ── Chat Panel ──────────────────────────────────────────────── */
-function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
+function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMaxLength }) {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -312,7 +359,11 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
     grouped.push({ type: 'msg', data: msg });
   });
 
-  const otherInitial = otherName?.[0]?.toUpperCase() || '?';
+  const displayName = otherName || activeConversation?.username || `Kullanıcı #${userId}`;
+  const otherInitial = displayName?.[0]?.toUpperCase() || '?';
+  const otherIsOnline = isUserOnline(activeConversation?.last_seen);
+  const presenceLabel = otherIsOnline ? 'Çevrimiçi' : `Son görülme: ${formatLastSeen(activeConversation?.last_seen)}`;
+  const presenceTone = otherIsOnline ? 'text-emerald-500' : 'text-gray-400';
   const remainingCharacters = Math.max(messageMaxLength - text.length, 0);
   const counterTone =
     text.length >= messageMaxLength
@@ -328,12 +379,12 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
         <button onClick={onBack} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500 lg:hidden">
           <ArrowLeft size={18} />
         </button>
-        <div className={`w-9 h-9 bg-gradient-to-br ${avatarColor(otherName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`}>
+        <div className={`w-9 h-9 bg-gradient-to-br ${avatarColor(displayName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`}>
           {otherInitial}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-extrabold text-gray-900 text-sm">{otherName}</div>
-          <div className="text-[11px] text-emerald-500 font-semibold">Çevrimiçi</div>
+          <div className="font-extrabold text-gray-900 text-sm">{displayName}</div>
+          <div className={`text-[11px] font-semibold ${presenceTone}`}>{presenceLabel}</div>
         </div>
       </div>
 
@@ -381,7 +432,7 @@ function ChatPanel({ userId, currentUser, onBack, messageMaxLength }) {
           return (
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1.5`}>
               {!isMine && (
-                <div className={`w-7 h-7 bg-gradient-to-br ${avatarColor(otherName)} rounded-full flex items-center justify-center text-white text-xs font-extrabold mr-2 flex-shrink-0 self-end mb-5`}>
+                <div className={`w-7 h-7 bg-gradient-to-br ${avatarColor(displayName)} rounded-full flex items-center justify-center text-white text-xs font-extrabold mr-2 flex-shrink-0 self-end mb-5`}>
                   {otherInitial}
                 </div>
               )}
