@@ -47,6 +47,18 @@ function ListingDetailModal({ listing, onClose, onRefresh, showToast }) {
 
   const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR') : '—';
 
+  const handleDeleteListing = async (listing) => {
+    if (!confirm(`"${listing.title}" ilanını kalıcı olarak sil?`)) return;
+    try {
+      await adminDeleteListing(listing.id);
+      if (selectedListing?.id === listing.id) setSelectedListing(null);
+      showToast('İlan silindi.');
+      load();
+    } catch (e) {
+      showToast(e.message);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
@@ -247,6 +259,9 @@ export default function AdminListings() {
                               <XCircle size={14} />
                             </button>
                           )}
+                          <button onClick={() => handleDeleteListing(l)} title="Sil" className="p-1.5 rounded-lg hover:bg-rose-50 text-gray-400 hover:text-rose-600">
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </td>
                     </tr>

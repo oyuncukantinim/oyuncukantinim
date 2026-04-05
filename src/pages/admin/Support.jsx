@@ -84,6 +84,7 @@ function orderStatusLabel(status, deliveryStatus) {
 }
 
 function listingLifecycleMeta(item) {
+  if (item?.is_deleted) return ['İlan Silindi', 'bg-rose-50 text-rose-700 border border-rose-200'];
   const status = item?.status;
   const expiresAt = item?.expires_at ? new Date(item.expires_at).getTime() : null;
 
@@ -98,6 +99,10 @@ function listingLifecycleMeta(item) {
   if (status === 'rejected') return ['Reddedildi', 'bg-rose-50 text-rose-700 border border-rose-200'];
   if (status === 'sold') return ['İlan Aktif Değil', 'bg-slate-100 text-slate-700 border border-slate-200'];
   return ['Durum Belirsiz', 'bg-slate-100 text-slate-600 border border-slate-200'];
+}
+
+function supportListingTitle(item) {
+  return item?.title || (item?.is_deleted ? 'Silinmiş İlan' : `İlan ${item?.id || ''}`.trim());
 }
 
 function ListingLifecycleBadge({ item }) {
@@ -170,10 +175,10 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
                   <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
@@ -202,10 +207,10 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
                   <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
@@ -233,10 +238,10 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title || `İlan ${item.id}`}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{formatMoney(item.price)}</td>
                   <td className="px-4 py-3"><ListingLifecycleBadge item={item} /></td>
                   <td className="px-4 py-3 text-slate-500">{formatDateTime(item.last_updated_at || item.updated_at)}</td>

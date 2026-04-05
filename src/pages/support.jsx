@@ -84,6 +84,7 @@ const orderStatusLabel = (status, deliveryStatus) => {
 };
 
 const listingLifecycleLabel = (item) => {
+  if (item?.is_deleted) return 'İlan Silindi';
   const status = item?.status;
   const expiresAt = item?.expires_at ? new Date(item.expires_at).getTime() : null;
   if ((status === 'active' || !status) && expiresAt && expiresAt < Date.now()) return 'İlan Süresi Doldu';
@@ -96,6 +97,8 @@ const listingLifecycleLabel = (item) => {
   if (status === 'sold') return 'İlan Aktif Değil';
   return 'Durum Belirsiz';
 };
+
+const supportListingTitle = (item) => item?.title || (item?.is_deleted ? 'Silinmiş İlan' : `İlan ${item?.id || ''}`.trim());
 
 function StatusBadge({ value, compact = false }) {
   const [label, style] = STATUS[value] || STATUS.open;
@@ -159,10 +162,10 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 text-slate-600">{item.seller_name || '-'}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
                   <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
@@ -191,10 +194,10 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 text-slate-600">{item.buyer_name || '-'}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
                   <td className="px-4 py-3 text-slate-600">{orderStatusLabel(item.order_status, item.delivery_status)}</td>
@@ -222,10 +225,10 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{item.title}</td>
+                  <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
                   <td className="px-4 py-3 font-extrabold text-emerald-600">{fmtMoney(item.price)}</td>
                   <td className="px-4 py-3 text-slate-600">{listingLifecycleLabel(item)}</td>
                   <td className="px-4 py-3 text-slate-500">{fmtDate(item.last_updated_at)}</td>
@@ -246,9 +249,9 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.order_id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
-          <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
+          <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="truncate text-[12px] font-semibold text-slate-600">{item.seller_name || '-'}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
           <div className="text-[11px] font-semibold text-slate-500">{orderStatusLabel(item.order_status, item.delivery_status)}</div>
@@ -267,9 +270,9 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.order_id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
-          <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
+          <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="truncate text-[12px] font-semibold text-slate-600">{item.buyer_name || '-'}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
           <div className="text-[11px] font-semibold text-slate-500">{orderStatusLabel(item.order_status, item.delivery_status)}</div>
@@ -288,9 +291,9 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.5fr)_120px_130px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
-          <div className="min-w-0 text-[13px] font-black text-slate-900">{item.title}</div>
+          <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
           <div className="text-[11px] font-semibold text-slate-500">{listingLifecycleLabel(item)}</div>
           <div className="text-[11px] font-semibold text-slate-400">{fmtDate(item.last_updated_at)}</div>
@@ -306,11 +309,11 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
     <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
       <div className="flex items-center gap-3">
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
-          {item.item_image ? <img src={item.item_image} alt={item.title} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={20} /></div>}
+          {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={20} /></div>}
           {selected ? <span className="absolute right-1.5 top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : null}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="line-clamp-2 text-[13px] font-black leading-5 text-slate-900">{item.title}</div>
+          <div className="line-clamp-2 text-[13px] font-black leading-5 text-slate-900">{supportListingTitle(item)}</div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px]">
             <span className="font-extrabold text-emerald-600">{fmtMoney(item.price)}</span>
             <span className="rounded-full bg-slate-100 px-2 py-1 font-bold text-slate-500">{item.status || 'Durum yok'}</span>
