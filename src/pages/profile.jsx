@@ -1813,8 +1813,8 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                               }}
                               className={`inline-flex min-w-fit flex-col rounded-md border px-2.5 py-1.5 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
                             >
-                              <div className="text-[13px] font-black leading-4 text-slate-900">{formatDopingDuration(option.hours)}</div>
-                              <div className="mt-0.5 text-[11px] font-semibold leading-4 text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
+                              <div className="text-[11px] font-semibold leading-4 text-slate-500">{formatDopingDuration(option.hours)}</div>
+                              <div className="mt-0.5 text-[13px] font-black leading-4 text-emerald-600">{Number(option.price).toFixed(2)} ₺</div>
                               {insufficient ? <div className="mt-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">Yetersiz</div> : null}
                             </button>
                           );
