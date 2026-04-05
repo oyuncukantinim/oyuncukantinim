@@ -1756,13 +1756,13 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
         </div>
 
-        <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
-          {listing.active_doping_type && listing.doping_expires_at ? (
+        {listing.active_doping_type && listing.doping_expires_at ? (
+          <div className="mb-4 flex flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-end">
             <div className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
               Mevcut doping: {getDopingTypeMeta(listing.active_doping_type).label} · {new Date(listing.doping_expires_at).toLocaleString('tr-TR')}
             </div>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
@@ -1771,30 +1771,30 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
             return (
               <div
                 key={type}
-                className={`w-full rounded-2xl border p-3 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : `${meta.accentClass} opacity-95`}`}
+                className={`w-full rounded-2xl border px-3 py-2.5 transition-all ${activeType ? `${meta.accentClass} shadow-sm` : `${meta.accentClass} opacity-95`}`}
               >
                 <button
                   type="button"
                   onClick={() => setSelectedType(type)}
                   className="w-full text-left"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     {optionList[0]?.image ? (
                       <img src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
                     ) : (
                       <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-400">{meta.label}</div>
                     )}
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-2 flex items-center justify-between gap-3">
-                        <div className={`rounded-full border px-3 py-1 text-xs font-bold ${meta.buttonClass}`}>{meta.label}</div>
-                        <div className="text-xs font-semibold text-slate-400">{optionList.length} paket</div>
+                    <div className="min-w-0 flex-1 self-start pt-0.5">
+                      <div className="mb-1.5 flex items-start justify-between gap-3">
+                        <div className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                        <div className="pt-0.5 text-[11px] font-semibold text-slate-400">{optionList.length} paket</div>
                       </div>
-                      <p className="text-xs leading-5 text-slate-600">{meta.description}</p>
+                      <p className="text-[11px] leading-4 text-slate-600">{meta.description}</p>
                     </div>
                   </div>
                 </button>
 
-                <div className="mt-3 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                   {optionList.map((option) => {
                     const selected = Number(selectedHours) === Number(option.hours) && selectedType === type;
                     const insufficient = Number(balance || 0) < Number(option.price || 0);
@@ -1806,11 +1806,11 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                           setSelectedType(type);
                           setSelectedHours(option.hours);
                         }}
-                        className={`rounded-lg border px-2.5 py-2 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
+                        className={`rounded-md border px-2 py-1.5 text-left transition-all ${selected ? 'border-violet-500 bg-white shadow-sm shadow-violet-100' : 'border-slate-200 bg-white/80 hover:border-violet-200 hover:bg-white'}`}
                       >
-                        <div className="text-[13px] font-black leading-4 text-slate-900">{formatDopingDuration(option.hours)}</div>
-                        <div className="mt-0.5 text-[11px] font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
-                        {insufficient ? <div className="mt-1.5 rounded-md bg-red-50 px-1.5 py-1 text-[10px] font-bold text-red-600">Yetersiz</div> : null}
+                        <div className="text-xs font-black leading-4 text-slate-900">{formatDopingDuration(option.hours)}</div>
+                        <div className="mt-0.5 text-[10px] font-semibold leading-4 text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
+                        {insufficient ? <div className="mt-1 rounded-md bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-600">Yetersiz</div> : null}
                       </button>
                     );
                   })}
