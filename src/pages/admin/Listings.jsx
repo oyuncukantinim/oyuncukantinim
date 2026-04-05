@@ -246,22 +246,22 @@ function ListingDetailModal({
   });
   const [saving, setSaving] = useState(false);
   const [dopingType, setDopingType] = useState(listing.active_doping_type || 'vitrine');
-  const [dopingDays, setDopingDays] = useState(null);
+  const [dopingHours, setDopingHours] = useState(null);
   const coverImage = getListingCoverImage(listing);
   const activeDopingMeta = listing.active_doping_type ? getDopingTypeMeta(listing.active_doping_type) : null;
   const currentDopingOptions = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
   const selectedDopingOption =
-    currentDopingOptions.find((option) => Number(option.days) === Number(dopingDays)) || currentDopingOptions[0] || null;
+    currentDopingOptions.find((option) => Number(option.hours) === Number(dopingHours)) || currentDopingOptions[0] || null;
 
   useEffect(() => {
     if (!currentDopingOptions.length) {
-      setDopingDays(null);
+      setDopingHours(null);
       return;
     }
-    if (!currentDopingOptions.some((option) => Number(option.days) === Number(dopingDays))) {
-      setDopingDays(currentDopingOptions[0].days);
+    if (!currentDopingOptions.some((option) => Number(option.hours) === Number(dopingHours))) {
+      setDopingHours(currentDopingOptions[0].hours);
     }
-  }, [currentDopingOptions, dopingDays]);
+  }, [currentDopingOptions, dopingHours]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -303,7 +303,7 @@ function ListingDetailModal({
       await adminApplyListingDoping({
         listing_id: listing.id,
         doping_type: dopingType,
-        doping_days: selectedDopingOption.days,
+        doping_hours: selectedDopingOption.hours,
       });
       showToast('Doping uygulandi.');
       onRefresh();
@@ -486,15 +486,15 @@ function ListingDetailModal({
                 {currentDopingOptions.length ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {currentDopingOptions.map((option) => {
-                      const active = Number(selectedDopingOption?.days) === Number(option.days);
+                      const active = Number(selectedDopingOption?.hours) === Number(option.hours);
                       return (
                         <button
-                          key={`${dopingType}-${option.days}`}
+                          key={`${dopingType}-${option.hours}`}
                           type="button"
-                          onClick={() => setDopingDays(option.days)}
+                          onClick={() => setDopingHours(option.hours)}
                           className={`rounded-xl border px-3 py-2.5 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200'}`}
                         >
-                          <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                          <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
                           <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price || 0).toFixed(2)} ₺</div>
                         </button>
                       );

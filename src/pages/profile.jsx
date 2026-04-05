@@ -626,10 +626,10 @@ export default function ProfilePage() {
     }
   };
 
-  const handleApplyListingDoping = async ({ listingId, type, days }) => {
+  const handleApplyListingDoping = async ({ listingId, type, hours }) => {
     setSaving(true);
     try {
-      const response = await applyListingDoping({ listing_id: listingId, doping_type: type, doping_days: days });
+      const response = await applyListingDoping({ listing_id: listingId, doping_type: type, doping_hours: hours });
       if (response.data?.new_balance !== undefined) {
         updateUser({ ...user, balance: Number(response.data.new_balance) });
       }
@@ -1732,17 +1732,17 @@ const DELIVERY_HOURS_OPTS = [1, 2, 4, 6, 12, 24, 48, 72];
 
 function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions, onClose, onSubmit, saving }) {
   const [selectedType, setSelectedType] = useState(listing.active_doping_type || 'vitrine');
-  const [selectedDays, setSelectedDays] = useState(null);
+  const [selectedHours, setSelectedHours] = useState(null);
 
   useEffect(() => {
     const options = selectedType === 'vitrine' ? vitrineOptions : featuredOptions;
     if (!options.length) return;
-    const currentDays = selectedDays && findDopingOption(options, selectedDays) ? selectedDays : options[0].days;
-    setSelectedDays(currentDays);
-  }, [featuredOptions, selectedDays, selectedType, vitrineOptions]);
+    const currentHours = selectedHours && findDopingOption(options, selectedHours) ? selectedHours : options[0].hours;
+    setSelectedHours(currentHours);
+  }, [featuredOptions, selectedHours, selectedType, vitrineOptions]);
 
   const options = selectedType === 'vitrine' ? vitrineOptions : featuredOptions;
-  const selectedOption = findDopingOption(options, selectedDays);
+  const selectedOption = findDopingOption(options, selectedHours);
   const selectedMeta = getDopingTypeMeta(selectedType);
 
   return (
@@ -1798,16 +1798,16 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <div className="mb-3 text-sm font-extrabold text-slate-800">Süre Seç</div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {options.map((option) => {
-              const selected = Number(selectedDays) === Number(option.days);
+              const selected = Number(selectedHours) === Number(option.hours);
               const insufficient = Number(balance || 0) < Number(option.price || 0);
               return (
                 <button
-                  key={`${selectedType}-${option.days}`}
+                  key={`${selectedType}-${option.hours}`}
                   type="button"
-                  onClick={() => setSelectedDays(option.days)}
+                  onClick={() => setSelectedHours(option.hours)}
                   className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/70 hover:border-violet-200 hover:bg-white'}`}
                 >
-                  <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                  <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
                   <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)} ₺</div>
                   {insufficient ? <div className="mt-3 rounded-xl bg-red-50 px-2.5 py-2 text-[11px] font-bold text-red-600">Yetersiz bakiye</div> : null}
                 </button>
@@ -1820,12 +1820,12 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <div>
             <div className="text-sm font-black text-violet-900">{selectedMeta.label}</div>
             <div className="mt-1 text-xs font-semibold text-violet-700">
-              {selectedOption ? `${formatDopingDuration(selectedOption.days)} · ${Number(selectedOption.price).toFixed(2)} ₺` : 'Paket seç'}
+              {selectedOption ? `${formatDopingDuration(selectedOption.hours)} · ${Number(selectedOption.price).toFixed(2)} ₺` : 'Paket seç'}
             </div>
           </div>
           <button
             type="button"
-            onClick={() => selectedOption && onSubmit({ listingId: listing.id, type: selectedType, days: selectedOption.days })}
+            onClick={() => selectedOption && onSubmit({ listingId: listing.id, type: selectedType, hours: selectedOption.hours })}
             disabled={saving || !selectedOption || Number(balance || 0) < Number(selectedOption.price || 0)}
             className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
           >

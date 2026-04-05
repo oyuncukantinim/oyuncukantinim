@@ -437,9 +437,9 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
 
   const addOption = (type) => {
     const current = getDopingOptionsFromSettings(settings, type);
-    const nextDays = Math.max(1, ...current.map((option) => Number(option.days) || 0)) + 7;
+    const nextHours = Math.max(1, ...current.map((option) => Number(option.hours) || 0)) + 24;
     const nextPrice = current[current.length - 1]?.price ?? (type === 'vitrine' ? 149 : 79);
-    setOptions(type, [...current, { days: nextDays, price: nextPrice, image: '' }]);
+    setOptions(type, [...current, { hours: nextHours, price: nextPrice, image: '' }]);
   };
 
   const removeOption = (type, index) => {
@@ -493,7 +493,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                     <div>
                       <div className="text-sm font-black text-slate-900">{meta.label} Paketi</div>
                       <div className="mt-1 text-xs font-semibold text-slate-400">
-                        {formatDopingDuration(option.days)} · {Number(option.price || 0).toFixed(2)} ₺
+                        {formatDopingDuration(option.hours)} · {Number(option.price || 0).toFixed(2)} ₺
                       </div>
                     </div>
                     {options.length > 1 ? (
@@ -510,12 +510,12 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Süre (gün)</label>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Sure (saat)</label>
                       <input
                         type="number"
                         min="1"
-                        value={option.days}
-                        onChange={(event) => updateOption(type, index, { days: Math.max(1, Number(event.target.value || 1)) })}
+                        value={option.hours}
+                        onChange={(event) => updateOption(type, index, { hours: Math.max(1, Number(event.target.value || 1)) })}
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                       />
                     </div>

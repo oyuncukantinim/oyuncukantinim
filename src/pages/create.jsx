@@ -93,7 +93,7 @@ export default function CreatePage() {
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '' }]);
   const [dopingType, setDopingType] = useState('none');
-  const [dopingDays, setDopingDays] = useState(null);
+  const [dopingHours, setDopingHours] = useState(null);
   const [vitrineOptions, setVitrineOptions] = useState(defaultVitrineOptions);
   const [featuredOptions, setFeaturedOptions] = useState(defaultFeaturedOptions);
 
@@ -150,10 +150,10 @@ export default function CreatePage() {
     if (dopingType === 'none') return;
     const options = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
     if (!options.length) return;
-    if (!findDopingOption(options, dopingDays)) {
-      setDopingDays(options[0].days);
+    if (!findDopingOption(options, dopingHours)) {
+      setDopingHours(options[0].hours);
     }
-  }, [dopingDays, dopingType, featuredOptions, vitrineOptions]);
+  }, [dopingHours, dopingType, featuredOptions, vitrineOptions]);
 
   const effectiveCommission = selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? null;
   const effectiveMinPrice   = selectedCategory?.effective_min_price ?? selectedCategory?.min_price ?? siteMinPrice;
@@ -162,9 +162,9 @@ export default function CreatePage() {
   const earnings   = priceNum - commission;
   const selectedDopingOption =
     dopingType === 'vitrine'
-      ? findDopingOption(vitrineOptions, dopingDays)
+      ? findDopingOption(vitrineOptions, dopingHours)
       : dopingType === 'featured'
-        ? findDopingOption(featuredOptions, dopingDays)
+        ? findDopingOption(featuredOptions, dopingHours)
         : null;
   const selectedDopingPrice = selectedDopingOption?.price || 0;
 
@@ -233,7 +233,7 @@ export default function CreatePage() {
         delivery_type:  deliveryType,
         delivery_hours: deliveryHours,
         doping_type:    dopingType,
-        doping_days:    dopingDays,
+        doping_hours:   dopingHours,
         attributes:     attrValues,
         stocks: deliveryType === 'stock' ? validStocks : [],
       });
@@ -476,7 +476,7 @@ export default function CreatePage() {
                 type="button"
                 onClick={() => {
                   setDopingType('none');
-                  setDopingDays(null);
+                  setDopingHours(null);
                 }}
                 className={`rounded-2xl border p-4 text-left transition-all ${dopingType === 'none' ? 'border-violet-500 bg-violet-50 shadow-md shadow-violet-100' : 'border-slate-200 bg-white hover:border-violet-200 hover:shadow-sm'}`}
               >
@@ -517,21 +517,21 @@ export default function CreatePage() {
                           <p className="mt-2 text-sm leading-6 text-slate-600">{meta.description}</p>
                           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                             {options.map((option) => {
-                              const selected = dopingType === type && Number(dopingDays) === Number(option.days);
+                              const selected = dopingType === type && Number(dopingHours) === Number(option.hours);
                               const insufficient = Number(user?.balance || 0) < Number(option.price || 0);
                               return (
                                 <button
-                                  key={`${type}-${option.days}`}
+                                  key={`${type}-${option.hours}`}
                                   type="button"
                                   onClick={() => {
                                     setDopingType(type);
-                                    setDopingDays(option.days);
+                                    setDopingHours(option.hours);
                                   }}
                                   className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/60 hover:border-violet-200 hover:bg-white'}`}
                                 >
                                   <div className="flex items-start justify-between gap-3">
                                     <div>
-                                      <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.days)}</div>
+                                      <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
                                       <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price).toFixed(2)}₺</div>
                                     </div>
                                     {selected ? <span className="rounded-full bg-violet-600 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
@@ -557,7 +557,7 @@ export default function CreatePage() {
               <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm font-bold text-violet-900">
-                    Seçili paket: {getDopingTypeMeta(dopingType).label} · {formatDopingDuration(selectedDopingOption.days)}
+                    Seçili paket: {getDopingTypeMeta(dopingType).label} · {formatDopingDuration(selectedDopingOption.hours)}
                   </div>
                   <div className="text-sm font-black text-violet-700">
                     {Number(selectedDopingOption.price).toFixed(2)}₺
