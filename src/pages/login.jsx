@@ -111,7 +111,7 @@ export default function LoginPage() {
                 titleClassName="text-xl font-extrabold glow-text"
               />
             </div>
-            <h1 className="mb-2 text-3xl font-extrabold text-white">
+            <h1 className="mb-2 text-3xl font-extrabold text-slate-900">
               {isLogin ? 'Giriş Yap' : awaitingVerification ? 'E-posta Kodunu Doğrula' : 'Kayıt Ol'}
             </h1>
             <p className="font-medium text-gray-500">
