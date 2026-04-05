@@ -1678,18 +1678,19 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [description, setDesc] = useState(listing.description || '');
   const [images, setImages] = useState(imgs.length > 0 ? imgs : ['']);
   const [coverIndex, setCoverIndex] = useState(listing.cover_index ?? 0);
-  const [deliveryHours, setDelHours] = useState(listing.delivery_hours ?? 24);
+  const [deliveryHours, setDelHours] = useState(Number(listing.delivery_hours ?? 24));
   const [maxImages, setMaxImages] = useState(5);
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
+  const [catAttrs, setCatAttrs] = useState([]);
+  const [attrValues, setAttrValues] = useState(listing.attributes || {});
   const [stocks, setStocks] = useState(
     listing.delivery_type === 'stock'
       ? (((listing.stocks || []).filter((stock) => Number(stock.is_sold) !== 1)).map((stock) => ({
           content: stock.content || '',
-          label: stock.label || '',
-        })) || [{ content: '', label: '' }])
-      : [{ content: '', label: '' }]
+        })) || [{ content: '' }])
+      : [{ content: '' }]
   );
 
   useEffect(() => {
@@ -1706,15 +1707,48 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (!listing.category_id) {
+      setCatAttrs([]);
+      setAttrValues(listing.attributes || {});
+      return;
+    }
+    fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_category_attributes&category_id=${listing.category_id}`)
+      .then((r) => r.json())
+      .then((j) => {
+        if (j.status !== 'success') return;
+        const attrs = j.data || [];
+        setCatAttrs(attrs);
+        const nextValues = {};
+        attrs.forEach((attr) => {
+          if (listing.attributes && listing.attributes[attr.slug] !== undefined) {
+            nextValues[attr.slug] = listing.attributes[attr.slug];
+          } else {
+            nextValues[attr.slug] = attr.type === 'multiselect' ? [] : '';
+          }
+        });
+        setAttrValues(nextValues);
+      })
+      .catch(() => {});
+  }, [listing.category_id, listing.attributes]);
+
   const addImage = () => setImages(i => [...i, '']);
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
   const addStock = () => {
     if (stocks.length >= stockItemMaxCount) return;
-    setStocks((current) => [...current, { content: '', label: '' }]);
+    setStocks((current) => [...current, { content: '' }]);
   };
   const removeStock = (idx) => setStocks((current) => current.filter((_, j) => j !== idx));
   const setStockField = (idx, field, val) => setStocks((current) => current.map((stock, j) => j === idx ? { ...stock, [field]: val } : stock));
+  const setAttr = (slug, val) => setAttrValues((current) => ({ ...current, [slug]: val }));
+  const toggleMulti = (slug, opt) => {
+    const current = attrValues[slug] || [];
+    setAttrValues((prev) => ({
+      ...prev,
+      [slug]: current.includes(opt) ? current.filter((item) => item !== opt) : [...current, opt],
+    }));
+  };
   const deliveryType = listing.delivery_type === 'stock' ? 'stock' : 'manual';
   const stockCount = stocks.filter((stock) => stock.content.trim()).length;
   const soldStockCount = (listing.stocks || []).filter((stock) => Number(stock.is_sold) === 1).length;
@@ -1728,6 +1762,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       images: images.filter(Boolean),
       cover_index: coverIndex,
       delivery_hours: deliveryHours,
+      attributes: attrValues,
       stocks: deliveryType === 'stock' ? stocks.filter((stock) => stock.content.trim()) : [],
     });
   };
@@ -1778,6 +1813,73 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             </div>
             <textarea value={description} onChange={e => e.target.value.length <= descMax && setDesc(e.target.value)} rows={4}
               className={inputCls + ' resize-none' + (description.length >= descMax ? ' border-orange-300' : '')} placeholder="İlanı detaylı açıklayın..." />
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <div>
+              <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
+              <p className="mt-1 text-xs text-slate-500">Kategoriye ait özellikleri ilan düzenleme sırasında da güncelleyebilirsin.</p>
+            </div>
+            {catAttrs.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-4 text-sm text-slate-400">
+                Bu kategori için özel özellik tanımlanmamış.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {catAttrs.map((attr) => (
+                  <div key={attr.slug}>
+                    <label className="mb-1.5 block text-xs font-bold text-gray-600">
+                      {attr.name}
+                      {attr.is_required ? <span className="ml-1 text-red-500">*</span> : null}
+                    </label>
+                    {attr.type === 'text' && (
+                      <input value={attrValues[attr.slug] || ''} onChange={(e) => setAttr(attr.slug, e.target.value)} className={inputCls} />
+                    )}
+                    {attr.type === 'number' && (
+                      <input type="number" value={attrValues[attr.slug] || ''} onChange={(e) => setAttr(attr.slug, e.target.value)} className={inputCls} />
+                    )}
+                    {attr.type === 'boolean' && (
+                      <div className="flex gap-3">
+                        {['Evet', 'Hayır'].map((opt) => (
+                          <button key={opt} type="button" onClick={() => setAttr(attr.slug, opt)} className={`flex-1 rounded-xl border py-2.5 text-sm font-bold transition-all ${attrValues[attr.slug] === opt ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 bg-gray-50 text-gray-600'}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {attr.type === 'select' && Array.isArray(attr.options) && (
+                      <div className="flex flex-wrap gap-2">
+                        {attr.options.map((opt) => (
+                          <button key={opt} type="button" onClick={() => setAttr(attr.slug, opt)} className={`rounded-xl border px-3 py-1.5 text-sm font-bold transition-all ${attrValues[attr.slug] === opt ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-violet-300'}`}>
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {attr.type === 'multiselect' && Array.isArray(attr.options) && (
+                      <div className="flex flex-wrap gap-2">
+                        {attr.options.map((opt) => {
+                          const selected = (attrValues[attr.slug] || []).includes(opt);
+                          return (
+                            <button key={opt} type="button" onClick={() => toggleMulti(attr.slug, opt)} className={`rounded-xl border px-3 py-1.5 text-sm font-bold transition-all ${selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-violet-300'}`}>
+                              {selected ? <Check size={11} className="mr-1 inline" /> : null}
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {attr.type === 'range' && (
+                      <div className="flex items-center gap-3">
+                        <input type="number" value={(attrValues[attr.slug] || {}).min || ''} onChange={(e) => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), min: e.target.value })} placeholder={`Min${attr.options?.min !== undefined ? ` (${attr.options.min})` : ''}`} className={`${inputCls} flex-1`} />
+                        <span className="font-bold text-gray-400">—</span>
+                        <input type="number" value={(attrValues[attr.slug] || {}).max || ''} onChange={(e) => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), max: e.target.value })} placeholder={`Max${attr.options?.max !== undefined ? ` (${attr.options.max})` : ''}`} className={`${inputCls} flex-1`} />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Görseller */}
@@ -1857,7 +1959,6 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                         </button>
                       ) : null}
                     </div>
-                    <input value={stock.label} onChange={e => setStockField(idx, 'label', e.target.value)} placeholder="Etiket (opsiyonel)" className="input-field text-xs mb-2" />
                     <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
                   </div>
                 ))}

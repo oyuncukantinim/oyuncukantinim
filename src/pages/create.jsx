@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2,
-  Clock, Package, Layers, Info, Tag, Truck, Check
+  Clock, Package, Info, Tag, Truck, Check
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -27,8 +27,7 @@ const DELIVERY_HOURS = [1, 2, 4, 6, 12, 24, 48, 72];
 const STEPS = [
   { id: 1, label: 'Kategori',       icon: Tag },
   { id: 2, label: 'İlan Bilgileri', icon: Info },
-  { id: 3, label: 'Özellikler',     icon: Layers },
-  { id: 4, label: 'Teslimat',       icon: Truck },
+  { id: 3, label: 'Teslimat',       icon: Truck },
 ];
 
 function StepBar({ current }) {
@@ -88,7 +87,7 @@ export default function CreatePage() {
 
   const [deliveryType, setDeliveryType] = useState('manual');
   const [deliveryHours, setDeliveryHours] = useState(24);
-  const [stocks, setStocks] = useState([{ content: '', label: '' }]);
+  const [stocks, setStocks] = useState([{ content: '' }]);
 
   // Admin tarafından belirlenen limitler
   const [maxImages, setMaxImages] = useState(defaultMaxImages);
@@ -162,25 +161,25 @@ export default function CreatePage() {
 
   const canNext = () => {
     if (step === 1) return !!selectedCategory;
-    if (step === 2) {
-      if (!title.trim() || !price || priceNum <= 0) return false;
-      if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
-      if (siteMaxPrice !== null && priceNum > siteMaxPrice) return false;
-      return true;
-    }
+    if (step === 2) return canProceedFromInfo();
     if (step === 3) {
-      return catAttrs.filter(a => a.is_required).every(a => {
-        const v = attrValues[a.slug];
-        return v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0);
-      });
-    }
-    if (step === 4) {
       if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) return false;
       if (deliveryType === 'stock' && stocks.length > stockItemMaxCount) return false;
       if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
       return true;
     }
     return true;
+  };
+
+  const canProceedFromInfo = () => {
+    const infoValid = !!title.trim() && !!price && priceNum > 0;
+    if (!infoValid) return false;
+    if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
+    if (siteMaxPrice !== null && priceNum > siteMaxPrice) return false;
+    return catAttrs.filter(a => a.is_required).every(a => {
+      const v = attrValues[a.slug];
+      return v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0);
+    });
   };
 
   const handleSubmit = async () => {
@@ -227,7 +226,7 @@ export default function CreatePage() {
       showToast(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
       return;
     }
-    setStocks(s => [...s, { content: '', label: '' }]);
+    setStocks(s => [...s, { content: '' }]);
   };
   const removeStock    = (idx) => setStocks(s => s.filter((_, j) => j !== idx));
   const setStockField  = (idx, field, val) => setStocks(s => s.map((x, j) => j === idx ? { ...x, [field]: val } : x));
@@ -297,7 +296,6 @@ export default function CreatePage() {
               {effectiveMinPrice !== null && (
                 <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
                   <span>Minimum ilan fiyatı: <strong className="text-cyan-600">{effectiveMinPrice}₺</strong></span>
-                  {siteMaxPrice !== null ? <span>Maksimum ilan fiyatı: <strong className="text-violet-600">{siteMaxPrice}₺</strong></span> : null}
                   <span>Bu alan minimum altına düşerse değer otomatik olarak güncellenir.</span>
                 </div>
               )}
@@ -354,78 +352,80 @@ export default function CreatePage() {
               </div>
               <p className="mt-1.5 text-xs text-gray-400">Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
             </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="mb-4">
+                <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
+                <p className="mt-1 text-xs text-slate-500">Kategoriye özel bilgileri ilan detaylarıyla birlikte buradan girebilirsiniz.</p>
+              </div>
+              {catAttrs.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-400">
+                  Bu kategori için özel özellik tanımlanmamış.
+                </div>
+              ) : (
+                <div className="space-y-5">
+                  {catAttrs.map(attr => (
+                    <div key={attr.slug}>
+                      <label className="block text-sm font-bold text-gray-700 mb-1.5">
+                        {attr.name}
+                        {attr.is_required
+                          ? <span className="text-red-500 ml-1">*</span>
+                          : <span className="text-gray-400 text-xs font-normal ml-1">(opsiyonel)</span>
+                        }
+                      </label>
+
+                      {attr.type === 'text' && (
+                        <input value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
+                      )}
+                      {attr.type === 'number' && (
+                        <input type="number" value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
+                      )}
+                      {attr.type === 'boolean' && (
+                        <div className="flex gap-3">
+                          {['Evet', 'Hayır'].map(opt => (
+                            <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {attr.type === 'select' && Array.isArray(attr.options) && (
+                        <div className="flex flex-wrap gap-2">
+                          {attr.options.map(opt => (
+                            <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {attr.type === 'multiselect' && Array.isArray(attr.options) && (
+                        <div className="flex flex-wrap gap-2">
+                          {attr.options.map(opt => {
+                            const sel = (attrValues[attr.slug] || []).includes(opt);
+                            return (
+                              <button key={opt} onClick={() => toggleMulti(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${sel ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                                {sel && <Check size={11} className="inline mr-1" />}{opt}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      {attr.type === 'range' && (
+                        <div className="flex items-center gap-3">
+                          <input type="number" value={(attrValues[attr.slug] || {}).min || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), min: e.target.value })} placeholder={`Min${attr.options?.min !== undefined ? ` (${attr.options.min})` : ''}`} className="input-field flex-1" />
+                          <span className="font-bold text-gray-400">—</span>
+                          <input type="number" value={(attrValues[attr.slug] || {}).max || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), max: e.target.value })} placeholder={`Max${attr.options?.max !== undefined ? ` (${attr.options.max})` : ''}`} className="input-field flex-1" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        {/* ADIM 3: KATEGORİ ÖZELLİKLERİ */}
+        {/* ADIM 3: TESLİMAT */}
         {step === 3 && (
-          <div className="space-y-5">
-            {catAttrs.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                <Layers size={36} className="mx-auto mb-3 opacity-30" />
-                <p className="text-sm font-semibold">Bu kategori için özel özellik tanımlanmamış.</p>
-                <p className="mt-1 text-xs">Teslimat adımına geçebilirsiniz.</p>
-              </div>
-            ) : catAttrs.map(attr => (
-              <div key={attr.slug}>
-                <label className="block text-sm font-bold text-gray-700 mb-1.5">
-                  {attr.name}
-                  {attr.is_required
-                    ? <span className="text-red-500 ml-1">*</span>
-                    : <span className="text-gray-400 text-xs font-normal ml-1">(opsiyonel)</span>
-                  }
-                </label>
-
-                {attr.type === 'text' && (
-                  <input value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
-                )}
-                {attr.type === 'number' && (
-                  <input type="number" value={attrValues[attr.slug] || ''} onChange={e => setAttr(attr.slug, e.target.value)} className="input-field" />
-                )}
-                {attr.type === 'boolean' && (
-                  <div className="flex gap-3">
-                    {['Evet', 'Hayır'].map(opt => (
-                      <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`flex-1 py-2.5 rounded-xl font-bold text-sm border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {attr.type === 'select' && Array.isArray(attr.options) && (
-                  <div className="flex flex-wrap gap-2">
-                    {attr.options.map(opt => (
-                      <button key={opt} onClick={() => setAttr(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${attrValues[attr.slug] === opt ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {attr.type === 'multiselect' && Array.isArray(attr.options) && (
-                  <div className="flex flex-wrap gap-2">
-                    {attr.options.map(opt => {
-                      const sel = (attrValues[attr.slug] || []).includes(opt);
-                      return (
-                        <button key={opt} onClick={() => toggleMulti(attr.slug, opt)} className={`px-3 py-1.5 rounded-xl text-sm font-bold border transition-all ${sel ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                          {sel && <Check size={11} className="inline mr-1" />}{opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                {attr.type === 'range' && (
-                  <div className="flex items-center gap-3">
-                    <input type="number" value={(attrValues[attr.slug] || {}).min || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), min: e.target.value })} placeholder={`Min${attr.options?.min !== undefined ? ` (${attr.options.min})` : ''}`} className="input-field flex-1" />
-                    <span className="font-bold text-gray-400">—</span>
-                    <input type="number" value={(attrValues[attr.slug] || {}).max || ''} onChange={e => setAttr(attr.slug, { ...(attrValues[attr.slug] || {}), max: e.target.value })} placeholder={`Max${attr.options?.max !== undefined ? ` (${attr.options.max})` : ''}`} className="input-field flex-1" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ADIM 4: TESLİMAT */}
-        {step === 4 && (
           <div className="space-y-5">
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -469,7 +469,6 @@ export default function CreatePage() {
                         <span className="text-xs font-bold text-gray-500">Stok #{idx + 1}</span>
                         {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400"><Trash2 size={13} /></button>}
                       </div>
-                      <input value={stock.label} onChange={e => setStockField(idx, 'label', e.target.value)} placeholder="Etiket (opsiyonel)" className="input-field text-xs mb-2" />
                       <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
                     </div>
                   ))}
