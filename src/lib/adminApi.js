@@ -64,6 +64,12 @@ export const adminUpdateListing = (body) =>
   adminRequest('admin_update_listing', { method: 'POST', body });
 export const adminDeleteListing = (listing_id) =>
   adminRequest('admin_delete_listing', { method: 'POST', body: { listing_id } });
+export const adminGetStocks = (listing_id) =>
+  adminRequest('admin_get_stocks', { query: { listing_id } });
+export const adminAddStocks = (body) =>
+  adminRequest('admin_add_stocks', { method: 'POST', body });
+export const adminDeleteStock = (stock_id) =>
+  adminRequest('admin_delete_stock', { method: 'POST', body: { stock_id } });
 
 // Orders
 export const adminGetOrders = (params = {}) =>
