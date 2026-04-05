@@ -5,7 +5,6 @@ import {
   ShieldCheck,
   Wallet,
   Key,
-  Trash2,
   ChevronLeft,
   ChevronRight,
   X,
@@ -18,7 +17,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUser } from '../../lib/adminApi';
+import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 
 function Modal({ title, onClose, children }) {
@@ -444,25 +443,6 @@ export default function AdminUsers() {
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-
-    setSaving(true);
-    try {
-      await adminDeleteUser(selectedUser.id);
-      showToast('Kullanıcı silindi.');
-      setModalType('');
-      if (detailUser?.id === selectedUser.id) {
-        closeDrawer();
-      }
-      await load();
-    } catch (e) {
-      showToast(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const transactionSummary = useMemo(() => {
     const rows = userTxns || [];
     return rows.reduce(
@@ -646,16 +626,6 @@ export default function AdminUsers() {
                             className="rounded-lg p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600"
                           >
                             <Ban size={15} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedUser(u);
-                              setModalType('delete');
-                            }}
-                            title="Kullanıcıyı Sil"
-                            className="rounded-lg p-1.5 text-gray-500 hover:bg-rose-50 hover:text-rose-600"
-                          >
-                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -1151,23 +1121,6 @@ export default function AdminUsers() {
         </Modal>
       )}
 
-      {modalType === 'delete' && selectedUser && (
-        <Modal title={`${selectedUser.username} · Kullanıcıyı Sil`} onClose={() => setModalType('')}>
-          <p className="mb-4 text-sm text-gray-600">
-            Bu işlem kullanıcı hesabını ve hesaba bağlı ilgili kayıtları kaldırır. İşlem geri alınamaz.
-          </p>
-          <div className="mb-5 rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            Silinecek kullanıcı: <span className="font-extrabold">{selectedUser.username}</span>
-          </div>
-          <button
-            onClick={handleDeleteUser}
-            disabled={saving}
-            className="w-full rounded-xl bg-rose-600 py-2.5 text-sm font-bold text-white transition-all hover:bg-rose-500 disabled:opacity-50"
-          >
-            {saving ? 'Siliniyor...' : 'Kullanıcıyı Kalıcı Olarak Sil'}
-          </button>
-        </Modal>
-      )}
     </AdminLayout>
   );
 }

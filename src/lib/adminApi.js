@@ -44,8 +44,6 @@ export const adminGetUser = (id) =>
   adminRequest('admin_get_user', { query: { id } });
 export const adminUpdateUser = (body) =>
   adminRequest('admin_update_user', { method: 'POST', body });
-export const adminDeleteUser = (user_id) =>
-  adminRequest('admin_delete_user', { method: 'POST', body: { user_id } });
 
 // Support
 export const adminGetSupportTickets = (params = {}) =>
