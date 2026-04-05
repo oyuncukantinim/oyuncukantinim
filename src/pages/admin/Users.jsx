@@ -14,6 +14,7 @@ import {
   Clock,
   Mail,
   FileText,
+  CheckCircle2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -1139,8 +1140,11 @@ export default function AdminUsers() {
 
 function EmailStatusBadge({ verified }) {
   return verified ? (
-    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-700">
-      Yeşil tik
+    <span
+      title="Mail doğrulandı"
+      className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
+    >
+      <CheckCircle2 size={15} />
     </span>
   ) : (
     <span className="rounded-full bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">
