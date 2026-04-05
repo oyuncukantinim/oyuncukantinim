@@ -92,8 +92,7 @@ export default function CreatePage() {
   const [deliveryType, setDeliveryType] = useState('manual');
   const [deliveryHours, setDeliveryHours] = useState(24);
   const [stocks, setStocks] = useState([{ content: '' }]);
-  const [dopingType, setDopingType] = useState('none');
-  const [dopingHours, setDopingHours] = useState(null);
+  const [selectedDopings, setSelectedDopings] = useState({});
   const [vitrineOptions, setVitrineOptions] = useState(defaultVitrineOptions);
   const [featuredOptions, setFeaturedOptions] = useState(defaultFeaturedOptions);
 
@@ -146,27 +145,16 @@ export default function CreatePage() {
       });
   }, [selectedCategory]);
 
-  useEffect(() => {
-    if (dopingType === 'none') return;
-    const options = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
-    if (!options.length) return;
-    if (!findDopingOption(options, dopingHours)) {
-      setDopingHours(options[0].hours);
-    }
-  }, [dopingHours, dopingType, featuredOptions, vitrineOptions]);
-
   const effectiveCommission = selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? null;
   const effectiveMinPrice   = selectedCategory?.effective_min_price ?? selectedCategory?.min_price ?? siteMinPrice;
   const priceNum   = parseFloat(price) || 0;
   const commission = priceNum * ((effectiveCommission ?? 10) / 100);
   const earnings   = priceNum - commission;
-  const selectedDopingOption =
-    dopingType === 'vitrine'
-      ? findDopingOption(vitrineOptions, dopingHours)
-      : dopingType === 'featured'
-        ? findDopingOption(featuredOptions, dopingHours)
-        : null;
-  const selectedDopingPrice = selectedDopingOption?.price || 0;
+  const selectedDopingEntries = [
+    selectedDopings.vitrine ? { type: 'vitrine', option: findDopingOption(vitrineOptions, selectedDopings.vitrine) } : null,
+    selectedDopings.featured ? { type: 'featured', option: findDopingOption(featuredOptions, selectedDopings.featured) } : null,
+  ].filter((entry) => entry?.option);
+  const selectedDopingPrice = selectedDopingEntries.reduce((sum, entry) => sum + Number(entry.option.price || 0), 0);
 
   const handlePriceChange = (value) => {
     if (value === '') {
@@ -232,8 +220,7 @@ export default function CreatePage() {
         cover_index: coverIndex,
         delivery_type:  deliveryType,
         delivery_hours: deliveryHours,
-        doping_type:    dopingType,
-        doping_hours:   dopingHours,
+        dopings: selectedDopingEntries.map((entry) => ({ type: entry.type, hours: entry.option.hours })),
         attributes:     attrValues,
         stocks: deliveryType === 'stock' ? validStocks : [],
       });
@@ -473,6 +460,7 @@ export default function CreatePage() {
                 ].map(({ type, options }) => {
                   const meta = getDopingTypeMeta(type);
                   const dopingImage = options.find((option) => option.image)?.image;
+                  const selectedHours = selectedDopings[type] ?? null;
                   return (
                     <div key={type} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -494,30 +482,28 @@ export default function CreatePage() {
                             <button
                               type="button"
                               onClick={() => {
-                                setDopingType('none');
-                                setDopingHours(null);
+                                setSelectedDopings((prev) => ({ ...prev, [type]: null }));
                               }}
-                              className={`rounded-2xl border p-3 text-left transition-all ${dopingType === 'none' ? 'border-slate-500 bg-slate-100 shadow-sm shadow-slate-200' : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-white'}`}
+                              className={`rounded-2xl border p-3 text-left transition-all ${!selectedHours ? 'border-slate-500 bg-slate-100 shadow-sm shadow-slate-200' : 'border-slate-200 bg-slate-50/60 hover:border-slate-300 hover:bg-white'}`}
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
                                   <div className="text-lg font-black leading-none text-slate-900">🛇</div>
                                 </div>
-                                {dopingType === 'none' ? <span className="rounded-full bg-slate-700 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
+                                {!selectedHours ? <span className="rounded-full bg-slate-700 px-2 py-1 text-[10px] font-bold text-white">Seçili</span> : null}
                               </div>
                               <div className="mt-3 text-xs font-bold text-emerald-600">0.00₺</div>
                             </button>
 
                             {options.map((option) => {
-                              const selected = dopingType === type && Number(dopingHours) === Number(option.hours);
+                              const selected = Number(selectedHours) === Number(option.hours);
                               const insufficient = Number(user?.balance || 0) < Number(option.price || 0);
                               return (
                                 <button
                                   key={`${type}-${option.hours}`}
                                   type="button"
                                   onClick={() => {
-                                    setDopingType(type);
-                                    setDopingHours(option.hours);
+                                    setSelectedDopings((prev) => ({ ...prev, [type]: option.hours }));
                                   }}
                                   className={`rounded-2xl border p-3 text-left transition-all ${selected ? 'border-violet-500 bg-violet-50 shadow-sm shadow-violet-100' : 'border-slate-200 bg-slate-50/60 hover:border-violet-200 hover:bg-white'}`}
                                 >
@@ -544,14 +530,14 @@ export default function CreatePage() {
                 })}
             </div>
 
-            {selectedDopingOption ? (
+            {selectedDopingEntries.length ? (
               <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm font-bold text-violet-900">
-                    Seçili paket: {getDopingTypeMeta(dopingType).label} · {formatDopingDuration(selectedDopingOption.hours)}
+                    Seçili paketler: {selectedDopingEntries.map((entry) => `${getDopingTypeMeta(entry.type).label} · ${formatDopingDuration(entry.option.hours)}`).join(' + ')}
                   </div>
                   <div className="text-sm font-black text-violet-700">
-                    {Number(selectedDopingOption.price).toFixed(2)}₺
+                    {Number(selectedDopingPrice).toFixed(2)}₺
                   </div>
                 </div>
               </div>

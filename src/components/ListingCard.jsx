@@ -2,22 +2,22 @@ import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
+import { getDopingTypeMeta, getListingActiveDopingTypes } from '../lib/doping';
 
 export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
-  const dopingBadge =
-    listing.active_doping_type === 'vitrine'
-      ? { label: 'Vitrin', className: 'bg-amber-500/90 text-white' }
-      : listing.active_doping_type === 'featured'
-        ? { label: 'Öne Çıkar', className: 'bg-violet-600/90 text-white' }
-        : null;
+  const dopingBadges = getListingActiveDopingTypes(listing).map((type) => ({
+    type,
+    label: getDopingTypeMeta(type).label,
+    className: type === 'vitrine' ? 'bg-amber-500/90 text-white' : 'bg-violet-600/90 text-white',
+  }));
 
   return (
     <Link
       to={listingSlug(listing.title, listing.id)}
       className={`card group block h-full flex flex-col ${compact ? 'p-2.5' : 'p-4'}`}
     >
-      <div className={`w-full overflow-hidden rounded-xl bg-surface-100 relative ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
+      <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
         {coverImg ? (
           <img
             src={coverImg}
@@ -29,10 +29,14 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
             <ImageIcon size={compact ? 30 : 40} />
           </div>
         )}
-        {dopingBadge ? (
-          <span className={`absolute left-2 top-2 rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide shadow-sm ${dopingBadge.className}`}>
-            {dopingBadge.label}
-          </span>
+        {dopingBadges.length ? (
+          <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
+            {dopingBadges.map((badge) => (
+              <span key={badge.type} className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide shadow-sm ${badge.className}`}>
+                {badge.label}
+              </span>
+            ))}
+          </div>
         ) : null}
       </div>
 

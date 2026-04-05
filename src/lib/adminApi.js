@@ -66,8 +66,8 @@ export const adminDeleteListing = (listing_id) =>
   adminRequest('admin_delete_listing', { method: 'POST', body: { listing_id } });
 export const adminApplyListingDoping = (body) =>
   adminRequest('admin_apply_listing_doping', { method: 'POST', body });
-export const adminClearListingDoping = (listing_id) =>
-  adminRequest('admin_clear_listing_doping', { method: 'POST', body: { listing_id } });
+export const adminClearListingDoping = (listing_id, doping_type = null) =>
+  adminRequest('admin_clear_listing_doping', { method: 'POST', body: { listing_id, ...(doping_type ? { doping_type } : {}) } });
 export const adminGetStocks = (listing_id) =>
   adminRequest('admin_get_stocks', { query: { listing_id } });
 export const adminAddStocks = (body) =>

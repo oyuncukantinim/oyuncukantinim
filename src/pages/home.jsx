@@ -5,6 +5,7 @@ import { getListings, getEpins } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import EPinCard from '../components/EPinCard';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { hasListingDopingType } from '../lib/doping';
 
 export default function Home() {
   const { defaultListingImage } = useSiteBrand();
@@ -21,8 +22,8 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const vitrineListings = listings.filter((listing) => listing.active_doping_type === 'vitrine');
-  const recentListings = listings.filter((listing) => listing.active_doping_type !== 'vitrine');
+  const vitrineListings = listings.filter((listing) => hasListingDopingType(listing, 'vitrine'));
+  const recentListings = listings.filter((listing) => !hasListingDopingType(listing, 'vitrine'));
 
   return (
     <div className="space-y-16">

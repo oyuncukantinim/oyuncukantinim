@@ -63,6 +63,28 @@ export function getDopingTypeMeta(type) {
   };
 }
 
+export function getListingActiveDopingTypes(listing) {
+  if (!listing || typeof listing !== 'object') return [];
+  if (Array.isArray(listing.active_doping_types)) {
+    return listing.active_doping_types.filter((type) => type === 'vitrine' || type === 'featured');
+  }
+  if (listing.active_doping_type === 'vitrine' || listing.active_doping_type === 'featured') {
+    return [listing.active_doping_type];
+  }
+  return [];
+}
+
+export function hasListingDopingType(listing, type) {
+  return getListingActiveDopingTypes(listing).includes(type);
+}
+
+export function getListingPrimaryDopingType(listing) {
+  const activeTypes = getListingActiveDopingTypes(listing);
+  if (activeTypes.includes('vitrine')) return 'vitrine';
+  if (activeTypes.includes('featured')) return 'featured';
+  return null;
+}
+
 export function findDopingOption(options, hours) {
   const normalizedHours = Number(hours);
   if (!Array.isArray(options) || !options.length) return null;

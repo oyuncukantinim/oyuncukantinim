@@ -24,7 +24,7 @@ import {
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
-import { formatDopingDuration, getDopingTypeMeta } from '../../lib/doping';
+import { formatDopingDuration, getDopingTypeMeta, getListingActiveDopingTypes } from '../../lib/doping';
 import useSiteBrand from '../../hooks/useSiteBrand';
 
 const STATUS_MAP = {
@@ -245,10 +245,10 @@ function ListingDetailModal({
     description: listing.description || '',
   });
   const [saving, setSaving] = useState(false);
-  const [dopingType, setDopingType] = useState(listing.active_doping_type || 'vitrine');
+  const [dopingType, setDopingType] = useState(getListingActiveDopingTypes(listing)[0] || 'vitrine');
   const [dopingHours, setDopingHours] = useState(null);
   const coverImage = getListingCoverImage(listing);
-  const activeDopingMeta = listing.active_doping_type ? getDopingTypeMeta(listing.active_doping_type) : null;
+  const activeDopingTypes = getListingActiveDopingTypes(listing);
   const currentDopingOptions = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
   const selectedDopingOption =
     currentDopingOptions.find((option) => Number(option.hours) === Number(dopingHours)) || currentDopingOptions[0] || null;
@@ -318,7 +318,7 @@ function ListingDetailModal({
   const handleClearDoping = async () => {
     setSaving(true);
     try {
-      await adminClearListingDoping(listing.id);
+      await adminClearListingDoping(listing.id, dopingType);
       showToast('Doping kaldirildi.');
       onRefresh();
       onClose();
@@ -382,13 +382,20 @@ function ListingDetailModal({
               </div>
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-gray-500">Aktif Doping</span>
-                {activeDopingMeta ? (
-                  <div className="text-right">
-                    <span className={`inline-flex rounded-full px-2 py-1 text-[11px] font-bold ${activeDopingMeta.buttonClass}`}>
-                      {activeDopingMeta.label}
-                    </span>
-                    {listing.doping_expires_at ? (
-                      <div className="mt-1 text-[11px] font-semibold text-gray-500">{fmtDateTime(listing.doping_expires_at)}</div>
+                {activeDopingTypes.length ? (
+                  <div className="space-y-1 text-right">
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {activeDopingTypes.map((type) => (
+                        <span key={type} className={`inline-flex rounded-full px-2 py-1 text-[11px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
+                          {getDopingTypeMeta(type).label}
+                        </span>
+                      ))}
+                    </div>
+                    {listing.vitrine_expires_at && activeDopingTypes.includes('vitrine') ? (
+                      <div className="text-[11px] font-semibold text-gray-500">Vitrin: {fmtDateTime(listing.vitrine_expires_at)}</div>
+                    ) : null}
+                    {listing.featured_expires_at && activeDopingTypes.includes('featured') ? (
+                      <div className="text-[11px] font-semibold text-gray-500">Öne Çıkar: {fmtDateTime(listing.featured_expires_at)}</div>
                     ) : null}
                   </div>
                 ) : (
@@ -452,10 +459,14 @@ function ListingDetailModal({
                   <h3 className="text-sm font-extrabold text-gray-900">Doping Yonetimi</h3>
                   <p className="mt-1 text-xs text-gray-500">Ilan icin admin tarafindan vitrin veya one cikar paketi tanimla.</p>
                 </div>
-                {activeDopingMeta ? (
-                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${activeDopingMeta.buttonClass}`}>
-                    {activeDopingMeta.label}
-                  </span>
+                {activeDopingTypes.length ? (
+                  <div className="flex flex-wrap justify-end gap-1.5">
+                    {activeDopingTypes.map((type) => (
+                      <span key={type} className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
+                        {getDopingTypeMeta(type).label}
+                      </span>
+                    ))}
+                  </div>
                 ) : null}
               </div>
 
@@ -516,14 +527,14 @@ function ListingDetailModal({
                 >
                   {saving ? 'Uygulaniyor...' : 'Doping Uygula'}
                 </button>
-                {listing.active_doping_type ? (
+                {activeDopingTypes.includes(dopingType) ? (
                   <button
                     type="button"
                     onClick={handleClearDoping}
                     disabled={saving}
                     className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
                   >
-                    Doping Kaldir
+                    Seçili Dopingi Kaldır
                   </button>
                 ) : null}
               </div>
@@ -706,7 +717,7 @@ export default function AdminListings() {
                       colorClass: 'text-gray-600 bg-gray-100',
                     };
                     const coverImage = getListingCoverImage(listing);
-                    const activeDopingMeta = listing.active_doping_type ? getDopingTypeMeta(listing.active_doping_type) : null;
+                    const activeDopingTypes = getListingActiveDopingTypes(listing);
 
                     return (
                       <tr key={listing.id} className="border-t border-gray-50 hover:bg-gray-50/50">
@@ -724,11 +735,15 @@ export default function AdminListings() {
                               <div className="text-xs text-gray-400">
                                 #{listing.id} · {listing.delivery_type === 'stock' ? `Stok(${listing.stock_count || 0})` : 'Manuel'}
                               </div>
-                              {activeDopingMeta ? (
+                              {activeDopingTypes.length ? (
                                 <div className="mt-1">
-                                  <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${activeDopingMeta.buttonClass}`}>
-                                    {activeDopingMeta.label}
-                                  </span>
+                                  <div className="flex flex-wrap gap-1">
+                                    {activeDopingTypes.map((type) => (
+                                      <span key={`${listing.id}-${type}`} className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
+                                        {getDopingTypeMeta(type).label}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
                               ) : null}
                             </div>
