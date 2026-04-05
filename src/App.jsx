@@ -31,6 +31,7 @@ import AdminListings from './pages/admin/Listings';
 import AdminOrders from './pages/admin/Orders';
 import AdminReviews from './pages/admin/Reviews';
 import AdminCategories from './pages/admin/Categories';
+import AdminDoping from './pages/admin/Doping';
 import AdminEpins from './pages/admin/Epins';
 import AdminAnnouncements from './pages/admin/Announcements';
 import AdminMessages from './pages/admin/Messages';
@@ -223,6 +224,7 @@ export default function App() {
             <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+            <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
             <Route path="/admin/epins" element={<AdminRoute><AdminEpins /></AdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />

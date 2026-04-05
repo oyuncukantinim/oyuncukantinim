@@ -123,17 +123,6 @@ const SETTINGS_TABS = [
     ],
   },
   {
-    id: 'doping',
-    label: 'Doping',
-    icon: Package,
-    sections: [
-      {
-        section: 'Doping Paketleri',
-        fields: [],
-      },
-    ],
-  },
-  {
     id: 'delivery',
     label: 'Teslimat',
     icon: Truck,
@@ -648,22 +637,6 @@ export default function AdminSettings() {
     }
   };
 
-  const handleDopingImageUpload = async (type, index, file) => {
-    const uploadKey = `listing_doping_${type}_options_${index}`;
-    setImageUploading(uploadKey);
-    try {
-      const url = await adminUploadImage(file, 'doping', { preserveOriginal: true });
-      const current = getDopingOptionsFromSettings(settings, type);
-      const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, image: url } : option));
-      set(`listing_doping_${type}_options`, JSON.stringify(next));
-      showToast('Doping görseli yüklendi.');
-    } catch (error) {
-      showToast(error.message);
-    } finally {
-      setImageUploading('');
-    }
-  };
-
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -776,25 +749,16 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            {activeTab === 'doping' ? (
-              <DopingSettingsPanel
+            {activeTabConfig.sections.map((section) => (
+              <SectionCard
+                key={section.section}
+                section={section}
                 settings={settings}
                 set={set}
+                onUpload={handleUpload}
                 imageUploading={imageUploading}
-                onOptionImageUpload={handleDopingImageUpload}
               />
-            ) : (
-              activeTabConfig.sections.map((section) => (
-                <SectionCard
-                  key={section.section}
-                  section={section}
-                  settings={settings}
-                  set={set}
-                  onUpload={handleUpload}
-                  imageUploading={imageUploading}
-                />
-              ))
-            )}
+            ))}
           </section>
         </div>
       </div>

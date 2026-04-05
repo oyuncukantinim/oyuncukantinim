@@ -29,6 +29,7 @@ const navItems = [
   { path: '/admin/orders', label: 'Siparişler', icon: Package },
   { path: '/admin/reviews', label: 'Yorumlar', icon: Star },
   { path: '/admin/categories', label: 'Kategoriler', icon: Tag },
+  { path: '/admin/doping', label: 'Doping', icon: Package },
   { path: '/admin/epins', label: 'E-Pinler', icon: CreditCard },
   { path: '/admin/finance', label: 'Finansal', icon: Wallet },
   { path: '/admin/messages', label: 'Mesajlar', icon: MessageSquare },
