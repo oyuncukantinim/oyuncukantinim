@@ -1,21 +1,30 @@
 import { Link } from 'react-router-dom';
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Star, Zap } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
-import { getDopingTypeMeta, getListingActiveDopingTypes } from '../lib/doping';
+import { getListingActiveDopingTypes } from '../lib/doping';
+
+const DOPING_META = {
+  vitrine:  { label: 'Vitrin',     Icon: Star,  strip: 'bg-amber-500',  ring: 'ring-amber-400/60' },
+  featured: { label: 'Öne Çıkar', Icon: Zap,   strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
+};
 
 export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
-  const dopingBadges = getListingActiveDopingTypes(listing).map((type) => ({
-    type,
-    label: getDopingTypeMeta(type).label,
-    className: type === 'vitrine' ? 'bg-amber-500/90 text-white' : 'bg-violet-600/90 text-white',
-  }));
+  const activeTypes = getListingActiveDopingTypes(listing);
+  const hasDoping = activeTypes.length > 0;
+
+  // ring class: vitrine beats featured for the card border color
+  const ringClass = activeTypes.includes('vitrine')
+    ? DOPING_META.vitrine.ring
+    : activeTypes.includes('featured')
+    ? DOPING_META.featured.ring
+    : '';
 
   return (
     <Link
       to={listingSlug(listing.title, listing.id)}
-      className={`card group block h-full flex flex-col ${compact ? 'p-2.5' : 'p-4'}`}
+      className={`card group block h-full flex flex-col ${compact ? 'p-2.5' : 'p-4'} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}
     >
       <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
         {coverImg ? (
@@ -29,13 +38,22 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
             <ImageIcon size={compact ? 30 : 40} />
           </div>
         )}
-        {dopingBadges.length ? (
-          <div className="absolute left-2 top-2 flex flex-wrap gap-1.5">
-            {dopingBadges.map((badge) => (
-              <span key={badge.type} className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold tracking-wide shadow-sm ${badge.className}`}>
-                {badge.label}
-              </span>
-            ))}
+
+        {/* Doping strip — bottom of image, splits for dual doping */}
+        {hasDoping ? (
+          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+            {activeTypes.map((type) => {
+              const m = DOPING_META[type];
+              return (
+                <div
+                  key={type}
+                  className={`flex flex-1 items-center justify-center gap-1 py-1 text-white ${m.strip} ${compact ? 'text-[9px]' : 'text-[10px]'} font-extrabold tracking-wide`}
+                >
+                  <m.Icon size={compact ? 8 : 9} strokeWidth={2.5} />
+                  {m.label}
+                </div>
+              );
+            })}
           </div>
         ) : null}
       </div>
