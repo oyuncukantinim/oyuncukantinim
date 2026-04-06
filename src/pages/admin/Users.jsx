@@ -146,6 +146,8 @@ export default function AdminUsers() {
 
   const [modalType, setModalType] = useState('');
   const [banReason, setBanReason] = useState('');
+  const [banDuration, setBanDuration] = useState('permanent');
+  const [banCustomDate, setBanCustomDate] = useState('');
   const [balanceAction, setBalanceAction] = useState('add');
   const [balanceAmount, setBalanceAmount] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -367,7 +369,18 @@ export default function AdminUsers() {
     setSaving(true);
     try {
       const isBanned = Number(selectedUser.is_banned) !== 1;
-      await adminUpdateUser({ user_id: selectedUser.id, is_banned: isBanned ? 1 : 0, ban_reason: banReason });
+      let ban_expires_at = null;
+      if (isBanned && banDuration !== 'permanent') {
+        if (banDuration === 'custom') {
+          ban_expires_at = banCustomDate || null;
+        } else {
+          const days = parseInt(banDuration, 10);
+          const d = new Date();
+          d.setDate(d.getDate() + days);
+          ban_expires_at = d.toISOString().slice(0, 19).replace('T', ' ');
+        }
+      }
+      await adminUpdateUser({ user_id: selectedUser.id, is_banned: isBanned ? 1 : 0, ban_reason: banReason, ban_expires_at });
       showToast(isBanned ? 'Kullanıcı banlandı.' : 'Ban kaldırıldı.');
       setModalType('');
       await load();
@@ -621,6 +634,8 @@ export default function AdminUsers() {
                             onClick={() => {
                               setSelectedUser(u);
                               setBanReason(u.ban_reason || '');
+                              setBanDuration('permanent');
+                              setBanCustomDate('');
                               setModalType('ban');
                             }}
                             title={Number(u.is_banned) === 1 ? 'Ban Kaldır' : 'Banla'}
@@ -1053,15 +1068,56 @@ export default function AdminUsers() {
       {modalType === 'ban' && selectedUser && (
         <Modal title={Number(selectedUser.is_banned) === 1 ? 'Ban Kaldır' : `${selectedUser.username} Kullanıcısını Banla`} onClose={() => setModalType('')}>
           {Number(selectedUser.is_banned) !== 1 && (
-            <div className="mb-4">
-              <label className="mb-1.5 block text-sm font-bold text-gray-700">Ban Sebebi</label>
-              <input
-                value={banReason}
-                onChange={(e) => setBanReason(e.target.value)}
-                placeholder="Kural ihlali, spam vb."
-                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-              />
-            </div>
+            <>
+              <div className="mb-4">
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">Ban Sebebi</label>
+                <input
+                  value={banReason}
+                  onChange={(e) => setBanReason(e.target.value)}
+                  placeholder="Kural ihlali, spam vb."
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">Ban Süresi</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {[
+                    { value: '1', label: '1 Gün' },
+                    { value: '3', label: '3 Gün' },
+                    { value: '7', label: '7 Gün' },
+                    { value: '30', label: '30 Gün' },
+                    { value: 'permanent', label: 'Süresiz' },
+                    { value: 'custom', label: 'Özel Tarih' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setBanDuration(opt.value)}
+                      className={`rounded-lg px-3 py-1.5 text-xs font-bold border transition-all ${
+                        banDuration === opt.value
+                          ? 'bg-red-600 text-white border-red-600'
+                          : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-red-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {banDuration === 'custom' && (
+                  <input
+                    type="datetime-local"
+                    value={banCustomDate}
+                    onChange={(e) => setBanCustomDate(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                  />
+                )}
+                {banDuration !== 'permanent' && banDuration !== 'custom' && (
+                  <p className="text-xs text-gray-400 mt-1">
+                    Ban {banDuration} gün sonra otomatik kaldırılacak.
+                  </p>
+                )}
+              </div>
+            </>
           )}
           <p className="mb-5 text-sm text-gray-600">
             {Number(selectedUser.is_banned) === 1

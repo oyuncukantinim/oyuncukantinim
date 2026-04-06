@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Bell, LifeBuoy, Menu, MessageCircle, Plus, ShoppingCart, Store, Users, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, LifeBuoy, Menu, MessageCircle, Plus, Search, ShoppingCart, Store, Users, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getUnreadNotificationsCount, markNotificationsRead } from '../lib/api';
+import { getUnreadNotificationsCount, markNotificationsRead, getListings, listingSlug } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from './SiteBrand';
 
@@ -20,10 +20,20 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const { cart } = useCart();
   const { defaultAvatar } = useSiteBrand();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotif, setUnreadNotif] = useState(0);
   const [cartHover, setCartHover] = useState(false);
   const cartTimeout = useRef(null);
+
+  // Search state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
+  const debounceRef = useRef(null);
 
   useEffect(() => {
     if (!user) {
@@ -55,6 +65,61 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       markNotificationsRead().catch(() => {});
     }
   }, [location.pathname, user]);
+
+  // Close search on outside click
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+        setSearchQuery('');
+        setSearchResults([]);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  // Debounced search
+  useEffect(() => {
+    clearTimeout(debounceRef.current);
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await getListings({ search: searchQuery.trim(), limit: 6, status: 'active' });
+        setSearchResults(res.data?.listings || []);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 400);
+    return () => clearTimeout(debounceRef.current);
+  }, [searchQuery]);
+
+  const openSearch = () => {
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  };
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
+  const handleSearchKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      closeSearch();
+    } else if (e.key === 'Enter' && searchQuery.trim()) {
+      navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
+      closeSearch();
+    }
+  };
 
   const handleCartEnter = () => {
     clearTimeout(cartTimeout.current);
@@ -107,6 +172,87 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             >
               <Plus size={15} /> İlan Ekle
             </Link>
+
+            {/* Search */}
+            <div className="relative" ref={searchRef}>
+              {searchOpen ? (
+                <div className="flex items-center gap-1.5 rounded-xl border border-violet-300 bg-white px-3 py-1.5 shadow-sm">
+                  <Search size={15} className="flex-shrink-0 text-gray-400" />
+                  <input
+                    ref={searchInputRef}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="İlan ara..."
+                    className="w-44 text-sm outline-none placeholder:text-gray-400"
+                  />
+                  <button onClick={closeSearch} className="text-gray-400 hover:text-gray-600">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={openSearch}
+                  className="p-2 text-gray-400 transition-colors hover:text-gray-700"
+                  title="Ara"
+                >
+                  <Search size={20} />
+                </button>
+              )}
+
+              {/* Search dropdown */}
+              {searchOpen && searchQuery.trim() && (
+                <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
+                  {searchLoading ? (
+                    <div className="flex items-center justify-center py-6">
+                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+                    </div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="px-4 py-5 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
+                  ) : (
+                    <>
+                      <div className="divide-y divide-gray-50">
+                        {searchResults.map((item) => (
+                          <Link
+                            key={item.id}
+                            to={listingSlug(item.title, item.id)}
+                            onClick={closeSearch}
+                            className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50"
+                          >
+                            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                              {item.images?.[0] || item.image ? (
+                                <img
+                                  src={item.images?.[0] || item.image}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="flex h-full w-full items-center justify-center text-base">🎮</div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-gray-800">{item.title}</p>
+                              <p className="text-xs font-bold text-emerald-600">{Number(item.price).toFixed(2)} ₺</p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-100 px-4 py-2.5">
+                        <button
+                          onClick={() => {
+                            navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
+                            closeSearch();
+                          }}
+                          className="text-xs font-bold text-violet-600 hover:text-violet-500"
+                        >
+                          Tümünü Gör →
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
             {user ? (
               <>
@@ -223,6 +369,25 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       {mobileOpen ? (
         <div className="absolute w-full border-t border-gray-100 bg-white shadow-xl md:hidden">
           <div className="space-y-2 px-4 py-4">
+            {/* Mobile search */}
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
+              <Search size={15} className="text-gray-400 flex-shrink-0" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
+                    setSearchQuery('');
+                    setMobileOpen(false);
+                  }
+                }}
+                placeholder="İlan ara..."
+                className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+              />
+              {searchQuery && <button onClick={() => setSearchQuery('')}><X size={13} className="text-gray-400" /></button>}
+            </div>
+
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.to}

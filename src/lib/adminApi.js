@@ -136,6 +136,20 @@ export const adminGetAllTransactions = (params = {}) =>
 export const adminGetUserTransactions = (user_id) =>
   adminRequest('admin_get_user_transactions', { query: { user_id } });
 
+// Admin Logs
+export const adminGetLogs = (params = {}) =>
+  adminRequest('admin_get_logs', { query: params });
+
+// Suspicious Accounts
+export const adminGetSuspicious = () => adminRequest('admin_get_suspicious');
+
+// IP Blacklist
+export const adminGetIpBlacklist = () => adminRequest('admin_get_ip_blacklist');
+export const adminAddIpBlacklist = (body) =>
+  adminRequest('admin_add_ip_blacklist', { method: 'POST', body });
+export const adminRemoveIpBlacklist = (id) =>
+  adminRequest('admin_remove_ip_blacklist', { method: 'POST', body: { id } });
+
 // Categories Reorder
 export const adminReorderCategories = (orders) =>
   adminRequest('admin_reorder_categories', { method: 'POST', body: { orders } });

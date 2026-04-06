@@ -1,10 +1,18 @@
 import { useState } from 'react';
-import { Megaphone, Send, Users, User } from 'lucide-react';
+import { Megaphone, Send, Users, User, ShoppingBag, Store } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminBroadcast } from '../../lib/adminApi';
 
+const SEGMENTS = [
+  { value: 'all', label: 'Tüm Kullanıcılar', icon: Users, desc: 'Tüm kayıtlı kullanıcılara gönder' },
+  { value: 'buyers', label: 'Alıcılar', icon: ShoppingBag, desc: 'En az 1 satın alma yapanlar' },
+  { value: 'sellers', label: 'Satıcılar', icon: Store, desc: 'En az 1 ilanı olanlar' },
+  { value: 'new_users', label: 'Yeni Üyeler', icon: User, desc: 'Son 30 günde katılanlar' },
+];
+
 export default function AdminAnnouncements() {
   const [target, setTarget] = useState('all'); // 'all' | 'user'
+  const [segment, setSegment] = useState('all');
   const [username, setUsername] = useState('');
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -17,13 +25,19 @@ export default function AdminAnnouncements() {
     setSending(true); setResult('');
     try {
       const body = { title, message };
-      if (target === 'user') body.username = username.trim();
+      if (target === 'user') {
+        body.username = username.trim();
+      } else {
+        body.segment = segment;
+      }
       const res = await adminBroadcast(body);
       setResult(res.message);
       setTitle(''); setMessage(''); setUsername('');
     } catch (e) { setResult(e.message); }
     finally { setSending(false); }
   };
+
+  const selectedSegment = SEGMENTS.find((s) => s.value === segment);
 
   return (
     <AdminLayout>
@@ -35,14 +49,14 @@ export default function AdminAnnouncements() {
             </div>
             <div>
               <h2 className="font-extrabold text-gray-900">Duyuru Gönder</h2>
-              <p className="text-sm text-gray-500">Tüm kullanıcılara veya belirli bir kullanıcıya bildirim gönder</p>
+              <p className="text-sm text-gray-500">Kullanıcı segmentlerine veya belirli bir kişiye bildirim gönder</p>
             </div>
           </div>
 
-          {/* Hedef seçimi */}
+          {/* Hedef türü */}
           <div className="flex gap-3 mb-5">
             {[
-              { value: 'all', label: 'Tüm Kullanıcılar', icon: Users },
+              { value: 'all', label: 'Segment', icon: Users },
               { value: 'user', label: 'Belirli Kullanıcı', icon: User },
             ].map(opt => (
               <button
@@ -54,6 +68,33 @@ export default function AdminAnnouncements() {
               </button>
             ))}
           </div>
+
+          {/* Segment seçimi */}
+          {target === 'all' && (
+            <div className="mb-5">
+              <label className="block text-sm font-bold text-gray-700 mb-2">Hedef Kitle</label>
+              <div className="grid grid-cols-2 gap-2">
+                {SEGMENTS.map((seg) => (
+                  <button
+                    key={seg.value}
+                    type="button"
+                    onClick={() => setSegment(seg.value)}
+                    className={`flex items-start gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      segment === seg.value
+                        ? 'border-violet-400 bg-violet-50 text-violet-800'
+                        : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-violet-200'
+                    }`}
+                  >
+                    <seg.icon size={16} className="mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-bold leading-tight">{seg.label}</div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">{seg.desc}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Kullanıcı Adı (belirli kullanıcıysa) */}
           {target === 'user' && (
@@ -92,7 +133,7 @@ export default function AdminAnnouncements() {
           </div>
 
           {result && (
-            <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-semibold ${result.includes('hata') || result.includes('gerekli') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+            <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-semibold ${result.includes('hata') || result.includes('gerekli') || result.includes('Hata') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
               {result}
             </div>
           )}
@@ -104,13 +145,13 @@ export default function AdminAnnouncements() {
           >
             {sending
               ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              : <><Send size={16} /> {target === 'all' ? 'Tüm Kullanıcılara Gönder' : 'Gönder'}</>
+              : <><Send size={16} /> {target === 'user' ? 'Gönder' : `${selectedSegment?.label ?? 'Tümü'}ne Gönder`}</>
             }
           </button>
 
           {target === 'all' && (
             <p className="text-xs text-gray-400 text-center mt-3">
-              Aktif tüm kullanıcılara bildirim olarak iletilecektir.
+              Seçili segmente dahil aktif kullanıcılara bildirim olarak iletilecektir.
             </p>
           )}
         </div>

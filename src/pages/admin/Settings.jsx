@@ -256,6 +256,38 @@ const SETTINGS_TABS = [
       },
     ],
   },
+  {
+    id: 'email_templates',
+    label: 'E-posta Şablonları',
+    icon: Mail,
+    sections: [
+      {
+        section: 'Yeni Sipariş Bildirimi',
+        fields: [
+          { key: 'email_tpl_new_order_enabled', label: 'Yeni Sipariş Maili Aktif', type: 'toggle', desc: 'Satıcıya yeni sipariş geldiğinde e-posta gönderilir.' },
+          { key: 'email_tpl_new_order_subject', label: 'Konu', type: 'text', placeholder: '{site_name} - Yeni Sipariş Aldınız' },
+          { key: 'email_tpl_new_order_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba {seller_name},</p><p>{buyer_name} kullanıcısı {item_title} ilanınızdan sipariş verdi. Tutar: {amount} ₺</p>' },
+        ],
+      },
+      {
+        section: 'Sipariş Tamamlandı Bildirimi',
+        fields: [
+          { key: 'email_tpl_order_complete_enabled', label: 'Tamamlandı Maili Aktif', type: 'toggle', desc: 'Sipariş onaylandığında satıcıya e-posta gönderilir.' },
+          { key: 'email_tpl_order_complete_subject', label: 'Konu', type: 'text', placeholder: '{site_name} - Ödemeniz Hesabınıza Aktarıldı' },
+          { key: 'email_tpl_order_complete_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba {seller_name},</p><p>Sipariş #{order_id} teslim onaylandı, ödemeniz bakiyenize aktarıldı.</p>' },
+        ],
+      },
+      {
+        section: 'Anlaşmazlık Bildirimi',
+        fields: [
+          { key: 'email_tpl_dispute_enabled', label: 'Anlaşmazlık Maili Aktif', type: 'toggle', desc: 'Anlaşmazlık açıldığında alıcı ve satıcıya e-posta gönderilir.' },
+          { key: 'email_tpl_dispute_subject', label: 'Konu', type: 'text', placeholder: '{site_name} - Anlaşmazlık Bildirimi' },
+          { key: 'email_tpl_dispute_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba,</p><p>Sipariş #{order_id} için anlaşmazlık açıldı. Lütfen destek ekibimizle iletişime geçin.</p>' },
+        ],
+      },
+    ],
+    _note: 'Kullanılabilir değişkenler: {site_name} {order_id} {amount} {item_title} {buyer_name} {seller_name} {date}',
+  },
 ];
 
 function normalizeValue(field, value) {
@@ -748,6 +780,13 @@ export default function AdminSettings() {
                 </div>
               </div>
             </div>
+
+            {activeTabConfig._note ? (
+              <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs text-violet-700 font-semibold">
+                <span className="font-extrabold">Kullanılabilir değişkenler: </span>
+                {'{site_name} {order_id} {amount} {item_title} {buyer_name} {seller_name} {date}'}
+              </div>
+            ) : null}
 
             {activeTabConfig.sections.map((section) => (
               <SectionCard
