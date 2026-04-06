@@ -24,7 +24,7 @@ import {
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
-import { formatDopingDuration, getDopingTypeMeta, getListingActiveDopingTypes } from '../../lib/doping';
+import { formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../../lib/doping';
 import useSiteBrand from '../../hooks/useSiteBrand';
 
 const STATUS_MAP = {
@@ -391,11 +391,11 @@ function ListingDetailModal({
                         </span>
                       ))}
                     </div>
-                    {listing.vitrine_expires_at && activeDopingTypes.includes('vitrine') ? (
-                      <div className="text-[11px] font-semibold text-gray-500">Vitrin: {fmtDateTime(listing.vitrine_expires_at)}</div>
+                    {activeDopingTypes.includes('vitrine') && getDopingRemainingLabel(listing.vitrine_expires_at) ? (
+                      <div className="text-[11px] font-semibold text-emerald-600">Vitrin: {getDopingRemainingLabel(listing.vitrine_expires_at)}</div>
                     ) : null}
-                    {listing.featured_expires_at && activeDopingTypes.includes('featured') ? (
-                      <div className="text-[11px] font-semibold text-gray-500">Öne Çıkar: {fmtDateTime(listing.featured_expires_at)}</div>
+                    {activeDopingTypes.includes('featured') && getDopingRemainingLabel(listing.featured_expires_at) ? (
+                      <div className="text-[11px] font-semibold text-emerald-600">Öne Çıkar: {getDopingRemainingLabel(listing.featured_expires_at)}</div>
                     ) : null}
                   </div>
                 ) : (
@@ -477,6 +477,8 @@ function ListingDetailModal({
                 ].map((group) => {
                   const meta = getDopingTypeMeta(group.key);
                   const active = dopingType === group.key;
+                  const expiresAt = group.key === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
+                  const remaining = getDopingRemainingLabel(expiresAt);
                   return (
                     <button
                       key={group.key}
@@ -484,7 +486,12 @@ function ListingDetailModal({
                       onClick={() => setDopingType(group.key)}
                       className={`rounded-2xl border p-3 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white/70 hover:border-violet-200'}`}
                     >
-                      <div className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                        {remaining ? (
+                          <div className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{remaining}</div>
+                        ) : null}
+                      </div>
                       <p className="mt-2 text-xs leading-5 text-slate-500">{meta.description}</p>
                       <div className="mt-3 text-[11px] font-semibold text-slate-400">{group.options.length} paket tanimli</div>
                     </button>

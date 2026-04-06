@@ -99,6 +99,19 @@ export function formatDopingDuration(hours) {
   return `${normalizedHours} saat`;
 }
 
+export function getDopingRemainingLabel(expiresAt) {
+  if (!expiresAt) return null;
+  const diff = new Date(expiresAt) - Date.now();
+  if (isNaN(diff) || diff <= 0) return null;
+  const totalMins = Math.floor(diff / 60000);
+  if (totalMins < 60) return `${totalMins} dk kaldı`;
+  const h = Math.floor(totalMins / 60);
+  if (h < 24) return `${h} saat kaldı`;
+  const d = Math.floor(h / 24);
+  const remH = h % 24;
+  return remH ? `${d} gün ${remH} saat kaldı` : `${d} gün kaldı`;
+}
+
 export function getAllDopingOptions(config) {
   return [
     ...(config?.vitrine || []).map((option) => ({ ...option, type: 'vitrine' })),

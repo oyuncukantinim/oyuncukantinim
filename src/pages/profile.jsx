@@ -17,7 +17,7 @@ import { useCart } from '../context/CartContext';
 import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
-import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getListingActiveDopingTypes } from '../lib/doping';
+import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -1751,28 +1751,12 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
         </div>
 
-        {(() => {
-          const badges = getListingActiveDopingTypes(listing).flatMap((type) => {
-            const d = type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
-            const dt = d ? new Date(d) : null;
-            if (!dt || isNaN(dt)) return [];
-            return [(
-              <div key={type} className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
-                {getDopingTypeMeta(type).label} · {dt.toLocaleString('tr-TR')}
-              </div>
-            )];
-          });
-          return badges.length ? (
-            <div className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
-              {badges}
-            </div>
-          ) : null;
-        })()}
-
         <div className="space-y-3">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
             const meta = getDopingTypeMeta(type);
             const selectedHours = selectedDopings[type] ?? null;
+            const expiresAt = type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
+            const remaining = getDopingRemainingLabel(expiresAt);
             return (
               <div
                 key={type}
@@ -1787,7 +1771,11 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                   <div className="min-w-0 flex-1 self-start pt-0.5">
                     <div className="mb-1.5 flex items-start justify-between gap-3">
                       <div className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
-                      <div className="pt-0.5 text-[11px] font-semibold text-slate-400">{optionList.length} paket</div>
+                      {remaining ? (
+                        <div className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{remaining}</div>
+                      ) : (
+                        <div className="pt-0.5 text-[11px] font-semibold text-slate-400">{optionList.length} paket</div>
+                      )}
                     </div>
                     <p className="text-[11px] leading-4 text-slate-600">{meta.description}</p>
 
