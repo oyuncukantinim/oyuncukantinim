@@ -1755,7 +1755,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <div className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
             {getListingActiveDopingTypes(listing).map((type) => (
               <div key={type} className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
-                {getDopingTypeMeta(type).label} · {new Date(type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at).toLocaleString('tr-TR')}
+                {getDopingTypeMeta(type).label} · {(() => { const d = type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at; const dt = d ? new Date(d) : null; return dt && !isNaN(dt) ? dt.toLocaleString('tr-TR') : 'Aktif'; })()}
               </div>
             ))}
           </div>
