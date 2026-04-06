@@ -144,9 +144,9 @@ export default function Home() {
               Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {vitrineListings.slice(0, 10).map((listing) => (
-              <ListingCard key={listing.id} listing={listing} compact fallbackImage={defaultListingImage} />
+              <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
             ))}
           </div>
         </section>
@@ -166,9 +166,9 @@ export default function Home() {
               Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {recentListings.slice(0, 10).map(listing => (
-              <ListingCard key={listing.id} listing={listing} compact fallbackImage={defaultListingImage} />
+              <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
             ))}
           </div>
         </section>
