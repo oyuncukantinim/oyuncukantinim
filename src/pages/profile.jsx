@@ -479,7 +479,7 @@ export default function ProfilePage() {
   }, [user, navigate, defaultAvatar, defaultProfileBanner]);
 
   const loadListings = useCallback(() => {
-    getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
+    return getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
   }, []);
 
   const loadOrders = useCallback(() => {
@@ -636,9 +636,9 @@ export default function ProfilePage() {
       if (lastResponse?.data?.new_balance !== undefined) {
         updateUser({ ...user, balance: Number(lastResponse.data.new_balance) });
       }
+      await loadListings();
       setDopingModal(null);
       showToast('Doping paketleri uygulandı.');
-      loadListings();
     } catch (error) {
       showToast(error.message);
     } finally {
