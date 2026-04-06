@@ -6,7 +6,7 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap
 } from 'lucide-react';
 
 const FinanceIcon = TrendingUp;
@@ -936,23 +936,35 @@ export default function ProfilePage() {
                 </div>
               ) : listingsView === 'grid' ? (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
-                  {filteredListings.map(listing => (
-                    <div key={listing.id} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md">
+                  {filteredListings.map(listing => {
+                    const gridDopingTypes = getListingActiveDopingTypes(listing);
+                    const gridRingClass = gridDopingTypes.includes('vitrine') ? 'ring-2 ring-amber-400/60' : gridDopingTypes.includes('featured') ? 'ring-2 ring-violet-500/60' : '';
+                    return (
+                    <div key={listing.id} className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md ${gridRingClass}`}>
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage)
                           ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
                           : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
                         }
+                        {gridDopingTypes.length > 0 && (
+                          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+                            {gridDopingTypes.map((type) => {
+                              const m = type === 'vitrine'
+                                ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
+                                : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
+                              return (
+                                <div key={type} className={`flex flex-1 items-center justify-center gap-1 py-1 text-[9px] font-extrabold tracking-wide text-white ${m.bg}`}>
+                                  <m.Icon size={8} strokeWidth={2.5}/>{m.label}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
                       <div className="flex flex-1 flex-col gap-2 p-3">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-400">
                             <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
-                            {getListingActiveDopingTypes(listing).map((type) => (
-                              <span key={`${listing.id}-${type}`} className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
-                                {getDopingTypeMeta(type).label}
-                              </span>
-                            ))}
                           </div>
                           <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
                             {listing.title}
@@ -980,28 +992,40 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );})}
                 </div>
               ) : (
                 <div className="space-y-3">
-	                  {filteredListings.map(listing => (
-	                    <div key={listing.id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md">
-	                      <div className="h-16 w-[88px] overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 flex-shrink-0">
-	                        {getListingCoverImage(listing, defaultListingImage) ? (
-	                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
+                  {filteredListings.map(listing => {
+                    const listDopingTypes = getListingActiveDopingTypes(listing);
+                    const listBorderClass = listDopingTypes.includes('vitrine') ? 'border-l-4 border-l-amber-400' : listDopingTypes.includes('featured') ? 'border-l-4 border-l-violet-500' : '';
+                    return (
+                    <div key={listing.id} className={`flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md ${listBorderClass}`}>
+                      <div className="relative h-16 w-[88px] flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                        {getListingCoverImage(listing, defaultListingImage) ? (
+                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={20}/></div>
                         )}
-	                      </div>
-	                      <div className="flex-1 min-w-0">
+                        {listDopingTypes.length > 0 && (
+                          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+                            {listDopingTypes.map((type) => {
+                              const m = type === 'vitrine'
+                                ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
+                                : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
+                              return (
+                                <div key={type} className={`flex flex-1 items-center justify-center gap-0.5 py-0.5 text-[8px] font-extrabold text-white ${m.bg}`}>
+                                  <m.Icon size={7} strokeWidth={2.5}/>{m.label}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
                           <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-400">
                             <span>İlan #{listing.id}</span>
                             <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
-                            {getListingActiveDopingTypes(listing).map((type) => (
-                              <span key={`${listing.id}-${type}`} className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
-                                {getDopingTypeMeta(type).label}
-                              </span>
-                            ))}
                           </div>
 	                        <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold text-slate-800 hover:text-violet-600">{listing.title}</Link>
                       </div>
@@ -1030,7 +1054,7 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );})}
                 </div>
               )}
             </div>
