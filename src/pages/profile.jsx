@@ -1776,9 +1776,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
                       <div className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
                       {remaining ? (
                         <div className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{remaining}</div>
-                      ) : (
-                        <div className="pt-0.5 text-[11px] font-semibold text-slate-400">{optionList.length} paket</div>
-                      )}
+                      ) : null}
                     </div>
                     <p className="text-[11px] leading-4 text-slate-600">{meta.description}</p>
 

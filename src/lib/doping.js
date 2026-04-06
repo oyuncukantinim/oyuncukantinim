@@ -65,9 +65,20 @@ export function getDopingTypeMeta(type) {
 
 export function getListingActiveDopingTypes(listing) {
   if (!listing || typeof listing !== 'object') return [];
-  if (Array.isArray(listing.active_doping_types)) {
-    return listing.active_doping_types.filter((type) => type === 'vitrine' || type === 'featured');
+
+  // Prefer backend-computed array
+  if (Array.isArray(listing.active_doping_types) && listing.active_doping_types.length) {
+    return listing.active_doping_types.filter((t) => t === 'vitrine' || t === 'featured');
   }
+
+  // Derive from per-type expiry columns (client-side check)
+  const now = Date.now();
+  const types = [];
+  if (listing.vitrine_expires_at && new Date(listing.vitrine_expires_at).getTime() > now) types.push('vitrine');
+  if (listing.featured_expires_at && new Date(listing.featured_expires_at).getTime() > now) types.push('featured');
+  if (types.length) return types;
+
+  // Backward compat: single doping_type
   if (listing.active_doping_type === 'vitrine' || listing.active_doping_type === 'featured') {
     return [listing.active_doping_type];
   }

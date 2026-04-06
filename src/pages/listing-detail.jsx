@@ -213,7 +213,7 @@ export default function ListingDetailPage() {
                   : null
               }
             </div>
-            <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2">{listing.title}</h1>
+            <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2 break-words">{listing.title}</h1>
             <p className="text-xs text-gray-400 flex items-center gap-1">
               <Gamepad2 size={12} /> {listing.game_name}
             </p>
