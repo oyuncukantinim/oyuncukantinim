@@ -629,9 +629,12 @@ export default function ProfilePage() {
   const handleApplyListingDoping = async ({ listingId, dopings }) => {
     setSaving(true);
     try {
-      const response = await applyListingDoping({ listing_id: listingId, dopings });
-      if (response.data?.new_balance !== undefined) {
-        updateUser({ ...user, balance: Number(response.data.new_balance) });
+      let lastResponse;
+      for (const { type, hours } of dopings) {
+        lastResponse = await applyListingDoping({ listing_id: listingId, doping_type: type, doping_hours: hours });
+      }
+      if (lastResponse?.data?.new_balance !== undefined) {
+        updateUser({ ...user, balance: Number(lastResponse.data.new_balance) });
       }
       setDopingModal(null);
       showToast('Doping paketleri uygulandı.');
