@@ -1751,20 +1751,23 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
           <button onClick={onClose} className="rounded-lg p-1.5 hover:bg-gray-100"><X size={18} /></button>
         </div>
 
-        {getListingActiveDopingTypes(listing).length ? (
-          <div className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
-            {getListingActiveDopingTypes(listing).map((type) => {
-              const d = type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
-              const dt = d ? new Date(d) : null;
-              if (!dt || isNaN(dt)) return null;
-              return (
-                <div key={type} className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
-                  {getDopingTypeMeta(type).label} · {dt.toLocaleString('tr-TR')}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
+        {(() => {
+          const badges = getListingActiveDopingTypes(listing).flatMap((type) => {
+            const d = type === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
+            const dt = d ? new Date(d) : null;
+            if (!dt || isNaN(dt)) return [];
+            return [(
+              <div key={type} className="rounded-full bg-white px-3 py-1 text-[11px] font-bold text-slate-600">
+                {getDopingTypeMeta(type).label} · {dt.toLocaleString('tr-TR')}
+              </div>
+            )];
+          });
+          return badges.length ? (
+            <div className="mb-4 flex flex-wrap gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5">
+              {badges}
+            </div>
+          ) : null;
+        })()}
 
         <div className="space-y-3">
           {[{ type: 'vitrine', options: vitrineOptions }, { type: 'featured', options: featuredOptions }].map(({ type, options: optionList }) => {
