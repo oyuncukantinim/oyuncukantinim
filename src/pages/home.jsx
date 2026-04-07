@@ -97,7 +97,7 @@ export default function Home() {
               >
                 <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl p-5 flex flex-col items-center justify-center text-center">
                   {game.image_url
-                    ? <img loading="lazy" src={game.image_url} alt={game.name} className="w-12 h-12 object-contain mb-2 rounded-xl" />
+                    ? <img src={game.image_url} alt={game.name} className="w-12 h-12 object-contain mb-2 rounded-xl" />
                     : <span className="text-4xl mb-2">{game.emoji || '🎮'}</span>
                   }
                   <span className="text-gray-800 font-bold text-sm">{game.name}</span>

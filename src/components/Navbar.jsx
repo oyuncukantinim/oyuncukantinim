@@ -221,7 +221,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                           >
                             <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
                               {item.images?.[0] || item.image ? (
-                                <img loading="lazy"                                   src={item.images?.[0] || item.image}
+                                <img                                   src={item.images?.[0] || item.image}
                                   alt=""
                                   className="h-full w-full object-cover"
                                 />
@@ -290,7 +290,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                       <div key={index} className="flex items-center gap-3 px-4 py-2.5">
                         <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
                           {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
-                            <img loading="lazy" src={item.image} alt="" className="h-full w-full object-cover" />
+                            <img src={item.image} alt="" className="h-full w-full object-cover" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center text-base">
                               {item.itemType === 'epin' ? '💎' : '🎮'}

@@ -497,7 +497,7 @@ export default function CreatePage() {
                       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
                         <div className={`overflow-hidden rounded-2xl border ${meta.accentClass} lg:w-56`}>
                           {dopingImage ? (
-                            <img loading="lazy" src={dopingImage} alt={meta.label} className="h-36 w-full object-cover" />
+                            <img src={dopingImage} alt={meta.label} className="h-36 w-full object-cover" />
                           ) : (
                             <div className="flex h-36 items-center justify-center bg-slate-50 text-sm font-black text-slate-400">
                               {meta.label}

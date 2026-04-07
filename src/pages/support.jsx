@@ -162,7 +162,7 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
@@ -194,7 +194,7 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
@@ -225,7 +225,7 @@ function LinkedListingsTable({ rows, title, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-100">
-                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
@@ -249,7 +249,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.order_id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
           <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="truncate text-[12px] font-semibold text-slate-600">{item.seller_name || '-'}</div>
@@ -270,7 +270,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.2fr)_minmax(0,0.85fr)_110px_140px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.order_id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
           <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="truncate text-[12px] font-semibold text-slate-600">{item.buyer_name || '-'}</div>
@@ -291,7 +291,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
         <div className="grid items-center gap-3 md:grid-cols-[96px_64px_minmax(0,1.5fr)_120px_130px_140px_28px]">
           <div className="text-[11px] font-black text-slate-500">#{item.id || '-'}</div>
           <div className="h-14 w-14 overflow-hidden rounded-2xl bg-slate-100">
-            {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
+            {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={18} /></div>}
           </div>
           <div className="min-w-0 text-[13px] font-black text-slate-900">{supportListingTitle(item)}</div>
           <div className="text-[12px] font-semibold text-emerald-600">{fmtMoney(item.price)}</div>
@@ -309,7 +309,7 @@ function ListingPickerRow({ item, selected, onToggle, scope }) {
     <button type="button" onClick={() => onToggle(item.id)} className={`w-full rounded-[20px] border p-3 text-left transition-all ${selected ? 'border-violet-300 bg-violet-50 shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200 hover:bg-slate-50'}`}>
       <div className="flex items-center gap-3">
         <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
-          {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={20} /></div>}
+          {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-300"><ShoppingBag size={20} /></div>}
           {selected ? <span className="absolute right-1.5 top-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"><CheckCircle2 size={11} /></span> : null}
         </div>
         <div className="min-w-0 flex-1">

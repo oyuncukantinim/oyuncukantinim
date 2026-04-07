@@ -106,7 +106,7 @@ export default function ListingDetailPage() {
           <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
             {images.length > 0 ? (
               <>
-                <img loading="lazy"                   src={images[activeImg]}
+                <img                   src={images[activeImg]}
                   alt={listing.title}
                   className="w-full h-full object-cover"
                 />
@@ -154,7 +154,7 @@ export default function ListingDetailPage() {
                     idx === activeImg ? 'border-neon-purple opacity-100' : 'border-transparent opacity-50 hover:opacity-80'
                   }`}
                 >
-                  <img loading="lazy" src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

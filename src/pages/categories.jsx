@@ -15,7 +15,7 @@ function CategoryCard({ cat, isRoot }) {
     <Link to={`/categories/${slug}`}>
       <div className="group relative mx-auto flex h-[250px] w-[160px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
         {cat.image ? (
-          <img loading="lazy" src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
+          <img src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <div
             className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${

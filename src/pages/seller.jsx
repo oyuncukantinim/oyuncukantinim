@@ -162,7 +162,7 @@ export default function SellerPage() {
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
           {(seller.banner_image || defaultProfileBanner) ? (
-            <img loading="lazy" src={seller.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={seller.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               <div className="absolute inset-0 bg-black/10" />
@@ -333,7 +333,7 @@ export default function SellerPage() {
                   {(review.item_title || review.item_image) && (
                     <div className="flex items-center gap-2 flex-shrink-0 border-x border-gray-100 px-3">
                       {review.item_image && (
-                        <img loading="lazy" src={review.item_image} alt="" className="w-14 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0" />
+                        <img src={review.item_image} alt="" className="w-14 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0" />
                       )}
                       <p className="text-[11px] font-bold text-gray-600 line-clamp-2 leading-tight max-w-[80px]">{review.item_title}</p>
                     </div>

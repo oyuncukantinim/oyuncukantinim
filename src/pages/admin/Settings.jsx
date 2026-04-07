@@ -355,7 +355,7 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
           {value ? (
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="flex items-center justify-center bg-slate-50 px-4 py-4">
-                <img loading="lazy" src={value} alt={field.label} className="max-h-20 w-auto max-w-full object-contain" />
+                <img src={value} alt={field.label} className="max-h-20 w-auto max-w-full object-contain" />
               </div>
               <div className="flex gap-2 border-t border-slate-200 bg-white p-3">
                 <button
@@ -577,7 +577,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                       {option.image ? (
                         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                           <div className="flex h-40 items-center justify-center bg-slate-50 p-3">
-                            <img loading="lazy" src={option.image} alt={`${meta.label} paketi`} className="h-full w-full object-contain" />
+                            <img src={option.image} alt={`${meta.label} paketi`} className="h-full w-full object-contain" />
                           </div>
                         </div>
                       ) : (

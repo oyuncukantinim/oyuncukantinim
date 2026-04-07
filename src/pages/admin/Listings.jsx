@@ -347,7 +347,7 @@ function ListingDetailModal({
           <div className="space-y-4">
             {coverImage ? (
               <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
-                <img loading="lazy" src={coverImage} alt={listing.title} className="h-48 w-full object-contain" />
+                <img src={coverImage} alt={listing.title} className="h-48 w-full object-contain" />
               </div>
             ) : (
               <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-sm font-semibold text-gray-400">
@@ -732,7 +732,7 @@ export default function AdminListings() {
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
                               {coverImage ? (
-                                <img loading="lazy" src={coverImage} alt={listing.title} className="h-full w-full object-cover" />
+                                <img src={coverImage} alt={listing.title} className="h-full w-full object-cover" />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">-</div>
                               )}

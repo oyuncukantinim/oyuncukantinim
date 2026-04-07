@@ -248,7 +248,7 @@ function MyReviewViewModal({ orderId, token, onClose }) {
           <div className="space-y-4">
             {review.item_image && (
               <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3">
-                <img loading="lazy" src={review.item_image} alt="" className="w-12 h-9 object-cover rounded-lg flex-shrink-0"/>
+                <img src={review.item_image} alt="" className="w-12 h-9 object-cover rounded-lg flex-shrink-0"/>
                 <span className="text-sm font-bold text-gray-700 line-clamp-2">{review.item_title}</span>
               </div>
             )}
@@ -304,7 +304,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
       <div className="p-4 flex items-center gap-3">
         <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
           {coverImage ? (
-            <img loading="lazy" src={coverImage} alt="" className="h-full w-full object-cover" />
+            <img src={coverImage} alt="" className="h-full w-full object-cover" />
           ) : (
             <span>{coverFallback}</span>
           )}
@@ -820,7 +820,7 @@ export default function ProfilePage() {
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
           {(user.banner_image || defaultProfileBanner) ? (
-            <img loading="lazy" src={user.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <img src={user.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
@@ -943,7 +943,7 @@ export default function ProfilePage() {
                     <div key={listing.id} className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md ${gridRingClass}`}>
                       <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage)
-                          ? <img loading="lazy" src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
+                          ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
                           : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
                         }
                         {gridDopingTypes.length > 0 && (
@@ -1003,7 +1003,7 @@ export default function ProfilePage() {
                     <div key={listing.id} className={`flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md ${listBorderClass}`}>
                       <div className="relative h-16 w-[88px] flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage) ? (
-                          <img loading="lazy" src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
+                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                         ) : (
                           <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={20}/></div>
                         )}
@@ -1121,7 +1121,7 @@ export default function ProfilePage() {
                       <div key={fav.fav_id} className="flex items-center gap-4 bg-gray-50 rounded-2xl p-3 border border-gray-100">
                         {/* Kapak */}
                         <div className="w-16 h-12 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
-                          {coverImg ? <img loading="lazy" src={coverImg} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>}
+                          {coverImg ? <img src={coverImg} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>}
                         </div>
                         {/* Bilgi */}
                         <div className="flex-1 min-w-0">
@@ -1191,7 +1191,7 @@ export default function ProfilePage() {
                     return (
                       <div key={r.id} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex gap-3">
                         {r.item_image && (
-                          <img loading="lazy" src={r.item_image} alt="" className="w-14 h-11 rounded-xl object-cover flex-shrink-0 border border-gray-200"/>
+                          <img src={r.item_image} alt="" className="w-14 h-11 rounded-xl object-cover flex-shrink-0 border border-gray-200"/>
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
@@ -1295,7 +1295,7 @@ export default function ProfilePage() {
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
                         {(normalizedBannerImage || defaultProfileBanner) ? (
-                          <img loading="lazy" src={normalizedBannerImage || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          <img src={normalizedBannerImage || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
                           <>
                             <div className="absolute inset-0 bg-white/25" />
@@ -1791,7 +1791,7 @@ function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions,
               >
                 <div className="flex items-start gap-3">
                   {optionList[0]?.image ? (
-                    <img loading="lazy" src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
+                    <img src={optionList[0].image} alt={meta.label} className="h-28 w-28 rounded-xl object-cover" />
                   ) : (
                     <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-100 text-sm font-black text-slate-400">{meta.label}</div>
                   )}
@@ -2096,7 +2096,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   </div>
                   {img ? (
                     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                      <img loading="lazy" src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
+                      <img src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
                     </div>
                   ) : null}
                   {img && !isValidImageUrl(img) && (
