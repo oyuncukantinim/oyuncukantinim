@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Flame, Zap, ChevronRight, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { getListings, getEpins } from '../lib/api';
@@ -22,8 +22,8 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  const vitrineListings = listings.filter((listing) => hasListingDopingType(listing, 'vitrine'));
-  const recentListings = listings.filter((listing) => !hasListingDopingType(listing, 'vitrine'));
+  const vitrineListings = useMemo(() => listings.filter((listing) => hasListingDopingType(listing, 'vitrine')), [listings]);
+  const recentListings = useMemo(() => listings.filter((listing) => !hasListingDopingType(listing, 'vitrine')), [listings]);
 
   return (
     <div className="space-y-16">

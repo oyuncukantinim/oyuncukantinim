@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const CartContext = createContext(null);
 
@@ -6,28 +6,34 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [toastMessage, setToastMessage] = useState(null);
 
-  const addToCart = (item) => {
-    const exists = cart.find(c => c.id === item.id && c.itemType === item.itemType);
-    if (exists) { showToast('Bu urun zaten sepetinde!'); return; }
-    setCart(prev => [...prev, { ...item, cartId: crypto.randomUUID() }]);
-    showToast(`${item.title} sepete eklendi!`);
-  };
-
-  const removeFromCart = (cartId) => {
-    setCart(prev => prev.filter(c => c.cartId !== cartId));
-  };
-
-  const clearCart = () => setCart([]);
-
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price || 0), 0);
-
-  const showToast = (message) => {
+  const showToast = useCallback((message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
-  };
+  }, []);
+
+  const addToCart = useCallback((item) => {
+    setCart(prev => {
+      const exists = prev.find(c => c.id === item.id && c.itemType === item.itemType);
+      if (exists) return prev;
+      return [...prev, { ...item, cartId: crypto.randomUUID() }];
+    });
+    showToast(`${item.title} sepete eklendi!`);
+  }, [showToast]);
+
+  const removeFromCart = useCallback((cartId) => {
+    setCart(prev => prev.filter(c => c.cartId !== cartId));
+  }, []);
+
+  const clearCart = useCallback(() => setCart([]), []);
+
+  const cartTotal = useMemo(() => cart.reduce((sum, item) => sum + (item.price || 0), 0), [cart]);
+
+  const value = useMemo(() => ({
+    cart, addToCart, removeFromCart, clearCart, cartTotal, toastMessage, showToast
+  }), [cart, addToCart, removeFromCart, clearCart, cartTotal, toastMessage, showToast]);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, cartTotal, toastMessage, showToast }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );
