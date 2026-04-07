@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -8,41 +8,51 @@ import Toast from './components/Toast';
 import KantinBot from './components/KantinBot';
 import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
-
-import Home from './pages/home';
-import StorePage from './pages/store';
-import MarketPage from './pages/market';
-import ListingDetailPage from './pages/listing-detail';
-import CartPage from './pages/cart';
-import LoginPage from './pages/login';
-import ProfilePage from './pages/profile';
-import CreatePage from './pages/create';
-import MessagesPage from './pages/messages';
-import NotificationsPage from './pages/notifications';
-import SupportPage from './pages/support';
-import SellerPage from './pages/seller';
-import CategoriesPage from './pages/categories';
-import CategoryListingsPage from './pages/category-listings';
-
-import AdminLogin from './pages/admin/Login';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminUsers from './pages/admin/Users';
-import AdminListings from './pages/admin/Listings';
-import AdminOrders from './pages/admin/Orders';
-import AdminReviews from './pages/admin/Reviews';
-import AdminCategories from './pages/admin/Categories';
-import AdminDoping from './pages/admin/Doping';
-import AdminEpins from './pages/admin/Epins';
-import AdminAnnouncements from './pages/admin/Announcements';
-import AdminMessages from './pages/admin/Messages';
-import AdminSupport from './pages/admin/Support';
-import AdminSettings from './pages/admin/Settings';
-import AdminPopularGames from './pages/admin/PopularGames';
-import AdminFinance from './pages/admin/Finance';
-import AdminDevNotes from './pages/admin/DevNotes';
-import AdminLogs from './pages/admin/AdminLogs';
-import FinancePage from './pages/finance';
 import ErrorBoundary from './components/ErrorBoundary';
+
+// Kullanıcı sayfaları — lazy
+const Home                = lazy(() => import('./pages/home'));
+const StorePage           = lazy(() => import('./pages/store'));
+const MarketPage          = lazy(() => import('./pages/market'));
+const ListingDetailPage   = lazy(() => import('./pages/listing-detail'));
+const CartPage            = lazy(() => import('./pages/cart'));
+const LoginPage           = lazy(() => import('./pages/login'));
+const ProfilePage         = lazy(() => import('./pages/profile'));
+const CreatePage          = lazy(() => import('./pages/create'));
+const MessagesPage        = lazy(() => import('./pages/messages'));
+const NotificationsPage   = lazy(() => import('./pages/notifications'));
+const SupportPage         = lazy(() => import('./pages/support'));
+const SellerPage          = lazy(() => import('./pages/seller'));
+const CategoriesPage      = lazy(() => import('./pages/categories'));
+const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
+const FinancePage         = lazy(() => import('./pages/finance'));
+
+// Admin sayfaları — lazy (ayrı chunk)
+const AdminLogin         = lazy(() => import('./pages/admin/Login'));
+const AdminDashboard     = lazy(() => import('./pages/admin/Dashboard'));
+const AdminUsers         = lazy(() => import('./pages/admin/Users'));
+const AdminListings      = lazy(() => import('./pages/admin/Listings'));
+const AdminOrders        = lazy(() => import('./pages/admin/Orders'));
+const AdminReviews       = lazy(() => import('./pages/admin/Reviews'));
+const AdminCategories    = lazy(() => import('./pages/admin/Categories'));
+const AdminDoping        = lazy(() => import('./pages/admin/Doping'));
+const AdminEpins         = lazy(() => import('./pages/admin/Epins'));
+const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'));
+const AdminMessages      = lazy(() => import('./pages/admin/Messages'));
+const AdminSupport       = lazy(() => import('./pages/admin/Support'));
+const AdminSettings      = lazy(() => import('./pages/admin/Settings'));
+const AdminPopularGames  = lazy(() => import('./pages/admin/PopularGames'));
+const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
+const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
+const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-200 border-t-violet-600" />
+    </div>
+  );
+}
 
 function AdminRoute({ children }) {
   const token = localStorage.getItem('admin_token');
@@ -79,9 +89,7 @@ function MaintenancePage({ siteName, siteLogo, siteLogoText, maintenanceTitle, m
 
 function AnnouncementBanner({ text }) {
   const [visible, setVisible] = useState(true);
-
   if (!visible) return null;
-
   return (
     <div className="relative bg-gradient-to-r from-violet-600 to-cyan-600 px-10 py-2.5 text-center text-sm font-semibold text-white">
       {text}
@@ -181,24 +189,26 @@ function SiteLayout() {
       ) : null}
       <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/store" element={<StorePage />} />
-          <Route path="/market" element={<MarketPage />} />
-          <Route path="/listing/:slug" element={<ListingDetailPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/create" element={<CreatePage />} />
-          <Route path="/messages" element={<MessagesPage />} />
-          <Route path="/messages/:userId" element={<MessagesPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/categories" element={<CategoriesPage />} />
-          <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
-          <Route path="/p/:username" element={<SellerPage />} />
-          <Route path="/finance" element={<FinancePage />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/store" element={<StorePage />} />
+            <Route path="/market" element={<MarketPage />} />
+            <Route path="/listing/:slug" element={<ListingDetailPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/create" element={<CreatePage />} />
+            <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/messages/:userId" element={<MessagesPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/categories" element={<CategoriesPage />} />
+            <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
+            <Route path="/p/:username" element={<SellerPage />} />
+            <Route path="/finance" element={<FinancePage />} />
+          </Routes>
+        </Suspense>
       </main>
       <Footer
         siteName={siteState.siteName}
@@ -218,26 +228,28 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
-          <Routes>
-            <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-            <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-            <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
-            <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
-            <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
-            <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
-            <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
-            <Route path="/admin/epins" element={<AdminRoute><AdminEpins /></AdminRoute>} />
-            <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-            <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
-            <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
-            <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-            <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
-            <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
-            <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
-            <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
-            <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+              <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
+              <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+              <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
+              <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+              <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
+              <Route path="/admin/epins" element={<AdminRoute><AdminEpins /></AdminRoute>} />
+              <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+              <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+              <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
+              <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+              <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
+              <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+              <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
+              <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
+              <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
+            </Routes>
+          </Suspense>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>
