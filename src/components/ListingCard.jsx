@@ -1,3 +1,4 @@
+import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon, Star, Zap } from 'lucide-react';
 import { listingSlug } from '../lib/api';
@@ -9,12 +10,49 @@ const DOPING_META = {
   featured: { label: 'Öne Çıkar', Icon: Zap,   strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
+const BASE_FONT  = 15; // px — başlangıç font boyutu
+const MIN_FONT   = 9;  // px — minimum font boyutu
+const LINE_COUNT = 2;  // max satır sayısı
+
+function AutoFitTitle({ title, compact, className }) {
+  const ref = useRef(null);
+  const [fontSize, setFontSize] = useState(compact ? 11 : BASE_FONT);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const startSize = compact ? 11 : BASE_FONT;
+    el.style.fontSize = `${startSize}px`;
+    setFontSize(startSize);
+
+    const lh = parseFloat(getComputedStyle(el).lineHeight) || startSize * 1.375;
+    const maxH = lh * LINE_COUNT;
+
+    let size = startSize;
+    while (el.scrollHeight > maxH + 1 && size > MIN_FONT) {
+      size -= 0.5;
+      el.style.fontSize = `${size}px`;
+    }
+    setFontSize(size);
+  }, [title, compact]);
+
+  return (
+    <h3
+      ref={ref}
+      style={{ fontSize: `${fontSize}px` }}
+      className={className}
+    >
+      {title}
+    </h3>
+  );
+}
+
 export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
 
-  // ring class: vitrine beats featured for the card border color
   const ringClass = activeTypes.includes('vitrine')
     ? DOPING_META.vitrine.ring
     : activeTypes.includes('featured')
@@ -39,7 +77,6 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
           </div>
         )}
 
-        {/* Doping strip — bottom of image, splits for dual doping */}
         {hasDoping ? (
           <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
             {activeTypes.map((type) => {
@@ -65,21 +102,11 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         </span>
       </div>
 
-      <h3
-        className={`w-full min-w-0 break-all font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${
-          compact
-            ? 'mb-1.5 text-[11px]'
-            : listing.title?.length > 60
-            ? 'mb-3 text-[11px]'
-            : listing.title?.length > 40
-            ? 'mb-3 text-xs'
-            : listing.title?.length > 25
-            ? 'mb-3 text-sm'
-            : 'mb-3 text-base'
-        }`}
-      >
-        {listing.title}
-      </h3>
+      <AutoFitTitle
+        title={listing.title}
+        compact={compact}
+        className={`w-full min-w-0 overflow-hidden break-all font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${compact ? 'mb-1.5' : 'mb-3'}`}
+      />
 
       <div className={`flex items-center rounded-xl bg-surface-100 ${compact ? 'mb-2.5 gap-1.5 p-1.5' : 'mb-4 gap-2.5 p-2.5'}`}>
         <div
