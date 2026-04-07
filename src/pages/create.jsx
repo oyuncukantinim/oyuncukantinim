@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2,
-  Clock, Package, Info, Tag, Truck, Check
+  Clock, Package, Info, Tag, Truck, Check, Upload
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -240,6 +240,31 @@ export default function CreatePage() {
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
 
+  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const uploadImageFile = async (idx, file) => {
+    setUploadingIdx(idx);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}?action=upload_listing_image`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      const json = await res.json();
+      if (json.status === 'success' && json.data?.url) {
+        setImage(idx, json.data.url);
+      } else {
+        alert(json.message || 'Yükleme başarısız.');
+      }
+    } catch {
+      alert('Yükleme sırasında bir hata oluştu.');
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
   const addStock       = () => {
     if (stocks.length >= stockItemMaxCount) {
       showToast(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
@@ -345,7 +370,7 @@ export default function CreatePage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-bold text-gray-700">Görseller (URL)</label>
+                <label className="block text-sm font-bold text-gray-700">Görseller</label>
                 <span className="text-xs text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
               </div>
               <div className="space-y-2">
@@ -356,6 +381,12 @@ export default function CreatePage() {
                         <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                       </button>
                       <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className={`input-field flex-1 text-sm ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
+                      <label title="Dosyadan yükle" className="cursor-pointer p-1.5 hover:bg-violet-50 rounded-lg text-violet-400 flex-shrink-0">
+                        {uploadingIdx === idx
+                          ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-600" />
+                          : <Upload size={14} />}
+                        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
+                      </label>
                       {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
                     </div>
                     {img && !isValidImageUrl(img) && (
@@ -369,7 +400,7 @@ export default function CreatePage() {
                   </button>
                 )}
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
+              <p className="mt-1.5 text-xs text-gray-400">Kamera ikonuna tıklayarak kapak görselini, yükleme ikonuna tıklayarak bilgisayarınızdan görsel ekleyebilirsiniz.</p>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
@@ -466,7 +497,7 @@ export default function CreatePage() {
                       <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start">
                         <div className={`overflow-hidden rounded-2xl border ${meta.accentClass} lg:w-56`}>
                           {dopingImage ? (
-                            <img src={dopingImage} alt={meta.label} className="h-36 w-full object-cover" />
+                            <img loading="lazy" src={dopingImage} alt={meta.label} className="h-36 w-full object-cover" />
                           ) : (
                             <div className="flex h-36 items-center justify-center bg-slate-50 text-sm font-black text-slate-400">
                               {meta.label}

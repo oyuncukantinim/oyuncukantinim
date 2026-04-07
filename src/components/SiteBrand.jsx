@@ -23,8 +23,7 @@ export default function SiteBrand({
   const content = (
     <div className={`flex items-center gap-3 ${containerClassName}`.trim()}>
       {hasLogo ? (
-        <img
-          src={siteLogo}
+        <img loading="lazy"           src={siteLogo}
           alt={visibleTitle}
           className={imageClassName || 'h-10 w-auto object-contain'}
         />

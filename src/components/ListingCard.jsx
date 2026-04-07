@@ -66,8 +66,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
     >
       <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
         {coverImg ? (
-          <img
-            src={coverImg}
+          <img loading="lazy"             src={coverImg}
             alt={listing.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />

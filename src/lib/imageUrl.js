@@ -4,6 +4,7 @@ const ALLOWED_DOMAINS = [
   'flickr.com', 'staticflickr.com',
   'hizliresim.com',
   'imgur.com', 'i.imgur.com',
+  'api.oyuncukantinim.com.tr',
 ];
 
 const ALLOWED_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];

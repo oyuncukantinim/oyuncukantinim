@@ -175,7 +175,7 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
@@ -207,7 +207,7 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.order_id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>
@@ -238,7 +238,7 @@ function RelatedListingsTable({ rows, scope }) {
                   <td className="px-4 py-3 font-black text-slate-500">{item.id || '-'}</td>
                   <td className="px-4 py-3">
                     <div className="h-12 w-12 overflow-hidden rounded-xl bg-slate-200">
-                      {item.item_image ? <img src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
+                      {item.item_image ? <img loading="lazy" src={item.item_image} alt={supportListingTitle(item)} className="h-full w-full object-cover" /> : <div className="flex h-full w-full items-center justify-center text-slate-400"><ShoppingBag size={18} /></div>}
                     </div>
                   </td>
                   <td className="px-4 py-3 font-bold text-slate-800">{supportListingTitle(item)}</td>

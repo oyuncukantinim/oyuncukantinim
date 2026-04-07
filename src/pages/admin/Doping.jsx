@@ -77,7 +77,7 @@ function DopingSettingsPanel({ settings, setSetting, imageUploading, onTypeImage
                   {dopingImage ? (
                     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
                       <div className="flex h-24 items-center justify-center bg-slate-50 p-2">
-                        <img src={dopingImage} alt={`${meta.label} görseli`} className="h-full w-full object-contain" />
+                        <img loading="lazy" src={dopingImage} alt={`${meta.label} görseli`} className="h-full w-full object-contain" />
                       </div>
                     </div>
                   ) : (

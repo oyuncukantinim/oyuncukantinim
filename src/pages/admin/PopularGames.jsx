@@ -112,7 +112,7 @@ export default function AdminPopularGames() {
                   {/* Preview */}
                   <div className={`w-10 h-10 bg-gradient-to-br ${game.color} rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden`}>
                     {game.image_url && isValidImageUrl(game.image_url)
-                      ? <img src={game.image_url} alt="" className="w-full h-full object-contain" />
+                      ? <img loading="lazy" src={game.image_url} alt="" className="w-full h-full object-contain" />
                       : <ImageIcon size={16} className="text-white/70" />
                     }
                   </div>

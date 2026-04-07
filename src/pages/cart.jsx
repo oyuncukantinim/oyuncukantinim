@@ -59,7 +59,7 @@ export default function CartPage() {
               <div key={item.cartId} className="card p-4 flex items-center gap-4">
                 <div className="w-14 h-14 bg-surface-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
                   {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
-                    <img src={item.image} alt="" className="w-full h-full object-cover" />
+                    <img loading="lazy" src={item.image} alt="" className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-2xl">
                       {item.itemType === 'epin' ? '💎' : '🎮'}

@@ -14,7 +14,7 @@ function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
       style={{ aspectRatio: '140 / 220' }}
     >
       {category.image ? (
-        <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
+        <img loading="lazy" src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-300">
           <span className="text-4xl opacity-80">{category.icon || '📁'}</span>

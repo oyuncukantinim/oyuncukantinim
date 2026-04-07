@@ -30,7 +30,7 @@ function CategoryCard({ cat }) {
     <Link to={`/categories/${buildCatSlug(cat)}`}>
       <div className="group relative mx-auto flex h-[250px] w-[160px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
         {cat.image ? (
-          <img src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
+          <img loading="lazy" src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-400 to-violet-500">
             <span className="text-6xl opacity-30">{cat.icon}</span>
@@ -164,7 +164,7 @@ export default function CategoryListingsPage() {
       <div className="card overflow-hidden">
         {category?.banner_image ? (
           <div className="relative h-40 bg-slate-100">
-            <img src={category.banner_image} alt={category.name} className="h-full w-full object-cover object-center" />
+            <img loading="lazy" src={category.banner_image} alt={category.name} className="h-full w-full object-cover object-center" />
             <div className="absolute inset-0 flex items-center bg-gradient-to-r from-black/70 to-transparent px-8">
               <div>
                 <h1 className="text-3xl font-extrabold text-white">{category?.name}</h1>

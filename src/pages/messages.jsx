@@ -260,7 +260,7 @@ function SharedOrdersPanel({ userId }) {
           return (
             <div key={o.id} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
               {o.item_image && (
-                <img src={o.item_image} alt="" className="w-full h-16 object-cover"/>
+                <img loading="lazy" src={o.item_image} alt="" className="w-full h-16 object-cover"/>
               )}
               <div className="p-1.5">
                 <div className="mb-1 text-[10px] font-bold text-gray-700 line-clamp-2">{o.item_title || '—'}</div>
