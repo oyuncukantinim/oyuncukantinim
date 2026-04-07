@@ -66,7 +66,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
       </div>
 
       <h3
-        className={`w-full min-w-0 line-clamp-2 font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${
+        className={`w-full min-w-0 line-clamp-2 break-all font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${
           compact
             ? 'mb-1.5 text-[11px]'
             : listing.title?.length > 60
