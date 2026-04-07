@@ -98,8 +98,12 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
             )}
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Satıcı Ödendi?</span>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${order.seller_paid == 1 ? 'bg-emerald-50 text-emerald-700' : 'bg-orange-50 text-orange-700'}`}>
-                {order.seller_paid == 1 ? 'Ödendi' : 'Beklemede (Havuz)'}
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                order.seller_paid == 1 ? 'bg-emerald-50 text-emerald-700'
+                : ds === 4 ? 'bg-gray-100 text-gray-500'
+                : 'bg-orange-50 text-orange-700'
+              }`}>
+                {order.seller_paid == 1 ? 'Ödendi' : ds === 4 ? 'Ödenmedi (İptal)' : 'Beklemede (Havuz)'}
               </span>
             </div>
             {showAutoConfirm && (
