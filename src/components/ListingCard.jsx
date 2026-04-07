@@ -24,7 +24,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
   return (
     <Link
       to={listingSlug(listing.title, listing.id)}
-      className={`card group block h-full flex flex-col ${compact ? 'p-2.5' : 'p-4'} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}
+      className={`card group block h-full flex flex-col overflow-hidden ${compact ? 'p-2.5' : 'p-4'} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}
     >
       <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
         {coverImg ? (
@@ -66,7 +66,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
       </div>
 
       <h3
-        className={`flex-1 line-clamp-2 font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${
+        className={`w-full min-w-0 line-clamp-2 font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${
           compact
             ? 'mb-1.5 text-[11px]'
             : listing.title?.length > 55
