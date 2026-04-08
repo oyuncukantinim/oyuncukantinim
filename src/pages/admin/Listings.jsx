@@ -247,7 +247,7 @@ function ListingDetailModal({
   const [saving, setSaving] = useState(false);
   const [dopingType, setDopingType] = useState(getListingActiveDopingTypes(listing)[0] || 'vitrine');
   const [dopingHours, setDopingHours] = useState(null);
-  const coverImage = getListingCoverImage(listing);
+  const coverImage = getListingCoverImage(listing, defaultListingImage);
   const activeDopingTypes = getListingActiveDopingTypes(listing);
   const currentDopingOptions = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
   const selectedDopingOption =
@@ -599,7 +599,7 @@ export default function AdminListings() {
   const [toast, setToast] = useState('');
   const [selectedListing, setSelectedListing] = useState(null);
   const [stockListing, setStockListing] = useState(null);
-  const { dopingVitrineOptions, dopingFeaturedOptions } = useSiteBrand();
+  const { dopingVitrineOptions, dopingFeaturedOptions, defaultListingImage } = useSiteBrand();
 
   const showToast = (msg) => {
     setToast(msg);
@@ -723,7 +723,7 @@ export default function AdminListings() {
                       label: listing.status || 'Belirsiz',
                       colorClass: 'text-gray-600 bg-gray-100',
                     };
-                    const coverImage = getListingCoverImage(listing);
+                    const coverImage = getListingCoverImage(listing, defaultListingImage);
                     const activeDopingTypes = getListingActiveDopingTypes(listing);
 
                     return (
