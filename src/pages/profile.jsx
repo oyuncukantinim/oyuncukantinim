@@ -1501,12 +1501,12 @@ export default function ProfilePage() {
                       ) : null}
                     </div>
                     <div>
-                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Mevcut Şifre</label>
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
-                          value={newPassword}
-                          onChange={e => setNewPassword(e.target.value)}
+                          value={currentPassword}
+                          onChange={e => setCurrentPassword(e.target.value)}
                           placeholder="Değiştirmek istemiyorsan boş bırak"
                           className="input-field pr-11"
                         />
@@ -1518,19 +1518,27 @@ export default function ProfilePage() {
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
-                      {newPassword && (
-                        <div className="mt-2">
-                          <label className="block text-sm font-bold text-gray-600 mb-1.5">Mevcut Şifre</label>
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={currentPassword}
-                            onChange={e => setCurrentPassword(e.target.value)}
-                            placeholder="Güvenlik için mevcut şifrenizi girin"
-                            className="input-field"
-                          />
-                        </div>
-                      )}
-                      <p className="text-xs text-gray-400 mt-1">Şifre alanını boş bırakırsan mevcut şifren korunur.</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Yeni Şifre</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                          placeholder="Yeni şifreni gir"
+                          className="input-field pr-11"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(v => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-violet-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-1">Şifre alanlarını boş bırakırsan mevcut şifren korunur.</p>
                     </div>
 
                     <div>
