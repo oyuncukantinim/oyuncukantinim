@@ -10,11 +10,6 @@ export default function SiteBrand({
   subtitle = '',
   containerClassName = '',
   imageClassName = '',
-  imageWrapperClassName = '',
-  imageWidth,
-  imageHeight,
-  imageLoading = 'lazy',
-  imageFetchPriority = 'auto',
   iconWrapperClassName = '',
   titleClassName = '',
   subtitleClassName = '',
@@ -28,17 +23,10 @@ export default function SiteBrand({
   const content = (
     <div className={`flex items-center gap-3 ${containerClassName}`.trim()}>
       {hasLogo ? (
-        <div className={imageWrapperClassName || 'inline-flex shrink-0 items-center'}>
-          <img
-            src={siteLogo}
-            alt={visibleTitle}
-            width={imageWidth}
-            height={imageHeight}
-            loading={imageLoading}
-            fetchPriority={imageFetchPriority}
-            className={imageClassName || 'h-10 w-auto object-contain'}
-          />
-        </div>
+        <img           src={siteLogo}
+          alt={visibleTitle}
+          className={imageClassName || 'h-10 w-auto object-contain'}
+        />
       ) : (
         <div className={iconWrapperClassName}>
           <FallbackIcon className="text-white" size={22} />

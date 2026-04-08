@@ -140,12 +140,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             siteLogo={siteLogo}
             siteLogoText={siteLogoText}
             containerClassName="items-center"
-            imageWrapperClassName="flex h-10 w-[220px] shrink-0 items-center"
             imageClassName="h-10 w-auto max-w-[220px] object-contain transition-transform group-hover:scale-[1.02]"
-            imageWidth={220}
-            imageHeight={40}
-            imageLoading="eager"
-            imageFetchPriority="high"
             iconWrapperClassName="rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2 shadow-neon-purple transition-transform group-hover:rotate-12"
             titleClassName="hidden text-xl font-extrabold glow-text sm:inline"
           />
