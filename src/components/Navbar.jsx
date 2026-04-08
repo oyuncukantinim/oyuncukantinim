@@ -377,12 +377,16 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               <>
                 <Link
                   to="/messages"
+                  aria-label="Mesajlara git"
+                  title="Mesajlar"
                   className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-600"
                 >
                   <MessageCircle size={19} />
                 </Link>
                 <Link
                   to="/notifications"
+                  aria-label="Bildirimlere git"
+                  title="Bildirimler"
                   className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
                 >
                   <Bell size={19} />
@@ -398,6 +402,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             <div className="relative" onMouseEnter={handleCartEnter} onMouseLeave={handleCartLeave}>
               <Link
                 to="/cart"
+                aria-label="Sepete git"
+                title="Sepet"
                 className="relative inline-flex rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
               >
                 <ShoppingCart size={19} />
@@ -477,6 +483,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
           <div className="ml-auto flex items-center gap-2 md:hidden">
             <button
               type="button"
+              aria-label="Aramayı aç"
+              title="Ara"
               onClick={() => {
                 setMobileOpen(true);
                 setTimeout(() => mobileSearchInputRef.current?.focus(), 50);
@@ -485,7 +493,12 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             >
               <Search size={19} />
             </button>
-            <Link to="/cart" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500">
+            <Link
+              to="/cart"
+              aria-label="Sepete git"
+              title="Sepet"
+              className="relative rounded-2xl border border-slate-200 p-3 text-slate-500"
+            >
               <ShoppingCart size={19} />
               {cart.length > 0 ? (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-white">
@@ -495,6 +508,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             </Link>
             <button
               type="button"
+              aria-label={mobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
+              title={mobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
               onClick={() => setMobileOpen((prev) => !prev)}
               className="rounded-2xl border border-slate-200 p-3 text-slate-500"
             >
