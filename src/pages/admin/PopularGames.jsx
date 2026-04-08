@@ -28,7 +28,7 @@ export default function AdminPopularGames() {
 
   useEffect(() => {
     adminGetPopularGames()
-      .then(d => setGames(d || []))
+      .then((response) => setGames(Array.isArray(response.data) ? response.data : []))
       .catch(() => {});
   }, []);
 
