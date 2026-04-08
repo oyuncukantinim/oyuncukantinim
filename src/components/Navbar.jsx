@@ -173,15 +173,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             <Link to="/support" className="text-slate-300 transition-colors hover:text-white">
               Destek Merkezi
             </Link>
-            {user ? (
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">
-                Bakiye: {PriceText({ value: user.balance || 0 })}
-              </span>
-            ) : (
+            {!user ? (
               <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
                 Giriş Yap / Kayıt Ol
               </Link>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
