@@ -295,8 +295,14 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                                 onClick={closeSearch}
                                 className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
                               >
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-violet-50 text-sm font-black text-violet-600">
-                                  {category.icon || 'K'}
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
+                                  {category.image ? (
+                                    <img src={category.image} alt={category.name} className="h-full w-full object-cover" />
+                                  ) : (
+                                    <div className="flex h-full w-full items-center justify-center bg-violet-50 text-sm font-black text-violet-600">
+                                      {category.icon || 'K'}
+                                    </div>
+                                  )}
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-sm font-semibold text-slate-800">{category.name}</p>
