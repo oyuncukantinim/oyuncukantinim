@@ -454,135 +454,142 @@ function ListingDetailModal({
               </div>
             </div>
 
-            <div className="rounded-xl border border-violet-100 bg-violet-50/60 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-extrabold text-gray-900">Doping Yonetimi</h3>
-                  <p className="mt-1 text-xs text-gray-500">Ilan icin admin tarafindan vitrin veya one cikar paketi tanimla.</p>
-                </div>
-                {activeDopingTypes.length ? (
-                  <div className="flex flex-wrap justify-end gap-1.5">
-                    {activeDopingTypes.map((type) => (
-                      <span key={type} className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
-                        {getDopingTypeMeta(type).label}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+          </div>
+        </div>
 
-              <div className="grid gap-3 md:grid-cols-2">
-                {[
-                  { key: 'vitrine', options: vitrineOptions },
-                  { key: 'featured', options: featuredOptions },
-                ].map((group) => {
-                  const meta = getDopingTypeMeta(group.key);
-                  const active = dopingType === group.key;
-                  const expiresAt = group.key === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
-                  const remaining = getDopingRemainingLabel(expiresAt);
-                  return (
-                    <button
-                      key={group.key}
-                      type="button"
-                      onClick={() => setDopingType(group.key)}
-                      className={`rounded-2xl border p-3 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white/70 hover:border-violet-200'}`}
-                    >
-                      <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <div className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
-                        {remaining ? (
-                          <div className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{remaining}</div>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-slate-500">{meta.description}</p>
-                      <div className="mt-3 text-[11px] font-semibold text-slate-400">{group.options.length} paket tanimli</div>
-                    </button>
-                  );
-                })}
+        {/* Doping Yönetimi — tam genişlik, alt kısımda yatay düzen */}
+        <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50/60 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-extrabold text-gray-900">Doping Yonetimi</h3>
+              <p className="mt-1 text-xs text-gray-500">Ilan icin admin tarafindan vitrin veya one cikar paketi tanimla.</p>
+            </div>
+            {activeDopingTypes.length ? (
+              <div className="flex flex-wrap justify-end gap-1.5">
+                {activeDopingTypes.map((type) => (
+                  <span key={type} className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
+                    {getDopingTypeMeta(type).label}
+                  </span>
+                ))}
               </div>
+            ) : null}
+          </div>
 
-              <div className="mt-4">
-                <div className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500">Sure Paketi</div>
-                {currentDopingOptions.length ? (
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {currentDopingOptions.map((option) => {
-                      const active = Number(selectedDopingOption?.hours) === Number(option.hours);
-                      return (
-                        <button
-                          key={`${dopingType}-${option.hours}`}
-                          type="button"
-                          onClick={() => setDopingHours(option.hours)}
-                          className={`rounded-xl border px-3 py-2.5 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200'}`}
-                        >
-                          <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
-                          <div className="mt-1 text-xs font-semibold text-slate-500">{Number(option.price || 0).toFixed(2)} ₺</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-400">
-                    Bu doping tipi icin ayar bulunmuyor.
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleApplyDoping}
-                  disabled={saving || !selectedDopingOption}
-                  className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
-                >
-                  {saving ? 'Uygulaniyor...' : 'Doping Uygula'}
-                </button>
-                {activeDopingTypes.includes(dopingType) ? (
+          <div className="flex flex-col gap-4 lg:flex-row">
+            {/* Sol: Doping tipi seçimi */}
+            <div className="flex gap-2 lg:flex-col lg:w-48 shrink-0">
+              {[
+                { key: 'vitrine', options: vitrineOptions },
+                { key: 'featured', options: featuredOptions },
+              ].map((group) => {
+                const meta = getDopingTypeMeta(group.key);
+                const active = dopingType === group.key;
+                const expiresAt = group.key === 'vitrine' ? listing.vitrine_expires_at : listing.featured_expires_at;
+                const remaining = getDopingRemainingLabel(expiresAt);
+                return (
                   <button
+                    key={group.key}
                     type="button"
-                    onClick={handleClearDoping}
-                    disabled={saving}
-                    className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
+                    onClick={() => setDopingType(group.key)}
+                    className={`flex-1 rounded-xl border p-2.5 text-left transition-all lg:flex-none ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white/70 hover:border-violet-200'}`}
                   >
-                    Seçili Dopingi Kaldır
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-bold ${meta.buttonClass}`}>{meta.label}</div>
+                      {remaining ? (
+                        <div className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700">{remaining}</div>
+                      ) : null}
+                    </div>
+                    <div className="mt-1 text-[10px] font-semibold text-slate-400">{group.options.length} paket</div>
                   </button>
-                ) : null}
-              </div>
+                );
+              })}
             </div>
 
-            <div className="flex flex-wrap gap-2">
-              {listing.delivery_type === 'stock' ? (
+            {/* Orta: Süre paketleri */}
+            <div className="flex-1">
+              <div className="mb-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">Sure Paketi</div>
+              {currentDopingOptions.length ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {currentDopingOptions.map((option) => {
+                    const active = Number(selectedDopingOption?.hours) === Number(option.hours);
+                    return (
+                      <button
+                        key={`${dopingType}-${option.hours}`}
+                        type="button"
+                        onClick={() => setDopingHours(option.hours)}
+                        className={`rounded-lg border px-3 py-2 text-left transition-all ${active ? 'border-violet-500 bg-white shadow-sm' : 'border-slate-200 bg-white hover:border-violet-200'}`}
+                      >
+                        <div className="text-sm font-black text-slate-900">{formatDopingDuration(option.hours)}</div>
+                        <div className="text-xs font-semibold text-slate-500">{Number(option.price || 0).toFixed(2)} ₺</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5 text-sm text-slate-400">
+                  Bu doping tipi icin ayar bulunmuyor.
+                </div>
+              )}
+            </div>
+
+            {/* Sağ: Butonlar */}
+            <div className="flex gap-2 lg:flex-col lg:justify-start shrink-0">
+              <button
+                type="button"
+                onClick={handleApplyDoping}
+                disabled={saving || !selectedDopingOption}
+                className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+              >
+                {saving ? 'Uygulaniyor...' : 'Doping Uygula'}
+              </button>
+              {activeDopingTypes.includes(dopingType) ? (
                 <button
                   type="button"
-                  onClick={() => onManageStocks(listing)}
-                  className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+                  onClick={handleClearDoping}
+                  disabled={saving}
+                  className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
                 >
-                  <Package size={13} /> Stoklari Yonet
+                  Dopingi Kaldir
                 </button>
               ) : null}
-              <a
-                href={listingSlug(listing.title, listing.id)}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300"
-              >
-                <ExternalLink size={13} /> Goruntule
-              </a>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
-              >
-                {saving ? 'Kaydediliyor...' : 'Kaydet'}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={saving}
-                className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
-              >
-                <Trash2 size={13} />
-                Sil
-              </button>
             </div>
           </div>
+        </div>
+
+        {/* Alt butonlar */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {listing.delivery_type === 'stock' ? (
+            <button
+              type="button"
+              onClick={() => onManageStocks(listing)}
+              className="flex items-center gap-1.5 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              <Package size={13} /> Stoklari Yonet
+            </button>
+          ) : null}
+          <a
+            href={listingSlug(listing.title, listing.id)}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-600 transition-colors hover:border-gray-300"
+          >
+            <ExternalLink size={13} /> Goruntule
+          </a>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500 disabled:opacity-50"
+          >
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={saving}
+            className="flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+          >
+            <Trash2 size={13} />
+            Sil
+          </button>
         </div>
       </div>
     </div>
