@@ -1,9 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Bell, LifeBuoy, Menu, MessageCircle, Plus, Search, ShoppingCart, Store, Users, X } from 'lucide-react';
+import {
+  Bell,
+  LifeBuoy,
+  Menu,
+  MessageCircle,
+  Plus,
+  Search,
+  ShieldCheck,
+  ShoppingCart,
+  Store,
+  Users,
+  X,
+  Zap,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getUnreadNotificationsCount, markNotificationsRead, getListings, listingSlug } from '../lib/api';
+import { getListings, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from './SiteBrand';
 
@@ -15,22 +28,32 @@ const NAV_LINKS = [
   { to: '/support', label: 'Destek', icon: LifeBuoy },
 ];
 
+const TOP_STRIPS = [
+  { icon: Zap, label: 'Anında teslimat' },
+  { icon: ShieldCheck, label: 'Güvenli emanet ödeme' },
+  { icon: LifeBuoy, label: '7/24 destek' },
+];
+
+function PriceText({ value }) {
+  return `${Number(value || 0).toFixed(2)} ₺`;
+}
+
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   const { user } = useAuth();
   const { cart } = useCart();
   const { defaultAvatar } = useSiteBrand();
   const location = useLocation();
   const navigate = useNavigate();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotif, setUnreadNotif] = useState(0);
   const [cartHover, setCartHover] = useState(false);
-  const cartTimeout = useRef(null);
-
-  // Search state
-  const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
+
+  const cartTimeout = useRef(null);
   const searchRef = useRef(null);
   const searchInputRef = useRef(null);
   const debounceRef = useRef(null);
@@ -38,7 +61,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   useEffect(() => {
     if (!user) {
       setUnreadNotif(0);
-      return;
+      return undefined;
     }
 
     const fetchCount = () => {
@@ -50,7 +73,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     fetchCount();
     const interval = setInterval(fetchCount, 60000);
     const handler = () => setUnreadNotif(0);
-
     window.addEventListener('notifications-read', handler);
 
     return () => {
@@ -66,58 +88,59 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     }
   }, [location.pathname, user]);
 
-  // Close search on outside click
   useEffect(() => {
-    const handleClick = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setSearchOpen(false);
-        setSearchQuery('');
-        setSearchResults([]);
+    const handleClick = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setDesktopSearchFocused(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // Debounced search
   useEffect(() => {
     clearTimeout(debounceRef.current);
     if (!searchQuery.trim()) {
       setSearchResults([]);
       setSearchLoading(false);
-      return;
+      return undefined;
     }
+
     setSearchLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await getListings({ search: searchQuery.trim(), limit: 6, status: 'active' });
-        setSearchResults(res.data?.listings || []);
+        const response = await getListings({ search: searchQuery.trim(), limit: 6, status: 'active' });
+        setSearchResults(response.data?.listings || []);
       } catch {
         setSearchResults([]);
       } finally {
         setSearchLoading(false);
       }
-    }, 400);
+    }, 350);
+
     return () => clearTimeout(debounceRef.current);
   }, [searchQuery]);
 
-  const openSearch = () => {
-    setSearchOpen(true);
-    setTimeout(() => searchInputRef.current?.focus(), 50);
-  };
-
   const closeSearch = () => {
-    setSearchOpen(false);
+    setDesktopSearchFocused(false);
     setSearchQuery('');
     setSearchResults([]);
   };
 
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Escape') {
+  const submitSearch = () => {
+    if (!searchQuery.trim()) return;
+    navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
+    setMobileOpen(false);
+    closeSearch();
+  };
+
+  const handleSearchKeyDown = (event) => {
+    if (event.key === 'Escape') {
       closeSearch();
-    } else if (e.key === 'Enter' && searchQuery.trim()) {
-      navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
-      closeSearch();
+      return;
+    }
+    if (event.key === 'Enter') {
+      submitSearch();
     }
   };
 
@@ -127,141 +150,146 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   };
 
   const handleCartLeave = () => {
-    cartTimeout.current = setTimeout(() => setCartHover(false), 200);
+    cartTimeout.current = setTimeout(() => setCartHover(false), 180);
   };
 
-  return (
-    <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-xl">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          <SiteBrand
-            to="/"
-            siteName={siteName}
-            siteLogo={siteLogo}
-            siteLogoText={siteLogoText}
-            containerClassName="items-center"
-            imageClassName="h-10 w-auto max-w-[220px] object-contain transition-transform group-hover:scale-[1.02]"
-            iconWrapperClassName="rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2 shadow-neon-purple transition-transform group-hover:rotate-12"
-            titleClassName="hidden text-xl font-extrabold glow-text sm:inline"
-          />
+  const searchDropdownOpen = desktopSearchFocused && searchQuery.trim();
+  const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
 
-          <div className="hidden items-center gap-1 md:flex">
-            {NAV_LINKS.map((link) => {
-              const active = location.pathname === link.to;
-              return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                    active
-                      ? 'bg-neon-purple/10 text-neon-purple'
-                      : 'text-gray-500 hover:bg-gray-100 hover:text-gray-800'
-                  }`}
-                >
-                  {link.icon ? <link.icon size={16} /> : null}
-                  {link.label}
-                </Link>
-              );
-            })}
+  return (
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/92 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+      <div className="hidden border-b border-slate-200 bg-slate-950 text-slate-200 md:block">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 lg:gap-5">
+            {TOP_STRIPS.map((item) => (
+              <div key={item.label} className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
+                <item.icon size={13} className="text-cyan-300" />
+                <span>{item.label}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="hidden items-center gap-3 md:flex">
+          <div className="flex items-center gap-4 text-[11px] font-semibold">
+            <Link to="/support" className="text-slate-300 transition-colors hover:text-white">
+              Destek Merkezi
+            </Link>
+            {user ? (
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">
+                Bakiye: {PriceText({ value: user.balance || 0 })}
+              </span>
+            ) : (
+              <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
+                Giriş Yap / Kayıt Ol
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-[78px] items-center gap-4 py-4">
+          <div className="shrink-0">
+            <SiteBrand
+              to="/"
+              siteName={siteName}
+              siteLogo={siteLogo}
+              siteLogoText={siteLogoText}
+              containerClassName="items-center gap-3"
+              imageClassName="h-10 w-auto max-w-[220px] object-contain transition-transform group-hover:scale-[1.02]"
+              iconWrapperClassName="rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2.5 text-white shadow-[0_10px_30px_rgba(124,58,237,0.24)] transition-transform group-hover:rotate-6"
+              titleClassName="hidden text-xl font-black tracking-tight text-slate-900 lg:inline"
+              subtitleClassName="hidden text-xs font-medium text-slate-400 lg:block"
+              subtitle={siteLogo ? '' : 'Oyuncu pazarı ve E-Pin mağazası'}
+            />
+          </div>
+
+          <div className="relative hidden flex-1 lg:block" ref={searchRef}>
+            <div className={`flex h-14 items-center rounded-2xl border bg-slate-50 px-4 shadow-sm transition-all ${desktopSearchFocused ? 'border-violet-400 bg-white shadow-[0_12px_30px_rgba(124,58,237,0.12)]' : 'border-slate-200'}`}>
+              <Search size={18} className="mr-3 shrink-0 text-slate-400" />
+              <input
+                ref={searchInputRef}
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onFocus={() => setDesktopSearchFocused(true)}
+                onKeyDown={handleSearchKeyDown}
+                placeholder="İlan, oyun veya kategori ara..."
+                className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
+              />
+              {searchQuery ? (
+                <button type="button" onClick={closeSearch} className="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
+                  <X size={14} />
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={submitSearch}
+                className="ml-3 rounded-xl bg-violet-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-violet-500"
+              >
+                Ara
+              </button>
+            </div>
+
+            {searchDropdownOpen && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                {searchLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
+                  </div>
+                ) : searchResults.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-sm text-slate-400">Sonuç bulunamadı.</div>
+                ) : (
+                  <>
+                    <div className="divide-y divide-slate-100">
+                      {searchResults.map((item) => (
+                        <Link
+                          key={item.id}
+                          to={listingSlug(item.title, item.id)}
+                          onClick={closeSearch}
+                          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50"
+                        >
+                          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
+                            {item.images?.[0] || item.image ? (
+                              <img src={item.images?.[0] || item.image} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-base">🎮</span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold text-slate-800">{item.title}</p>
+                            <p className="text-xs font-bold text-emerald-600">{PriceText({ value: item.price })}</p>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                    <div className="border-t border-slate-100 px-4 py-3">
+                      <button type="button" onClick={submitSearch} className="text-xs font-bold text-violet-600 transition-colors hover:text-violet-500">
+                        Tümünü Gör →
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="ml-auto hidden items-center gap-2 md:flex">
             <Link
               to="/create"
-              className="flex items-center gap-1.5 rounded-xl bg-neon-purple px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-violet-700"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-[0_12px_25px_rgba(124,58,237,0.24)] transition-transform hover:-translate-y-0.5"
             >
-              <Plus size={15} /> İlan Ekle
+              <Plus size={16} />
+              İlan Ver
             </Link>
-
-            {/* Search */}
-            <div className="relative" ref={searchRef}>
-              {searchOpen ? (
-                <div className="flex items-center gap-1.5 rounded-xl border border-violet-300 bg-white px-3 py-1.5 shadow-sm">
-                  <Search size={15} className="flex-shrink-0 text-gray-400" />
-                  <input
-                    ref={searchInputRef}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={handleSearchKeyDown}
-                    placeholder="İlan ara..."
-                    className="w-44 text-sm outline-none placeholder:text-gray-400"
-                  />
-                  <button onClick={closeSearch} className="text-gray-400 hover:text-gray-600">
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={openSearch}
-                  className="p-2 text-gray-400 transition-colors hover:text-gray-700"
-                  title="Ara"
-                >
-                  <Search size={20} />
-                </button>
-              )}
-
-              {/* Search dropdown */}
-              {searchOpen && searchQuery.trim() && (
-                <div className="absolute right-0 top-full z-50 mt-1 w-80 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
-                  {searchLoading ? (
-                    <div className="flex items-center justify-center py-6">
-                      <div className="h-5 w-5 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
-                    </div>
-                  ) : searchResults.length === 0 ? (
-                    <div className="px-4 py-5 text-center text-sm text-gray-400">Sonuç bulunamadı.</div>
-                  ) : (
-                    <>
-                      <div className="divide-y divide-gray-50">
-                        {searchResults.map((item) => (
-                          <Link
-                            key={item.id}
-                            to={listingSlug(item.title, item.id)}
-                            onClick={closeSearch}
-                            className="flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-gray-50"
-                          >
-                            <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
-                              {item.images?.[0] || item.image ? (
-                                <img                                   src={item.images?.[0] || item.image}
-                                  alt=""
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center text-base">🎮</div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-semibold text-gray-800">{item.title}</p>
-                              <p className="text-xs font-bold text-emerald-600">{Number(item.price).toFixed(2)} ₺</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                      <div className="border-t border-gray-100 px-4 py-2.5">
-                        <button
-                          onClick={() => {
-                            navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
-                            closeSearch();
-                          }}
-                          className="text-xs font-bold text-violet-600 hover:text-violet-500"
-                        >
-                          Tümünü Gör →
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
 
             {user ? (
               <>
-                <Link to="/messages" className="relative p-2 text-gray-400 transition-colors hover:text-neon-cyan">
-                  <MessageCircle size={20} />
+                <Link to="/messages" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-600">
+                  <MessageCircle size={19} />
                 </Link>
-                <Link to="/notifications" className="relative p-2 text-gray-400 transition-colors hover:text-neon-pink">
-                  <Bell size={20} />
+                <Link to="/notifications" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600">
+                  <Bell size={19} />
                   {unreadNotif > 0 ? (
-                    <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 text-[10px] font-bold text-white">
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
                       {unreadNotif > 9 ? '9+' : unreadNotif}
                     </span>
                   ) : null}
@@ -270,49 +298,45 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             ) : null}
 
             <div className="relative" onMouseEnter={handleCartEnter} onMouseLeave={handleCartLeave}>
-              <Link to="/cart" className="relative inline-flex p-2 text-gray-400 transition-colors hover:text-neon-purple">
-                <ShoppingCart size={20} />
+              <Link
+                to="/cart"
+                className="relative inline-flex rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
+              >
+                <ShoppingCart size={19} />
                 {cart.length > 0 ? (
-                  <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-neon-pink text-[10px] font-bold text-white">
+                  <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-neon-pink px-1 text-[10px] font-bold text-white">
                     {cart.length}
                   </span>
                 ) : null}
               </Link>
 
               {cartHover && cart.length > 0 ? (
-                <div className="absolute right-0 top-full z-50 mt-1 w-72 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl">
-                  <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                    <span className="text-sm font-extrabold text-gray-800">Sepet</span>
-                    <span className="text-xs text-gray-400">{cart.length} ürün</span>
+                <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                    <span className="text-sm font-extrabold text-slate-800">Sepet</span>
+                    <span className="text-xs text-slate-400">{cart.length} ürün</span>
                   </div>
-                  <div className="max-h-56 divide-y divide-gray-50 overflow-y-auto">
+                  <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto">
                     {cart.map((item, index) => (
-                      <div key={index} className="flex items-center gap-3 px-4 py-2.5">
-                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-100">
+                      <div key={index} className="flex items-center gap-3 px-4 py-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
                           {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
                             <img src={item.image} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-base">
-                              {item.itemType === 'epin' ? '💎' : '🎮'}
-                            </div>
+                            <span className="text-base">{item.itemType === 'epin' ? '💎' : '🎮'}</span>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-semibold text-gray-700">{item.title}</p>
-                          {item.game ? <p className="truncate text-[10px] text-gray-400">{item.game}</p> : null}
+                          <p className="truncate text-xs font-semibold text-slate-700">{item.title}</p>
+                          {item.game ? <p className="truncate text-[10px] text-slate-400">{item.game}</p> : null}
                         </div>
-                        <span className="flex-shrink-0 text-xs font-extrabold text-emerald-600">
-                          {Number(item.price).toFixed(2)} ₺
-                        </span>
+                        <span className="shrink-0 text-xs font-extrabold text-emerald-600">{PriceText({ value: item.price })}</span>
                       </div>
                     ))}
                   </div>
-                  <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 px-4 py-3">
-                    <span className="text-xs font-bold text-gray-600">
-                      Toplam:{' '}
-                      <span className="text-emerald-600">
-                        {cart.reduce((sum, item) => sum + Number(item.price), 0).toFixed(2)} ₺
-                      </span>
+                  <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-3">
+                    <span className="text-xs font-bold text-slate-600">
+                      Toplam: <span className="text-emerald-600">{PriceText({ value: cartTotal })}</span>
                     </span>
                     <Link to="/cart" className="rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-500">
                       Sepete Git
@@ -322,9 +346,9 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               ) : null}
 
               {cartHover && cart.length === 0 ? (
-                <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-2xl border border-gray-100 bg-white px-4 py-5 text-center shadow-xl">
-                  <ShoppingCart size={24} className="mx-auto mb-2 text-gray-200" />
-                  <p className="text-xs font-semibold text-gray-400">Sepet boş</p>
+                <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white px-4 py-5 text-center shadow-2xl">
+                  <ShoppingCart size={24} className="mx-auto mb-2 text-slate-200" />
+                  <p className="text-xs font-semibold text-slate-400">Sepet boş</p>
                 </div>
               ) : null}
             </div>
@@ -332,104 +356,175 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             {user ? (
               <Link
                 to="/profile"
-                className="flex items-center gap-2 rounded-xl border border-neon-purple/20 bg-neon-purple/5 py-1.5 pl-2 pr-4 transition-all hover:bg-neon-purple/10"
+                className="inline-flex items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50/70 px-3 py-2.5 transition-colors hover:bg-violet-100/80"
               >
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-gray-100 bg-white text-sm shadow-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white bg-white text-base shadow-sm">
                   {user.avatar || defaultAvatar}
                 </div>
                 <div className="text-left">
-                  <div className="text-[10px] font-medium leading-none text-gray-400">Bakiye</div>
-                  <div className="text-sm font-bold text-neon-green">{Number(user.balance || 0).toFixed(2)} ₺</div>
+                  <div className="max-w-[120px] truncate text-xs font-semibold text-slate-500">{user.username}</div>
+                  <div className="text-sm font-black text-emerald-600">{PriceText({ value: user.balance || 0 })}</div>
                 </div>
               </Link>
             ) : (
-              <Link to="/login" className="btn-primary px-5 py-2 text-sm">
+              <Link
+                to="/login"
+                className="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
+              >
                 Giriş Yap
               </Link>
             )}
           </div>
 
-          <div className="flex items-center gap-3 md:hidden">
-            <Link to="/cart" className="relative p-2 text-gray-400">
-              <ShoppingCart size={22} />
+          <div className="ml-auto flex items-center gap-2 md:hidden">
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(true);
+                setTimeout(() => searchInputRef.current?.focus(), 50);
+              }}
+              className="rounded-2xl border border-slate-200 p-3 text-slate-500"
+            >
+              <Search size={19} />
+            </button>
+            <Link to="/cart" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500">
+              <ShoppingCart size={19} />
               {cart.length > 0 ? (
-                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neon-pink text-[10px] font-bold text-white">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-white">
                   {cart.length}
                 </span>
               ) : null}
             </Link>
-            <button onClick={() => setMobileOpen(!mobileOpen)} className="p-1 text-gray-500">
-              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            <button type="button" onClick={() => setMobileOpen((prev) => !prev)} className="rounded-2xl border border-slate-200 p-3 text-slate-500">
+              {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
+          </div>
+        </div>
+
+        <div className="hidden items-center justify-between border-t border-slate-200 py-3 md:flex">
+          <div className="flex items-center gap-1">
+            {NAV_LINKS.map((link) => {
+              const active = location.pathname === link.to;
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
+                    active
+                      ? 'bg-violet-50 text-violet-700'
+                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                  }`}
+                >
+                  {link.icon ? <link.icon size={15} /> : null}
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="hidden items-center gap-2 xl:flex">
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">Oyuncu pazarı</span>
+            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-500">Güvenli alışveriş</span>
           </div>
         </div>
       </div>
 
       {mobileOpen ? (
-        <div className="absolute w-full border-t border-gray-100 bg-white shadow-xl md:hidden">
-          <div className="space-y-2 px-4 py-4">
-            {/* Mobile search */}
-            <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2">
-              <Search size={15} className="text-gray-400 flex-shrink-0" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
-                    setSearchQuery('');
-                    setMobileOpen(false);
-                  }
-                }}
-                placeholder="İlan ara..."
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
-              />
-              {searchQuery && <button onClick={() => setSearchQuery('')}><X size={13} className="text-gray-400" /></button>}
+        <div className="border-t border-slate-200 bg-white shadow-xl md:hidden">
+          <div className="space-y-3 px-4 py-4">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <Search size={14} />
+                Arama
+              </div>
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
+                <Search size={15} className="shrink-0 text-slate-400" />
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter') submitSearch();
+                  }}
+                  placeholder="İlan ara..."
+                  className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-slate-400"
+                />
+                {searchQuery ? (
+                  <button type="button" onClick={() => setSearchQuery('')} className="text-slate-400">
+                    <X size={14} />
+                  </button>
+                ) : null}
+              </div>
+              {searchQuery.trim() ? (
+                <button
+                  type="button"
+                  onClick={submitSearch}
+                  className="mt-3 w-full rounded-xl bg-violet-600 py-2.5 text-sm font-bold text-white"
+                >
+                  Sonuçlarda Ara
+                </button>
+              ) : null}
             </div>
 
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
-                className="block w-full rounded-xl px-4 py-3 text-left font-semibold text-gray-600 hover:bg-gray-50"
-              >
-                {link.label}
-              </Link>
-            ))}
+            <div className="grid grid-cols-1 gap-2">
+              {NAV_LINKS.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
 
-            <div className="space-y-2 border-t border-gray-100 pt-3">
+            <div className="space-y-2 border-t border-slate-100 pt-3">
               <Link
                 to="/create"
                 onClick={() => setMobileOpen(false)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-neon-purple py-3 font-bold text-white"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 py-3 text-sm font-bold text-white"
               >
-                <Plus size={15} /> İlan Ekle
+                <Plus size={15} />
+                İlan Ver
               </Link>
 
               {user ? (
                 <>
-                  <Link to="/messages" onClick={() => setMobileOpen(false)} className="block rounded-xl px-4 py-3 font-semibold text-gray-600 hover:bg-gray-50">
+                  <Link
+                    to="/messages"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                  >
                     Mesajlar
                   </Link>
                   <Link
                     to="/notifications"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-between rounded-xl px-4 py-3 font-semibold text-gray-600 hover:bg-gray-50"
+                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
                   >
                     <span>Bildirimler</span>
                     {unreadNotif > 0 ? (
-                      <span className="flex h-5 items-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                         {unreadNotif > 9 ? '9+' : unreadNotif}
                       </span>
                     ) : null}
                   </Link>
-                  <Link to="/profile" onClick={() => setMobileOpen(false)} className="block w-full py-3 text-center btn-primary">
-                    {user.avatar || defaultAvatar} {user.username} ({Number(user.balance || 0).toFixed(2)} ₺)
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3"
+                  >
+                    <span className="text-sm font-semibold text-slate-700">{user.username}</span>
+                    <span className="text-sm font-black text-emerald-600">{PriceText({ value: user.balance || 0 })}</span>
                   </Link>
                 </>
               ) : (
-                <Link to="/login" onClick={() => setMobileOpen(false)} className="block w-full py-3 text-center btn-primary">
+                <Link
+                  to="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="block rounded-2xl border border-slate-200 px-4 py-3 text-center text-sm font-bold text-slate-700"
+                >
                   Giriş Yap / Kayıt Ol
                 </Link>
               )}
