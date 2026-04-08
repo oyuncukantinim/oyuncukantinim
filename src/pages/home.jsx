@@ -98,6 +98,7 @@ export default function Home() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <h2 className="sr-only">Platform Avantajları</h2>
         {[
           { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
           { icon: '🛡️', title: '%100 Güvenli', desc: 'Oyuncu pazarında paran havuzda bekler, işlem onaylanınca satıcıya aktarılır.' },
