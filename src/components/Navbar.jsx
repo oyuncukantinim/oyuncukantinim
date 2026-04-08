@@ -18,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getListings, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
 
 const NAV_LINKS = [
@@ -43,7 +44,7 @@ function formatPrice(value) {
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   const { user } = useAuth();
   const { cart } = useCart();
-  const { defaultAvatar } = useSiteBrand();
+  const { defaultAvatar, defaultListingImage } = useSiteBrand();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -326,11 +327,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                                 className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
                               >
                                 <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
-                                  {item.images?.[0] || item.image ? (
-                                    <img src={item.images?.[0] || item.image} alt="" className="h-full w-full object-cover" />
-                                  ) : (
-                                    <span className="text-base">🎮</span>
-                                  )}
+                                  <img
+                                    src={getListingCoverImage(item, defaultListingImage)}
+                                    alt={item.title}
+                                    className="h-full w-full object-cover"
+                                  />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="truncate text-sm font-semibold text-slate-800">{item.title}</p>
