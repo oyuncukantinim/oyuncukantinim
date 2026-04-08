@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -34,6 +34,8 @@ const TOP_STRIPS = [
   { icon: LifeBuoy, label: '7/24 destek' },
 ];
 
+const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+
 function formatPrice(value) {
   return `${Number(value || 0).toFixed(2)} ₺`;
 }
@@ -51,6 +53,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [recommendedListings, setRecommendedListings] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
 
@@ -93,6 +96,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   useEffect(() => {
     getListings({ limit: 4, status: 'active' })
       .then((response) => setRecommendedListings(response.data || []))
+      .catch(() => {});
+
+    fetch(`${API_URL}?action=get_categories_tree`)
+      .then((response) => response.json())
+      .then((json) => setCategories(json.data || []))
       .catch(() => {});
   }, []);
 
@@ -166,7 +174,16 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
 
   const searchDropdownOpen = desktopSearchFocused && searchQuery.trim();
   const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
-  const dropdownItems = searchResults.length > 0 ? searchResults : recommendedListings;
+  const listingItems = searchResults.length > 0 ? searchResults : recommendedListings;
+  const matchingCategories = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return categories
+      .filter((category) => category?.name?.toLowerCase().includes(q))
+      .slice(0, 5);
+  }, [categories, searchQuery]);
+
+  const buildCategorySlug = (category) => `${category.slug}-${category.id}`;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/92 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
@@ -267,31 +284,62 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     </div>
 
                     <div className="divide-y divide-slate-100">
-                      {dropdownItems.map((item) => (
-                        <Link
-                          key={item.id}
-                          to={listingSlug(item.title, item.id)}
-                          onClick={closeSearch}
-                          className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50"
-                        >
-                          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
-                            {item.images?.[0] || item.image ? (
-                              <img src={item.images?.[0] || item.image} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <span className="text-base">🎮</span>
-                            )}
+                      {matchingCategories.length > 0 ? (
+                        <div className="px-4 py-3">
+                          <div className="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">Kategoriler</div>
+                          <div className="space-y-2">
+                            {matchingCategories.map((category) => (
+                              <Link
+                                key={category.id}
+                                to={`/categories/${buildCategorySlug(category)}`}
+                                onClick={closeSearch}
+                                className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
+                              >
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-violet-50 text-sm font-black text-violet-600">
+                                  {category.icon || 'K'}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-semibold text-slate-800">{category.name}</p>
+                                  <p className="text-[11px] text-slate-400">Kategoriye git</p>
+                                </div>
+                              </Link>
+                            ))}
                           </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-semibold text-slate-800">{item.title}</p>
-                            <div className="mt-0.5 flex items-center gap-2">
-                              <span className="truncate rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
-                                {item.category_name || 'Kategori'}
-                              </span>
-                              <span className="text-xs font-bold text-emerald-600">{formatPrice(item.price)}</span>
-                            </div>
+                        </div>
+                      ) : null}
+
+                      {listingItems.length > 0 ? (
+                        <div className="px-4 py-3">
+                          <div className="mb-2 text-[11px] font-black uppercase tracking-wide text-slate-400">İlanlar</div>
+                          <div className="space-y-2">
+                            {listingItems.map((item) => (
+                              <Link
+                                key={item.id}
+                                to={listingSlug(item.title, item.id)}
+                                onClick={closeSearch}
+                                className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50"
+                              >
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-100">
+                                  {item.images?.[0] || item.image ? (
+                                    <img src={item.images?.[0] || item.image} alt="" className="h-full w-full object-cover" />
+                                  ) : (
+                                    <span className="text-base">🎮</span>
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-semibold text-slate-800">{item.title}</p>
+                                  <div className="mt-0.5 flex items-center gap-2">
+                                    <span className="truncate rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                                      {item.category_name || 'Kategori'}
+                                    </span>
+                                    <span className="text-xs font-bold text-emerald-600">{formatPrice(item.price)}</span>
+                                  </div>
+                                </div>
+                              </Link>
+                            ))}
                           </div>
-                        </Link>
-                      ))}
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="border-t border-slate-100 px-4 py-3">
