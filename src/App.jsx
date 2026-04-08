@@ -54,6 +54,62 @@ function PageLoader() {
   );
 }
 
+function SitePageLoader() {
+  return (
+    <div className="space-y-16">
+      <div className="relative left-1/2 -mt-8 h-[420px] w-screen -translate-x-1/2 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500">
+        <div className="mx-auto flex h-full max-w-4xl animate-pulse flex-col items-center justify-center px-6 text-center">
+          <div className="mb-6 h-20 w-20 rounded-2xl border border-white/20 bg-white/20" />
+          <div className="mb-4 h-12 w-full max-w-2xl rounded-2xl bg-white/20" />
+          <div className="mb-10 h-6 w-full max-w-xl rounded-full bg-white/15" />
+          <div className="flex w-full max-w-md gap-4">
+            <div className="h-14 flex-1 rounded-xl bg-white/25" />
+            <div className="h-14 flex-1 rounded-xl bg-white/15" />
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={`feature-loader-${index}`} className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div className="animate-pulse p-8">
+              <div className="mb-4 h-10 w-10 rounded-xl bg-slate-100" />
+              <div className="mb-3 h-5 w-2/3 rounded-full bg-slate-100" />
+              <div className="h-4 w-full rounded-full bg-slate-100" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {Array.from({ length: 4 }).map((_, sectionIndex) => (
+        <div key={`section-loader-${sectionIndex}`} className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="h-8 w-52 animate-pulse rounded-full bg-slate-100" />
+            <div className="h-10 w-28 animate-pulse rounded-full bg-slate-100" />
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {Array.from({ length: 5 }).map((__, cardIndex) => (
+              <div
+                key={`card-loader-${sectionIndex}-${cardIndex}`}
+                className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm"
+              >
+                <div className="animate-pulse">
+                  <div className="h-48 w-full bg-slate-100" />
+                  <div className="space-y-3 p-4">
+                    <div className="h-4 w-3/4 rounded-full bg-slate-100" />
+                    <div className="h-4 w-1/2 rounded-full bg-slate-100" />
+                    <div className="h-8 w-24 rounded-full bg-slate-100" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function AdminRoute({ children }) {
   const token = localStorage.getItem('admin_token');
   if (!token) return <Navigate to="/admin/login" replace />;
@@ -189,7 +245,7 @@ function SiteLayout() {
       ) : null}
       <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <Suspense fallback={<PageLoader />}>
+        <Suspense fallback={<SitePageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/store" element={<StorePage />} />
