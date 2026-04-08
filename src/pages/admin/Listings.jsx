@@ -237,6 +237,7 @@ function ListingDetailModal({
   showToast,
   vitrineOptions,
   featuredOptions,
+  defaultListingImage,
 }) {
   const [form, setForm] = useState({
     title: listing.title,
@@ -849,6 +850,7 @@ export default function AdminListings() {
           showToast={showToast}
           vitrineOptions={dopingVitrineOptions}
           featuredOptions={dopingFeaturedOptions}
+          defaultListingImage={defaultListingImage}
         />
       ) : null}
 
