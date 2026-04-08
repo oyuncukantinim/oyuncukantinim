@@ -1,7 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Plus, Trash2, GripVertical, Save, Gamepad2, Image as ImageIcon, Upload, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Gamepad2, GripVertical, Image as ImageIcon, Plus, Save, Trash2, Upload, X } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetPopularGames, adminSavePopularGames, adminUploadImage } from '../../lib/adminApi';
+import {
+  adminDeleteUploadedImage,
+  adminGetPopularGames,
+  adminSavePopularGames,
+  adminUploadImage,
+} from '../../lib/adminApi';
 
 const COLOR_OPTIONS = [
   { label: 'Kırmızı', value: 'from-red-500 to-rose-600' },
@@ -16,16 +21,26 @@ const COLOR_OPTIONS = [
   { label: 'Fuchsia', value: 'from-fuchsia-500 to-purple-600' },
 ];
 
+function createEmptyGame() {
+  return {
+    id: Date.now() + Math.random(),
+    name: '',
+    image_url: '',
+    category_slug: '',
+    color: 'from-violet-500 to-purple-600',
+  };
+}
+
 export default function AdminPopularGames() {
   const [games, setGames] = useState([]);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [dragIdx, setDragIdx] = useState(null);
   const [dropIdx, setDropIdx] = useState(null);
-  const [uploadingId, setUploadingId] = useState(null);
+  const [busyId, setBusyId] = useState(null);
 
-  const showToast = (msg) => {
-    setToast(msg);
+  const showToast = (message) => {
+    setToast(message);
     setTimeout(() => setToast(''), 3000);
   };
 
@@ -35,27 +50,54 @@ export default function AdminPopularGames() {
       .catch(() => {});
   }, []);
 
-  const addGame = () => setGames((g) => [
-    ...g,
-    { id: Date.now(), name: '', image_url: '', category_slug: '', color: 'from-violet-500 to-purple-600' },
-  ]);
+  const updateGame = (id, field, value) => {
+    setGames((current) => current.map((game) => (game.id === id ? { ...game, [field]: value } : game)));
+  };
 
-  const removeGame = (id) => setGames((g) => g.filter((x) => x.id !== id));
-  const updateGame = (id, field, val) => setGames((g) => g.map((x) => (x.id === id ? { ...x, [field]: val } : x)));
+  const addGame = () => setGames((current) => [...current, createEmptyGame()]);
 
-  const clearImage = (id) => updateGame(id, 'image_url', '');
-
-  const handleImageUpload = async (id, file) => {
-    if (!file) return;
-    setUploadingId(id);
+  const deleteImageFile = async (url) => {
+    if (!url) return;
     try {
+      await adminDeleteUploadedImage(url);
+    } catch {
+      // Kayıt temizliği başarısız olsa da ekran akışını bloklamayalım.
+    }
+  };
+
+  const removeGame = async (game) => {
+    if (game.image_url) {
+      setBusyId(game.id);
+      await deleteImageFile(game.image_url);
+      setBusyId(null);
+    }
+    setGames((current) => current.filter((item) => item.id !== game.id));
+  };
+
+  const clearImage = async (game) => {
+    if (!game.image_url) return;
+    setBusyId(game.id);
+    await deleteImageFile(game.image_url);
+    updateGame(game.id, 'image_url', '');
+    setBusyId(null);
+    showToast('Görsel kaldırıldı.');
+  };
+
+  const handleImageUpload = async (game, file) => {
+    if (!file) return;
+    setBusyId(game.id);
+    try {
+      const previousUrl = game.image_url || '';
       const url = await adminUploadImage(file, 'branding', { preserveOriginal: true });
-      updateGame(id, 'image_url', url);
+      updateGame(game.id, 'image_url', url);
+      if (previousUrl && previousUrl !== url) {
+        await deleteImageFile(previousUrl);
+      }
       showToast('Görsel yüklendi.');
     } catch (error) {
       showToast(error.message || 'Görsel yüklenemedi.');
     } finally {
-      setUploadingId(null);
+      setBusyId(null);
     }
   };
 
@@ -64,8 +106,8 @@ export default function AdminPopularGames() {
     try {
       await adminSavePopularGames(games);
       showToast('Kaydedildi!');
-    } catch (e) {
-      showToast(e.message);
+    } catch (error) {
+      showToast(error.message || 'Kaydetme sırasında hata oluştu.');
     } finally {
       setSaving(false);
     }
@@ -82,7 +124,7 @@ export default function AdminPopularGames() {
   return (
     <AdminLayout>
       {toast ? (
-        <div className="fixed top-4 right-4 z-50 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-xl">
+        <div className="fixed right-4 top-4 z-50 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-xl">
           {toast}
         </div>
       ) : null}
@@ -119,7 +161,7 @@ export default function AdminPopularGames() {
             <div className="divide-y divide-gray-50">
               {games.map((game, idx) => {
                 const fileInputId = `popular-game-image-${game.id}`;
-                const isUploading = uploadingId === game.id;
+                const isBusy = busyId === game.id;
 
                 return (
                   <div
@@ -130,8 +172,8 @@ export default function AdminPopularGames() {
                       setDragIdx(null);
                       setDropIdx(null);
                     }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
+                    onDragOver={(event) => {
+                      event.preventDefault();
                       setDropIdx(idx);
                     }}
                     onDragLeave={() => setDropIdx(null)}
@@ -154,7 +196,7 @@ export default function AdminPopularGames() {
                     <div className="min-w-0 flex-1 space-y-1.5">
                       <input
                         value={game.name}
-                        onChange={(e) => updateGame(game.id, 'name', e.target.value)}
+                        onChange={(event) => updateGame(game.id, 'name', event.target.value)}
                         placeholder="Oyun adı..."
                         className="w-full rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:border-violet-400 focus:outline-none"
                       />
@@ -166,10 +208,10 @@ export default function AdminPopularGames() {
                             type="file"
                             accept="image/*,.webp"
                             className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              handleImageUpload(game.id, file);
-                              e.target.value = '';
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              handleImageUpload(game, file);
+                              event.target.value = '';
                             }}
                           />
                           <label
@@ -182,21 +224,22 @@ export default function AdminPopularGames() {
                           {game.image_url ? (
                             <button
                               type="button"
-                              onClick={() => clearImage(game.id)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-100"
+                              disabled={isBusy}
+                              onClick={() => clearImage(game)}
+                              className="inline-flex items-center gap-1 rounded-lg bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
                             >
                               <X size={11} />
                               Kaldır
                             </button>
                           ) : null}
                           <span className="truncate text-[11px] text-gray-400">
-                            {isUploading ? 'Yükleniyor...' : game.image_url ? 'Görsel hazır' : 'WebP önerilir'}
+                            {isBusy ? 'İşleniyor...' : game.image_url ? 'Görsel hazır' : 'WebP önerilir'}
                           </span>
                         </div>
 
                         <input
                           value={game.category_slug || ''}
-                          onChange={(e) => updateGame(game.id, 'category_slug', e.target.value)}
+                          onChange={(event) => updateGame(game.id, 'category_slug', event.target.value)}
                           placeholder="slug-id (ör: fortnite-12)"
                           className="w-36 rounded-xl border border-gray-200 px-3 py-1.5 text-xs focus:border-violet-400 focus:outline-none"
                         />
@@ -205,19 +248,20 @@ export default function AdminPopularGames() {
 
                     <select
                       value={game.color}
-                      onChange={(e) => updateGame(game.id, 'color', e.target.value)}
+                      onChange={(event) => updateGame(game.id, 'color', event.target.value)}
                       className="shrink-0 rounded-xl border border-gray-200 bg-white px-2 py-2 text-xs focus:border-violet-400 focus:outline-none"
                     >
-                      {COLOR_OPTIONS.map((c) => (
-                        <option key={c.value} value={c.value}>
-                          {c.label}
+                      {COLOR_OPTIONS.map((color) => (
+                        <option key={color.value} value={color.value}>
+                          {color.label}
                         </option>
                       ))}
                     </select>
 
                     <button
-                      onClick={() => removeGame(game.id)}
-                      className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => removeGame(game)}
+                      disabled={isBusy}
+                      className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -229,7 +273,9 @@ export default function AdminPopularGames() {
         </div>
 
         <p className="mt-3 px-1 text-xs text-gray-400">
-          Ana sayfada görünecek popüler oyunları düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın. Görselleri doğrudan yükleyin; düşük boyut için mümkünse WebP kullanın. Kategori slug formatı: <strong>slug-id</strong> (ör: fortnite-12).
+          Ana sayfada görünecek popüler oyunları düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın.
+          Görselleri doğrudan yükleyin; düşük boyut için mümkünse WebP kullanın. Kategori slug formatı:{' '}
+          <strong>slug-id</strong> (ör: fortnite-12).
         </p>
       </div>
     </AdminLayout>
