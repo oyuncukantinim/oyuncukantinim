@@ -110,7 +110,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     debounceRef.current = setTimeout(async () => {
       try {
         const response = await getListings({ search: searchQuery.trim(), limit: 6, status: 'active' });
-        setSearchResults(response.data?.listings || []);
+        setSearchResults(response.data || []);
       } catch {
         setSearchResults([]);
       } finally {
@@ -129,7 +129,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
 
   const submitSearch = () => {
     if (!searchQuery.trim()) return;
-    navigate(`/categories?search=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(`/market?search=${encodeURIComponent(searchQuery.trim())}`);
     setMobileOpen(false);
     closeSearch();
   };

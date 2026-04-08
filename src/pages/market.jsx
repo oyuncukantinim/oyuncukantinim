@@ -11,13 +11,23 @@ export default function MarketPage() {
   const { user } = useAuth();
   const { defaultListingImage } = useSiteBrand();
   const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get('search') || '';
+  const initialGame = searchParams.get('game') || '';
+  const initialSort = searchParams.get('sort') || 'newest';
+  const initialCategoryId = searchParams.get('category_id') || '';
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selectedGame, setSelectedGame] = useState(searchParams.get('game') || '');
-  const [sort, setSort] = useState('newest');
-  const initialCategoryId = searchParams.get('category_id') || '';
+  const [search, setSearch] = useState(initialSearch);
+  const [selectedGame, setSelectedGame] = useState(initialGame);
+  const [sort, setSort] = useState(initialSort);
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId);
+
+  useEffect(() => {
+    setSearch(searchParams.get('search') || '');
+    setSelectedGame(searchParams.get('game') || '');
+    setSort(searchParams.get('sort') || 'newest');
+    setSelectedCategoryId(searchParams.get('category_id') || '');
+  }, [searchParams]);
 
   useEffect(() => {
     setLoading(true);
