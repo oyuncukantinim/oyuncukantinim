@@ -59,7 +59,6 @@ export default function Home() {
 
   return (
     <div className="space-y-16">
-      {/* HERO - w-screen + translate ile gercek tam genislik */}
       <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
         <div className="absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px] pointer-events-none" />
         <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
@@ -74,12 +73,12 @@ export default function Home() {
         </div>
 
         <h1 className="relative z-10 mb-6 text-5xl font-black tracking-tight text-white md:text-7xl">
-          Oyun DÃ¼nyasÄ±nÄ±n <br />
+          Oyun Dünyasının <br />
           <span className="text-cyan-200">Yeni Kantini</span>
         </h1>
 
         <p className="relative z-10 mb-10 max-w-2xl text-lg text-purple-100 md:text-xl">
-          En uygun fiyatlÄ± E-Pinler, gÃ¼venilir oyuncu pazarÄ± ve anÄ±nda teslimat garantisiyle oyun deneyimini bir Ã¼st seviyeye taÅŸÄ±.
+          En uygun fiyatlı E-Pinler, güvenilir oyuncu pazarı ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.
         </p>
 
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row">
@@ -87,23 +86,22 @@ export default function Home() {
             to="/store"
             className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-purple-700 shadow-lg transition-all hover:scale-105 hover:bg-purple-50 active:scale-95"
           >
-            MaÄŸazaya GÃ¶z At
+            Mağazaya Göz At
           </Link>
           <Link
             to="/market"
             className="rounded-xl border border-white/25 bg-white/15 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/25 active:scale-95"
           >
-            Oyuncu Pazari
+            Oyuncu Pazarı
           </Link>
         </div>
       </section>
 
-      {/* OZELLIKLER */}
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {[
-          { icon: 'âš¡', title: 'AnÄ±nda Teslimat', desc: 'SatÄ±n aldÄ±ÄŸÄ±n E-Pin kodlarÄ± saniyeler iÃ§inde hesabÄ±na tanÄ±mlanÄ±r.' },
-          { icon: 'ğŸ›¡ï¸', title: '%100 GÃ¼venli', desc: 'Oyuncu pazarÄ±nda paran havuzda bekler, iÅŸlem onaylanÄ±nca satÄ±cÄ±ya aktarÄ±lÄ±r.' },
-          { icon: 'ğŸ’¬', title: '7/24 Destek', desc: 'Yapay zeka destekli botumuz ve canlÄ± destek ekibimiz her zaman yanÄ±nda.' },
+          { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
+          { icon: '🛡️', title: '%100 Güvenli', desc: 'Oyuncu pazarında paran havuzda bekler, işlem onaylanınca satıcıya aktarılır.' },
+          { icon: '💬', title: '7/24 Destek', desc: 'Yapay zeka destekli botumuz ve canlı destek ekibimiz her zaman yanında.' },
         ].map((f, i) => (
           <div key={i} className="card p-8 hover:shadow-neon-purple">
             <div className="mb-4 text-4xl">{f.icon}</div>
@@ -113,14 +111,13 @@ export default function Home() {
         ))}
       </section>
 
-      {/* POPULER OYUNLAR */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-orange-500 to-red-500" />
               <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                <Flame className="text-orange-500" /> PopÃ¼ler Oyunlar
+                <Flame className="text-orange-500" /> Popüler Oyunlar
               </h2>
             </div>
           </div>
@@ -138,7 +135,7 @@ export default function Home() {
                       {game.image_url ? (
                         <img src={game.image_url} alt={game.name} className="mb-2 h-11 w-11 rounded-xl object-contain" />
                       ) : (
-                        <span className="mb-2 text-4xl">{game.emoji || 'ğŸ®'}</span>
+                        <span className="mb-2 text-4xl">{game.emoji || '🎮'}</span>
                       )}
                       <span className="text-sm font-bold leading-tight text-gray-800">{game.name}</span>
                     </div>
@@ -156,18 +153,17 @@ export default function Home() {
         </section>
       )}
 
-      {/* INDIRIMLI E-PINLER */}
       {(epins.length > 0 || !epinsLoaded) && (
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-yellow-400 to-orange-400" />
               <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                <Zap className="text-yellow-500" /> E-Pin MaÄŸazasÄ±
+                <Zap className="text-yellow-500" /> E-Pin Mağazası
               </h2>
             </div>
             <Link to="/store" className="flex items-center gap-1 rounded-full bg-neon-purple/10 px-4 py-2 text-sm font-bold text-neon-purple transition-all hover:bg-neon-purple hover:text-white">
-              TÃ¼mÃ¼nÃ¼ GÃ¶r <ChevronRight size={14} />
+              Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
 
@@ -189,18 +185,17 @@ export default function Home() {
         </section>
       )}
 
-      {/* VITRIN ILANLAR */}
       {(vitrineListings.length > 0 || !listingsLoaded) && (
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-amber-400 to-orange-500" />
               <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                <Zap className="text-amber-500" /> Vitrin Ä°lanlar
+                <Zap className="text-amber-500" /> Vitrin İlanlar
               </h2>
             </div>
             <Link to="/market" className="flex items-center gap-1 rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-600 transition-all hover:bg-amber-500 hover:text-white">
-              TÃ¼mÃ¼nÃ¼ GÃ¶r <ChevronRight size={14} />
+              Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
 
@@ -222,18 +217,17 @@ export default function Home() {
         </section>
       )}
 
-      {/* SON ILANLAR */}
       {(recentListings.length > 0 || !listingsLoaded) && (
         <section>
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-neon-green to-emerald-400" />
               <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                <ShieldCheck className="text-neon-green" /> Son Ä°lanlar
+                <ShieldCheck className="text-neon-green" /> Son İlanlar
               </h2>
             </div>
             <Link to="/market" className="flex items-center gap-1 rounded-full bg-neon-green/10 px-4 py-2 text-sm font-bold text-neon-green transition-all hover:bg-neon-green hover:text-white">
-              TÃ¼mÃ¼nÃ¼ GÃ¶r <ChevronRight size={14} />
+              Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>
 
