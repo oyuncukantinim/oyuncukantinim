@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Private and utility areas
+Disallow: /admin
+Disallow: /admin/
+Disallow: /login
+Disallow: /profile
+Disallow: /messages
+Disallow: /notifications
+Disallow: /cart
+Disallow: /support
+
+# Internal/search-like pages that don't need indexing
+Disallow: /finance
+
