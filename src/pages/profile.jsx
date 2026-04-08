@@ -438,6 +438,7 @@ export default function ProfilePage() {
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
   const [editEmail, setEditEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [emailVerificationCode, setEmailVerificationCode] = useState('');
@@ -661,11 +662,20 @@ export default function ProfilePage() {
         setSaving(false);
         return;
       }
+      if (newPassword && !currentPassword) {
+        showToast('Şifre değiştirmek için mevcut şifrenizi girmelisiniz.');
+        setSaving(false);
+        return;
+      }
       if (normalizedEmail !== (user.email || '')) payload.email = normalizedEmail;
-      if (newPassword) payload.new_password = newPassword;
+      if (newPassword) {
+        payload.new_password = newPassword;
+        payload.current_password = currentPassword;
+      }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditEmail(res.data.email || '');
+      setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       setShowPassword(false);
@@ -689,13 +699,22 @@ export default function ProfilePage() {
         setSaving(false);
         return;
       }
-      if (newPassword) payload.new_password = newPassword;
+      if (newPassword && !currentPassword) {
+        showToast('Şifre değiştirmek için mevcut şifrenizi girmelisiniz.');
+        setSaving(false);
+        return;
+      }
+      if (newPassword) {
+        payload.new_password = newPassword;
+        payload.current_password = currentPassword;
+      }
 
       let updatedUser = user;
       if (personalDirtyWithoutEmail) {
         const res = await updateProfile(payload);
         updatedUser = res.data;
         updateUser(res.data);
+        setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
         setShowPassword(false);
@@ -1499,6 +1518,18 @@ export default function ProfilePage() {
                           {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                         </button>
                       </div>
+                      {newPassword && (
+                        <div className="mt-2">
+                          <label className="block text-sm font-bold text-gray-600 mb-1.5">Mevcut Şifre</label>
+                          <input
+                            type={showPassword ? 'text' : 'password'}
+                            value={currentPassword}
+                            onChange={e => setCurrentPassword(e.target.value)}
+                            placeholder="Güvenlik için mevcut şifrenizi girin"
+                            className="input-field"
+                          />
+                        </div>
+                      )}
                       <p className="text-xs text-gray-400 mt-1">Şifre alanını boş bırakırsan mevcut şifren korunur.</p>
                     </div>
 
