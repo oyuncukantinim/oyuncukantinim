@@ -1,4 +1,3 @@
-import { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon, Star, Zap } from 'lucide-react';
 import { listingSlug } from '../lib/api';
@@ -6,47 +5,9 @@ import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
 
 const DOPING_META = {
-  vitrine:  { label: 'Vitrin',     Icon: Star,  strip: 'bg-amber-500',  ring: 'ring-amber-400/60' },
-  featured: { label: 'Öne Çıkar', Icon: Zap,   strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
+  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-500', ring: 'ring-amber-400/60' },
+  featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
-
-const BASE_FONT  = 15; // px — başlangıç font boyutu
-const MIN_FONT   = 9;  // px — minimum font boyutu
-const LINE_COUNT = 2;  // max satır sayısı
-
-function AutoFitTitle({ title, compact, className }) {
-  const ref = useRef(null);
-  const [fontSize, setFontSize] = useState(compact ? 11 : BASE_FONT);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-
-    const startSize = compact ? 11 : BASE_FONT;
-    el.style.fontSize = `${startSize}px`;
-    setFontSize(startSize);
-
-    const lh = parseFloat(getComputedStyle(el).lineHeight) || startSize * 1.375;
-    const maxH = lh * LINE_COUNT;
-
-    let size = startSize;
-    while (el.scrollHeight > maxH + 1 && size > MIN_FONT) {
-      size -= 0.5;
-      el.style.fontSize = `${size}px`;
-    }
-    setFontSize(size);
-  }, [title, compact]);
-
-  return (
-    <h3
-      ref={ref}
-      style={{ fontSize: `${fontSize}px` }}
-      className={className}
-    >
-      {title}
-    </h3>
-  );
-}
 
 export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
@@ -56,8 +17,8 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
   const ringClass = activeTypes.includes('vitrine')
     ? DOPING_META.vitrine.ring
     : activeTypes.includes('featured')
-    ? DOPING_META.featured.ring
-    : '';
+      ? DOPING_META.featured.ring
+      : '';
 
   return (
     <Link
@@ -66,7 +27,8 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
     >
       <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
         {coverImg ? (
-          <img             src={coverImg}
+          <img
+            src={coverImg}
             alt={listing.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -79,14 +41,14 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         {hasDoping ? (
           <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
             {activeTypes.map((type) => {
-              const m = DOPING_META[type];
+              const meta = DOPING_META[type];
               return (
                 <div
                   key={type}
-                  className={`flex flex-1 items-center justify-center gap-1 py-1 text-white ${m.strip} ${compact ? 'text-[9px]' : 'text-[10px]'} font-extrabold tracking-wide`}
+                  className={`flex flex-1 items-center justify-center gap-1 py-1 text-white ${meta.strip} ${compact ? 'text-[9px]' : 'text-[10px]'} font-extrabold tracking-wide`}
                 >
-                  <m.Icon size={compact ? 8 : 9} strokeWidth={2.5} />
-                  {m.label}
+                  <meta.Icon size={compact ? 8 : 9} strokeWidth={2.5} />
+                  {meta.label}
                 </div>
               );
             })}
@@ -101,11 +63,16 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         </span>
       </div>
 
-      <AutoFitTitle
-        title={listing.title}
-        compact={compact}
-        className={`w-full min-w-0 overflow-hidden break-all font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${compact ? 'mb-1.5' : 'mb-3'}`}
-      />
+      <h3
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+        }}
+        className={`w-full min-w-0 overflow-hidden break-words font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${compact ? 'mb-1.5 text-[11px]' : 'mb-3 text-[15px]'}`}
+      >
+        {listing.title}
+      </h3>
 
       <div className={`flex items-center rounded-xl bg-surface-100 ${compact ? 'mb-2.5 gap-1.5 p-1.5' : 'mb-4 gap-2.5 p-2.5'}`}>
         <div
