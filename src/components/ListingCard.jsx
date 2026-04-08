@@ -84,7 +84,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         </div>
         <Link
           to={`/p/${listing.seller}`}
-          className={`inline-flex min-h-[40px] min-w-0 items-center truncate font-bold text-gray-700 transition-colors hover:text-neon-purple ${compact ? 'px-1 text-[10px]' : 'px-1 text-[13px]'}`}
+          className={`inline-flex min-h-[36px] min-w-0 items-center truncate font-bold text-gray-700 transition-colors hover:text-neon-purple ${compact ? 'px-1 text-[10px]' : 'px-1 text-[12px]'}`}
         >
           {listing.seller || 'Satıcı'}
         </Link>
