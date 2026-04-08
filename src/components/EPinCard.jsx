@@ -10,7 +10,6 @@ export default function EPinCard({ epin }) {
       itemType: 'epin',
       title: epin.title,
       price: Number(epin.price),
-      game: epin.game_name,
       image: epin.image_emoji || '🎮',
       epin_id: epin.id,
     });

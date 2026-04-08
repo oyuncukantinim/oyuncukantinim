@@ -313,7 +313,6 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
           <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
           <div className="text-xs text-gray-400 mt-0.5">
             {isSellerView ? `Alıcı: ${order.buyer_username || '—'}` : (order.seller_name ? `Satıcı: ${order.seller_name}` : '')}
-            {order.game_name ? ` • ${order.game_name}` : ''}
           </div>
           <div className="text-[11px] text-gray-400 mt-1">
             Sipariş #{order.id} • {new Date(order.created_at).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })}

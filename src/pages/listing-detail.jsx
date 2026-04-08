@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  ChevronLeft, ChevronRight, Gamepad2, Star, ShoppingCart,
+  ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
@@ -74,7 +74,7 @@ export default function ListingDetailPage() {
     const coverImg = getListingCoverImage(listing, defaultListingImage);
     addToCart({
       id: listing.id, itemType: 'listing', title: listing.title,
-      price: Number(listing.price), game: listing.game_name,
+      price: Number(listing.price),
       image: coverImg || '', listing_id: listing.id, seller: listing.seller,
     });
   };
@@ -213,9 +213,6 @@ export default function ListingDetailPage() {
               }
             </div>
             <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2 break-words">{listing.title}</h1>
-            <p className="text-xs text-gray-400 flex items-center gap-1">
-              <Gamepad2 size={12} /> {listing.game_name}
-            </p>
           </div>
 
           {/* Fiyat + sepet */}

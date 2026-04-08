@@ -432,7 +432,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-semibold text-slate-700">{item.title}</p>
-                          {item.game ? <p className="truncate text-[10px] text-slate-400">{item.game}</p> : null}
                         </div>
                         <span className="shrink-0 text-xs font-extrabold text-emerald-600">{formatPrice(item.price)}</span>
                       </div>

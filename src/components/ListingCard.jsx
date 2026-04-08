@@ -55,11 +55,8 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
           ) : null}
         </div>
 
-        <div className={`flex items-center justify-between ${compact ? 'mb-1.5' : 'mb-3'}`}>
+        <div className={`${compact ? 'mb-1.5' : 'mb-3'}`}>
           <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
-          <span className={`font-bold text-gray-400 ${compact ? 'text-[11px]' : 'text-xs'}`}>
-            {listing.game_name || listing.game}
-          </span>
         </div>
 
         <h3

@@ -68,7 +68,6 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="text-xs font-bold text-neon-purple mb-1">{item.game}</div>
                   <h3 className="font-bold text-gray-800 truncate">{item.title}</h3>
                   {item.seller && <p className="text-xs text-gray-400 mt-1">Satıcı: {item.seller}</p>}
                 </div>
