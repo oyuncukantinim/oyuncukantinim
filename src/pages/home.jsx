@@ -88,19 +88,19 @@ export default function Home() {
               </h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-3">
             {popularGames.map(game => (
               <Link
                 key={game.id}
                 to={game.category_slug ? `/categories/${game.category_slug}` : `/market?game=${encodeURIComponent(game.name)}`}
                 className={`bg-gradient-to-br ${game.color} p-[2px] rounded-2xl hover:scale-105 transition-transform shadow-md`}
               >
-                <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl p-5 flex flex-col items-center justify-center text-center">
+                <div className="bg-white/90 backdrop-blur-sm h-full w-full rounded-2xl px-3 py-4 flex flex-col items-center justify-center text-center">
                   {game.image_url
-                    ? <img src={game.image_url} alt={game.name} className="w-12 h-12 object-contain mb-2 rounded-xl" />
+                    ? <img src={game.image_url} alt={game.name} className="w-11 h-11 object-contain mb-2 rounded-xl" />
                     : <span className="text-4xl mb-2">{game.emoji || '🎮'}</span>
                   }
-                  <span className="text-gray-800 font-bold text-sm">{game.name}</span>
+                  <span className="text-gray-800 font-bold text-sm leading-tight">{game.name}</span>
                 </div>
               </Link>
             ))}
