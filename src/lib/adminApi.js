@@ -72,6 +72,8 @@ export const adminGetStocks = (listing_id) =>
   adminRequest('admin_get_stocks', { query: { listing_id } });
 export const adminAddStocks = (body) =>
   adminRequest('admin_add_stocks', { method: 'POST', body });
+export const adminUpdateStock = (stock_id, content) =>
+  adminRequest('admin_update_stock', { method: 'POST', body: { stock_id, content } });
 export const adminDeleteStock = (stock_id) =>
   adminRequest('admin_delete_stock', { method: 'POST', body: { stock_id } });
 

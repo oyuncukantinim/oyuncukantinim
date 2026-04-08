@@ -21,6 +21,7 @@ import {
   adminGetListings,
   adminGetStocks,
   adminUpdateListing,
+  adminUpdateStock,
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
@@ -54,6 +55,8 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
   const [stocksLoading, setStocksLoading] = useState(false);
   const [stockInput, setStockInput] = useState('');
   const [stockSaving, setStockSaving] = useState(false);
+  const [editingStockId, setEditingStockId] = useState(null);
+  const [editingStockContent, setEditingStockContent] = useState('');
 
   const loadStocks = useCallback(async () => {
     setStocksLoading(true);
@@ -101,6 +104,21 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
       setStockInput('');
       await loadStocks();
       onRefresh();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setStockSaving(false);
+    }
+  };
+
+  const handleUpdateStock = async (stockId) => {
+    if (!editingStockContent.trim()) return;
+    setStockSaving(true);
+    try {
+      await adminUpdateStock(stockId, editingStockContent.trim());
+      showToast('Stok güncellendi.');
+      setEditingStockId(null);
+      await loadStocks();
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -191,25 +209,70 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                       <div key={stock.id} className="grid grid-cols-[72px_minmax(0,1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
                         <span className="font-semibold text-gray-500">#{stock.id}</span>
                         <div className="min-w-0">
-                          <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '-'}</div>
-                          {sold && stock.sold_at ? (
-                            <div className="mt-1 text-[11px] text-gray-400">Satis: {fmtDateTime(stock.sold_at)}</div>
-                          ) : null}
+                          {editingStockId === stock.id ? (
+                            <textarea
+                              value={editingStockContent}
+                              onChange={(e) => setEditingStockContent(e.target.value)}
+                              rows={2}
+                              className="w-full resize-none rounded-lg border border-violet-300 px-2 py-1.5 text-xs focus:border-violet-500 focus:outline-none"
+                              autoFocus
+                            />
+                          ) : (
+                            <>
+                              <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '-'}</div>
+                              {sold && stock.sold_at ? (
+                                <div className="mt-1 text-[11px] text-gray-400">Satis: {fmtDateTime(stock.sold_at)}</div>
+                              ) : null}
+                            </>
+                          )}
                         </div>
                         <span className={`inline-flex w-fit rounded-full px-2 py-1 text-[11px] font-bold ${sold ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
                           {sold ? 'Satildi' : 'Aktif'}
                         </span>
-                        <div className="flex justify-end">
+                        <div className="flex justify-end gap-1">
                           {!sold ? (
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteStock(stock.id)}
-                              disabled={stockSaving}
-                              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
-                              title="Stoku sil"
-                            >
-                              <Trash2 size={13} />
-                            </button>
+                            editingStockId === stock.id ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateStock(stock.id)}
+                                  disabled={stockSaving}
+                                  className="rounded-lg p-1.5 text-emerald-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
+                                  title="Kaydet"
+                                >
+                                  <CheckCircle size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditingStockId(null)}
+                                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100"
+                                  title="Iptal"
+                                >
+                                  <X size={13} />
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => { setEditingStockId(stock.id); setEditingStockContent(stock.content || ''); }}
+                                  disabled={stockSaving}
+                                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-violet-50 hover:text-violet-600 disabled:opacity-50"
+                                  title="Duzenle"
+                                >
+                                  <Pencil size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteStock(stock.id)}
+                                  disabled={stockSaving}
+                                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50"
+                                  title="Stoku sil"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </>
+                            )
                           ) : (
                             <span className="px-1.5 py-1 text-[11px] text-gray-300">-</span>
                           )}
