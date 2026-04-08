@@ -173,10 +173,9 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
             </div>
 
             <div className="overflow-hidden rounded-xl border border-gray-100">
-              <div className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 bg-gray-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+              <div className="grid grid-cols-[72px_minmax(0,1fr)_100px_56px] gap-3 bg-gray-50 px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500">
                 <span>ID</span>
                 <span>Icerik</span>
-                <span>Etiket</span>
                 <span>Durum</span>
                 <span className="text-right">Islem</span>
               </div>
@@ -189,7 +188,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                   stocks.map((stock) => {
                     const sold = Number(stock.is_sold) === 1;
                     return (
-                      <div key={stock.id} className="grid grid-cols-[72px_minmax(0,2.4fr)_minmax(0,1.1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
+                      <div key={stock.id} className="grid grid-cols-[72px_minmax(0,1fr)_100px_56px] gap-3 px-3 py-3 text-xs items-start">
                         <span className="font-semibold text-gray-500">#{stock.id}</span>
                         <div className="min-w-0">
                           <div className="break-words whitespace-pre-wrap text-gray-700 [overflow-wrap:anywhere]">{stock.content || '-'}</div>
@@ -197,7 +196,6 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                             <div className="mt-1 text-[11px] text-gray-400">Satis: {fmtDateTime(stock.sold_at)}</div>
                           ) : null}
                         </div>
-                        <span className="break-words text-gray-600 [overflow-wrap:anywhere]">{stock.label || '-'}</span>
                         <span className={`inline-flex w-fit rounded-full px-2 py-1 text-[11px] font-bold ${sold ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
                           {sold ? 'Satildi' : 'Aktif'}
                         </span>
