@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Zap, Search } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Search, Zap } from 'lucide-react';
 import { getEpins } from '../lib/api';
 import EPinCard from '../components/EPinCard';
 
@@ -7,60 +7,57 @@ export default function StorePage() {
   const [epins, setEpins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedGame, setSelectedGame] = useState('');
 
   useEffect(() => {
     getEpins()
-      .then(r => setEpins(r.data || []))
+      .then((response) => setEpins(response.data || []))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const games = [...new Set(epins.map(e => e.game_name))];
-
-  const filtered = epins.filter(e => {
-    if (selectedGame && e.game_name !== selectedGame) return false;
-    if (search && !e.title.toLowerCase().includes(search.toLowerCase()) && !e.game_name.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  });
+  const filtered = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return epins;
+    return epins.filter((epin) => epin.title.toLowerCase().includes(query));
+  }, [epins, search]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-40">
-        <div className="w-12 h-12 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
+      <div className="flex items-center justify-center py-40">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-neon-purple border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className="space-y-8">
-      <div className="text-center py-12 card">
-        <Zap className="text-yellow-500 mx-auto mb-4" size={40} />
-        <h1 className="text-4xl font-black mb-3 text-gray-800">E-Pin Magazasi</h1>
-        <p className="text-gray-500">Aninda teslimat garantisiyle en uygun fiyatli dijital kodlar.</p>
+      <div className="card py-12 text-center">
+        <Zap className="mx-auto mb-4 text-yellow-500" size={40} />
+        <h1 className="mb-3 text-4xl font-black text-gray-800">E-Pin Mağazası</h1>
+        <p className="text-gray-500">Anında teslimat garantisiyle en uygun fiyatlı dijital kodlar.</p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="E-Pin ara..." className="input-field pl-10" />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <button onClick={() => setSelectedGame('')} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${!selectedGame ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>Tumu</button>
-          {games.map(g => (
-            <button key={g} onClick={() => setSelectedGame(g === selectedGame ? '' : g)} className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${selectedGame === g ? 'bg-neon-purple text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{g}</button>
-          ))}
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <input
+          type="text"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="E-Pin ara..."
+          className="input-field pl-10"
+        />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filtered.map(epin => <EPinCard key={epin.id} epin={epin} />)}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {filtered.map((epin) => (
+          <EPinCard key={epin.id} epin={epin} />
+        ))}
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center text-gray-400 py-16">
-          <div className="text-5xl mb-4">🔍</div>
-          <p className="text-lg font-semibold">Sonuc bulunamadi.</p>
+        <div className="py-16 text-center text-gray-400">
+          <div className="mb-4 text-5xl">🔍</div>
+          <p className="text-lg font-semibold">Sonuç bulunamadı.</p>
         </div>
       )}
     </div>

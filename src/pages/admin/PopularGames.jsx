@@ -61,7 +61,7 @@ export default function AdminPopularGames() {
     try {
       await adminDeleteUploadedImage(url);
     } catch {
-      // Kayıt temizliği başarısız olsa da ekran akışını bloklamayalım.
+      // Silme başarısız olsa da admin akışını bloklamayalım.
     }
   };
 
@@ -134,14 +134,14 @@ export default function AdminPopularGames() {
           <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
             <div className="flex items-center gap-2">
               <Gamepad2 size={18} className="text-violet-600" />
-              <h3 className="font-extrabold text-gray-800">Popüler Oyunlar</h3>
+              <h3 className="font-extrabold text-gray-800">Popüler Kategoriler</h3>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={addGame}
                 className="flex items-center gap-1.5 rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 transition-colors hover:bg-gray-200"
               >
-                <Plus size={13} /> Oyun Ekle
+                <Plus size={13} /> Kategori Ekle
               </button>
               <button
                 onClick={handleSave}
@@ -155,7 +155,7 @@ export default function AdminPopularGames() {
 
           {games.length === 0 ? (
             <div className="px-5 py-12 text-center text-sm text-gray-400">
-              Henüz oyun eklenmemiş. &quot;Oyun Ekle&quot; butonuna tıklayın.
+              Henüz kategori eklenmemiş. &quot;Kategori Ekle&quot; butonuna tıklayın.
             </div>
           ) : (
             <div className="divide-y divide-gray-50">
@@ -197,7 +197,7 @@ export default function AdminPopularGames() {
                       <input
                         value={game.name}
                         onChange={(event) => updateGame(game.id, 'name', event.target.value)}
-                        placeholder="Oyun adı..."
+                        placeholder="Kategori adı..."
                         className="w-full rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:border-violet-400 focus:outline-none"
                       />
 
@@ -273,9 +273,9 @@ export default function AdminPopularGames() {
         </div>
 
         <p className="mt-3 px-1 text-xs text-gray-400">
-          Ana sayfada görünecek popüler oyunları düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın.
-          Görselleri doğrudan yükleyin; raster görseller otomatik optimize edilip WebP olarak kaydedilir. Kategori slug formatı:{' '}
-          <strong>slug-id</strong> (ör: fortnite-12).
+          Ana sayfada görünecek popüler kategorileri düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın.
+          Görselleri doğrudan yükleyin; raster görseller otomatik optimize edilip WebP olarak kaydedilir.
+          Kategori slug formatı: <strong>slug-id</strong> (ör: fortnite-12).
         </p>
       </div>
     </AdminLayout>

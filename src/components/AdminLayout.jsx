@@ -37,7 +37,7 @@ const navItems = [
   { path: '/admin/messages', label: 'Mesajlar', icon: MessageSquare },
   { path: '/admin/support', label: 'Destek Sistemi', icon: LifeBuoy },
   { path: '/admin/announcements', label: 'Duyurular', icon: Megaphone },
-  { path: '/admin/popular-games', label: 'Popüler Oyunlar', icon: Gamepad2 },
+  { path: '/admin/popular-games', label: 'Popüler Kategoriler', icon: Gamepad2 },
   { path: '/admin/settings', label: 'Site Ayarları', icon: Settings },
   { path: '/admin/dev-notes', label: 'Geliştirme', icon: StickyNote },
   { path: '/admin/logs', label: 'Güvenlik & Log', icon: Shield },

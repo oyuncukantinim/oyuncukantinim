@@ -17,28 +17,27 @@ export default function EPinCard({ epin }) {
   };
 
   return (
-    <div className="card p-5 flex flex-col h-full relative overflow-hidden group">
+    <div className="card relative flex h-full flex-col overflow-hidden p-5 group">
       {epin.tag && (
-        <span className="absolute top-4 right-4 badge-pink z-10">{epin.tag}</span>
+        <span className="absolute right-4 top-4 z-10 badge-pink">{epin.tag}</span>
       )}
 
-      <div className="w-full h-28 bg-surface-100 rounded-xl mb-4 flex items-center justify-center text-5xl group-hover:scale-110 transition-transform duration-500">
+      <div className="mb-4 flex h-28 w-full items-center justify-center rounded-xl bg-surface-100 text-5xl transition-transform duration-500 group-hover:scale-110">
         {epin.image_emoji || '🎮'}
       </div>
 
-      <div className="text-xs font-bold text-neon-purple mb-1">{epin.game_name}</div>
-      <h3 className="font-bold text-gray-800 mb-4 line-clamp-2 flex-1 leading-tight">{epin.title}</h3>
+      <h3 className="mb-4 flex-1 font-bold leading-tight text-gray-800 line-clamp-2">{epin.title}</h3>
 
-      <div className="flex items-end justify-between mt-auto">
+      <div className="mt-auto flex items-end justify-between">
         <div>
           {epin.old_price && (
-            <div className="text-xs text-gray-400 line-through mb-0.5">{Number(epin.old_price).toFixed(2)} ₺</div>
+            <div className="mb-0.5 text-xs text-gray-400 line-through">{Number(epin.old_price).toFixed(2)} ₺</div>
           )}
           <div className="text-xl font-extrabold text-neon-green">{Number(epin.price).toFixed(2)} ₺</div>
         </div>
         <button
           onClick={handleAdd}
-          className="bg-neon-purple/10 text-neon-purple p-3 rounded-xl hover:bg-neon-purple hover:text-white transition-all"
+          className="rounded-xl bg-neon-purple/10 p-3 text-neon-purple transition-all hover:bg-neon-purple hover:text-white"
           title="Sepete Ekle"
         >
           <ShoppingBag size={20} />

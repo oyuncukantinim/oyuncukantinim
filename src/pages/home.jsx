@@ -118,7 +118,7 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-orange-500 to-red-500" />
               <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                <Flame className="text-orange-500" /> Popüler Oyunlar
+                <Flame className="text-orange-500" /> Popüler Kategoriler
               </h2>
             </div>
           </div>
