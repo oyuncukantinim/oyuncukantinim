@@ -5,7 +5,6 @@ import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
-import KantinBot from './components/KantinBot';
 import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -273,7 +272,6 @@ function SiteLayout() {
         footerTagline={siteState.footerTagline}
         footerCopyright={siteState.footerCopyright}
       />
-      <KantinBot />
       <Toast />
     </div>
   );
