@@ -88,7 +88,7 @@ export default function AdminPopularGames() {
     setBusyId(game.id);
     try {
       const previousUrl = game.image_url || '';
-      const url = await adminUploadImage(file, 'branding', { preserveOriginal: true });
+      const url = await adminUploadImage(file, 'branding');
       updateGame(game.id, 'image_url', url);
       if (previousUrl && previousUrl !== url) {
         await deleteImageFile(previousUrl);
@@ -233,7 +233,7 @@ export default function AdminPopularGames() {
                             </button>
                           ) : null}
                           <span className="truncate text-[11px] text-gray-400">
-                            {isBusy ? 'İşleniyor...' : game.image_url ? 'Görsel hazır' : 'WebP önerilir'}
+                            {isBusy ? 'İşleniyor...' : game.image_url ? 'Görsel hazır' : 'Otomatik optimize edilir'}
                           </span>
                         </div>
 
@@ -274,7 +274,7 @@ export default function AdminPopularGames() {
 
         <p className="mt-3 px-1 text-xs text-gray-400">
           Ana sayfada görünecek popüler oyunları düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın.
-          Görselleri doğrudan yükleyin; düşük boyut için mümkünse WebP kullanın. Kategori slug formatı:{' '}
+          Görselleri doğrudan yükleyin; raster görseller otomatik optimize edilip WebP olarak kaydedilir. Kategori slug formatı:{' '}
           <strong>slug-id</strong> (ör: fortnite-12).
         </p>
       </div>
