@@ -13,6 +13,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
+  const listingUrl = listingSlug(listing.title, listing.id);
 
   const ringClass = activeTypes.includes('vitrine')
     ? DOPING_META.vitrine.ring
@@ -21,58 +22,57 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
       : '';
 
   return (
-    <Link
-      to={listingSlug(listing.title, listing.id)}
-      className={`card group block h-full flex flex-col overflow-hidden ${compact ? 'p-2.5' : 'p-4'} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}
-    >
-      <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
-        {coverImg ? (
-          <img
-            src={coverImg}
-            alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-gray-300">
-            <ImageIcon size={compact ? 30 : 40} />
-          </div>
-        )}
+    <article className={`card group flex h-full flex-col overflow-hidden ${compact ? 'p-2.5' : 'p-4'} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
+      <Link to={listingUrl} className="block">
+        <div className={`relative w-full overflow-hidden rounded-xl bg-surface-100 ${compact ? 'mb-2.5 h-24' : 'mb-4 h-40'}`}>
+          {coverImg ? (
+            <img
+              src={coverImg}
+              alt={listing.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-gray-300">
+              <ImageIcon size={compact ? 30 : 40} />
+            </div>
+          )}
 
-        {hasDoping ? (
-          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
-            {activeTypes.map((type) => {
-              const meta = DOPING_META[type];
-              return (
-                <div
-                  key={type}
-                  className={`flex flex-1 items-center justify-center gap-1 py-1 text-white ${meta.strip} ${compact ? 'text-[9px]' : 'text-[10px]'} font-extrabold tracking-wide`}
-                >
-                  <meta.Icon size={compact ? 8 : 9} strokeWidth={2.5} />
-                  {meta.label}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
-      </div>
+          {hasDoping ? (
+            <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+              {activeTypes.map((type) => {
+                const meta = DOPING_META[type];
+                return (
+                  <div
+                    key={type}
+                    className={`flex flex-1 items-center justify-center gap-1 py-1 text-white ${meta.strip} ${compact ? 'text-[9px]' : 'text-[10px]'} font-extrabold tracking-wide`}
+                  >
+                    <meta.Icon size={compact ? 8 : 9} strokeWidth={2.5} />
+                    {meta.label}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
 
-      <div className={`flex items-center justify-between ${compact ? 'mb-1.5' : 'mb-3'}`}>
-        <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
-        <span className={`font-bold text-gray-400 ${compact ? 'text-[11px]' : 'text-xs'}`}>
-          {listing.game_name || listing.game}
-        </span>
-      </div>
+        <div className={`flex items-center justify-between ${compact ? 'mb-1.5' : 'mb-3'}`}>
+          <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
+          <span className={`font-bold text-gray-400 ${compact ? 'text-[11px]' : 'text-xs'}`}>
+            {listing.game_name || listing.game}
+          </span>
+        </div>
 
-      <h3
-        style={{
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-        }}
-        className={`w-full min-w-0 overflow-hidden break-words font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${compact ? 'mb-1.5 text-[11px]' : 'mb-3 text-[15px]'}`}
-      >
-        {listing.title}
-      </h3>
+        <h3
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+          }}
+          className={`w-full min-w-0 overflow-hidden break-words font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple ${compact ? 'mb-1.5 text-[11px]' : 'mb-3 text-[15px]'}`}
+        >
+          {listing.title}
+        </h3>
+      </Link>
 
       <div className={`flex items-center rounded-xl bg-surface-100 ${compact ? 'mb-2.5 gap-1.5 p-1.5' : 'mb-4 gap-2.5 p-2.5'}`}>
         <div
@@ -84,8 +84,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         </div>
         <Link
           to={`/p/${listing.seller}`}
-          onClick={(e) => e.stopPropagation()}
-          className={`truncate font-bold text-gray-700 transition-colors hover:text-neon-purple ${compact ? 'text-[10px]' : 'text-xs'}`}
+          className={`inline-flex min-h-[44px] min-w-0 items-center truncate font-bold text-gray-700 transition-colors hover:text-neon-purple ${compact ? 'px-1 text-[10px]' : 'px-1.5 text-xs'}`}
         >
           {listing.seller || 'Satıcı'}
         </Link>
@@ -95,8 +94,10 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         <div className={`font-extrabold text-neon-green ${compact ? 'text-base' : 'text-xl'}`}>
           {Number(listing.price).toFixed(2)} ₺
         </div>
-        <span className={`badge-purple ${compact ? 'text-[10px]' : 'text-xs'}`}>Detay</span>
+        <Link to={listingUrl} className={`badge-purple inline-flex min-h-[36px] items-center ${compact ? 'text-[10px]' : 'text-xs'}`}>
+          Detay
+        </Link>
       </div>
-    </Link>
+    </article>
   );
 }
