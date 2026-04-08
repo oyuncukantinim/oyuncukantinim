@@ -34,7 +34,7 @@ const TOP_STRIPS = [
   { icon: LifeBuoy, label: '7/24 destek' },
 ];
 
-function PriceText({ value }) {
+function formatPrice(value) {
   return `${Number(value || 0).toFixed(2)} ₺`;
 }
 
@@ -50,12 +50,14 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const [cartHover, setCartHover] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [recommendedListings, setRecommendedListings] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
 
   const cartTimeout = useRef(null);
   const searchRef = useRef(null);
-  const searchInputRef = useRef(null);
+  const desktopSearchInputRef = useRef(null);
+  const mobileSearchInputRef = useRef(null);
   const debounceRef = useRef(null);
 
   useEffect(() => {
@@ -89,17 +91,25 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   }, [location.pathname, user]);
 
   useEffect(() => {
+    getListings({ limit: 4, status: 'active' })
+      .then((response) => setRecommendedListings(response.data || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     const handleClick = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setDesktopSearchFocused(false);
       }
     };
+
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
+
     if (!searchQuery.trim()) {
       setSearchResults([]);
       setSearchLoading(false);
@@ -139,6 +149,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       closeSearch();
       return;
     }
+
     if (event.key === 'Enter') {
       submitSearch();
     }
@@ -155,6 +166,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
 
   const searchDropdownOpen = desktopSearchFocused && searchQuery.trim();
   const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const dropdownItems = searchResults.length > 0 ? searchResults : recommendedListings;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/92 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
@@ -200,10 +212,16 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
           </div>
 
           <div className="relative hidden flex-1 lg:block" ref={searchRef}>
-            <div className={`flex h-14 items-center rounded-2xl border bg-slate-50 px-4 shadow-sm transition-all ${desktopSearchFocused ? 'border-violet-400 bg-white shadow-[0_12px_30px_rgba(124,58,237,0.12)]' : 'border-slate-200'}`}>
+            <div
+              className={`flex h-14 items-center rounded-2xl border bg-slate-50 px-4 shadow-sm transition-all ${
+                desktopSearchFocused
+                  ? 'border-violet-400 bg-white shadow-[0_12px_30px_rgba(124,58,237,0.12)]'
+                  : 'border-slate-200'
+              }`}
+            >
               <Search size={18} className="mr-3 shrink-0 text-slate-400" />
               <input
-                ref={searchInputRef}
+                ref={desktopSearchInputRef}
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 onFocus={() => setDesktopSearchFocused(true)}
@@ -212,7 +230,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
               />
               {searchQuery ? (
-                <button type="button" onClick={closeSearch} className="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600">
+                <button
+                  type="button"
+                  onClick={closeSearch}
+                  className="ml-2 rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                >
                   <X size={14} />
                 </button>
               ) : null}
@@ -225,18 +247,27 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               </button>
             </div>
 
-            {searchDropdownOpen && (
+            {searchDropdownOpen ? (
               <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
                 {searchLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
                   </div>
-                ) : searchResults.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-sm text-slate-400">Sonuç bulunamadı.</div>
                 ) : (
                   <>
+                    <div className="border-b border-slate-100 px-4 py-4">
+                      <p className="text-sm font-semibold text-slate-700">
+                        {searchResults.length > 0 ? 'Arama sonuçları' : 'Sonuç bulunamadı'}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-400">
+                        {searchResults.length > 0
+                          ? 'İlgili ilanlar aşağıda listeleniyor.'
+                          : 'Benzer ilanlar öneri olarak gösteriliyor.'}
+                      </p>
+                    </div>
+
                     <div className="divide-y divide-slate-100">
-                      {searchResults.map((item) => (
+                      {dropdownItems.map((item) => (
                         <Link
                           key={item.id}
                           to={listingSlug(item.title, item.id)}
@@ -252,20 +283,30 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold text-slate-800">{item.title}</p>
-                            <p className="text-xs font-bold text-emerald-600">{PriceText({ value: item.price })}</p>
+                            <div className="mt-0.5 flex items-center gap-2">
+                              <span className="truncate rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">
+                                {item.category_name || 'Kategori'}
+                              </span>
+                              <span className="text-xs font-bold text-emerald-600">{formatPrice(item.price)}</span>
+                            </div>
                           </div>
                         </Link>
                       ))}
                     </div>
+
                     <div className="border-t border-slate-100 px-4 py-3">
-                      <button type="button" onClick={submitSearch} className="text-xs font-bold text-violet-600 transition-colors hover:text-violet-500">
+                      <button
+                        type="button"
+                        onClick={submitSearch}
+                        className="text-xs font-bold text-violet-600 transition-colors hover:text-violet-500"
+                      >
                         Tümünü Gör →
                       </button>
                     </div>
                   </>
                 )}
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="ml-auto hidden items-center gap-2 md:flex">
@@ -279,10 +320,16 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
 
             {user ? (
               <>
-                <Link to="/messages" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-600">
+                <Link
+                  to="/messages"
+                  className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-600"
+                >
                   <MessageCircle size={19} />
                 </Link>
-                <Link to="/notifications" className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600">
+                <Link
+                  to="/notifications"
+                  className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                >
                   <Bell size={19} />
                   {unreadNotif > 0 ? (
                     <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
@@ -326,13 +373,13 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                           <p className="truncate text-xs font-semibold text-slate-700">{item.title}</p>
                           {item.game ? <p className="truncate text-[10px] text-slate-400">{item.game}</p> : null}
                         </div>
-                        <span className="shrink-0 text-xs font-extrabold text-emerald-600">{PriceText({ value: item.price })}</span>
+                        <span className="shrink-0 text-xs font-extrabold text-emerald-600">{formatPrice(item.price)}</span>
                       </div>
                     ))}
                   </div>
                   <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-4 py-3">
                     <span className="text-xs font-bold text-slate-600">
-                      Toplam: <span className="text-emerald-600">{PriceText({ value: cartTotal })}</span>
+                      Toplam: <span className="text-emerald-600">{formatPrice(cartTotal)}</span>
                     </span>
                     <Link to="/cart" className="rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-violet-500">
                       Sepete Git
@@ -359,7 +406,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 </div>
                 <div className="text-left">
                   <div className="max-w-[120px] truncate text-xs font-semibold text-slate-500">{user.username}</div>
-                  <div className="text-sm font-black text-emerald-600">{PriceText({ value: user.balance || 0 })}</div>
+                  <div className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</div>
                 </div>
               </Link>
             ) : (
@@ -377,7 +424,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               type="button"
               onClick={() => {
                 setMobileOpen(true);
-                setTimeout(() => searchInputRef.current?.focus(), 50);
+                setTimeout(() => mobileSearchInputRef.current?.focus(), 50);
               }}
               className="rounded-2xl border border-slate-200 p-3 text-slate-500"
             >
@@ -391,7 +438,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 </span>
               ) : null}
             </Link>
-            <button type="button" onClick={() => setMobileOpen((prev) => !prev)} className="rounded-2xl border border-slate-200 p-3 text-slate-500">
+            <button
+              type="button"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="rounded-2xl border border-slate-200 p-3 text-slate-500"
+            >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
@@ -406,9 +457,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   key={link.to}
                   to={link.to}
                   className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all ${
-                    active
-                      ? 'bg-violet-50 text-violet-700'
-                      : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                    active ? 'bg-violet-50 text-violet-700' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                   }`}
                 >
                   {link.icon ? <link.icon size={15} /> : null}
@@ -436,7 +485,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
                 <Search size={15} className="shrink-0 text-slate-400" />
                 <input
-                  ref={searchInputRef}
+                  ref={mobileSearchInputRef}
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onKeyDown={(event) => {
@@ -512,7 +561,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     className="flex items-center justify-between rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3"
                   >
                     <span className="text-sm font-semibold text-slate-700">{user.username}</span>
-                    <span className="text-sm font-black text-emerald-600">{PriceText({ value: user.balance || 0 })}</span>
+                    <span className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</span>
                   </Link>
                 </>
               ) : (
