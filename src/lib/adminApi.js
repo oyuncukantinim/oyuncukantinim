@@ -163,6 +163,12 @@ export const adminSaveCategoryType = (body) =>
 export const adminDeleteCategoryType = (type_id) =>
   adminRequest('admin_delete_category_type', { method: 'POST', body: { type_id } });
 
+// Popular Games
+export const adminGetPopularGames = () =>
+  adminRequest('admin_get_popular_games');
+export const adminSavePopularGames = (games) =>
+  adminRequest('admin_save_popular_games', { method: 'POST', body: { games } });
+
 // Image Upload
 export async function adminUploadImage(file, folder = 'misc', options = {}) {
   const url = new URL(API_URL);

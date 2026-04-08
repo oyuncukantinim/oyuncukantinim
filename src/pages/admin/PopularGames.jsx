@@ -1,23 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, GripVertical, Save, Gamepad2, Image as ImageIcon } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
+import { adminGetPopularGames, adminSavePopularGames } from '../../lib/adminApi';
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../../lib/imageUrl';
-
-const ADMIN_API = 'https://api.oyuncukantinim.com.tr/api.php';
-
-async function adminReq(action, body = null) {
-  const url = new URL(ADMIN_API);
-  url.searchParams.set('action', action);
-  const opts = {
-    method: body ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('admin_token')}` },
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url.toString(), opts);
-  const json = await res.json();
-  if (json.status !== 'success') throw new Error(json.message);
-  return json.data;
-}
 
 const COLOR_OPTIONS = [
   { label: 'Kırmızı', value: 'from-red-500 to-rose-600' },
@@ -42,7 +27,7 @@ export default function AdminPopularGames() {
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   useEffect(() => {
-    adminReq('get_popular_games')
+    adminGetPopularGames()
       .then(d => setGames(d || []))
       .catch(() => {});
   }, []);
@@ -54,7 +39,7 @@ export default function AdminPopularGames() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminReq('admin_save_popular_games', { games });
+      await adminSavePopularGames(games);
       showToast('Kaydedildi!');
     } catch (e) { showToast(e.message); }
     finally { setSaving(false); }
