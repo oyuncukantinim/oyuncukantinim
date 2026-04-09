@@ -23,24 +23,6 @@ import {
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 
-const BADGE_META = {
-  fast: { icon: '⚡', label: 'Hızlı Teslimat', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
-  super: { icon: '🏆', label: 'Süper Satıcı', color: 'bg-purple-50 text-purple-600 border-purple-200' },
-  elite: { icon: '💎', label: 'Elite Satıcı', color: 'bg-cyan-50 text-cyan-600 border-cyan-200' },
-  trend: { icon: '🔥', label: 'Trend', color: 'bg-orange-50 text-orange-600 border-orange-200' },
-  veteran: { icon: '🎖️', label: 'Veteran', color: 'bg-green-50 text-green-600 border-green-200' },
-};
-
-function Badge({ type }) {
-  const meta = BADGE_META[type];
-  if (!meta) return null;
-
-  return (
-    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border ${meta.color}`}>
-      {meta.icon} {meta.label}
-    </span>
-  );
-}
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
@@ -141,7 +123,6 @@ export default function SellerPage() {
   if (!seller) return null;
 
   const isOwnProfile = user && user.username === username;
-  const badges = seller.badges || [];
 
   const stats = [
     { icon: Package, label: 'Toplam Satış', value: seller.total_sales ?? 0, color: 'text-neon-purple' },
@@ -214,11 +195,6 @@ export default function SellerPage() {
             <span className="font-bold text-gray-700">{seller.follower_count ?? 0}</span> takipçi
           </p>
 
-          {badges.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-5">
-              {badges.map((badge) => <Badge key={badge} type={badge} />)}
-            </div>
-          )}
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {stats.map((stat, i) => (
