@@ -77,20 +77,6 @@ export const adminUpdateStock = (stock_id, content) =>
 export const adminDeleteStock = (stock_id) =>
   adminRequest('admin_delete_stock', { method: 'POST', body: { stock_id } });
 
-// Auctions
-export const adminGetAuctions = (params = {}) =>
-  adminRequest('admin_get_auctions', { query: params });
-export const adminGetAuction = (id) =>
-  adminRequest('admin_get_auction', { query: { id } });
-export const adminCreateAuction = (body) =>
-  adminRequest('admin_create_auction', { method: 'POST', body });
-export const adminUpdateAuction = (body) =>
-  adminRequest('admin_update_auction', { method: 'POST', body });
-export const adminCancelAuction = (auction_id) =>
-  adminRequest('admin_cancel_auction', { method: 'POST', body: { auction_id } });
-export const adminEndAuction = (auction_id) =>
-  adminRequest('admin_end_auction', { method: 'POST', body: { auction_id } });
-
 // Orders
 export const adminGetOrders = (params = {}) =>
   adminRequest('admin_get_orders', { query: params });

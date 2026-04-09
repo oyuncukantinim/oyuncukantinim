@@ -1,8 +1,7 @@
-﻿import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
-  Gavel,
   LifeBuoy,
   Menu,
   MessageCircle,
@@ -26,7 +25,6 @@ const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
   { to: '/store', label: 'E-Pin', icon: Store },
   { to: '/market', label: 'Pazar', icon: Users },
-  { to: '/auctions', label: 'Acik Arttirma', icon: Gavel },
   { to: '/categories', label: 'Kategoriler' },
   { to: '/support', label: 'Destek', icon: LifeBuoy },
 ];
@@ -552,9 +550,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
         <div className="hidden items-center justify-between border-t border-slate-200 py-3 md:flex">
           <div className="flex items-center gap-1">
             {NAV_LINKS.map((link) => {
-              const active = link.to === '/auctions'
-                ? (location.pathname === '/auctions' || location.pathname.startsWith('/auction/'))
-                : location.pathname === link.to;
+              const active = location.pathname === link.to;
               return (
                 <Link
                   key={link.to}
