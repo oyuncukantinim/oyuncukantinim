@@ -20,7 +20,7 @@ export default function Footer({
               siteLogoText={siteLogoText}
               imageClassName="h-10 w-auto max-w-[220px] object-contain"
               iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
-              titleClassName="text-xl font-black tracking-tight text-slate-700"
+              titleClassName="text-xl font-black tracking-tight bg-gradient-to-r from-neon-purple to-neon-cyan bg-clip-text text-transparent"
             />
             <div className="mt-2 text-sm text-gray-500">{footerTagline}</div>
           </div>
