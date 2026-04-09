@@ -111,7 +111,8 @@ export default function MarketPage() {
     getCategories()
       .then((res) => {
         const flat = (res.data || []).filter((c) => c.is_active);
-        setCategories(flat);
+        const parentIds = new Set(flat.map((c) => c.parent_id).filter(Boolean));
+        setCategories(flat.filter((c) => !parentIds.has(c.id)));
       })
       .catch(() => {});
   }, []);
