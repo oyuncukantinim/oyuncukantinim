@@ -77,6 +77,24 @@ export default async function middleware(request) {
     } catch (_) {}
   }
 
+  // /p/username
+  const sellerMatch = pathname.match(/^\/p\/([^/]+)$/);
+  if (sellerMatch) {
+    const username = sellerMatch[1];
+    try {
+      const res  = await fetch(`${API_BASE}?action=get_seller_profile&username=${encodeURIComponent(username)}`);
+      const data = await res.json();
+      if (data.status === 'success' && data.data?.seller) {
+        const s = data.data.seller;
+        title = `${s.username} — ${SITE_NAME}`;
+        desc  = s.bio
+          ? s.bio.slice(0, 200)
+          : `${s.total_sales ?? 0} satış · ${s.review_count ?? 0} değerlendirme`;
+        if (s.avatar && s.avatar.startsWith('http')) image = s.avatar;
+      }
+    } catch (_) {}
+  }
+
   const html = buildHtml({ title, desc, image, url: request.url, type });
   return new Response(html, {
     headers: { 'content-type': 'text/html; charset=utf-8' },
