@@ -140,13 +140,13 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
         </h3>
       </Link>
 
-      <div className="mb-4 flex items-center gap-2.5 rounded-xl bg-surface-100 p-2.5">
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-lg shadow-sm">
+      <div className="mb-4 flex min-w-0 items-center gap-2 rounded-xl bg-surface-100 p-2.5">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-base shadow-sm">
           {listing.avatar || '👤'}
         </div>
         <Link
           to={`/p/${listing.seller}`}
-          className="inline-flex min-h-[36px] min-w-0 items-center truncate px-1 text-[12px] font-bold text-gray-700 transition-colors hover:text-neon-purple"
+          className="min-w-0 truncate text-[11px] font-bold text-gray-700 transition-colors hover:text-neon-purple"
         >
           {listing.seller || 'Satıcı'}
         </Link>
