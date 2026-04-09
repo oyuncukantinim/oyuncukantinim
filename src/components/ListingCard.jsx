@@ -25,7 +25,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
     return (
       <article className={`card group flex flex-row overflow-hidden p-0 ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
         {/* Sol: Fotoğraf */}
-        <Link to={listingUrl} className="relative h-28 w-28 shrink-0 overflow-hidden rounded-l-2xl bg-surface-100 sm:h-32 sm:w-32">
+        <Link to={listingUrl} className="relative w-36 shrink-0 self-stretch overflow-hidden rounded-l-2xl bg-surface-100 sm:w-40">
           {coverImg ? (
             <img
               src={coverImg}
