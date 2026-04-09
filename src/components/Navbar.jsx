@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { getListings, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
+import { getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
@@ -50,6 +50,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [unreadNotif, setUnreadNotif] = useState(0);
+  const [unreadMessageThreads, setUnreadMessageThreads] = useState(0);
   const [cartHover, setCartHover] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -67,25 +68,49 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   useEffect(() => {
     if (!user) {
       setUnreadNotif(0);
+      setUnreadMessageThreads(0);
       return undefined;
     }
 
-    const fetchCount = () => {
-      getUnreadNotificationsCount()
-        .then((response) => setUnreadNotif(response.data?.unread ?? 0))
+    const fetchCounts = () => {
+      Promise.all([getUnreadNotificationsCount(), getUnreadCount()])
+        .then(([notificationResponse, messageResponse]) => {
+          setUnreadNotif(notificationResponse.data?.unread ?? 0);
+          setUnreadMessageThreads(messageResponse.data?.unread ?? 0);
+        })
         .catch(() => {});
     };
 
-    fetchCount();
-    const interval = setInterval(fetchCount, 60000);
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 5000);
     const handler = () => setUnreadNotif(0);
+    const handleFocus = () => fetchCounts();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') fetchCounts();
+    };
     window.addEventListener('notifications-read', handler);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('notifications-read', handler);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !location.pathname.startsWith('/messages')) return;
+
+    const timer = setTimeout(() => {
+      getUnreadCount()
+        .then((response) => setUnreadMessageThreads(response.data?.unread ?? 0))
+        .catch(() => {});
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname, user]);
 
   useEffect(() => {
     if (location.pathname === '/notifications' && user) {
@@ -382,6 +407,11 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-600"
                 >
                   <MessageCircle size={19} />
+                  {unreadMessageThreads > 0 ? (
+                    <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
+                      {unreadMessageThreads > 9 ? '9+' : unreadMessageThreads}
+                    </span>
+                  ) : null}
                 </Link>
                 <Link
                   to="/notifications"
@@ -608,9 +638,14 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   <Link
                     to="/messages"
                     onClick={() => setMobileOpen(false)}
-                    className="block rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                    className="flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-50"
                   >
-                    Mesajlar
+                    <span>Mesajlar</span>
+                    {unreadMessageThreads > 0 ? (
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {unreadMessageThreads > 9 ? '9+' : unreadMessageThreads}
+                      </span>
+                    ) : null}
                   </Link>
                   <Link
                     to="/notifications"
