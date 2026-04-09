@@ -14,6 +14,19 @@ export function listingSlug(title, id) {
   return `/listing/${slug}-${id}`;
 }
 
+export function auctionSlug(title, id) {
+  const slug = title
+    .replace(/İ/g, 'i').replace(/I/g, 'i')
+    .replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's')
+    .replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+    .toLowerCase()
+    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
+    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `/auction/${slug}-${id}`;
+}
+
 // Slug'dan id'yi çıkarır: "minecraft-hesabi-123" → "123"
 export function idFromSlug(slug) {
   return slug.split('-').pop();
@@ -264,6 +277,23 @@ export function getFavorites() {
 
 export function getListingPriceHistory(listingId) {
   return request('get_listing_price_history', { query: { listing_id: listingId } });
+}
+
+// --- AUCTIONS ---
+export function getAuctions(query = {}) {
+  return request('get_auctions', { query });
+}
+
+export function getAuction(id) {
+  return request('get_auction', { query: { id } });
+}
+
+export function getAuctionBids(auctionId) {
+  return request('get_auction_bids', { query: { auction_id: auctionId } });
+}
+
+export function placeBid(payload) {
+  return request('place_bid', { method: 'POST', body: payload, auth: true });
 }
 
 // --- FINANCIAL TRANSACTIONS ---

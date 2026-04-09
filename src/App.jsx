@@ -13,6 +13,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 const Home                = lazy(() => import('./pages/home'));
 const StorePage           = lazy(() => import('./pages/store'));
 const MarketPage          = lazy(() => import('./pages/market'));
+const AuctionsPage        = lazy(() => import('./pages/auctions'));
+const AuctionDetailPage   = lazy(() => import('./pages/auction-detail'));
 const ListingDetailPage   = lazy(() => import('./pages/listing-detail'));
 const CartPage            = lazy(() => import('./pages/cart'));
 const LoginPage           = lazy(() => import('./pages/login'));
@@ -31,6 +33,7 @@ const AdminLogin         = lazy(() => import('./pages/admin/Login'));
 const AdminDashboard     = lazy(() => import('./pages/admin/Dashboard'));
 const AdminUsers         = lazy(() => import('./pages/admin/Users'));
 const AdminListings      = lazy(() => import('./pages/admin/Listings'));
+const AdminAuctions      = lazy(() => import('./pages/admin/Auctions'));
 const AdminOrders        = lazy(() => import('./pages/admin/Orders'));
 const AdminReviews       = lazy(() => import('./pages/admin/Reviews'));
 const AdminCategories    = lazy(() => import('./pages/admin/Categories'));
@@ -249,6 +252,8 @@ function SiteLayout() {
             <Route path="/" element={<Home />} />
             <Route path="/store" element={<StorePage />} />
             <Route path="/market" element={<MarketPage />} />
+            <Route path="/auctions" element={<AuctionsPage />} />
+            <Route path="/auction/:slug" element={<AuctionDetailPage />} />
             <Route path="/listing/:slug" element={<ListingDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -288,6 +293,7 @@ export default function App() {
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
+              <Route path="/admin/auctions" element={<AdminRoute><AdminAuctions /></AdminRoute>} />
               <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
               <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
               <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />

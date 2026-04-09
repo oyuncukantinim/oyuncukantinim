@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
   CreditCard,
+  Gavel,
   Gamepad2,
   LayoutDashboard,
   LifeBuoy,
@@ -26,9 +27,10 @@ import SiteBrand from './SiteBrand';
 
 const navItems = [
   { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/admin/users', label: 'Kullanıcılar', icon: Users },
-  { path: '/admin/listings', label: 'İlanlar', icon: ShoppingBag },
-  { path: '/admin/orders', label: 'Siparişler', icon: Package },
+  { path: '/admin/users', label: 'Kullanicilar', icon: Users },
+  { path: '/admin/listings', label: 'Ilanlar', icon: ShoppingBag },
+  { path: '/admin/auctions', label: 'Acik Artirmalar', icon: Gavel },
+  { path: '/admin/orders', label: 'Siparisler', icon: Package },
   { path: '/admin/reviews', label: 'Yorumlar', icon: Star },
   { path: '/admin/categories', label: 'Kategoriler', icon: Tag },
   { path: '/admin/doping', label: 'Doping', icon: Zap },
@@ -37,33 +39,23 @@ const navItems = [
   { path: '/admin/messages', label: 'Mesajlar', icon: MessageSquare },
   { path: '/admin/support', label: 'Destek Sistemi', icon: LifeBuoy },
   { path: '/admin/announcements', label: 'Duyurular', icon: Megaphone },
-  { path: '/admin/popular-games', label: 'Popüler Kategoriler', icon: Gamepad2 },
-  { path: '/admin/settings', label: 'Site Ayarları', icon: Settings },
-  { path: '/admin/dev-notes', label: 'Geliştirme', icon: StickyNote },
-  { path: '/admin/logs', label: 'Güvenlik & Log', icon: Shield },
+  { path: '/admin/popular-games', label: 'Populer Kategoriler', icon: Gamepad2 },
+  { path: '/admin/settings', label: 'Site Ayarlari', icon: Settings },
+  { path: '/admin/dev-notes', label: 'Gelistirme', icon: StickyNote },
+  { path: '/admin/logs', label: 'Guvenlik ve Log', icon: Shield },
 ];
 
-export default function AdminLayout({ children }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    navigate('/admin/login');
-  };
-
-  const adminUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('admin_user') || '{}');
-    } catch {
-      return {};
-    }
-  })();
-
-  const Sidebar = () => (
+function AdminSidebar({
+  locationPath,
+  siteName,
+  siteLogo,
+  siteLogoText,
+  adminUser,
+  defaultAvatar,
+  onNavigate,
+  onLogout,
+}) {
+  return (
     <aside className="flex h-full w-64 flex-col bg-gray-900 text-white">
       <div className="border-b border-white/10 px-6 py-5">
         <SiteBrand
@@ -82,12 +74,12 @@ export default function AdminLayout({ children }) {
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
-          const active = location.pathname === item.path;
+          const active = locationPath === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
-              onClick={() => setSidebarOpen(false)}
+              onClick={onNavigate}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
                 active
                   ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/50'
@@ -109,30 +101,69 @@ export default function AdminLayout({ children }) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{adminUser.username || 'Admin'}</div>
-            <div className="text-[10px] text-violet-400">Yönetici</div>
+            <div className="text-[10px] text-violet-400">Yonetici</div>
           </div>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/10"
         >
-          <LogOut size={15} /> Çıkış Yap
+          <LogOut size={15} /> Cikis Yap
         </button>
       </div>
     </aside>
   );
+}
+
+export default function AdminLayout({ children }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    navigate('/admin/login');
+  };
+
+  const adminUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('admin_user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <div className="hidden flex-shrink-0 md:flex">
-        <Sidebar />
+        <AdminSidebar
+          locationPath={location.pathname}
+          siteName={siteName}
+          siteLogo={siteLogo}
+          siteLogoText={siteLogoText}
+          adminUser={adminUser}
+          defaultAvatar={defaultAvatar}
+          onNavigate={() => setSidebarOpen(false)}
+          onLogout={handleLogout}
+        />
       </div>
 
       {sidebarOpen ? (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
           <div className="relative z-50 h-full w-64">
-            <Sidebar />
+            <AdminSidebar
+              locationPath={location.pathname}
+              siteName={siteName}
+              siteLogo={siteLogo}
+              siteLogoText={siteLogoText}
+              adminUser={adminUser}
+              defaultAvatar={defaultAvatar}
+              onNavigate={() => setSidebarOpen(false)}
+              onLogout={handleLogout}
+            />
           </div>
         </div>
       ) : null}
@@ -152,7 +183,7 @@ export default function AdminLayout({ children }) {
             target="_blank"
             className="text-xs font-semibold text-gray-500 transition-colors hover:text-violet-600"
           >
-            ← Siteye Dön
+            {'<-'} Siteye Don
           </Link>
         </header>
 
