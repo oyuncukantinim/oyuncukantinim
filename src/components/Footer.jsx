@@ -10,7 +10,7 @@ export default function Footer({
 }) {
   return (
     <footer className="mt-16 border-t border-gray-200 bg-white py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div>
             <SiteBrand

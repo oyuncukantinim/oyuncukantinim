@@ -189,7 +189,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/92 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
       <div className="hidden border-b border-slate-200 bg-slate-950 text-slate-200 md:block">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 lg:gap-5">
             {TOP_STRIPS.map((item) => (
               <div key={item.label} className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
@@ -212,7 +212,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-[78px] items-center gap-4 py-4">
           <div className="shrink-0">
             <SiteBrand
