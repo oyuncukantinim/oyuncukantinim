@@ -110,6 +110,10 @@ export function getListings(query = {}) {
   return request('get_listings', { query });
 }
 
+export function getCategories() {
+  return request('get_categories_tree');
+}
+
 export function getListing(id) {
   return request('get_listing', { query: { id } });
 }
