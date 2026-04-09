@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [react()],
   build: {
     cssCodeSplit: true,
+    modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
