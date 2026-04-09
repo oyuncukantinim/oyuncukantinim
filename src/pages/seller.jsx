@@ -158,7 +158,7 @@ export default function SellerPage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
           {(seller.banner_image || defaultProfileBanner) ? (
@@ -257,7 +257,7 @@ export default function SellerPage() {
               <p className="font-semibold">Henüz aktif ilan yok.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {listings.map((listing) => <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />)}
             </div>
           )}
