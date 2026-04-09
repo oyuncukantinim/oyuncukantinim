@@ -195,7 +195,7 @@ export default function Home() {
                 <Zap className="text-amber-500" /> Vitrin İlanlar
               </h2>
             </div>
-            <Link to="/market" className="flex items-center gap-1 rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-600 transition-all hover:bg-amber-500 hover:text-white">
+            <Link to="/market" className="flex items-center gap-1 rounded-full bg-amber-100 px-4 py-2 text-sm font-bold text-amber-900 transition-all hover:bg-amber-200 hover:text-amber-950">
               Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>

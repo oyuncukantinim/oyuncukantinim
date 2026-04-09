@@ -5,7 +5,7 @@ import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
 
 const DOPING_META = {
-  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-500', ring: 'ring-amber-400/60' },
+  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700', ring: 'ring-amber-500/60' },
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
