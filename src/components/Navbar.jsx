@@ -223,7 +223,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               containerClassName="items-center gap-3"
               imageClassName="h-10 w-auto max-w-[220px] object-contain transition-transform group-hover:scale-[1.02]"
               iconWrapperClassName="rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2.5 text-white shadow-[0_10px_30px_rgba(124,58,237,0.24)] transition-transform group-hover:rotate-6"
-              titleClassName="hidden text-xl font-black tracking-tight text-slate-900 lg:inline"
+              titleClassName="hidden text-xl font-black tracking-tight bg-gradient-to-r from-neon-purple to-neon-cyan bg-clip-text text-transparent lg:inline"
               subtitleClassName="hidden text-xs font-medium text-slate-400 lg:block"
               subtitle={siteLogo ? '' : 'Oyuncu pazarı ve E-Pin mağazası'}
             />
