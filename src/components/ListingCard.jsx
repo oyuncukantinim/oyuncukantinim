@@ -93,7 +93,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
   return (
     <article className={`card group flex h-full flex-col overflow-hidden p-4 ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
       <Link to={listingUrl} className="block">
-        <div className="relative mb-4 h-40 w-full overflow-hidden rounded-xl bg-surface-100">
+        <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-100">
           {coverImg ? (
             <img
               src={coverImg}
