@@ -181,8 +181,8 @@ export default function MarketPage() {
             </p>
           </div>
           <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-left md:text-right">
-              <div className="text-sm font-extrabold text-emerald-700">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-left md:text-right">
+              <div className="text-xs font-bold text-emerald-700">
                 <AnimatedCount value={total} loading={loading} /> ilan listelendi
               </div>
             </div>
