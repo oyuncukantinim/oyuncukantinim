@@ -24,7 +24,6 @@ import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 
 const BADGE_META = {
-  verified: { icon: '🛡️', label: 'Doğrulanmış Satıcı', color: 'bg-blue-50 text-blue-600 border-blue-200' },
   fast: { icon: '⚡', label: 'Hızlı Teslimat', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
   super: { icon: '🏆', label: 'Süper Satıcı', color: 'bg-purple-50 text-purple-600 border-purple-200' },
   elite: { icon: '💎', label: 'Elite Satıcı', color: 'bg-cyan-50 text-cyan-600 border-cyan-200' },
