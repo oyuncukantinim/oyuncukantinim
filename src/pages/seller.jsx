@@ -158,7 +158,7 @@ export default function SellerPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <div className="card overflow-hidden">
         <div className="aspect-[5/1] bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 relative overflow-hidden">
           {(seller.banner_image || defaultProfileBanner) ? (
