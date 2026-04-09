@@ -227,7 +227,7 @@ export default function Home() {
                 <ShieldCheck className="text-neon-green" /> Son İlanlar
               </h2>
             </div>
-            <Link to="/market" className="flex items-center gap-1 rounded-full bg-neon-green/10 px-4 py-2 text-sm font-bold text-neon-green transition-all hover:bg-neon-green hover:text-white">
+            <Link to="/market" className="flex items-center gap-1 rounded-full bg-neon-green/10 px-4 py-2 text-sm font-bold text-emerald-700 transition-all hover:bg-neon-green hover:text-white">
               Tümünü Gör <ChevronRight size={14} />
             </Link>
           </div>

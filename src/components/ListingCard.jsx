@@ -88,7 +88,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
       </div>
 
       <div className={`mt-auto flex items-center justify-between border-t border-gray-100 ${compact ? 'pt-2.5' : 'pt-3'}`}>
-        <div className={`font-extrabold text-neon-green ${compact ? 'text-base' : 'text-xl'}`}>
+        <div className={`font-extrabold text-emerald-700 ${compact ? 'text-base' : 'text-xl'}`}>
           {Number(listing.price).toFixed(2)} ₺
         </div>
         <Link to={listingUrl} className={`badge-purple inline-flex min-h-[36px] items-center ${compact ? 'text-[10px]' : 'text-xs'}`}>

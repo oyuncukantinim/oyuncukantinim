@@ -55,19 +55,19 @@
   }
 
   .badge-purple {
-    @apply badge bg-neon-purple/10 text-neon-purple border border-neon-purple/20;
+    @apply badge bg-neon-purple/10 text-violet-700 border border-neon-purple/20;
   }
 
   .badge-cyan {
-    @apply badge bg-neon-cyan/10 text-neon-cyan border border-neon-cyan/20;
+    @apply badge bg-neon-cyan/10 text-cyan-700 border border-neon-cyan/20;
   }
 
   .badge-pink {
-    @apply badge bg-neon-pink/10 text-neon-pink border border-neon-pink/20;
+    @apply badge bg-neon-pink/10 text-pink-700 border border-neon-pink/20;
   }
 
   .badge-green {
-    @apply badge bg-neon-green/10 text-neon-green border border-neon-green/20;
+    @apply badge bg-neon-green/10 text-emerald-700 border border-neon-green/20;
   }
 
   .glow-text {
