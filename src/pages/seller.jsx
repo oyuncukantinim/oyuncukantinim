@@ -128,7 +128,7 @@ export default function SellerPage() {
     { icon: Package, label: 'Toplam Satış', value: seller.total_sales ?? 0, color: 'text-neon-purple' },
     { icon: ThumbsUp, label: 'Başarı Oranı', value: `%${seller.success_rate ?? 100}`, color: 'text-neon-green' },
     { icon: Star, label: 'Ortalama Puan', value: Number(seller.avg_rating ?? 5).toFixed(1), color: 'text-yellow-500' },
-    { icon: Clock, label: 'Üyelik', value: seller.member_since, color: 'text-neon-cyan' },
+    { icon: Clock, label: 'Üyelik', value: seller.created_at ? new Date(seller.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-', color: 'text-neon-cyan' },
   ];
 
   const tabs = [
