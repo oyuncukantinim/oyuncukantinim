@@ -202,13 +202,13 @@ export default function Home() {
 
           <div className="min-h-[356px]">
             {vitrineListings.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
                 {vitrineListings.slice(0, 10).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <HomeCardSkeleton key={`vitrine-skeleton-${index}`} className="h-[356px]" />
                 ))}
@@ -234,13 +234,13 @@ export default function Home() {
 
           <div className="min-h-[356px]">
             {recentListings.length > 0 ? (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
                 {recentListings.slice(0, 10).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-6">
                 {Array.from({ length: 5 }).map((_, index) => (
                   <HomeCardSkeleton key={`recent-skeleton-${index}`} className="h-[356px]" />
                 ))}
