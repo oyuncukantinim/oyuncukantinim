@@ -127,7 +127,7 @@ export default function SellerPage() {
   const stats = [
     { icon: Package, label: 'Toplam Satış', value: seller.total_sales ?? 0, color: 'text-neon-purple' },
     { icon: ThumbsUp, label: 'Başarı Oranı', value: `%${seller.success_rate ?? 100}`, color: 'text-neon-green' },
-    { icon: Star, label: 'Ortalama Puan', stars: Number(seller.avg_rating ?? 5), color: 'text-yellow-500' },
+    { icon: Star, label: 'Ortalama Puan', value: Number(seller.avg_rating ?? 5).toFixed(1), color: 'text-yellow-500' },
     { icon: Clock, label: 'Üyelik', value: seller.created_at ? new Date(seller.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-', color: 'text-neon-cyan' },
   ];
 
@@ -200,26 +200,7 @@ export default function SellerPage() {
             {stats.map((stat, i) => (
               <div key={i} className="bg-surface-50 border border-gray-100 rounded-xl p-3 text-center">
                 <stat.icon size={20} className={`mx-auto mb-1 ${stat.color}`} />
-                {stat.stars ? (
-                  <>
-                    <div className="flex justify-center gap-0.5 my-1">
-                      {[1,2,3,4,5].map((n) => {
-                        const filled = n <= Math.floor(stat.stars);
-                        const half = !filled && n - 0.5 <= stat.stars;
-                        return (
-                          <Star
-                            key={n}
-                            size={14}
-                            className={filled || half ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div className="text-xs font-bold text-gray-500">{stat.stars.toFixed(1)}</div>
-                  </>
-                ) : (
-                  <div className="text-lg font-extrabold text-gray-800">{stat.value}</div>
-                )}
+                <div className="text-lg font-extrabold text-gray-800">{stat.value}</div>
                 <div className="text-xs text-gray-400">{stat.label}</div>
               </div>
             ))}
