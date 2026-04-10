@@ -32,6 +32,27 @@ const HERO_BACKGROUND_ICONS = [
   { Icon: Keyboard, size: 34, className: 'right-[9%] bottom-[10%] opacity-[0.14] rotate-[-10deg]' },
 ];
 
+const PAGE_BACKGROUND_ICONS = [
+  { Icon: Gamepad2, size: 34, className: 'left-[4%] top-[5%] opacity-[0.16] rotate-[-14deg]' },
+  { Icon: Mouse, size: 28, className: 'left-[14%] top-[11%] opacity-[0.12] rotate-[10deg]' },
+  { Icon: Keyboard, size: 34, className: 'left-[8%] top-[21%] opacity-[0.14] rotate-[-8deg] hidden md:block' },
+  { Icon: Shield, size: 28, className: 'left-[22%] top-[8%] opacity-[0.1] rotate-[9deg] hidden lg:block' },
+  { Icon: Headphones, size: 30, className: 'left-[26%] top-[26%] opacity-[0.1] rotate-[14deg] hidden md:block' },
+  { Icon: Trophy, size: 30, className: 'left-[6%] top-[37%] opacity-[0.1] rotate-[-12deg] hidden md:block' },
+  { Icon: MonitorPlay, size: 32, className: 'left-[18%] top-[47%] opacity-[0.12] rotate-[12deg]' },
+  { Icon: Mouse, size: 26, className: 'left-[10%] top-[62%] opacity-[0.1] rotate-[18deg] hidden lg:block' },
+  { Icon: Keyboard, size: 36, className: 'left-[20%] top-[76%] opacity-[0.14] rotate-[-10deg]' },
+  { Icon: Gamepad2, size: 30, className: 'left-[9%] bottom-[6%] opacity-[0.1] rotate-[16deg]' },
+  { Icon: Shield, size: 28, className: 'right-[6%] top-[7%] opacity-[0.14] rotate-[12deg]' },
+  { Icon: Headphones, size: 32, className: 'right-[15%] top-[16%] opacity-[0.1] rotate-[-14deg]' },
+  { Icon: MonitorPlay, size: 34, className: 'right-[8%] top-[28%] opacity-[0.14] rotate-[8deg]' },
+  { Icon: Trophy, size: 30, className: 'right-[20%] top-[35%] opacity-[0.1] rotate-[-10deg] hidden md:block' },
+  { Icon: Mouse, size: 26, className: 'right-[11%] top-[48%] opacity-[0.12] rotate-[18deg]' },
+  { Icon: Keyboard, size: 36, className: 'right-[5%] top-[60%] opacity-[0.14] rotate-[-12deg] hidden md:block' },
+  { Icon: Gamepad2, size: 30, className: 'right-[18%] top-[73%] opacity-[0.1] rotate-[14deg] hidden lg:block' },
+  { Icon: Headphones, size: 32, className: 'right-[9%] bottom-[9%] opacity-[0.1] rotate-[-18deg]' },
+];
+
 function HomeCardSkeleton({ className = '' }) {
   return (
     <div className={`overflow-hidden rounded-2xl border border-gray-100 bg-white/80 shadow-sm ${className}`}>
@@ -83,10 +104,27 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-16">
+    <div className="relative space-y-16">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[24rem] overflow-hidden">
+        <div className="absolute left-[12%] top-[6%] h-28 w-28 rounded-full bg-white blur-3xl opacity-[0.08]" />
+        <div className="absolute right-[10%] top-[34%] h-32 w-32 rounded-full bg-violet-200 blur-3xl opacity-[0.08]" />
+        <div className="absolute left-[28%] bottom-[18%] h-36 w-36 rounded-full bg-cyan-100 blur-3xl opacity-[0.08]" />
+        {PAGE_BACKGROUND_ICONS.map(({ Icon, size, className }, index) => (
+          <div
+            key={`${Icon.displayName || Icon.name || 'page-icon'}-${index}`}
+            className={`absolute text-slate-300 ${className}`}
+            aria-hidden="true"
+          >
+            <Icon size={size} strokeWidth={1.6} />
+          </div>
+        ))}
+      </div>
       <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
         <div className="pointer-events-none absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px]" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px]" />
+        <div className="pointer-events-none absolute right-10 top-10 opacity-10">
+          <Gamepad2 size={200} className="text-white" />
+        </div>
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute inset-x-[22%] top-[20%] h-44 rounded-full bg-white/5 blur-3xl md:h-56" />
           <div className="absolute inset-x-[18%] bottom-[8%] h-32 rounded-full bg-slate-950/10 blur-3xl md:h-40" />
