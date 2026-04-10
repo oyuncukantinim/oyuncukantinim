@@ -1,117 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  ChevronRight,
-  Flame,
-  Gamepad2,
-  Headphones,
-  Keyboard,
-  MonitorPlay,
-  Mouse,
-  Shield,
-  ShieldCheck,
-  Trophy,
-  Zap,
-} from 'lucide-react';
+import { Flame, Zap, ChevronRight, ShieldCheck, Gamepad2 } from 'lucide-react';
 import { getListings, getEpins } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import EPinCard from '../components/EPinCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
-
-const HERO_BACKGROUND_ICONS = [
-  { Icon: Gamepad2, size: 34, className: 'left-[7%] top-[14%] opacity-[0.18] rotate-[-16deg]' },
-  { Icon: Mouse, size: 28, className: 'left-[18%] top-[34%] opacity-[0.14] rotate-[12deg]' },
-  { Icon: Keyboard, size: 34, className: 'left-[10%] bottom-[17%] opacity-[0.14] rotate-[-10deg]' },
-  { Icon: Headphones, size: 30, className: 'left-[27%] bottom-[12%] opacity-[0.1] rotate-[14deg] hidden md:block' },
-  { Icon: Shield, size: 30, className: 'left-[39%] top-[10%] opacity-[0.08] rotate-[-8deg] hidden lg:block' },
-  { Icon: Trophy, size: 30, className: 'right-[38%] top-[12%] opacity-[0.08] rotate-[10deg] hidden lg:block' },
-  { Icon: MonitorPlay, size: 32, className: 'right-[16%] top-[19%] opacity-[0.14] rotate-[11deg]' },
-  { Icon: Headphones, size: 32, className: 'right-[8%] top-[38%] opacity-[0.12] rotate-[-14deg]' },
-  { Icon: Mouse, size: 26, className: 'right-[22%] bottom-[18%] opacity-[0.12] rotate-[16deg] hidden md:block' },
-  { Icon: Keyboard, size: 34, className: 'right-[9%] bottom-[10%] opacity-[0.14] rotate-[-10deg]' },
-];
-
-const PAGE_BACKGROUND_ICONS = [
-  { Icon: Gamepad2, size: 34, className: 'left-[3%] top-[4%] opacity-[0.26] rotate-[-14deg]' },
-  { Icon: Mouse, size: 28, className: 'left-[11%] top-[8%] opacity-[0.22] rotate-[10deg]' },
-  { Icon: Keyboard, size: 34, className: 'left-[7%] top-[16%] opacity-[0.24] rotate-[-8deg] hidden md:block' },
-  { Icon: Shield, size: 28, className: 'left-[20%] top-[6%] opacity-[0.2] rotate-[9deg] hidden lg:block' },
-  { Icon: Headphones, size: 30, className: 'left-[27%] top-[13%] opacity-[0.2] rotate-[14deg] hidden md:block' },
-  { Icon: Trophy, size: 30, className: 'left-[5%] top-[28%] opacity-[0.2] rotate-[-12deg] hidden md:block' },
-  { Icon: MonitorPlay, size: 32, className: 'left-[15%] top-[35%] opacity-[0.24] rotate-[12deg]' },
-  { Icon: Mouse, size: 26, className: 'left-[9%] top-[47%] opacity-[0.2] rotate-[18deg] hidden lg:block' },
-  { Icon: Keyboard, size: 36, className: 'left-[18%] top-[57%] opacity-[0.24] rotate-[-10deg]' },
-  { Icon: Gamepad2, size: 30, className: 'left-[7%] top-[70%] opacity-[0.2] rotate-[16deg]' },
-  { Icon: Shield, size: 27, className: 'left-[24%] top-[72%] opacity-[0.2] rotate-[8deg] hidden md:block' },
-  { Icon: Headphones, size: 30, className: 'left-[13%] bottom-[7%] opacity-[0.2] rotate-[-12deg]' },
-  { Icon: Mouse, size: 24, className: 'left-[31%] bottom-[14%] opacity-[0.18] rotate-[18deg] hidden lg:block' },
-  { Icon: Flame, size: 26, className: 'left-[33%] top-[10%] opacity-[0.18] rotate-[10deg] hidden md:block' },
-  { Icon: Zap, size: 24, className: 'left-[37%] top-[22%] opacity-[0.18] rotate-[-9deg]' },
-  { Icon: ShieldCheck, size: 28, className: 'left-[42%] top-[8%] opacity-[0.18] rotate-[7deg] hidden lg:block' },
-  { Icon: Keyboard, size: 34, className: 'left-[39%] top-[31%] opacity-[0.18] rotate-[-11deg] hidden xl:block' },
-  { Icon: Gamepad2, size: 30, className: 'left-[45%] top-[43%] opacity-[0.18] rotate-[14deg] hidden xl:block' },
-  { Icon: Trophy, size: 28, className: 'left-[41%] top-[61%] opacity-[0.18] rotate-[-8deg] hidden lg:block' },
-  { Icon: MonitorPlay, size: 30, className: 'left-[46%] bottom-[18%] opacity-[0.18] rotate-[10deg] hidden md:block' },
-  { Icon: Flame, size: 24, className: 'left-[52%] top-[17%] opacity-[0.16] rotate-[-12deg]' },
-  { Icon: Zap, size: 22, className: 'left-[56%] top-[33%] opacity-[0.16] rotate-[12deg] hidden md:block' },
-  { Icon: Shield, size: 26, className: 'left-[53%] top-[55%] opacity-[0.16] rotate-[9deg] hidden lg:block' },
-  { Icon: Headphones, size: 28, className: 'left-[59%] bottom-[11%] opacity-[0.16] rotate-[-15deg]' },
-  { Icon: Gamepad2, size: 26, className: 'left-[62%] top-[73%] opacity-[0.16] rotate-[15deg] hidden xl:block' },
-  { Icon: Shield, size: 28, className: 'right-[4%] top-[5%] opacity-[0.24] rotate-[12deg]' },
-  { Icon: Headphones, size: 32, className: 'right-[13%] top-[11%] opacity-[0.2] rotate-[-14deg]' },
-  { Icon: MonitorPlay, size: 34, className: 'right-[7%] top-[20%] opacity-[0.26] rotate-[8deg]' },
-  { Icon: Trophy, size: 30, className: 'right-[19%] top-[27%] opacity-[0.2] rotate-[-10deg] hidden md:block' },
-  { Icon: Mouse, size: 26, className: 'right-[10%] top-[39%] opacity-[0.22] rotate-[18deg]' },
-  { Icon: Keyboard, size: 36, className: 'right-[5%] top-[50%] opacity-[0.26] rotate-[-12deg] hidden md:block' },
-  { Icon: Gamepad2, size: 30, className: 'right-[18%] top-[61%] opacity-[0.2] rotate-[14deg] hidden lg:block' },
-  { Icon: Headphones, size: 32, className: 'right-[8%] top-[72%] opacity-[0.2] rotate-[-18deg]' },
-  { Icon: MonitorPlay, size: 30, className: 'right-[23%] bottom-[16%] opacity-[0.2] rotate-[11deg] hidden md:block' },
-  { Icon: Trophy, size: 28, className: 'right-[12%] bottom-[10%] opacity-[0.18] rotate-[-10deg]' },
-  { Icon: Mouse, size: 24, className: 'right-[30%] bottom-[8%] opacity-[0.16] rotate-[18deg] hidden lg:block' },
-  { Icon: Shield, size: 26, className: 'right-[34%] top-[44%] opacity-[0.16] rotate-[10deg] hidden xl:block' },
-  { Icon: Keyboard, size: 32, className: 'right-[38%] top-[76%] opacity-[0.16] rotate-[-9deg] hidden xl:block' },
-  { Icon: Flame, size: 24, className: 'right-[28%] top-[14%] opacity-[0.16] rotate-[11deg] hidden md:block' },
-  { Icon: Zap, size: 22, className: 'right-[33%] top-[29%] opacity-[0.16] rotate-[-10deg]' },
-  { Icon: ShieldCheck, size: 28, className: 'right-[41%] top-[12%] opacity-[0.16] rotate-[8deg] hidden lg:block' },
-  { Icon: Gamepad2, size: 26, className: 'right-[43%] top-[58%] opacity-[0.16] rotate-[13deg] hidden xl:block' },
-  { Icon: MonitorPlay, size: 28, className: 'left-[6%] top-[12%] opacity-[0.18] rotate-[7deg] hidden sm:block' },
-  { Icon: Flame, size: 22, className: 'left-[14%] top-[22%] opacity-[0.18] rotate-[-10deg]' },
-  { Icon: ShieldCheck, size: 24, className: 'left-[22%] top-[18%] opacity-[0.16] rotate-[15deg] hidden md:block' },
-  { Icon: Zap, size: 20, className: 'left-[29%] top-[41%] opacity-[0.17] rotate-[11deg]' },
-  { Icon: Gamepad2, size: 24, className: 'left-[34%] top-[52%] opacity-[0.16] rotate-[-14deg] hidden lg:block' },
-  { Icon: Trophy, size: 24, className: 'left-[38%] top-[14%] opacity-[0.16] rotate-[13deg]' },
-  { Icon: Mouse, size: 22, className: 'left-[43%] top-[24%] opacity-[0.16] rotate-[-16deg] hidden md:block' },
-  { Icon: Keyboard, size: 28, className: 'left-[47%] top-[36%] opacity-[0.16] rotate-[9deg] hidden lg:block' },
-  { Icon: Shield, size: 22, className: 'left-[49%] top-[48%] opacity-[0.16] rotate-[-8deg]' },
-  { Icon: Flame, size: 20, className: 'left-[57%] top-[43%] opacity-[0.15] rotate-[17deg] hidden md:block' },
-  { Icon: ShieldCheck, size: 24, className: 'left-[61%] top-[24%] opacity-[0.15] rotate-[8deg] hidden lg:block' },
-  { Icon: Zap, size: 20, className: 'left-[65%] top-[62%] opacity-[0.15] rotate-[-13deg]' },
-  { Icon: Trophy, size: 24, className: 'left-[68%] bottom-[13%] opacity-[0.16] rotate-[11deg] hidden md:block' },
-  { Icon: MonitorPlay, size: 26, className: 'left-[72%] top-[18%] opacity-[0.17] rotate-[-9deg]' },
-  { Icon: Mouse, size: 22, className: 'left-[76%] top-[54%] opacity-[0.16] rotate-[15deg] hidden lg:block' },
-  { Icon: Keyboard, size: 28, className: 'left-[81%] top-[32%] opacity-[0.17] rotate-[-10deg] hidden md:block' },
-  { Icon: Gamepad2, size: 24, className: 'left-[84%] top-[66%] opacity-[0.16] rotate-[14deg]' },
-  { Icon: Shield, size: 22, className: 'left-[88%] bottom-[19%] opacity-[0.16] rotate-[-12deg] hidden lg:block' },
-  { Icon: Headphones, size: 26, className: 'left-[92%] top-[27%] opacity-[0.18] rotate-[10deg]' },
-  { Icon: Flame, size: 20, className: 'right-[6%] top-[16%] opacity-[0.18] rotate-[-11deg]' },
-  { Icon: ShieldCheck, size: 24, className: 'right-[15%] top-[22%] opacity-[0.17] rotate-[12deg] hidden md:block' },
-  { Icon: Zap, size: 20, className: 'right-[21%] top-[46%] opacity-[0.16] rotate-[-14deg]' },
-  { Icon: Gamepad2, size: 24, className: 'right-[26%] top-[68%] opacity-[0.16] rotate-[9deg] hidden lg:block' },
-  { Icon: Trophy, size: 24, className: 'right-[31%] top-[19%] opacity-[0.16] rotate-[15deg]' },
-  { Icon: MonitorPlay, size: 26, className: 'right-[36%] top-[37%] opacity-[0.15] rotate-[-7deg] hidden md:block' },
-  { Icon: Mouse, size: 22, className: 'right-[46%] top-[26%] opacity-[0.15] rotate-[16deg] hidden lg:block' },
-  { Icon: Keyboard, size: 28, className: 'right-[49%] top-[47%] opacity-[0.15] rotate-[-11deg]' },
-  { Icon: Shield, size: 22, className: 'right-[54%] top-[64%] opacity-[0.15] rotate-[8deg] hidden md:block' },
-  { Icon: Flame, size: 20, className: 'right-[58%] bottom-[16%] opacity-[0.15] rotate-[-16deg]' },
-  { Icon: ShieldCheck, size: 24, className: 'right-[63%] top-[15%] opacity-[0.15] rotate-[9deg] hidden lg:block' },
-  { Icon: Zap, size: 20, className: 'right-[67%] top-[55%] opacity-[0.15] rotate-[13deg]' },
-  { Icon: Gamepad2, size: 24, className: 'right-[72%] bottom-[12%] opacity-[0.15] rotate-[-12deg] hidden md:block' },
-  { Icon: Trophy, size: 24, className: 'right-[78%] top-[24%] opacity-[0.15] rotate-[10deg] hidden lg:block' },
-  { Icon: MonitorPlay, size: 26, className: 'right-[83%] top-[44%] opacity-[0.17] rotate-[-9deg]' },
-  { Icon: Mouse, size: 22, className: 'right-[89%] top-[61%] opacity-[0.16] rotate-[15deg] hidden md:block' },
-  { Icon: Keyboard, size: 28, className: 'right-[93%] bottom-[11%] opacity-[0.17] rotate-[-10deg]' },
-];
 
 function HomeCardSkeleton({ className = '' }) {
   return (
@@ -164,40 +58,12 @@ export default function Home() {
   );
 
   return (
-    <div className="relative isolate">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[22rem] -z-10 overflow-hidden">
-        <div className="absolute left-[12%] top-[6%] h-32 w-32 rounded-full bg-slate-200 blur-3xl opacity-[0.12]" />
-        <div className="absolute right-[10%] top-[34%] h-36 w-36 rounded-full bg-violet-200 blur-3xl opacity-[0.12]" />
-        <div className="absolute left-[28%] bottom-[18%] h-40 w-40 rounded-full bg-cyan-100 blur-3xl opacity-[0.12]" />
-        <div className="absolute right-[26%] top-[58%] h-28 w-28 rounded-full bg-slate-300 blur-3xl opacity-[0.1]" />
-        {PAGE_BACKGROUND_ICONS.map(({ Icon, size, className }, index) => (
-          <div
-            key={`${Icon.displayName || Icon.name || 'page-icon'}-${index}`}
-            className={`absolute text-slate-500 ${className}`}
-            aria-hidden="true"
-          >
-            <Icon size={size} strokeWidth={1.6} />
-          </div>
-        ))}
-      </div>
-      <section className="relative left-1/2 z-10 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
-        <div className="pointer-events-none absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px]" />
-        <div className="pointer-events-none absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px]" />
-        <div className="pointer-events-none absolute right-10 top-10 opacity-10">
+    <div className="space-y-16">
+      <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
+        <div className="absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
+        <div className="absolute right-10 top-10 opacity-10 pointer-events-none">
           <Gamepad2 size={200} className="text-white" />
-        </div>
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute inset-x-[22%] top-[20%] h-44 rounded-full bg-white/5 blur-3xl md:h-56" />
-          <div className="absolute inset-x-[18%] bottom-[8%] h-32 rounded-full bg-slate-950/10 blur-3xl md:h-40" />
-          {HERO_BACKGROUND_ICONS.map(({ Icon, size, className }, index) => (
-            <div
-              key={`${Icon.displayName || Icon.name || 'hero-icon'}-${index}`}
-              className={`absolute text-white/90 ${className}`}
-              aria-hidden="true"
-            >
-              <Icon size={size} strokeWidth={1.5} />
-            </div>
-          ))}
         </div>
 
         <div className="animate-float relative z-10 mb-6">
@@ -231,8 +97,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="relative z-10 mt-16 space-y-16">
-        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <h2 className="sr-only">Platform Avantajları</h2>
         {[
           { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
@@ -245,7 +110,7 @@ export default function Home() {
             <p className="text-sm text-gray-500">{f.desc}</p>
           </div>
         ))}
-        </section>
+      </section>
 
       {(popularGames.length > 0 || !popularGamesLoaded) && (
         <section>
@@ -384,7 +249,6 @@ export default function Home() {
           </div>
         </section>
       )}
-      </div>
     </div>
   );
 }
