@@ -1,11 +1,36 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Flame, Zap, ChevronRight, ShieldCheck, Gamepad2 } from 'lucide-react';
+import {
+  ChevronRight,
+  Flame,
+  Gamepad2,
+  Headphones,
+  Keyboard,
+  MonitorPlay,
+  Mouse,
+  Shield,
+  ShieldCheck,
+  Trophy,
+  Zap,
+} from 'lucide-react';
 import { getListings, getEpins } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import EPinCard from '../components/EPinCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
+
+const HERO_BACKGROUND_ICONS = [
+  { Icon: Gamepad2, size: 34, className: 'left-[7%] top-[14%] opacity-[0.18] rotate-[-16deg]' },
+  { Icon: Mouse, size: 28, className: 'left-[18%] top-[34%] opacity-[0.14] rotate-[12deg]' },
+  { Icon: Keyboard, size: 34, className: 'left-[10%] bottom-[17%] opacity-[0.14] rotate-[-10deg]' },
+  { Icon: Headphones, size: 30, className: 'left-[27%] bottom-[12%] opacity-[0.1] rotate-[14deg] hidden md:block' },
+  { Icon: Shield, size: 30, className: 'left-[39%] top-[10%] opacity-[0.08] rotate-[-8deg] hidden lg:block' },
+  { Icon: Trophy, size: 30, className: 'right-[38%] top-[12%] opacity-[0.08] rotate-[10deg] hidden lg:block' },
+  { Icon: MonitorPlay, size: 32, className: 'right-[16%] top-[19%] opacity-[0.14] rotate-[11deg]' },
+  { Icon: Headphones, size: 32, className: 'right-[8%] top-[38%] opacity-[0.12] rotate-[-14deg]' },
+  { Icon: Mouse, size: 26, className: 'right-[22%] bottom-[18%] opacity-[0.12] rotate-[16deg] hidden md:block' },
+  { Icon: Keyboard, size: 34, className: 'right-[9%] bottom-[10%] opacity-[0.14] rotate-[-10deg]' },
+];
 
 function HomeCardSkeleton({ className = '' }) {
   return (
@@ -60,10 +85,20 @@ export default function Home() {
   return (
     <div className="space-y-16">
       <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
-        <div className="absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
-        <div className="absolute right-10 top-10 opacity-10 pointer-events-none">
-          <Gamepad2 size={200} className="text-white" />
+        <div className="pointer-events-none absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px]" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px]" />
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute inset-x-[22%] top-[20%] h-44 rounded-full bg-white/5 blur-3xl md:h-56" />
+          <div className="absolute inset-x-[18%] bottom-[8%] h-32 rounded-full bg-slate-950/10 blur-3xl md:h-40" />
+          {HERO_BACKGROUND_ICONS.map(({ Icon, size, className }, index) => (
+            <div
+              key={`${Icon.displayName || Icon.name || 'hero-icon'}-${index}`}
+              className={`absolute text-white/90 ${className}`}
+              aria-hidden="true"
+            >
+              <Icon size={size} strokeWidth={1.5} />
+            </div>
+          ))}
         </div>
 
         <div className="animate-float relative z-10 mb-6">
