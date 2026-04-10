@@ -128,8 +128,8 @@ export default function Home() {
   );
 
   return (
-    <div className="relative space-y-16">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[22rem] overflow-hidden">
+    <div className="relative isolate">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[22rem] -z-10 overflow-hidden">
         <div className="absolute left-[12%] top-[6%] h-32 w-32 rounded-full bg-slate-200 blur-3xl opacity-[0.12]" />
         <div className="absolute right-[10%] top-[34%] h-36 w-36 rounded-full bg-violet-200 blur-3xl opacity-[0.12]" />
         <div className="absolute left-[28%] bottom-[18%] h-40 w-40 rounded-full bg-cyan-100 blur-3xl opacity-[0.12]" />
@@ -144,7 +144,7 @@ export default function Home() {
           </div>
         ))}
       </div>
-      <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
+      <section className="relative left-1/2 z-10 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
         <div className="pointer-events-none absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px]" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px]" />
         <div className="pointer-events-none absolute right-10 top-10 opacity-10">
@@ -195,7 +195,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <div className="relative z-10 mt-16 space-y-16">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <h2 className="sr-only">Platform Avantajları</h2>
         {[
           { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
@@ -208,7 +209,7 @@ export default function Home() {
             <p className="text-sm text-gray-500">{f.desc}</p>
           </div>
         ))}
-      </section>
+        </section>
 
       {(popularGames.length > 0 || !popularGamesLoaded) && (
         <section>
@@ -347,6 +348,7 @@ export default function Home() {
           </div>
         </section>
       )}
+      </div>
     </div>
   );
 }
