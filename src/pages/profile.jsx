@@ -292,7 +292,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   const isManual = order.item_type === 'listing' && !order.delivery_content;
   const status = (order.delivery_status ?? 0);
-  const coverImage = Array.isArray(order.item_images) ? order.item_images[0] : null;
+  const coverImage = order.item_cover || (Array.isArray(order.item_images) ? order.item_images[0] : null);
   const coverFallback = order.item_type === 'epin' ? '🎫' : '🖼️';
 
   return (
