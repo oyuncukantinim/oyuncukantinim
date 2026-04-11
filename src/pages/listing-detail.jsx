@@ -122,7 +122,6 @@ export default function ListingDetailPage() {
   const sellerRating = Number(listing.seller_avg_rating || listing.rating || 5).toFixed(1);
   const sellerReviewCount = Number(listing.seller_review_count || 0);
   const sellerSalesCount = Number(listing.seller_total_sales || 0);
-  const sellerActiveListingCount = Number(listing.seller_active_listing_count || 0);
   const sellerLevel = Number(listing.seller_level || 1);
   const sellerLastSeen = formatLastSeen(listing.seller_last_seen);
   const sellerMemberSince = formatMemberSince(listing.seller_created_at);
@@ -334,17 +333,6 @@ export default function ListingDetailPage() {
                 <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-center">
                   <div className="text-sm font-black text-cyan-700">{sellerReviewCount}</div>
                   <div className="mt-0.5 text-[10px] font-bold text-cyan-700/70">Yorum</div>
-                </div>
-              </div>
-
-              <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2.5">
-                <div className="flex items-center justify-between gap-3 text-xs">
-                  <span className="font-bold text-slate-500">Aktif ilan</span>
-                  <span className="font-black text-slate-800">{sellerActiveListingCount}</span>
-                </div>
-                <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-700">
-                  <Shield size={12} />
-                  Oyuncu Kantinim Güvenli Alışveriş
                 </div>
               </div>
 
