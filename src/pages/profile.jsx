@@ -272,6 +272,7 @@ function MyReviewViewModal({ orderId, token, onClose }) {
 }
 
 function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
+  const { defaultListingImage } = useSiteBrand();
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [disputeReason, setDisputeReason] = useState('');
@@ -292,7 +293,8 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   const isManual = order.item_type === 'listing' && !order.delivery_content;
   const status = (order.delivery_status ?? 0);
-  const coverImage = order.item_cover || (Array.isArray(order.item_images) ? order.item_images[0] : null);
+  const orderImages = Array.isArray(order.item_images) ? order.item_images.filter(Boolean) : [];
+  const coverImage = order.item_cover || orderImages[0] || (order.item_type === 'listing' ? defaultListingImage : null);
   const coverFallback = order.item_type === 'epin' ? '🎫' : '🖼️';
 
   return (
