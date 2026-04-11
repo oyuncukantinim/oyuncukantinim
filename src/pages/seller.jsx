@@ -195,7 +195,7 @@ export default function SellerPage() {
 
             {!isOwnProfile && (
               <div className="flex gap-2 pb-1">
-                <Link to={`/messages/${seller.id}`} className="btn-secondary py-2 px-4 text-sm flex items-center gap-1.5">
+                <Link to="/messages" state={{ activeUserId: String(seller.id) }} className="btn-secondary py-2 px-4 text-sm flex items-center gap-1.5">
                   <MessageCircle size={15} /> Mesaj
                 </Link>
                 <button

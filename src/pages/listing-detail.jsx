@@ -357,7 +357,8 @@ export default function ListingDetailPage() {
                 </Link>
                 {user && !isSeller ? (
                   <Link
-                    to={`/messages/${listing.seller_id}`}
+                    to="/messages"
+                    state={{ activeUserId: String(listing.seller_id) }}
                     className="flex items-center justify-center gap-1.5 rounded-2xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500"
                   >
                     <MessageCircle size={13} /> Mesaj Gönder

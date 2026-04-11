@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
@@ -72,16 +72,19 @@ export default function MessagesPage() {
   const { userId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const routedUserId = location.state?.activeUserId || userId || null;
 
   const [conversations, setConversations] = useState([]);
   const [loadingConvs, setLoadingConvs] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(routedUserId ? String(routedUserId) : null);
   const [messageSettings, setMessageSettings] = useState({
     maxLength: 2000,
     sharedOrdersEnabled: true,
   });
-  // On mobile: if userId in URL, show chat; else show list
-  const [mobileShowChat, setMobileShowChat] = useState(!!userId);
+  // On mobile: if a user is selected, show chat; else show list.
+  const [mobileShowChat, setMobileShowChat] = useState(Boolean(routedUserId));
 
   const loadConversations = useCallback(() => {
     return getConversations()
@@ -111,7 +114,18 @@ export default function MessagesPage() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => { setMobileShowChat(!!userId); }, [userId]);
+  useEffect(() => {
+    if (!routedUserId) {
+      setSelectedUserId(null);
+      setMobileShowChat(false);
+      return;
+    }
+    setSelectedUserId(String(routedUserId));
+    setMobileShowChat(true);
+    if (userId) {
+      navigate('/messages', { replace: true, state: { activeUserId: String(routedUserId) } });
+    }
+  }, [routedUserId, userId, navigate]);
 
   if (!user) return null;
 
@@ -119,11 +133,12 @@ export default function MessagesPage() {
     !search || c.username?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const activeUserId = userId ? String(userId) : null;
+  const activeUserId = selectedUserId ? String(selectedUserId) : null;
   const activeConversation = conversations.find(conv => String(conv.user_id) === activeUserId) || null;
 
   const handleSelectConv = (conv) => {
-    navigate(`/messages/${conv.user_id}`);
+    setSelectedUserId(String(conv.user_id));
+    navigate('/messages', { state: { activeUserId: String(conv.user_id) } });
     setMobileShowChat(true);
   };
 
@@ -206,7 +221,7 @@ export default function MessagesPage() {
         <div className={`flex-1 flex min-w-0 ${mobileShowChat ? 'flex' : 'hidden lg:flex'}`}>
           <div className="flex-1 flex flex-col min-w-0">
             {activeUserId
-              ? <ChatPanel userId={activeUserId} currentUser={user} activeConversation={activeConversation} messageMaxLength={messageSettings.maxLength} onBack={() => { navigate('/messages'); setMobileShowChat(false); }} />
+              ? <ChatPanel userId={activeUserId} currentUser={user} activeConversation={activeConversation} messageMaxLength={messageSettings.maxLength} onBack={() => { setSelectedUserId(null); navigate('/messages', { replace: true }); setMobileShowChat(false); }} />
               : (
                 <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-4">
                   <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center">
