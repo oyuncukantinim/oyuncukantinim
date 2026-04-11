@@ -820,7 +820,8 @@ export default function ProfilePage() {
   ];
 
   const isToggleableListing = (listing) => ['active', 'passive', 'inactive'].includes(listing.status);
-  const isPassiveListing = (listing) => ['passive', 'inactive'].includes(listing.status);
+  const isSoldManualListing = (listing) => listing.status === 'sold' && listing.delivery_type !== 'stock';
+  const isPassiveListing = (listing) => ['passive', 'inactive'].includes(listing.status) || isSoldManualListing(listing);
 
   const filteredListings = myListings.filter(l => {
     if (listingFilter === 'active') return l.status === 'active';
