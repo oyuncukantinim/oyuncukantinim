@@ -819,9 +819,12 @@ export default function ProfilePage() {
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
 
+  const isToggleableListing = (listing) => ['active', 'passive', 'inactive'].includes(listing.status);
+  const isPassiveListing = (listing) => ['passive', 'inactive'].includes(listing.status);
+
   const filteredListings = myListings.filter(l => {
     if (listingFilter === 'active') return l.status === 'active';
-    if (listingFilter === 'passive') return l.status !== 'active' && l.status !== 'expired';
+    if (listingFilter === 'passive') return isPassiveListing(l);
     if (listingFilter === 'expired') return l.status === 'expired';
     return true;
   });
@@ -993,13 +996,13 @@ export default function ProfilePage() {
                             <div className="text-lg font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
                           </div>
                           <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
-                          {listing.status !== 'expired' && listing.status !== 'sold' && (
+                          {isToggleableListing(listing) && (
                             <button onClick={(event) => handleToggleListingStatus(event, listing)}
                               className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
                           )}
-                          {listing.status !== 'expired' && listing.status !== 'sold' ? (
+                          {isToggleableListing(listing) ? (
                             <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600" title="Doping">
                               <Package size={12} />
                             </button>
@@ -1050,7 +1053,7 @@ export default function ProfilePage() {
                       <div className="flex-shrink-0 space-y-2 text-right">
                         <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
                         <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
-                          {listing.status !== 'expired' && listing.status !== 'sold' && (
+                          {isToggleableListing(listing) && (
                             <button
                               onClick={(event) => handleToggleListingStatus(event, listing)}
                               disabled={saving}
@@ -1065,7 +1068,7 @@ export default function ProfilePage() {
                               {listing.status === 'active' ? 'Pasifleştir' : 'Aktifleştir'}
                             </button>
                           )}
-                          {listing.status !== 'expired' && listing.status !== 'sold' ? (
+                          {isToggleableListing(listing) ? (
                             <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-violet-50 hover:text-violet-600" title="Doping">
                               <Package size={13}/>
                             </button>
