@@ -344,7 +344,7 @@ export default function ListingDetailPage() {
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-700">
                   <Shield size={12} />
-                  Escrow korumalı güvenli alışveriş
+                  Oyuncu Kantinim Güvenli Alışveriş
                 </div>
               </div>
 
@@ -379,7 +379,7 @@ export default function ListingDetailPage() {
               </div>
               <div>
                 <div className="text-[10px] text-gray-400 font-semibold">Güvence</div>
-                <div className="text-xs font-bold text-gray-700">Escrow Korumalı</div>
+                <div className="text-xs font-bold text-gray-700">Oyuncu Kantinim Güvenli Alışveriş</div>
               </div>
             </div>
             <div className="flex items-center gap-2.5">
