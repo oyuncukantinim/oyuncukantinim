@@ -346,9 +346,9 @@ export default function SellerPage() {
                       <img
                         src={review.item_image || defaultListingImage}
                         alt=""
-                        className="w-14 h-10 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+                        className="w-20 h-14 object-cover rounded-lg border border-gray-200 flex-shrink-0"
                       />
-                      <p className="text-[11px] font-bold text-gray-600 line-clamp-2 leading-tight max-w-[80px]">{review.item_title}</p>
+                      <p className="text-xs font-bold text-gray-600 line-clamp-3 leading-tight max-w-[100px]">{review.item_title}</p>
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
