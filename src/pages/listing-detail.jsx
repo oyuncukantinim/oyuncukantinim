@@ -318,21 +318,22 @@ export default function ListingDetailPage() {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-2 text-center">
-                  <div className="flex items-center justify-center gap-1 text-amber-500 font-black">
-                    <Star size={13} className="fill-current" />
-                    <span>{sellerRating}</span>
+              <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
+                <div className="rounded-xl border border-slate-200 bg-white px-2.5 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1 text-amber-500 font-black">
+                      <Star size={12} className="fill-current" />
+                      <span className="text-sm">{sellerRating}</span>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600">
+                      {sellerReviewCount} yorum
+                    </span>
                   </div>
-                  <div className="mt-0.5 text-[10px] font-bold text-amber-700/70">Puan</div>
+                  <div className="mt-0.5 text-[10px] font-bold text-slate-400">Puan ve yorum</div>
                 </div>
-                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-center">
-                  <div className="text-sm font-black text-emerald-700">{sellerSalesCount}</div>
-                  <div className="mt-0.5 text-[10px] font-bold text-emerald-700/70">Satış</div>
-                </div>
-                <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-center">
-                  <div className="text-sm font-black text-cyan-700">{sellerReviewCount}</div>
-                  <div className="mt-0.5 text-[10px] font-bold text-cyan-700/70">Yorum</div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-center">
+                  <div className="text-sm font-black text-slate-800">{sellerSalesCount}</div>
+                  <div className="mt-0.5 text-[10px] font-bold text-slate-400">Satış</div>
                 </div>
               </div>
 
