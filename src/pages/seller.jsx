@@ -49,6 +49,39 @@ function StarRating({ value, onChange, readonly = false }) {
   );
 }
 
+function ReviewListingBlock({ review, defaultListingImage }) {
+  if (!review.item_title && !review.item_image) return null;
+
+  const reviewLink = review.listing_active_id
+    ? `/listing/${listingSlug(review.listing_title || review.item_title, review.listing_id)}`
+    : review.item_category_slug
+      ? `/categories/${review.item_category_slug}`
+      : null;
+
+  const content = (
+    <>
+      <img
+        src={review.item_image || defaultListingImage}
+        alt=""
+        className="w-28 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
+      />
+      <p className="text-sm font-bold text-gray-600 line-clamp-3 leading-tight max-w-[130px]">{review.item_title}</p>
+    </>
+  );
+
+  return (
+    <div className="flex-shrink-0 border-x border-gray-100 px-3">
+      {reviewLink ? (
+        <Link to={reviewLink} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          {content}
+        </Link>
+      ) : (
+        <div className="flex items-center gap-2">{content}</div>
+      )}
+    </div>
+  );
+}
+
 export default function SellerPage() {
   const { username } = useParams();
   const { user } = useAuth();
@@ -304,34 +337,7 @@ export default function SellerPage() {
                     <span className="text-[10px] text-gray-400">{formatDate(review.created_at)}</span>
                   </div>
 
-                  {(review.item_title || review.item_image) && (() => {
-                    const reviewLink = review.listing_active_id
-                      ? `/listing/${listingSlug(review.listing_title || review.item_title, review.listing_id)}`
-                      : review.item_category_slug
-                        ? `/categories/${review.item_category_slug}`
-                        : null;
-                    const inner = (
-                      <>
-                        <img
-                          src={review.item_image || defaultListingImage}
-                          alt=""
-                          className="w-28 h-20 object-cover rounded-lg border border-gray-200 flex-shrink-0"
-                        />
-                        <p className="text-sm font-bold text-gray-600 line-clamp-3 leading-tight max-w-[130px]">{review.item_title}</p>
-                      </>
-                    );
-                    return (
-                      <div className="flex-shrink-0 border-x border-gray-100 px-3">
-                        {reviewLink ? (
-                          <Link to={reviewLink} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                            {inner}
-                          </Link>
-                        ) : (
-                          <div className="flex items-center gap-2">{inner}</div>
-                        )}
-                      </div>
-                    );
-                  })()}
+                  <ReviewListingBlock review={review} defaultListingImage={defaultListingImage} />
 
                   <div className="flex-1 min-w-0">
                     <StarRating value={review.rating} readonly />
