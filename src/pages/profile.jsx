@@ -51,7 +51,64 @@ function DeliveryBadge({ status }) {
   );
 }
 
-function OrderLogsModal({ orderId, token, onClose }) {
+function getOrderTimelineTone(action = '') {
+  const text = action.toLocaleLowerCase('tr-TR');
+
+  if (text.includes('iptal') || text.includes('iade')) {
+    return {
+      icon: AlertTriangle,
+      dot: 'bg-red-500 text-white ring-red-100',
+      card: 'border-red-100 bg-red-50/70',
+      label: 'text-red-700',
+    };
+  }
+  if (text.includes('anlasmaz') || text.includes('anlaşmaz')) {
+    return {
+      icon: AlertTriangle,
+      dot: 'bg-amber-500 text-white ring-amber-100',
+      card: 'border-amber-100 bg-amber-50/70',
+      label: 'text-amber-700',
+    };
+  }
+  if (text.includes('tamam') || text.includes('onay') || text.includes('ödeme') || text.includes('odeme')) {
+    return {
+      icon: CheckCircle,
+      dot: 'bg-emerald-500 text-white ring-emerald-100',
+      card: 'border-emerald-100 bg-emerald-50/70',
+      label: 'text-emerald-700',
+    };
+  }
+  if (text.includes('teslim')) {
+    return {
+      icon: Truck,
+      dot: 'bg-cyan-500 text-white ring-cyan-100',
+      card: 'border-cyan-100 bg-cyan-50/70',
+      label: 'text-cyan-700',
+    };
+  }
+  return {
+    icon: Clock,
+    dot: 'bg-violet-600 text-white ring-violet-100',
+    card: 'border-violet-100 bg-violet-50/70',
+    label: 'text-violet-700',
+  };
+}
+
+function formatOrderTimelineDate(value) {
+  if (!value) return 'Tarih yok';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Tarih yok';
+  return date.toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function OrderLogsModal({ order, token, onClose }) {
+  const orderId = order.id;
   const [logs, setLogs] = useState([]);
   const [disputeReason, setDisputeReason] = useState('');
   const [loading, setLoading] = useState(true);
@@ -71,14 +128,31 @@ function OrderLogsModal({ orderId, token, onClose }) {
       .finally(() => setLoading(false));
   }, [orderId, token]);
 
+  const timelineSteps = [
+    {
+      action: 'Sipariş oluşturuldu',
+      admin_name: 'Sistem',
+      created_at: order.created_at,
+    },
+    ...logs.map(log => ({
+      ...log,
+      admin_name: log.admin_name || 'Sistem',
+    })),
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 max-h-[80vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-lg p-5 sm:p-6 max-h-[84vh] overflow-y-auto">
+        <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-center gap-2">
-            <History size={16} className="text-violet-600" />
-            <h3 className="font-extrabold text-gray-800">Sipariş #{orderId} Geçmişi</h3>
+            <div className="w-10 h-10 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center">
+              <History size={18} />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-gray-800">Sipariş #{orderId} Yol Haritası</h3>
+              <p className="text-xs text-gray-400 font-semibold">İlk işlemden son adıma kadar süreç akışı</p>
+            </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-xl hover:bg-gray-100"><X size={16} /></button>
         </div>
@@ -94,19 +168,59 @@ function OrderLogsModal({ orderId, token, onClose }) {
           <div className="flex justify-center py-8">
             <div className="w-6 h-6 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
           </div>
-        ) : logs.length === 0 ? (
-          <p className="text-center text-gray-400 text-sm py-6">Henüz işlem geçmişi yok.</p>
         ) : (
-          <div className="space-y-3">
-            {logs.map((log, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-2 h-2 bg-violet-400 rounded-full mt-1.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-700">{log.action}</p>
-                  <p className="text-xs text-gray-400">{log.admin_name} · {new Date(log.created_at).toLocaleString('tr-TR')}</p>
-                </div>
+          <div>
+            <div className="mb-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">Toplam Adım</p>
+                <p className="text-sm font-extrabold text-slate-700">{timelineSteps.length} işlem</p>
               </div>
-            ))}
+              <div className="text-right">
+                <p className="text-[11px] font-black uppercase tracking-wide text-slate-400">Son Durum</p>
+                <DeliveryBadge status={order.delivery_status ?? 0} />
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute left-[18px] top-4 bottom-4 w-px bg-gradient-to-b from-violet-200 via-cyan-200 to-emerald-200" />
+              <div className="space-y-4">
+                {timelineSteps.map((step, i) => {
+                  const tone = getOrderTimelineTone(step.action);
+                  const Icon = tone.icon;
+                  const isLast = i === timelineSteps.length - 1;
+
+                  return (
+                    <div key={`${step.action}-${step.created_at || i}`} className="relative flex items-start gap-3">
+                      <div className={`relative z-10 w-9 h-9 rounded-2xl ring-4 flex items-center justify-center flex-shrink-0 shadow-sm ${tone.dot}`}>
+                        {isLast ? <Icon size={15} /> : <span className="text-xs font-black">{i + 1}</span>}
+                      </div>
+                      <div className={`flex-1 rounded-2xl border p-3.5 shadow-sm ${tone.card}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className={`text-sm font-extrabold ${tone.label}`}>{step.action}</p>
+                            <p className="mt-1 text-xs text-slate-500 font-semibold">{step.admin_name}</p>
+                          </div>
+                          {isLast && (
+                            <span className="rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-slate-500 border border-white">
+                              Güncel
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-3 flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
+                          <Clock size={12} />
+                          {formatOrderTimelineDate(step.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {logs.length === 0 && (
+                  <div className="ml-12 rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-xs font-semibold text-slate-400">
+                    Henüz ek işlem yok. Yeni aksiyonlar bu yol haritasına sırayla eklenecek.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -299,7 +413,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   return (
     <>
-    {showLogs && <OrderLogsModal orderId={order.id} token={token} onClose={() => setShowLogs(false)} />}
+    {showLogs && <OrderLogsModal order={order} token={token} onClose={() => setShowLogs(false)} />}
     {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
     {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
