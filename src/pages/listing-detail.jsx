@@ -335,7 +335,7 @@ export default function ListingDetailPage() {
                   </div>
                   <div className="relative mt-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-white/75">
                     <MessageCircle size={10} />
-                    Puan & yorum
+                    Toplam Puan ve Yorum
                   </div>
                 </div>
                 <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-cyan-50 px-2.5 py-2 text-center shadow-sm">
@@ -344,7 +344,7 @@ export default function ListingDetailPage() {
                     <Zap size={12} className="fill-current" />
                   </div>
                   <div className="relative text-sm font-black text-emerald-700">{sellerSalesCount}</div>
-                  <div className="relative text-[10px] font-black uppercase tracking-wide text-emerald-600/70">Satış</div>
+                  <div className="relative text-[10px] font-black uppercase tracking-wide text-emerald-600/70">Toplam Satış</div>
                 </div>
               </div>
 
