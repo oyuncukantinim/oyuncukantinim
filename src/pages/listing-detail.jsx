@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
+  User,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -11,6 +12,36 @@ import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+
+function parseDate(value) {
+  if (!value) return null;
+  const date = new Date(String(value).replace(' ', 'T'));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatMemberSince(value) {
+  const date = parseDate(value);
+  return date ? `${date.getFullYear()}'den beri` : 'Bilgi yok';
+}
+
+function formatLastSeen(value) {
+  const date = parseDate(value);
+  if (!date) return 'Bilgi yok';
+
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
+  if (diffMinutes < 5) return 'Az önce';
+  if (diffMinutes < 60) return `${diffMinutes} dk önce`;
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours} saat önce`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Dün';
+  if (diffDays < 30) return `${diffDays} gün önce`;
+
+  return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 export default function ListingDetailPage() {
   const { slug } = useParams();
@@ -88,6 +119,13 @@ export default function ListingDetailPage() {
       ? (listing.delivery_hours < 24 ? listing.delivery_hours + ' saat' : Math.floor(listing.delivery_hours / 24) + ' gün')
       : 'Manuel';
   const stockCount = Math.max(0, Number(listing.stock_count || 0));
+  const sellerRating = Number(listing.seller_avg_rating || listing.rating || 5).toFixed(1);
+  const sellerReviewCount = Number(listing.seller_review_count || 0);
+  const sellerSalesCount = Number(listing.seller_total_sales || 0);
+  const sellerActiveListingCount = Number(listing.seller_active_listing_count || 0);
+  const sellerLevel = Number(listing.seller_level || 1);
+  const sellerLastSeen = formatLastSeen(listing.seller_last_seen);
+  const sellerMemberSince = formatMemberSince(listing.seller_created_at);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -251,33 +289,85 @@ export default function ListingDetailPage() {
           </div>
 
           {/* Satıcı */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Satıcı</div>
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-surface-100 rounded-xl flex items-center justify-center text-xl border border-gray-100 flex-shrink-0">
-                {listing.avatar || '👤'}
-              </div>
-              <div className="flex-1 min-w-0">
-                <Link
-                  to={`/p/${listing.seller}`}
-                  className="font-extrabold text-gray-800 hover:text-neon-purple transition-colors text-sm block truncate"
-                >
-                  {listing.seller}
-                </Link>
-                <div className="flex items-center gap-1 text-xs text-yellow-500 font-bold mt-0.5">
-                  <Star size={11} className="fill-current" />
-                  <span>{listing.rating || '5.0'}</span>
-                  <span className="text-gray-400 font-normal">/ 5.0</span>
+          <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
+            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
+            <div className="relative">
+              <div className="flex items-start gap-3">
+                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
+                  {typeof listing.avatar === 'string' && (listing.avatar.startsWith('http') || listing.avatar.startsWith('/')) ? (
+                    <img src={listing.avatar} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    listing.avatar || <User size={24} className="text-slate-400" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0 pt-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link
+                      to={`/p/${listing.seller}`}
+                      className="font-black text-gray-900 hover:text-neon-purple transition-colors text-base block truncate"
+                    >
+                      {listing.seller}
+                    </Link>
+                    <span className="flex-shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">
+                      Lv. {sellerLevel}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
+                    <span className="flex items-center gap-1"><Clock size={11} /> {sellerLastSeen}</span>
+                    <span>{sellerMemberSince}</span>
+                  </div>
                 </div>
               </div>
-              {user && !isSeller && (
+
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-3 py-2 text-center">
+                  <div className="flex items-center justify-center gap-1 text-amber-500 font-black">
+                    <Star size={13} className="fill-current" />
+                    <span>{sellerRating}</span>
+                  </div>
+                  <div className="mt-0.5 text-[10px] font-bold text-amber-700/70">Puan</div>
+                </div>
+                <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-center">
+                  <div className="text-sm font-black text-emerald-700">{sellerSalesCount}</div>
+                  <div className="mt-0.5 text-[10px] font-bold text-emerald-700/70">Satış</div>
+                </div>
+                <div className="rounded-2xl border border-cyan-100 bg-cyan-50 px-3 py-2 text-center">
+                  <div className="text-sm font-black text-cyan-700">{sellerReviewCount}</div>
+                  <div className="mt-0.5 text-[10px] font-bold text-cyan-700/70">Yorum</div>
+                </div>
+              </div>
+
+              <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <span className="font-bold text-slate-500">Aktif ilan</span>
+                  <span className="font-black text-slate-800">{sellerActiveListingCount}</span>
+                </div>
+                <div className="mt-2 flex items-center gap-2 text-[11px] font-semibold text-emerald-700">
+                  <Shield size={12} />
+                  Escrow korumalı güvenli alışveriş
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 <Link
-                  to={`/messages/${listing.seller_id}`}
-                  className="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1 flex-shrink-0"
+                  to={`/p/${listing.seller}`}
+                  className="flex items-center justify-center gap-1.5 rounded-2xl bg-slate-100 px-3 py-2.5 text-xs font-black text-slate-700 transition-colors hover:bg-slate-200"
                 >
-                  <MessageCircle size={12} /> Mesaj
+                  <User size={13} /> Profili Gör
                 </Link>
-              )}
+                {user && !isSeller ? (
+                  <Link
+                    to={`/messages/${listing.seller_id}`}
+                    className="flex items-center justify-center gap-1.5 rounded-2xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500"
+                  >
+                    <MessageCircle size={13} /> Mesaj Gönder
+                  </Link>
+                ) : (
+                  <span className="flex items-center justify-center gap-1.5 rounded-2xl bg-violet-50 px-3 py-2.5 text-xs font-black text-violet-700">
+                    <Shield size={13} /> Kendi İlanın
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
