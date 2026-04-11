@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
@@ -373,6 +373,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
   });
 
   const displayName = otherName || activeConversation?.username || fallbackUsername(userId);
+  const canOpenProfile = displayName && !displayName.startsWith('Kullanıcı #');
   const otherInitial = displayName?.[0]?.toUpperCase() || '?';
   const otherIsOnline = isUserOnline(otherLastSeen);
   const presenceLabel = otherIsOnline ? 'Çevrimiçi' : `Son görülme: ${formatLastSeen(otherLastSeen)}`;
@@ -396,7 +397,17 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
           {otherInitial}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-extrabold text-gray-900 text-sm">{displayName}</div>
+          {canOpenProfile ? (
+            <Link
+              to={`/p/${displayName}`}
+              className="block truncate font-extrabold text-gray-900 text-sm transition-colors hover:text-violet-600"
+              title={`${displayName} profiline git`}
+            >
+              {displayName}
+            </Link>
+          ) : (
+            <div className="font-extrabold text-gray-900 text-sm truncate">{displayName}</div>
+          )}
           <div className={`text-[11px] font-semibold ${presenceTone}`}>{presenceLabel}</div>
         </div>
       </div>
