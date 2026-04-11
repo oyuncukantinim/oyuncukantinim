@@ -87,6 +87,7 @@ export default function ListingDetailPage() {
     : listing.delivery_hours
       ? (listing.delivery_hours < 24 ? listing.delivery_hours + ' saat' : Math.floor(listing.delivery_hours / 24) + ' gün')
       : 'Manuel';
+  const stockCount = Math.max(0, Number(listing.stock_count || 0));
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -303,6 +304,17 @@ export default function ListingDetailPage() {
                 <div className="text-xs font-bold text-gray-700">{deliveryLabel}</div>
               </div>
             </div>
+            {listing.delivery_type === 'stock' && (
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Tag size={15} className="text-violet-600" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-400 font-semibold">Stok</div>
+                  <div className="text-xs font-bold text-gray-700">{stockCount} adet</div>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
