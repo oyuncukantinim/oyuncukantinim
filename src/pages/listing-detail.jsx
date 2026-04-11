@@ -327,8 +327,8 @@ export default function ListingDetailPage() {
                       </span>
                       <span className="text-lg leading-none">{sellerRating}</span>
                     </div>
-                    <span className="rounded-full bg-white px-2 py-1 text-xs font-black leading-none text-violet-600 shadow-sm">
-                      {sellerReviewCount} yorum
+                    <span className="rounded-full bg-white px-2 py-1 font-black leading-none text-violet-600 shadow-sm">
+                      <span className="text-sm">{sellerReviewCount}</span> <span className="text-[9px]">yorum</span>
                     </span>
                   </div>
                 </div>
@@ -336,8 +336,8 @@ export default function ListingDetailPage() {
                   <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                     <Zap size={11} className="fill-current" />
                   </div>
-                  <div className="whitespace-nowrap text-xs font-black text-slate-700">
-                    <span className="text-base text-slate-900">{sellerSalesCount}</span> Toplam Satış
+                  <div className="whitespace-nowrap font-black text-slate-700">
+                    <span className="text-base text-slate-900">{sellerSalesCount}</span> <span className="text-[9px]">Toplam Satış</span>
                   </div>
                 </div>
               </div>
