@@ -322,26 +322,23 @@ export default function ListingDetailPage() {
                 <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-white via-amber-50 to-violet-50 px-2.5 py-1.5 shadow-sm">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 font-black text-slate-800">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-xl bg-amber-100 text-amber-500">
-                        <Star size={11} className="fill-current" />
+                      <span className="flex h-7 w-7 items-center justify-center rounded-2xl bg-amber-100 text-amber-500">
+                        <Star size={14} className="fill-current" />
                       </span>
-                      <span className="text-sm leading-none">{sellerRating}</span>
+                      <span className="text-lg leading-none">{sellerRating}</span>
                     </div>
-                    <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-black leading-none text-violet-600 shadow-sm">
+                    <span className="rounded-full bg-white px-2 py-1 text-xs font-black leading-none text-violet-600 shadow-sm">
                       {sellerReviewCount} yorum
                     </span>
                   </div>
-                  <div className="mt-1 flex items-center gap-1 text-[9px] font-black uppercase tracking-wide text-slate-400">
-                    <MessageCircle size={9} />
-                    Toplam Puan ve Yorum
-                  </div>
                 </div>
-                <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-1.5 text-center shadow-sm">
-                  <div className="mx-auto mb-0.5 flex h-5 w-5 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <Zap size={10} className="fill-current" />
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-1.5 shadow-sm">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                    <Zap size={11} className="fill-current" />
                   </div>
-                  <div className="text-sm font-black leading-none text-slate-800">{sellerSalesCount}</div>
-                  <div className="mt-0.5 text-[9px] font-black uppercase tracking-wide text-slate-400">Toplam Satış</div>
+                  <div className="whitespace-nowrap text-xs font-black text-slate-700">
+                    <span className="text-base text-slate-900">{sellerSalesCount}</span> Toplam Satış
+                  </div>
                 </div>
               </div>
 
