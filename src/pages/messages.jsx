@@ -15,6 +15,10 @@ function avatarColor(name) {
   return AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
 }
 
+function fallbackUsername(userId) {
+  return `Kullanıcı #${userId}`;
+}
+
 function formatTime(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
@@ -291,7 +295,8 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
-  const [otherName, setOtherName] = useState(`Kullanıcı #${userId}`);
+  const [otherName, setOtherName] = useState(activeConversation?.username || fallbackUsername(userId));
+  const [otherLastSeen, setOtherLastSeen] = useState(activeConversation?.last_seen || null);
   const [initialized, setInitialized] = useState(false);
   const inputRef = useRef(null);
   const messageListRef = useRef(null);
@@ -304,10 +309,13 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
 
   const fetchMessages = useCallback((isInitial = false) => {
     getMessages(userId).then(r => {
-      const msgs = r.data || [];
+      const responseData = r.data || {};
+      const msgs = Array.isArray(responseData) ? responseData : (responseData.messages || []);
+      const otherUser = Array.isArray(responseData) ? null : responseData.other_user;
       setMessages(msgs);
       const other = msgs.find(m => String(m.sender_id) !== String(currentUser.id));
-      if (other) setOtherName(other.sender_name || `Kullanıcı #${userId}`);
+      setOtherName(otherUser?.username || other?.sender_name || activeConversation?.username || fallbackUsername(userId));
+      setOtherLastSeen(otherUser?.last_seen || activeConversation?.last_seen || null);
       if (isInitial) {
         setTimeout(() => {
           scrollMessagesToBottom('auto');
@@ -315,7 +323,12 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
         }, 50);
       }
     }).catch(() => {});
-  }, [userId, currentUser.id]);
+  }, [userId, currentUser.id, activeConversation?.username, activeConversation?.last_seen]);
+
+  useEffect(() => {
+    setOtherName(activeConversation?.username || fallbackUsername(userId));
+    setOtherLastSeen(activeConversation?.last_seen || null);
+  }, [activeConversation?.username, activeConversation?.last_seen, userId]);
 
   useEffect(() => {
     setInitialized(false);
@@ -359,10 +372,10 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
     grouped.push({ type: 'msg', data: msg });
   });
 
-  const displayName = otherName || activeConversation?.username || `Kullanıcı #${userId}`;
+  const displayName = otherName || activeConversation?.username || fallbackUsername(userId);
   const otherInitial = displayName?.[0]?.toUpperCase() || '?';
-  const otherIsOnline = isUserOnline(activeConversation?.last_seen);
-  const presenceLabel = otherIsOnline ? 'Çevrimiçi' : `Son görülme: ${formatLastSeen(activeConversation?.last_seen)}`;
+  const otherIsOnline = isUserOnline(otherLastSeen);
+  const presenceLabel = otherIsOnline ? 'Çevrimiçi' : `Son görülme: ${formatLastSeen(otherLastSeen)}`;
   const presenceTone = otherIsOnline ? 'text-emerald-500' : 'text-gray-400';
   const remainingCharacters = Math.max(messageMaxLength - text.length, 0);
   const counterTone =
