@@ -1049,20 +1049,20 @@ export default function ProfilePage() {
                       </div>
                       <div className="flex-shrink-0 space-y-2 text-right">
                         <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
-                        {listing.status === 'passive' && (
-                          <button
-                            onClick={(event) => handleToggleListingStatus(event, listing)}
-                            className="flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-xs font-bold text-emerald-600 hover:bg-emerald-100 transition-colors ml-auto">
-                            <ToggleLeft size={13}/> Aktifleştir
-                          </button>
-                        )}
                         <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
-                          {listing.status !== 'expired' && listing.status !== 'sold' && listing.status !== 'passive' && (
+                          {listing.status !== 'expired' && listing.status !== 'sold' && (
                             <button
                               onClick={(event) => handleToggleListingStatus(event, listing)}
-                              title="Pasif yap"
-                              className="rounded-lg p-1.5 transition-colors text-emerald-500 hover:bg-orange-50 hover:text-orange-500">
-                              <ToggleRight size={15}/>
+                              disabled={saving}
+                              title={listing.status === 'active' ? 'Pasif yap' : 'Aktifleştir'}
+                              className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-colors disabled:opacity-50 ${
+                                listing.status === 'active'
+                                  ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                                  : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                              }`}
+                            >
+                              {listing.status === 'active' ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
+                              {listing.status === 'active' ? 'Pasifleştir' : 'Aktifleştir'}
                             </button>
                           )}
                           {listing.status !== 'expired' && listing.status !== 'sold' ? (
