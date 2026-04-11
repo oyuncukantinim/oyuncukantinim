@@ -52,8 +52,9 @@ function StarRating({ value, onChange, readonly = false }) {
 function ReviewListingBlock({ review, defaultListingImage }) {
   if (!review.item_title && !review.item_image) return null;
 
-  const reviewLink = review.listing_active_id
-    ? `/listing/${listingSlug(review.listing_title || review.item_title, review.listing_id)}`
+  const titleForSlug = review.listing_title || review.item_title;
+  const reviewLink = review.listing_active_id && titleForSlug
+    ? listingSlug(titleForSlug, review.listing_id)
     : review.item_category_slug
       ? `/categories/${review.item_category_slug}`
       : null;
