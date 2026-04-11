@@ -337,7 +337,7 @@ export default function ListingDetailPage() {
                     <Zap size={11} className="fill-current" />
                   </div>
                   <div className="whitespace-nowrap font-black text-slate-700">
-                    <span className="text-base text-slate-900">{sellerSalesCount}</span> <span className="text-[9px]">Toplam Satış</span>
+                    <span className="text-[9px]">Toplam Satış</span> <span className="text-base text-slate-900">{sellerSalesCount}</span>
                   </div>
                 </div>
               </div>
