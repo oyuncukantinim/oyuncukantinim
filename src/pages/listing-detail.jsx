@@ -319,21 +319,32 @@ export default function ListingDetailPage() {
               </div>
 
               <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
-                <div className="rounded-xl border border-slate-200 bg-white px-2.5 py-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1 text-amber-500 font-black">
-                      <Star size={12} className="fill-current" />
-                      <span className="text-sm">{sellerRating}</span>
+                <div className="relative overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-cyan-500 px-3 py-2 text-white shadow-sm shadow-violet-500/20">
+                  <div className="absolute -right-4 -top-5 h-14 w-14 rounded-full bg-white/20 blur-sm" />
+                  <div className="absolute -bottom-5 left-5 h-10 w-10 rounded-full bg-cyan-200/25 blur-sm" />
+                  <div className="relative flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-black">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-xl bg-white/20 ring-1 ring-white/25">
+                        <Star size={13} className="fill-amber-200 text-amber-200" />
+                      </span>
+                      <span className="text-lg leading-none">{sellerRating}</span>
                     </div>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600">
+                    <span className="rounded-full bg-white/20 px-2 py-1 text-[10px] font-black text-white ring-1 ring-white/25">
                       {sellerReviewCount} yorum
                     </span>
                   </div>
-                  <div className="mt-0.5 text-[10px] font-bold text-slate-400">Puan ve yorum</div>
+                  <div className="relative mt-1 flex items-center gap-1 text-[10px] font-black uppercase tracking-wide text-white/75">
+                    <MessageCircle size={10} />
+                    Puan & yorum
+                  </div>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-center">
-                  <div className="text-sm font-black text-slate-800">{sellerSalesCount}</div>
-                  <div className="mt-0.5 text-[10px] font-bold text-slate-400">Satış</div>
+                <div className="relative overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-cyan-50 px-2.5 py-2 text-center shadow-sm">
+                  <div className="absolute -right-3 -top-3 h-9 w-9 rounded-full bg-emerald-300/30 blur-sm" />
+                  <div className="relative mx-auto mb-1 flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-500 text-white shadow-sm shadow-emerald-500/20">
+                    <Zap size={12} className="fill-current" />
+                  </div>
+                  <div className="relative text-sm font-black text-emerald-700">{sellerSalesCount}</div>
+                  <div className="relative text-[10px] font-black uppercase tracking-wide text-emerald-600/70">Satış</div>
                 </div>
               </div>
 
