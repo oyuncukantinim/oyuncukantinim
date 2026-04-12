@@ -451,9 +451,9 @@ function ListingDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-3 sm:px-6">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl sm:p-7">
         <div className="mb-5 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-extrabold text-gray-900">Ilan #{listing.id}</h2>
@@ -464,7 +464,7 @@ function ListingDetailModal({
           </button>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[240px_minmax(0,1fr)]">
+        <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
           <div className="space-y-4">
             {coverImage ? (
               <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
