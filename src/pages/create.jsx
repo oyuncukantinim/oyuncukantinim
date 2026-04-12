@@ -386,7 +386,7 @@ export default function CreatePage() {
                 <label className="block text-sm font-bold text-gray-700">Görseller</label>
                 <span className="text-xs text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
               </div>
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {images.map((img, idx) => (
                   <div key={idx} className={`relative overflow-hidden rounded-2xl border bg-white p-2.5 shadow-sm transition-all ${coverIndex === idx ? 'border-violet-400 ring-2 ring-violet-100' : 'border-gray-100'}`}>
                     <button
@@ -410,9 +410,9 @@ export default function CreatePage() {
                     )}
                     <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
                       {img ? (
-                        <img src={img} alt={`Görsel ${idx + 1}`} className="h-32 w-full object-contain" />
+                        <img src={img} alt={`Görsel ${idx + 1}`} className="h-28 w-full object-contain" />
                       ) : (
-                        <div className="flex h-32 items-center justify-center px-3 text-center text-xs font-bold text-gray-400">
+                        <div className="flex h-28 items-center justify-center px-3 text-center text-xs font-bold text-gray-400">
                           Henüz görsel seçilmedi
                         </div>
                       )}
@@ -427,7 +427,7 @@ export default function CreatePage() {
                   </div>
                 ))}
                 {images.length < maxImages && (
-                  <button onClick={addImage} className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 p-4 text-sm font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50">
+                  <button onClick={addImage} className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 p-4 text-sm font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50">
                     <Plus size={18} /> Görsel Ekle
                   </button>
                 )}
