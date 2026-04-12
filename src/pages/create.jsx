@@ -6,9 +6,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { addListing } from '../lib/api';
+import { addListing, uploadListingImage } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
-import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../lib/doping';
 
@@ -244,22 +243,11 @@ export default function CreatePage() {
   const uploadImageFile = async (idx, file) => {
     setUploadingIdx(idx);
     try {
-      const formData = new FormData();
-      formData.append('image', file);
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_URL}?action=upload_listing_image`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-      const json = await res.json();
-      if (json.status === 'success' && json.data?.url) {
-        setImage(idx, json.data.url);
-      } else {
-        alert(json.message || 'Yükleme başarısız.');
-      }
-    } catch {
-      alert('Yükleme sırasında bir hata oluştu.');
+      const url = await uploadListingImage(file);
+      setImage(idx, url);
+      showToast('Görsel yüklendi ve filigran eklendi.');
+    } catch (err) {
+      showToast(err.message || 'Yükleme sırasında bir hata oluştu.');
     } finally {
       setUploadingIdx(null);
     }
@@ -380,18 +368,24 @@ export default function CreatePage() {
                       <button onClick={() => setCoverIndex(idx)} title="Kapak yap" className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
                         <ImageIcon size={14} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                       </button>
-                      <input value={img} onChange={e => setImage(idx, e.target.value)} placeholder={`Görsel ${idx + 1} URL`} className={`input-field flex-1 text-sm ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
-                      <label title="Dosyadan yükle" className="cursor-pointer p-1.5 hover:bg-violet-50 rounded-lg text-violet-400 flex-shrink-0">
+                      <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                        {img ? (
+                          <img src={img} alt={`Görsel ${idx + 1}`} className="h-24 w-full object-contain bg-gray-50" />
+                        ) : (
+                          <div className="flex h-24 items-center justify-center text-xs font-bold text-gray-400">
+                            Henüz görsel seçilmedi
+                          </div>
+                        )}
+                      </div>
+                      <label title="Dosyadan yükle" className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
                         {uploadingIdx === idx
                           ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-600" />
                           : <Upload size={14} />}
+                        {img ? 'Değiştir' : 'Yükle'}
                         <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
                       </label>
                       {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
                     </div>
-                    {img && !isValidImageUrl(img) && (
-                      <p className="pl-10 text-[11px] text-red-500">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
-                    )}
                   </div>
                 ))}
                 {images.length < maxImages && (
@@ -400,7 +394,7 @@ export default function CreatePage() {
                   </button>
                 )}
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">Kamera ikonuna tıklayarak kapak görselini, yükleme ikonuna tıklayarak bilgisayarınızdan görsel ekleyebilirsiniz.</p>
+              <p className="mt-1.5 text-xs text-gray-400">Görseller dosya olarak yüklenir; sunucuda WebP'ye çevrilip Oyuncu Kantinim filigranı eklenir. Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
             </div>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">

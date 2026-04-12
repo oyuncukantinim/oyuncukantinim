@@ -6,7 +6,7 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload
 } from 'lucide-react';
 
 const FinanceIcon = TrendingUp;
@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -2037,6 +2037,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
+  const [uploadingIdx, setUploadingIdx] = useState(null);
   const [catAttrs, setCatAttrs] = useState([]);
   const [attrValues, setAttrValues] = useState(listing.attributes || {});
   const [stocks, setStocks] = useState(
@@ -2089,6 +2090,17 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const addImage = () => setImages(i => [...i, '']);
   const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+  const uploadImageFile = async (idx, file) => {
+    setUploadingIdx(idx);
+    try {
+      const url = await uploadListingImage(file);
+      setImage(idx, url);
+    } catch (err) {
+      alert(err.message || 'Yükleme sırasında bir hata oluştu.');
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
   const addStock = () => {
     if (stocks.length >= stockItemMaxCount) return;
     setStocks((current) => [...current, { content: '' }]);
@@ -2239,7 +2251,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           {/* Görseller */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-gray-600">Görseller (URL)</label>
+              <label className="text-xs font-bold text-gray-600">Görseller</label>
               <span className="text-[11px] text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
             </div>
             <div className="space-y-2">
@@ -2250,23 +2262,28 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                       className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
                       <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
                     </button>
-                    <input value={img} onChange={e => setImage(idx, e.target.value)}
-                      placeholder={`Görsel ${idx + 1} URL`}
-                      className={inputCls + ` flex-1 text-xs ${img && !isValidImageUrl(img) ? 'border-red-300 focus:border-red-400' : ''}`} />
+                    <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                      {img ? (
+                        <img src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
+                      ) : (
+                        <div className="flex h-36 items-center justify-center text-xs font-bold text-gray-400">
+                          Henüz görsel seçilmedi
+                        </div>
+                      )}
+                    </div>
+                    <label title="Dosyadan yükle" className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
+                      {uploadingIdx === idx
+                        ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
+                        : <Upload size={13} />}
+                      {img ? 'Değiştir' : 'Yükle'}
+                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
+                    </label>
                     {images.length > 1 && (
                       <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
                         <Trash2 size={13} />
                       </button>
                     )}
                   </div>
-                  {img ? (
-                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-                      <img src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
-                    </div>
-                  ) : null}
-                  {img && !isValidImageUrl(img) && (
-                    <p className="text-[11px] text-red-500">Geçersiz URL. İzin verilen: {ALLOWED_DOMAINS_LABEL}</p>
-                  )}
                 </div>
               ))}
               {images.length < maxImages && (
@@ -2275,6 +2292,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                 </button>
               )}
             </div>
+            <p className="mt-1.5 text-[11px] text-gray-400">Yeni yüklenen görseller WebP'ye çevrilir ve filigranlı kaydedilir. Eski URL görselleri görünmeye devam eder; değiştirdiğinde dosya olarak yenilenir.</p>
           </div>
 
           {deliveryType === 'manual' && (

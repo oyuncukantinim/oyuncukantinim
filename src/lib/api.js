@@ -130,6 +130,29 @@ export function updateListing(payload) {
   return request('update_listing', { method: 'POST', body: payload, auth: true });
 }
 
+export async function uploadListingImage(file) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const token = getToken();
+  const response = await fetch(`${API_URL}?action=upload_listing_image`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({
+    status: 'error',
+    message: 'Sunucudan gecerli JSON donmedi.',
+  }));
+
+  if (!response.ok || data.status !== 'success') {
+    throw new Error(data.message || 'Gorsel yukleme basarisiz oldu.');
+  }
+
+  return data.data?.url || '';
+}
+
 export function deleteListing(payload) {
   return request('delete_listing', { method: 'POST', body: payload, auth: true });
 }
