@@ -476,70 +476,6 @@ function ListingDetailModal({
               </div>
             )}
 
-            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <div>
-                  <h3 className="text-xs font-extrabold text-gray-800">Ilan Gorselleri</h3>
-                  <p className="text-[10px] font-semibold text-gray-400">WebP + filigranli yukleme</p>
-                </div>
-                <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-gray-500">
-                  {images.filter(Boolean).length}/{maxImages}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {images.map((imageUrl, idx) => (
-                  <div key={idx} className={`relative overflow-hidden rounded-xl border bg-white p-1.5 shadow-sm ${coverIndex === idx ? 'border-violet-400 ring-2 ring-violet-100' : 'border-gray-100'}`}>
-                    <button
-                      type="button"
-                      onClick={() => setCoverIndex(idx)}
-                      disabled={!imageUrl}
-                      title="Kapak yap"
-                      className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[9px] font-black shadow-sm transition-all disabled:opacity-40 ${coverIndex === idx ? 'bg-violet-600 text-white' : 'bg-white/90 text-gray-500 hover:bg-violet-50 hover:text-violet-600'}`}
-                    >
-                      <ImageIcon size={10} />
-                      {coverIndex === idx ? 'Kapak' : `${idx + 1}`}
-                    </button>
-                    {(imageUrl || images.length > 1) ? (
-                      <button
-                        type="button"
-                        onClick={() => removeImage(idx)}
-                        disabled={saving || uploadingIdx !== null}
-                        className="absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white/90 text-red-400 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-40"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    ) : null}
-                    <div className="overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
-                      {imageUrl ? (
-                        <img src={imageUrl} alt={`Gorsel ${idx + 1}`} className="h-24 w-full object-contain" />
-                      ) : (
-                        <div className="flex h-24 items-center justify-center px-2 text-center text-[10px] font-bold text-gray-400">
-                          Gorsel yok
-                        </div>
-                      )}
-                    </div>
-                    <label className="mt-1.5 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-violet-600 px-2 py-1.5 text-[10px] font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
-                      {uploadingIdx === idx
-                        ? <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
-                        : <Upload size={11} />}
-                      {imageUrl ? 'Degistir' : 'Yukle'}
-                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={saving || uploadingIdx !== null} onChange={(event) => { if (event.target.files[0]) uploadImageFile(idx, event.target.files[0]); event.target.value = ''; }} />
-                    </label>
-                  </div>
-                ))}
-                {images.length < maxImages ? (
-                  <button
-                    type="button"
-                    onClick={addImage}
-                    disabled={saving || uploadingIdx !== null}
-                    className="flex min-h-36 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/50 p-3 text-xs font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50 disabled:opacity-40"
-                  >
-                    <Plus size={16} /> Gorsel Ekle
-                  </button>
-                ) : null}
-              </div>
-            </div>
-
             <div className="space-y-1.5 rounded-xl bg-gray-50 p-3">
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-gray-500">Satici</span>
@@ -564,28 +500,6 @@ function ListingDetailModal({
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-gray-500">Goruntulenme</span>
                 <span className="text-right font-semibold text-gray-700">{listing.view_count || 0}</span>
-              </div>
-              <div className="flex justify-between gap-3 text-sm">
-                <span className="text-gray-500">Aktif Doping</span>
-                {activeDopingTypes.length ? (
-                  <div className="space-y-1 text-right">
-                    <div className="flex flex-wrap justify-end gap-1.5">
-                      {activeDopingTypes.map((type) => (
-                        <span key={type} className={`inline-flex rounded-full px-2 py-1 text-[11px] font-bold ${getDopingTypeMeta(type).buttonClass}`}>
-                          {getDopingTypeMeta(type).label}
-                        </span>
-                      ))}
-                    </div>
-                    {activeDopingTypes.includes('vitrine') && getDopingRemainingLabel(listing.vitrine_expires_at) ? (
-                      <div className="text-[11px] font-semibold text-emerald-600">Vitrin: {getDopingRemainingLabel(listing.vitrine_expires_at)}</div>
-                    ) : null}
-                    {activeDopingTypes.includes('featured') && getDopingRemainingLabel(listing.featured_expires_at) ? (
-                      <div className="text-[11px] font-semibold text-emerald-600">Öne Çıkar: {getDopingRemainingLabel(listing.featured_expires_at)}</div>
-                    ) : null}
-                  </div>
-                ) : (
-                  <span className="font-semibold text-gray-700">Yok</span>
-                )}
               </div>
             </div>
           </div>
@@ -635,6 +549,70 @@ function ListingDetailModal({
                   rows={4}
                   className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                 />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-extrabold text-gray-900">Ilan Gorselleri</h3>
+                  <p className="text-[11px] font-semibold text-gray-400">WebP + filigranli yukleme</p>
+                </div>
+                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-gray-500">
+                  {images.filter(Boolean).length}/{maxImages}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {images.map((imageUrl, idx) => (
+                  <div key={idx} className={`relative overflow-hidden rounded-xl border bg-white p-2 shadow-sm ${coverIndex === idx ? 'border-violet-400 ring-2 ring-violet-100' : 'border-gray-100'}`}>
+                    <button
+                      type="button"
+                      onClick={() => setCoverIndex(idx)}
+                      disabled={!imageUrl}
+                      title="Kapak yap"
+                      className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[9px] font-black shadow-sm transition-all disabled:opacity-40 ${coverIndex === idx ? 'bg-violet-600 text-white' : 'bg-white/90 text-gray-500 hover:bg-violet-50 hover:text-violet-600'}`}
+                    >
+                      <ImageIcon size={10} />
+                      {coverIndex === idx ? 'Kapak' : `${idx + 1}`}
+                    </button>
+                    {(imageUrl || images.length > 1) ? (
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        disabled={saving || uploadingIdx !== null}
+                        className="absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white/90 text-red-400 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-40"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    ) : null}
+                    <div className="overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={`Gorsel ${idx + 1}`} className="h-28 w-full object-contain" />
+                      ) : (
+                        <div className="flex h-28 items-center justify-center px-2 text-center text-[10px] font-bold text-gray-400">
+                          Gorsel yok
+                        </div>
+                      )}
+                    </div>
+                    <label className="mt-2 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-violet-600 px-2 py-1.5 text-[10px] font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
+                      {uploadingIdx === idx
+                        ? <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
+                        : <Upload size={11} />}
+                      {imageUrl ? 'Degistir' : 'Yukle'}
+                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={saving || uploadingIdx !== null} onChange={(event) => { if (event.target.files[0]) uploadImageFile(idx, event.target.files[0]); event.target.value = ''; }} />
+                    </label>
+                  </div>
+                ))}
+                {images.length < maxImages ? (
+                  <button
+                    type="button"
+                    onClick={addImage}
+                    disabled={saving || uploadingIdx !== null}
+                    className="flex min-h-44 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/50 p-3 text-xs font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50 disabled:opacity-40"
+                  >
+                    <Plus size={16} /> Gorsel Ekle
+                  </button>
+                ) : null}
               </div>
             </div>
 
