@@ -11,6 +11,13 @@ const DELIVERY_STATUS_MAP = {
   4: { label: 'İptal & İade',        color: 'gray',    icon: XCircle },
 };
 
+const ORDER_STATUS_OPTIONS = [
+  { value: 'pending', label: 'İşlemde' },
+  { value: 'completed', label: 'Tamamlandı' },
+  { value: 'cancelled', label: 'İptal Edildi' },
+  { value: 'refunded', label: 'İade Edildi' },
+];
+
 function DeliveryBadge({ status }) {
   const s = DELIVERY_STATUS_MAP[status] ?? DELIVERY_STATUS_MAP[0];
   const Icon = s.icon;
@@ -236,6 +243,7 @@ export default function AdminOrders() {
   const [pages, setPages] = useState(1);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
   const [filterDelivery, setFilterDelivery] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
@@ -245,11 +253,11 @@ export default function AdminOrders() {
 
   const load = useCallback(() => {
     setLoading(true);
-    adminGetOrders({ page, search, delivery_status: filterDelivery })
+    adminGetOrders({ page, search, status: filterStatus, delivery_status: filterDelivery })
       .then(r => { setOrders(r.data.orders); setTotal(r.data.total); setPages(r.data.pages); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page, search, filterDelivery]);
+  }, [page, search, filterStatus, filterDelivery]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -266,8 +274,12 @@ export default function AdminOrders() {
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Alıcı veya satıcı ara..." className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400" />
           </div>
+          <select value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }} className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400">
+            <option value="">Tüm Sipariş Durumları</option>
+            {ORDER_STATUS_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
           <select value={filterDelivery} onChange={e => { setFilterDelivery(e.target.value); setPage(1); }} className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400">
-            <option value="">Tüm Durumlar</option>
+            <option value="">Tüm Teslimat Durumları</option>
             {Object.entries(DELIVERY_STATUS_MAP).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
           </select>
         </div>
