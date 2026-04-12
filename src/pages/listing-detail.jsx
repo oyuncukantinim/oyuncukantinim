@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
-  User,
+  User, X,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -54,6 +54,7 @@ export default function ListingDetailPage() {
   const [catAttrs, setCatAttrs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
 
@@ -163,10 +164,18 @@ export default function ListingDetailPage() {
           <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
             {images.length > 0 ? (
               <>
-                <img                   src={images[activeImg]}
-                  alt={listing.title}
-                  className="w-full h-full object-cover"
-                />
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="block h-full w-full cursor-zoom-in bg-slate-100"
+                  title="Görseli büyüt"
+                >
+                  <img
+                    src={images[activeImg]}
+                    alt={listing.title}
+                    className="w-full h-full object-contain"
+                  />
+                </button>
                 {images.length > 1 && (
                   <>
                     <button
@@ -211,7 +220,7 @@ export default function ListingDetailPage() {
                     idx === activeImg ? 'border-neon-purple opacity-100' : 'border-transparent opacity-50 hover:opacity-80'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img} alt="" className="w-full h-full object-contain bg-gray-100" />
                 </button>
               ))}
             </div>
@@ -404,6 +413,61 @@ export default function ListingDetailPage() {
 
         </div>
       </div>
+      {lightboxOpen && images.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4">
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+            title="Kapat"
+          >
+            <X size={22} />
+          </button>
+
+          {images.length > 1 && (
+            <button
+              type="button"
+              onClick={prevImg}
+              className="absolute left-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              title="Önceki görsel"
+            >
+              <ChevronLeft size={24} />
+            </button>
+          )}
+
+          <img
+            src={images[activeImg]}
+            alt={listing.title}
+            className="max-h-[86vh] max-w-[92vw] rounded-3xl object-contain shadow-2xl"
+          />
+
+          {images.length > 1 && (
+            <button
+              type="button"
+              onClick={nextImg}
+              className="absolute right-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              title="Sonraki görsel"
+            >
+              <ChevronRight size={24} />
+            </button>
+          )}
+
+          {images.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 z-10 flex max-w-[88vw] -translate-x-1/2 gap-2 overflow-x-auto rounded-2xl bg-white/10 p-2 backdrop-blur">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => setActiveImg(idx)}
+                  className={`h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${idx === activeImg ? 'border-white opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}
+                >
+                  <img src={img} alt="" className="h-full w-full object-contain bg-slate-900" />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
