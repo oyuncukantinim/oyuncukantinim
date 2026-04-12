@@ -140,6 +140,25 @@ export default function ListingDetailPage() {
         {/* ── SOL: Galeri + Açıklama ── */}
         <div className="lg:col-span-3 space-y-4">
 
+          {/* Başlık + badge'ler */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              <Link
+                to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
+                className="badge-cyan text-xs hover:opacity-80 transition-opacity"
+              >
+                {listing.category_name || listing.category}
+              </Link>
+              {listing.delivery_type === 'stock'
+                ? <span className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">⚡ Anında Teslimat</span>
+                : listing.delivery_hours
+                  ? <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">🕐 {deliveryLabel} içinde</span>
+                  : null
+              }
+            </div>
+            <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2 break-words">{listing.title}</h1>
+          </div>
+
           {/* Ana görsel */}
           <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
             {images.length > 0 ? (
@@ -234,59 +253,6 @@ export default function ListingDetailPage() {
         {/* ── SAĞ: Bilgi paneli ── */}
         <div className="lg:col-span-2 space-y-4">
 
-          {/* Başlık + badge'ler */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              <Link
-                to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
-                className="badge-cyan text-xs hover:opacity-80 transition-opacity"
-              >
-                {listing.category_name || listing.category}
-              </Link>
-              {listing.delivery_type === 'stock'
-                ? <span className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">⚡ Anında Teslimat</span>
-                : listing.delivery_hours
-                  ? <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">🕐 {deliveryLabel} içinde</span>
-                  : null
-              }
-            </div>
-            <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2 break-words">{listing.title}</h1>
-          </div>
-
-          {/* Fiyat + sepet */}
-          <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg shadow-violet-500/20">
-            <div className="text-violet-200 text-xs font-semibold mb-1">Fiyat</div>
-            <div className="text-4xl font-black text-white mb-4">{Number(listing.price).toFixed(2)} ₺</div>
-            {isSeller ? (
-              <span className="w-full block text-center text-violet-200 font-bold text-sm py-3 bg-white/10 rounded-xl">
-                Kendi İlanın
-              </span>
-            ) : isUnavailable ? (
-              <span className="w-full block text-center text-white/60 font-bold text-sm py-3 bg-white/10 rounded-xl">
-                {listing.status === 'sold' ? '✅ Satıldı' : '⏸ Müsait Değil'}
-              </span>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBuy}
-                  className="flex-1 flex items-center justify-center gap-2 bg-white text-violet-700 font-extrabold text-base py-3.5 rounded-xl hover:bg-violet-50 active:scale-95 transition-all shadow-md"
-                >
-                  <ShoppingCart size={18} /> Sepete Ekle
-                </button>
-                <button
-                  onClick={handleToggleFavorite}
-                  disabled={favLoading}
-                  title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                  className={`w-14 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
-                    favorited ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  <Heart size={20} className={favorited ? 'fill-current' : ''} />
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* Satıcı */}
           <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
             <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
@@ -364,6 +330,40 @@ export default function ListingDetailPage() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Fiyat + sepet */}
+          <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg shadow-violet-500/20">
+            <div className="text-violet-200 text-xs font-semibold mb-1">Fiyat</div>
+            <div className="text-4xl font-black text-white mb-4">{Number(listing.price).toFixed(2)} ₺</div>
+            {isSeller ? (
+              <span className="w-full block text-center text-violet-200 font-bold text-sm py-3 bg-white/10 rounded-xl">
+                Kendi İlanın
+              </span>
+            ) : isUnavailable ? (
+              <span className="w-full block text-center text-white/60 font-bold text-sm py-3 bg-white/10 rounded-xl">
+                {listing.status === 'sold' ? '✅ Satıldı' : '⏸ Müsait Değil'}
+              </span>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBuy}
+                  className="flex-1 flex items-center justify-center gap-2 bg-white text-violet-700 font-extrabold text-base py-3.5 rounded-xl hover:bg-violet-50 active:scale-95 transition-all shadow-md"
+                >
+                  <ShoppingCart size={18} /> Sepete Ekle
+                </button>
+                <button
+                  onClick={handleToggleFavorite}
+                  disabled={favLoading}
+                  title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                  className={`w-14 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
+                    favorited ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  <Heart size={20} className={favorited ? 'fill-current' : ''} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Bilgi grid */}
