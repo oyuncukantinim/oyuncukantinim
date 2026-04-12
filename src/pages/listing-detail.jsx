@@ -319,6 +319,14 @@ export default function ListingDetailPage() {
               </div>
 
               <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
+                <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-1.5 shadow-sm">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
+                    <Zap size={11} className="fill-current" />
+                  </div>
+                  <div className="whitespace-nowrap font-black text-slate-700">
+                    <span className="text-[9px]">Toplam Satış</span> <span className="text-base text-slate-900">{sellerSalesCount}</span>
+                  </div>
+                </div>
                 <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-white via-amber-50 to-violet-50 px-2.5 py-1.5 shadow-sm">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 font-black text-slate-800">
@@ -330,14 +338,6 @@ export default function ListingDetailPage() {
                     <span className="rounded-full bg-white px-2 py-1 font-black leading-none text-violet-600 shadow-sm">
                       <span className="text-sm">{sellerReviewCount}</span> <span className="text-[9px]">yorum</span>
                     </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-1.5 shadow-sm">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <Zap size={11} className="fill-current" />
-                  </div>
-                  <div className="whitespace-nowrap font-black text-slate-700">
-                    <span className="text-[9px]">Toplam Satış</span> <span className="text-base text-slate-900">{sellerSalesCount}</span>
                   </div>
                 </div>
               </div>
