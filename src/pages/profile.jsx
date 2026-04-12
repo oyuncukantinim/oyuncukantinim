@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -713,7 +713,11 @@ export default function ProfilePage() {
   const handleUpdateListing = async (data) => {
     setSaving(true);
     try {
-      await updateListing(data);
+      const { removed_images: removedImages = [], ...payload } = data;
+      await updateListing(payload);
+      if (removedImages.length > 0) {
+        await Promise.allSettled(removedImages.map((url) => deleteListingImage(url)));
+      }
       showToast('İlan güncellendi!');
       setEditModal(null);
       loadListings();
@@ -2038,6 +2042,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [descMax, setDescMax] = useState(2000);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
   const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [pendingDeleteImages, setPendingDeleteImages] = useState([]);
   const [catAttrs, setCatAttrs] = useState([]);
   const [attrValues, setAttrValues] = useState(listing.attributes || {});
   const [stocks, setStocks] = useState(
@@ -2088,13 +2093,35 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   }, [listing.category_id, listing.attributes]);
 
   const addImage = () => setImages(i => [...i, '']);
-  const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
+  const queueImageDeletion = (url) => {
+    if (!url) return;
+    if (imgs.includes(url)) {
+      setPendingDeleteImages((current) => current.includes(url) ? current : [...current, url]);
+      return;
+    }
+    deleteListingImage(url).catch(() => {});
+  };
+  const removeImage = (idx) => {
+    const imageUrl = images[idx];
+    queueImageDeletion(imageUrl);
+    setImages((current) => (current.length > 1 ? current.filter((_, j) => j !== idx) : ['']));
+    setCoverIndex((current) => {
+      if (images.length <= 1) return 0;
+      if (current === idx) return 0;
+      if (current > idx) return current - 1;
+      return Math.min(current, images.length - 2);
+    });
+  };
   const uploadImageFile = async (idx, file) => {
     setUploadingIdx(idx);
+    const previousUrl = images[idx];
     try {
       const url = await uploadListingImage(file);
       setImage(idx, url);
+      if (previousUrl && previousUrl !== url) {
+        queueImageDeletion(previousUrl);
+      }
     } catch (err) {
       alert(err.message || 'Yükleme sırasında bir hata oluştu.');
     } finally {
@@ -2130,6 +2157,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       delivery_hours: deliveryHours,
       attributes: attrValues,
       stocks: deliveryType === 'stock' ? stocks.filter((stock) => stock.content.trim()) : [],
+      removed_images: pendingDeleteImages,
     });
   };
 
@@ -2265,7 +2293,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                     <ImageIcon size={11} />
                     {coverIndex === idx ? 'Kapak' : `${idx + 1}`}
                   </button>
-                  {images.length > 1 && (
+                  {(img || images.length > 1) && (
                     <button
                       onClick={() => removeImage(idx)}
                       className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/90 text-red-400 shadow-sm transition-colors hover:bg-red-50"
