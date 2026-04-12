@@ -2254,41 +2254,46 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
               <label className="text-xs font-bold text-gray-600">Görseller</label>
               <span className="text-[11px] text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
             </div>
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {images.map((img, idx) => (
-                <div key={idx} className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-3">
-                  <div className="flex gap-2 items-center">
-                    <button onClick={() => setCoverIndex(idx)} title="Kapak yap"
-                      className={`w-8 h-8 rounded-lg border flex items-center justify-center flex-shrink-0 transition-all ${coverIndex === idx ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-300'}`}>
-                      <ImageIcon size={13} className={coverIndex === idx ? 'text-violet-600' : 'text-gray-400'} />
+                <div key={idx} className={`relative overflow-hidden rounded-2xl border bg-white p-2.5 shadow-sm transition-all ${coverIndex === idx ? 'border-violet-400 ring-2 ring-violet-100' : 'border-gray-100'}`}>
+                  <button
+                    onClick={() => setCoverIndex(idx)}
+                    title="Kapak yap"
+                    className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[10px] font-black shadow-sm transition-all ${coverIndex === idx ? 'bg-violet-600 text-white' : 'bg-white/90 text-gray-500 hover:bg-violet-50 hover:text-violet-600'}`}
+                  >
+                    <ImageIcon size={11} />
+                    {coverIndex === idx ? 'Kapak' : `${idx + 1}`}
+                  </button>
+                  {images.length > 1 && (
+                    <button
+                      onClick={() => removeImage(idx)}
+                      className="absolute right-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-xl bg-white/90 text-red-400 shadow-sm transition-colors hover:bg-red-50"
+                    >
+                      <Trash2 size={13} />
                     </button>
-                    <div className="flex-1 overflow-hidden rounded-xl border border-gray-200 bg-white">
-                      {img ? (
-                        <img src={img} alt={`Görsel ${idx + 1}`} className="h-36 w-full object-contain bg-gray-50" />
-                      ) : (
-                        <div className="flex h-36 items-center justify-center text-xs font-bold text-gray-400">
-                          Henüz görsel seçilmedi
-                        </div>
-                      )}
-                    </div>
-                    <label title="Dosyadan yükle" className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
-                      {uploadingIdx === idx
-                        ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
-                        : <Upload size={13} />}
-                      {img ? 'Değiştir' : 'Yükle'}
-                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
-                    </label>
-                    {images.length > 1 && (
-                      <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
-                        <Trash2 size={13} />
-                      </button>
+                  )}
+                  <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
+                    {img ? (
+                      <img src={img} alt={`Görsel ${idx + 1}`} className="h-28 w-full object-contain" />
+                    ) : (
+                      <div className="flex h-28 items-center justify-center px-3 text-center text-xs font-bold text-gray-400">
+                        Henüz görsel seçilmedi
+                      </div>
                     )}
                   </div>
+                  <label title="Dosyadan yükle" className="mt-2 flex cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
+                    {uploadingIdx === idx
+                      ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
+                      : <Upload size={13} />}
+                    {img ? 'Değiştir' : 'Yükle'}
+                    <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
+                  </label>
                 </div>
               ))}
               {images.length < maxImages && (
-                <button onClick={addImage} className="text-xs text-violet-600 hover:text-violet-500 font-bold flex items-center gap-1 mt-1">
-                  <Plus size={13} /> Görsel Ekle
+                <button onClick={addImage} className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-violet-200 bg-violet-50/40 p-4 text-sm font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50">
+                  <Plus size={18} /> Görsel Ekle
                 </button>
               )}
             </div>
