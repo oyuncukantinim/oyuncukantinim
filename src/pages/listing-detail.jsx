@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
-  User, X,
+  User, X, Eye,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -126,6 +126,7 @@ export default function ListingDetailPage() {
   const sellerLevel = Number(listing.seller_level || 1);
   const sellerLastSeen = formatLastSeen(listing.seller_last_seen);
   const sellerMemberSince = formatMemberSince(listing.seller_created_at);
+  const listingViewCount = Number(listing.view_count || 0);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -409,6 +410,15 @@ export default function ListingDetailPage() {
                 </div>
               </div>
             )}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 bg-sky-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Eye size={15} className="text-sky-600" />
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-semibold">Görüntülenme</div>
+                <div className="text-xs font-bold text-gray-700">{listingViewCount} kez</div>
+              </div>
+            </div>
           </div>
 
         </div>
