@@ -153,6 +153,14 @@ export async function uploadListingImage(file) {
   return data.data?.url || '';
 }
 
+export function deleteListingImage(url) {
+  return request('delete_listing_image', {
+    method: 'POST',
+    body: { url },
+    auth: true,
+  });
+}
+
 export function deleteListing(payload) {
   return request('delete_listing', { method: 'POST', body: payload, auth: true });
 }

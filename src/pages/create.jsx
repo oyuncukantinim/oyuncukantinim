@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { addListing, uploadListingImage } from '../lib/api';
+import { addListing, deleteListingImage, uploadListingImage } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../lib/doping';
@@ -236,20 +236,45 @@ export default function CreatePage() {
   };
 
   const addImage    = () => setImages(i => [...i, '']);
-  const removeImage = (idx) => setImages(i => i.filter((_, j) => j !== idx));
   const setImage    = (idx, val) => setImages(i => i.map((x, j) => j === idx ? val : x));
 
   const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [deletingIdx, setDeletingIdx] = useState(null);
   const uploadImageFile = async (idx, file) => {
     setUploadingIdx(idx);
+    const previousUrl = images[idx];
     try {
       const url = await uploadListingImage(file);
       setImage(idx, url);
+      if (previousUrl && previousUrl !== url) {
+        deleteListingImage(previousUrl).catch(() => {});
+      }
       showToast('Görsel yüklendi ve filigran eklendi.');
     } catch (err) {
       showToast(err.message || 'Yükleme sırasında bir hata oluştu.');
     } finally {
       setUploadingIdx(null);
+    }
+  };
+  const removeImage = async (idx) => {
+    const imageUrl = images[idx];
+    setDeletingIdx(idx);
+    try {
+      if (imageUrl) {
+        await deleteListingImage(imageUrl);
+      }
+      setImages((current) => (current.length > 1 ? current.filter((_, j) => j !== idx) : ['']));
+      setCoverIndex((current) => {
+        if (images.length <= 1) return 0;
+        if (current === idx) return 0;
+        if (current > idx) return current - 1;
+        return Math.min(current, images.length - 2);
+      });
+      if (imageUrl) showToast('Görsel sunucudan silindi.');
+    } catch (err) {
+      showToast(err.message || 'Görsel silinemedi.');
+    } finally {
+      setDeletingIdx(null);
     }
   };
 
@@ -382,9 +407,15 @@ export default function CreatePage() {
                           ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-violet-300 border-t-violet-600" />
                           : <Upload size={14} />}
                         {img ? 'Değiştir' : 'Yükle'}
-                        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
+                        <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={uploadingIdx !== null || deletingIdx !== null} onChange={e => { if (e.target.files[0]) uploadImageFile(idx, e.target.files[0]); e.target.value = ''; }} />
                       </label>
-                      {images.length > 1 && <button onClick={() => removeImage(idx)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0"><Trash2 size={14} /></button>}
+                      {(img || images.length > 1) && (
+                        <button onClick={() => removeImage(idx)} disabled={uploadingIdx !== null || deletingIdx !== null} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400 flex-shrink-0 disabled:opacity-40">
+                          {deletingIdx === idx
+                            ? <span className="inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-red-200 border-t-red-500" />
+                            : <Trash2 size={14} />}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
