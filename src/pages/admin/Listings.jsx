@@ -4,10 +4,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
+  Image as ImageIcon,
   Package,
   Pencil,
+  Plus,
   Search,
   Trash2,
+  Upload,
   X,
   XCircle,
 } from 'lucide-react';
@@ -17,11 +20,13 @@ import {
   adminApplyListingDoping,
   adminClearListingDoping,
   adminDeleteListing,
+  adminDeleteListingImage,
   adminDeleteStock,
   adminGetListings,
   adminGetStocks,
   adminUpdateListing,
   adminUpdateStock,
+  adminUploadListingImage,
 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
@@ -300,6 +305,7 @@ function ListingDetailModal({
   featuredOptions,
   defaultListingImage,
 }) {
+  const originalImages = Array.isArray(listing.images) ? listing.images.filter(Boolean) : [];
   const [form, setForm] = useState({
     title: listing.title,
     price: listing.price,
@@ -307,9 +313,14 @@ function ListingDetailModal({
     description: listing.description || '',
   });
   const [saving, setSaving] = useState(false);
+  const [images, setImages] = useState(originalImages.length ? originalImages : ['']);
+  const [coverIndex, setCoverIndex] = useState(Number.isInteger(Number(listing.cover_index)) ? Number(listing.cover_index) : 0);
+  const [uploadingIdx, setUploadingIdx] = useState(null);
+  const [pendingDeleteImages, setPendingDeleteImages] = useState([]);
+  const maxImages = Math.max(5, originalImages.length);
   const [dopingType, setDopingType] = useState(getListingActiveDopingTypes(listing)[0] || 'vitrine');
   const [dopingHours, setDopingHours] = useState(null);
-  const coverImage = getListingCoverImage(listing, defaultListingImage);
+  const coverImage = images[coverIndex] || images.find(Boolean) || getListingCoverImage(listing, defaultListingImage);
   const activeDopingTypes = getListingActiveDopingTypes(listing);
   const currentDopingOptions = dopingType === 'vitrine' ? vitrineOptions : featuredOptions;
   const selectedDopingOption =
@@ -325,10 +336,58 @@ function ListingDetailModal({
     }
   }, [currentDopingOptions, dopingHours]);
 
+  const addImage = () => setImages((current) => [...current, '']);
+  const setImage = (idx, value) => setImages((current) => current.map((item, itemIdx) => (itemIdx === idx ? value : item)));
+  const queueImageDeletion = (url) => {
+    if (!url) return;
+    if (originalImages.includes(url)) {
+      setPendingDeleteImages((current) => (current.includes(url) ? current : [...current, url]));
+      return;
+    }
+    adminDeleteListingImage(url).catch(() => {});
+  };
+  const removeImage = (idx) => {
+    const imageUrl = images[idx];
+    queueImageDeletion(imageUrl);
+    setImages((current) => (current.length > 1 ? current.filter((_, itemIdx) => itemIdx !== idx) : ['']));
+    setCoverIndex((current) => {
+      if (images.length <= 1) return 0;
+      if (current === idx) return 0;
+      if (current > idx) return current - 1;
+      return Math.min(current, images.length - 2);
+    });
+  };
+  const uploadImageFile = async (idx, file) => {
+    setUploadingIdx(idx);
+    const previousUrl = images[idx];
+    try {
+      const url = await adminUploadListingImage(file);
+      setImage(idx, url);
+      if (previousUrl && previousUrl !== url) {
+        queueImageDeletion(previousUrl);
+      }
+      showToast('Gorsel yuklendi ve filigran eklendi.');
+    } catch (error) {
+      showToast(error.message || 'Gorsel yuklenemedi.');
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminUpdateListing({ listing_id: listing.id, ...form });
+      const nextImages = images.filter(Boolean);
+      const nextCoverIndex = nextImages.length > 0 ? Math.min(Math.max(0, coverIndex), nextImages.length - 1) : 0;
+      await adminUpdateListing({
+        listing_id: listing.id,
+        ...form,
+        images: nextImages,
+        cover_index: nextCoverIndex,
+      });
+      if (pendingDeleteImages.length > 0) {
+        await Promise.allSettled(pendingDeleteImages.map((url) => adminDeleteListingImage(url)));
+      }
       showToast('Ilan guncellendi.');
       onRefresh();
       onClose();
@@ -416,6 +475,70 @@ function ListingDetailModal({
                 Gorsel yok
               </div>
             )}
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-xs font-extrabold text-gray-800">Ilan Gorselleri</h3>
+                  <p className="text-[10px] font-semibold text-gray-400">WebP + filigranli yukleme</p>
+                </div>
+                <span className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-gray-500">
+                  {images.filter(Boolean).length}/{maxImages}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {images.map((imageUrl, idx) => (
+                  <div key={idx} className={`relative overflow-hidden rounded-xl border bg-white p-1.5 shadow-sm ${coverIndex === idx ? 'border-violet-400 ring-2 ring-violet-100' : 'border-gray-100'}`}>
+                    <button
+                      type="button"
+                      onClick={() => setCoverIndex(idx)}
+                      disabled={!imageUrl}
+                      title="Kapak yap"
+                      className={`absolute left-2 top-2 z-10 inline-flex items-center gap-1 rounded-lg px-1.5 py-1 text-[9px] font-black shadow-sm transition-all disabled:opacity-40 ${coverIndex === idx ? 'bg-violet-600 text-white' : 'bg-white/90 text-gray-500 hover:bg-violet-50 hover:text-violet-600'}`}
+                    >
+                      <ImageIcon size={10} />
+                      {coverIndex === idx ? 'Kapak' : `${idx + 1}`}
+                    </button>
+                    {(imageUrl || images.length > 1) ? (
+                      <button
+                        type="button"
+                        onClick={() => removeImage(idx)}
+                        disabled={saving || uploadingIdx !== null}
+                        className="absolute right-2 top-2 z-10 inline-flex h-6 w-6 items-center justify-center rounded-lg bg-white/90 text-red-400 shadow-sm transition-colors hover:bg-red-50 disabled:opacity-40"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    ) : null}
+                    <div className="overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                      {imageUrl ? (
+                        <img src={imageUrl} alt={`Gorsel ${idx + 1}`} className="h-24 w-full object-contain" />
+                      ) : (
+                        <div className="flex h-24 items-center justify-center px-2 text-center text-[10px] font-bold text-gray-400">
+                          Gorsel yok
+                        </div>
+                      )}
+                    </div>
+                    <label className="mt-1.5 flex cursor-pointer items-center justify-center gap-1 rounded-lg bg-violet-600 px-2 py-1.5 text-[10px] font-extrabold text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500">
+                      {uploadingIdx === idx
+                        ? <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-300 border-t-white" />
+                        : <Upload size={11} />}
+                      {imageUrl ? 'Degistir' : 'Yukle'}
+                      <input type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" className="hidden" disabled={saving || uploadingIdx !== null} onChange={(event) => { if (event.target.files[0]) uploadImageFile(idx, event.target.files[0]); event.target.value = ''; }} />
+                    </label>
+                  </div>
+                ))}
+                {images.length < maxImages ? (
+                  <button
+                    type="button"
+                    onClick={addImage}
+                    disabled={saving || uploadingIdx !== null}
+                    className="flex min-h-36 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-200 bg-violet-50/50 p-3 text-xs font-black text-violet-600 transition-all hover:border-violet-400 hover:bg-violet-50 disabled:opacity-40"
+                  >
+                    <Plus size={16} /> Gorsel Ekle
+                  </button>
+                ) : null}
+              </div>
+            </div>
 
             <div className="space-y-1.5 rounded-xl bg-gray-50 p-3">
               <div className="flex justify-between gap-3 text-sm">

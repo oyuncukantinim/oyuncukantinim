@@ -30,6 +30,32 @@ async function adminRequest(action, { method = 'GET', body = null, query = {} } 
   return json;
 }
 
+async function adminUploadRequest(action, file) {
+  const url = new URL(API_URL);
+  url.searchParams.set('action', action);
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch(url.toString(), {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${getAdminToken()}`,
+    },
+    body: formData,
+  });
+
+  let json;
+  try {
+    json = await res.json();
+  } catch {
+    const text = await res.text().catch(() => '');
+    throw new Error('Sunucu gecersiz yanit dondurdu: ' + (text.slice(0, 200) || '(bos)'));
+  }
+  if (json.status !== 'success') throw new Error(json.message || 'Hata');
+  return json;
+}
+
 // Auth
 export const adminLogin = (email, password) =>
   adminRequest('admin_login', { method: 'POST', body: { email, password } });
@@ -64,6 +90,10 @@ export const adminUpdateListing = (body) =>
   adminRequest('admin_update_listing', { method: 'POST', body });
 export const adminDeleteListing = (listing_id) =>
   adminRequest('admin_delete_listing', { method: 'POST', body: { listing_id } });
+export const adminUploadListingImage = (file) =>
+  adminUploadRequest('admin_upload_listing_image', file).then((json) => json.data?.url || '');
+export const adminDeleteListingImage = (url) =>
+  adminRequest('admin_delete_listing_image', { method: 'POST', body: { url } });
 export const adminApplyListingDoping = (body) =>
   adminRequest('admin_apply_listing_doping', { method: 'POST', body });
 export const adminClearListingDoping = (listing_id, doping_type = null) =>
