@@ -35,13 +35,20 @@ import useSiteBrand from '../../hooks/useSiteBrand';
 
 const STATUS_MAP = {
   active: { label: 'Aktif', colorClass: 'text-emerald-600 bg-emerald-50' },
-  sold: { label: 'Satildi', colorClass: 'text-blue-600 bg-blue-50' },
-  expired: { label: 'Suresi Doldu', colorClass: 'text-orange-600 bg-orange-50' },
-  pending: { label: 'Bekliyor', colorClass: 'text-yellow-700 bg-yellow-50' },
-  removed: { label: 'Kaldirildi', colorClass: 'text-red-600 bg-red-50' },
-  inactive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
   passive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
+  inactive: { label: 'Pasif', colorClass: 'text-gray-600 bg-gray-100' },
+  sold: { label: 'Satildi / Stok Bitti', colorClass: 'text-blue-600 bg-blue-50' },
+  expired: { label: 'Suresi Doldu', colorClass: 'text-orange-600 bg-orange-50' },
+  removed: { label: 'Kaldirildi', colorClass: 'text-red-600 bg-red-50' },
 };
+
+const LISTING_STATUS_OPTIONS = [
+  { key: 'active', label: 'Aktif' },
+  { key: 'passive', label: 'Pasif' },
+  { key: 'sold', label: 'Satildi / Stok Bitti' },
+  { key: 'expired', label: 'Suresi Doldu' },
+  { key: 'removed', label: 'Kaldirildi' },
+];
 
 function fmtDate(value) {
   return value ? new Date(value).toLocaleDateString('tr-TR') : '-';
@@ -309,7 +316,7 @@ function ListingDetailModal({
   const [form, setForm] = useState({
     title: listing.title,
     price: listing.price,
-    status: listing.status,
+    status: listing.status === 'inactive' ? 'passive' : listing.status,
     description: listing.description || '',
   });
   const [saving, setSaving] = useState(false);
@@ -533,9 +540,9 @@ function ListingDetailModal({
                     onChange={(e) => setForm((prev) => ({ ...prev, status: e.target.value }))}
                     className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
                   >
-                    {Object.entries(STATUS_MAP).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {value.label}
+                    {LISTING_STATUS_OPTIONS.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.label}
                       </option>
                     ))}
                   </select>
@@ -848,9 +855,9 @@ export default function AdminListings() {
             className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
           >
             <option value="">Tum Durumlar</option>
-            {Object.entries(STATUS_MAP).map(([key, value]) => (
-              <option key={key} value={key}>
-                {value.label}
+            {LISTING_STATUS_OPTIONS.map((option) => (
+              <option key={option.key} value={option.key}>
+                {option.label}
               </option>
             ))}
           </select>
