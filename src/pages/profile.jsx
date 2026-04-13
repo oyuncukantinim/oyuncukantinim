@@ -957,39 +957,41 @@ export default function ProfilePage() {
   }, [activeTab, balanceAddEnabled]);
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6">
       {/* Profile Header */}
-      <div className="card overflow-hidden">
-        <div className="aspect-[5/1] relative overflow-hidden bg-gradient-to-r from-violet-500/20 via-cyan-500/10 to-pink-500/20">
+      <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white">
+        <div className="aspect-[5/1] relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-cyan-500">
           {(user.banner_image || defaultProfileBanner) ? (
             <img src={user.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
-              <div className="absolute inset-0 bg-white/30 backdrop-blur-sm" />
-              <div className="absolute -top-10 right-8 w-32 h-32 rounded-full bg-white/20 blur-2xl" />
-              <div className="absolute -bottom-8 left-12 w-40 h-24 rounded-full bg-cyan-200/20 blur-2xl" />
+              <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
+              <div className="absolute -top-10 right-16 w-40 h-40 rounded-full bg-white/10 blur-3xl" />
+              <div className="absolute -bottom-12 left-20 w-52 h-32 rounded-full bg-cyan-400/15 blur-3xl" />
+              <div className="absolute top-4 left-1/3 w-24 h-24 rounded-full bg-pink-400/10 blur-2xl" />
             </>
           )}
         </div>
         <div className="px-6 sm:px-8 pb-6 relative">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-10 mb-4">
-            <div className="relative">
-              <div className="w-20 h-20 bg-gray-50 border-4 border-white rounded-2xl flex items-center justify-center text-4xl shadow-lg">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-12 mb-4">
+            <div className="relative group">
+              <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl ring-2 ring-violet-200/50 transition-all group-hover:ring-violet-400/50">
                 {user.avatar || defaultAvatar}
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full border-2 border-white">
+              <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border-2 border-white shadow-md animate-pulse">
                 Lv.{user.level || 1}
               </div>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-xl font-extrabold text-gray-800">{user.username}</h1>
-              <p className="text-gray-400 text-xs flex items-center justify-center sm:justify-start gap-1 mt-0.5">
-                <ShieldCheck size={12} className="text-emerald-500" /> Doğrulanmış Üye
+              <h1 className="text-2xl font-extrabold text-gray-800">{user.username}</h1>
+              <p className="text-gray-400 text-xs flex items-center justify-center sm:justify-start gap-1 mt-1">
+                <Clock size={11} />
+                {user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + ' tarihinden beri üye' : 'Üye'}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
               {Number(user.is_admin) === 1 && (
-                <Link to="/admin" className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                <Link to="/admin" className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors shadow-sm">
                   <Shield size={12}/> Admin Paneli
                 </Link>
               )}
@@ -999,13 +1001,13 @@ export default function ProfilePage() {
             </div>
           </div>
           {/* XP Bar */}
-          <div className="bg-gray-50 rounded-xl p-3 border border-gray-100">
+          <div className="bg-gradient-to-r from-gray-50 to-violet-50/50 rounded-xl p-3 border border-gray-100/80">
             <div className="flex justify-between text-xs font-bold mb-1.5">
               <span className="text-gray-500">Seviye {user.level || 1}</span>
-              <span className="text-violet-600">{user.xp || 0} XP</span>
+              <span className="bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">{user.xp || 0} XP</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-              <div className="bg-gradient-to-r from-violet-500 to-cyan-500 h-full rounded-full transition-all" style={{ width: `${Math.min(user.xp || 0, 100)}%` }} />
+            <div className="w-full bg-gray-200/60 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 h-full rounded-full transition-all shadow-sm shadow-violet-500/20" style={{ width: `${Math.min(user.xp || 0, 100)}%` }} />
             </div>
           </div>
         </div>
@@ -1013,28 +1015,54 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <div className="flex flex-col md:flex-row gap-5">
-        <div className="w-full md:w-52 flex-shrink-0 space-y-1">
-          {tabs.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                activeTab === tab.id ? 'bg-violet-600/10 text-violet-700 border border-violet-200' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
-              }`}
-            >
-              <tab.icon size={16} /> {tab.label}
+        <div className="w-full md:w-56 flex-shrink-0">
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 space-y-0.5 sticky top-4">
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">İşlemler</p>
+            {tabs.filter(t => ['listings','orders','sales'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-gray-100 my-2" />
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
+            {tabs.filter(t => ['favorites','reviews','finance'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-gray-100 my-2" />
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Hesap</p>
+            {tabs.filter(t => ['balance','profile','personal'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-gray-100 my-2" />
+            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all">
+              <LogOut size={16} /> Çıkış Yap
             </button>
-          ))}
-          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all mt-3">
-            <LogOut size={16} /> Çıkış Yap
-          </button>
+          </div>
         </div>
 
-        <div className="flex-1 card p-5 sm:p-6 min-h-[400px]">
+        <div className="flex-1 rounded-2xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6 min-h-[400px]">
 
           {/* İLANLARIM */}
           {activeTab === 'listings' && (
             <div>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-extrabold text-gray-800">İlanlarım</h2>
+                <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><List size={20} className="text-violet-500" /> İlanlarım</h2>
                 <div className="flex items-center gap-2">
                   <div className="flex border border-gray-200 rounded-xl overflow-hidden">
                     <button
@@ -1212,7 +1240,7 @@ export default function ProfilePage() {
           {/* SİPARİLERİM */}
           {activeTab === 'orders' && (
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Siparişlerim</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Package size={20} className="text-violet-500" /> Siparişlerim</h2>
               {orders.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3">📦</div>
@@ -1232,7 +1260,7 @@ export default function ProfilePage() {
           {/* SATILARIM */}
           {activeTab === 'sales' && (
             <div>
-              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Satışlarım</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Store size={20} className="text-violet-500" /> Satışlarım</h2>
               {sales.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3"></div>
@@ -1371,7 +1399,7 @@ export default function ProfilePage() {
           {/* BAKİYE */}
           {activeTab === 'balance' && (
             <div className="max-w-md">
-              <h2 className="text-lg font-extrabold text-gray-800 mb-5">Bakiye</h2>
+              <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
               <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 mb-5">
                 <div className="text-sm text-gray-500 mb-1">Mevcut Bakiye</div>
                 <div className="text-4xl font-extrabold text-emerald-600">{Number(user.balance || 0).toFixed(2)} ₺</div>
@@ -1400,7 +1428,7 @@ export default function ProfilePage() {
             <div className="max-w-3xl space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-extrabold text-gray-800">Profil Bilgilerim</h2>
+                  <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><User size={20} className="text-violet-500" /> Profil Bilgilerim</h2>
                   <p className="text-sm text-gray-400 mt-1">Avatar ve banner görünümünü buradan yönetebilirsin.</p>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${profileDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
@@ -1509,7 +1537,7 @@ export default function ProfilePage() {
             <div className="max-w-3xl space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-extrabold text-gray-800">Kişisel Bilgiler</h2>
+                  <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><MapPin size={20} className="text-violet-500" /> Kişisel Bilgiler</h2>
                   <p className="text-sm text-gray-400 mt-1">Adres ve kimlik bilgileri yalnızca senin ve site yöneticisinin erişimine açıktır.</p>
                 </div>
                 <span className={`text-xs font-bold px-3 py-1 rounded-full ${personalDirty ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
