@@ -33,6 +33,7 @@ const navItems = [
   { path: '/admin/categories', label: 'Kategoriler', icon: Tag },
   { path: '/admin/doping', label: 'Doping', icon: Zap },
   { path: '/admin/epins', label: 'E-Pinler', icon: CreditCard },
+  { path: '/admin/payment-management', label: 'Ödeme Yönetimi', icon: Wallet },
   { path: '/admin/finance', label: 'Finansal', icon: Wallet },
   { path: '/admin/messages', label: 'Mesajlar', icon: MessageSquare },
   { path: '/admin/support', label: 'Destek Sistemi', icon: LifeBuoy },

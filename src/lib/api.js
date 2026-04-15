@@ -188,6 +188,26 @@ export function addBalance(amount) {
   return request('add_balance', { method: 'POST', body: { amount }, auth: true });
 }
 
+export function getPaymentOverview() {
+  return request('get_payment_overview', { auth: true });
+}
+
+export function addPaymentAccount(payload) {
+  return request('add_payment_account', { method: 'POST', body: payload, auth: true });
+}
+
+export function createWithdrawalRequest(payload) {
+  return request('create_withdrawal_request', { method: 'POST', body: payload, auth: true });
+}
+
+export function cancelWithdrawalRequest(withdrawalId) {
+  return request('cancel_withdrawal_request', {
+    method: 'POST',
+    body: { withdrawal_id: withdrawalId },
+    auth: true,
+  });
+}
+
 // --- MESSAGES ---
 export function sendMessage(payload) {
   return request('send_message', { method: 'POST', body: payload, auth: true });

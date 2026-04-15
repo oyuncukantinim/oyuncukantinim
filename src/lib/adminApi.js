@@ -168,6 +168,14 @@ export const adminGetAllTransactions = (params = {}) =>
 export const adminGetUserTransactions = (user_id) =>
   adminRequest('admin_get_user_transactions', { query: { user_id } });
 
+// Payment Management
+export const adminGetPaymentManagement = (params = {}) =>
+  adminRequest('admin_get_payment_management', { query: params });
+export const adminUpdatePaymentAccount = (body) =>
+  adminRequest('admin_update_payment_account', { method: 'POST', body });
+export const adminUpdateWithdrawal = (body) =>
+  adminRequest('admin_update_withdrawal', { method: 'POST', body });
+
 // Admin Logs
 export const adminGetLogs = (params = {}) =>
   adminRequest('admin_get_logs', { query: params });

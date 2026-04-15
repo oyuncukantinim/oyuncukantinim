@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -567,6 +567,10 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
+
+  const handlePaymentBalanceChange = useCallback((newBalance) => {
+    updateUser({ ...(user || {}), balance: newBalance });
+  }, [updateUser, user]);
   const [favorites, setFavorites] = useState([]);
   const [analyzeModal, setAnalyzeModal] = useState(null); // { listing_id, title }
   const [dopingModal, setDopingModal] = useState(null);
@@ -895,6 +899,7 @@ export default function ProfilePage() {
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
     ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
+    { id: 'withdrawals',   label: 'Para Çek',          icon: TrendingDown },
     { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
@@ -1003,7 +1008,7 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Hesap</p>
-            {tabs.filter(t => ['balance','profile','personal'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['balance','withdrawals','profile','personal'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
@@ -1358,6 +1363,14 @@ export default function ProfilePage() {
 
           {/* FİNANSAL HAREKETLERİM */}
           {activeTab === 'finance' && <FinanceTabContent token={token} />}
+
+          {activeTab === 'withdrawals' && (
+            <WithdrawalsTabContent
+              user={user}
+              onBalanceChange={handlePaymentBalanceChange}
+              showToast={showToast}
+            />
+          )}
 
           {/* BAKİYE */}
           {activeTab === 'balance' && (
@@ -1916,6 +1929,347 @@ function FinanceTabContent() {
 
 const DELIVERY_HOURS_OPTS = [1, 2, 4, 6, 12, 24, 48, 72];
 
+const PAYMENT_ACCOUNT_STATUS = {
+  pending: { label: 'Onay bekliyor', className: 'bg-amber-50 text-amber-700 border-amber-100' },
+  approved: { label: 'Onaylandı', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-100' },
+};
+
+const WITHDRAWAL_STATUS = {
+  pending: { label: 'Beklemede', className: 'bg-amber-50 text-amber-700 border-amber-100' },
+  processing: { label: 'İşleniyor', className: 'bg-blue-50 text-blue-700 border-blue-100' },
+  completed: { label: 'Tamamlandı', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-100' },
+  cancelled: { label: 'İptal edildi', className: 'bg-slate-50 text-slate-600 border-slate-100' },
+};
+
+function StatusPill({ status, map }) {
+  const meta = map[status] || { label: status || 'Belirsiz', className: 'bg-slate-50 text-slate-600 border-slate-100' };
+  return <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${meta.className}`}>{meta.label}</span>;
+}
+
+function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [data, setData] = useState({ accounts: [], withdrawals: [], pending_total: 0, min_withdrawal: 50 });
+  const [accountType, setAccountType] = useState('bank');
+  const [accountForm, setAccountForm] = useState({
+    label: '',
+    bank_name: '',
+    account_holder: user?.full_name || '',
+    iban: '',
+    crypto_currency: 'USDT',
+    crypto_network: 'TRC20',
+    wallet_address: '',
+    memo_tag: '',
+    user_note: '',
+  });
+  const [withdrawalForm, setWithdrawalForm] = useState({ account_id: '', amount: '', user_note: '' });
+
+  const loadPayments = useCallback(() => {
+    setLoading(true);
+    getPaymentOverview()
+      .then((response) => {
+        const nextData = response.data || {};
+        setData({
+          accounts: nextData.accounts || [],
+          withdrawals: nextData.withdrawals || [],
+          pending_total: Number(nextData.pending_total || 0),
+          min_withdrawal: Number(nextData.min_withdrawal || 50),
+        });
+      })
+      .catch((error) => showToast(error.message))
+      .finally(() => setLoading(false));
+  }, [showToast]);
+
+  useEffect(() => {
+    loadPayments();
+  }, [loadPayments]);
+
+  const approvedAccounts = data.accounts.filter((account) => account.status === 'approved');
+  const selectedAccount = approvedAccounts.find((account) => String(account.id) === String(withdrawalForm.account_id));
+  const minWithdrawal = Number(data.min_withdrawal || 50);
+
+  const submitAccount = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const payload = accountType === 'bank'
+        ? {
+            type: 'bank',
+            label: accountForm.label,
+            bank_name: accountForm.bank_name,
+            account_holder: accountForm.account_holder,
+            iban: accountForm.iban,
+            user_note: accountForm.user_note,
+          }
+        : {
+            type: 'crypto',
+            label: accountForm.label,
+            crypto_currency: accountForm.crypto_currency,
+            crypto_network: accountForm.crypto_network,
+            wallet_address: accountForm.wallet_address,
+            memo_tag: accountForm.memo_tag,
+            user_note: accountForm.user_note,
+          };
+      await addPaymentAccount(payload);
+      showToast('Hesabınız admin onayına gönderildi.');
+      setAccountForm((prev) => ({ ...prev, label: '', iban: '', wallet_address: '', memo_tag: '', user_note: '' }));
+      loadPayments();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const submitWithdrawal = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    try {
+      const response = await createWithdrawalRequest({
+        account_id: withdrawalForm.account_id,
+        amount: withdrawalForm.amount,
+        user_note: withdrawalForm.user_note,
+      });
+      if (response.data?.new_balance !== undefined) onBalanceChange(Number(response.data.new_balance));
+      showToast('Para çekme talebiniz oluşturuldu.');
+      setWithdrawalForm({ account_id: '', amount: '', user_note: '' });
+      loadPayments();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cancelRequest = async (withdrawalId) => {
+    if (!confirm('Bu para çekme talebini iptal etmek istiyor musun?')) return;
+    setSaving(true);
+    try {
+      const response = await cancelWithdrawalRequest(withdrawalId);
+      if (response.data?.new_balance !== undefined) onBalanceChange(Number(response.data.new_balance));
+      showToast('Talep iptal edildi ve tutar bakiyenize iade edildi.');
+      loadPayments();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const describeAccount = (account) => {
+    if (!account) return 'Hesap seçilmedi';
+    if (account.type === 'bank') return `${account.bank_name || 'Banka'} · ${account.iban || ''}`;
+    return `${account.crypto_currency || 'Kripto'} · ${account.crypto_network || 'Ağ'} · ${account.wallet_address || ''}`;
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="overflow-hidden rounded-3xl border border-violet-100 bg-white shadow-sm">
+        <div className="relative bg-gradient-to-r from-slate-950 via-violet-950 to-slate-900 px-6 py-6 text-white">
+          <div className="absolute right-8 top-4 h-24 w-24 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-cyan-100">
+                <ShieldCheck size={13} /> Admin onaylı güvenli çekim
+              </div>
+              <h2 className="text-2xl font-extrabold">Para Çek</h2>
+              <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-300">
+                Banka veya kripto hesabını ekle, admin onayından sonra çekim talebi oluştur. Bekleyen talepler sonuçlanana kadar takip edilebilir.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-[10px] font-black uppercase text-slate-300">Bakiye</p>
+                <p className="mt-1 text-lg font-black">{Number(user?.balance || 0).toFixed(2)} ₺</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-[10px] font-black uppercase text-slate-300">Bekleyen</p>
+                <p className="mt-1 text-lg font-black">{Number(data.pending_total || 0).toFixed(2)} ₺</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
+                <p className="text-[10px] font-black uppercase text-slate-300">Onaylı</p>
+                <p className="mt-1 text-lg font-black">{approvedAccounts.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600" />
+          </div>
+        ) : (
+          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="space-y-5">
+              <form onSubmit={submitWithdrawal} className="rounded-2xl border border-gray-100 bg-gradient-to-br from-violet-50 to-cyan-50/60 p-5">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-extrabold text-gray-900">Çekim Talebi Oluştur</h3>
+                    <p className="text-xs font-semibold text-gray-500">Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺.</p>
+                  </div>
+                  <Wallet className="text-violet-500" size={22} />
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold text-gray-600">Onaylı Hesap</label>
+                    <select
+                      value={withdrawalForm.account_id}
+                      onChange={(event) => setWithdrawalForm((prev) => ({ ...prev, account_id: event.target.value }))}
+                      className="w-full rounded-xl border border-white bg-white px-3 py-2.5 text-sm font-semibold shadow-sm focus:border-violet-400 focus:outline-none"
+                      disabled={!approvedAccounts.length}
+                    >
+                      <option value="">{approvedAccounts.length ? 'Hesap seç' : 'Onaylı hesap yok'}</option>
+                      {approvedAccounts.map((account) => (
+                        <option key={account.id} value={account.id}>
+                          {account.label || (account.type === 'bank' ? account.bank_name : `${account.crypto_currency} ${account.crypto_network}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-bold text-gray-600">Tutar</label>
+                    <input
+                      type="number"
+                      min={minWithdrawal}
+                      step="0.01"
+                      value={withdrawalForm.amount}
+                      onChange={(event) => setWithdrawalForm((prev) => ({ ...prev, amount: event.target.value }))}
+                      className="w-full rounded-xl border border-white bg-white px-3 py-2.5 text-sm font-bold shadow-sm focus:border-violet-400 focus:outline-none"
+                      placeholder="250.00"
+                    />
+                  </div>
+                </div>
+                {selectedAccount ? (
+                  <div className="mt-3 rounded-xl border border-white bg-white/70 px-3 py-2 text-xs font-semibold text-gray-500">
+                    {describeAccount(selectedAccount)}
+                  </div>
+                ) : null}
+                <textarea
+                  value={withdrawalForm.user_note}
+                  onChange={(event) => setWithdrawalForm((prev) => ({ ...prev, user_note: event.target.value }))}
+                  rows={2}
+                  className="mt-3 w-full resize-none rounded-xl border border-white bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                  placeholder="İsteğe bağlı not"
+                />
+                <button disabled={saving || !approvedAccounts.length} className="mt-3 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/20 transition-colors hover:bg-violet-500 disabled:opacity-50">
+                  Talebi Gönder
+                </button>
+              </form>
+
+              <div className="rounded-2xl border border-gray-100 bg-white p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-extrabold text-gray-900">Çekim Geçmişi</h3>
+                  <span className="text-xs font-bold text-gray-400">{data.withdrawals.length} talep</span>
+                </div>
+                <div className="space-y-3">
+                  {data.withdrawals.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-semibold text-gray-400">Henüz çekim talebi yok.</div>
+                  ) : data.withdrawals.map((request) => (
+                    <div key={request.id} className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-extrabold text-gray-900">#{request.id} · {Number(request.amount).toFixed(2)} ₺</p>
+                            <StatusPill status={request.status} map={WITHDRAWAL_STATUS} />
+                          </div>
+                          <p className="mt-1 text-xs font-semibold text-gray-500">{describeAccount(request)}</p>
+                          {request.admin_note ? <p className="mt-2 text-xs font-semibold text-rose-500">Admin notu: {request.admin_note}</p> : null}
+                          {request.payment_reference ? <p className="mt-2 text-xs font-semibold text-emerald-600">Referans: {request.payment_reference}</p> : null}
+                        </div>
+                        <div className="text-left sm:text-right">
+                          <p className="text-xs font-bold text-gray-400">{new Date(request.created_at).toLocaleString('tr-TR')}</p>
+                          {request.status === 'pending' ? (
+                            <button
+                              type="button"
+                              onClick={() => cancelRequest(request.id)}
+                              disabled={saving}
+                              className="mt-2 rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+                            >
+                              İptal Et
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <form onSubmit={submitAccount} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h3 className="text-lg font-extrabold text-gray-900">Hesap Ekle</h3>
+                <p className="mt-1 text-xs font-semibold text-gray-500">Eklenen hesaplar admin onayından sonra çekime açılır.</p>
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1">
+                  {[
+                    { id: 'bank', label: 'Banka' },
+                    { id: 'crypto', label: 'Kripto' },
+                  ].map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => setAccountType(option.id)}
+                      className={`rounded-lg px-3 py-2 text-xs font-extrabold transition-all ${accountType === option.id ? 'bg-white text-violet-600 shadow-sm' : 'text-gray-500'}`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <input value={accountForm.label} onChange={(event) => setAccountForm((prev) => ({ ...prev, label: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Hesap adı, opsiyonel" />
+                  {accountType === 'bank' ? (
+                    <>
+                      <input value={accountForm.bank_name} onChange={(event) => setAccountForm((prev) => ({ ...prev, bank_name: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Banka adı" />
+                      <input value={accountForm.account_holder} onChange={(event) => setAccountForm((prev) => ({ ...prev, account_holder: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Hesap sahibi" />
+                      <input value={accountForm.iban} onChange={(event) => setAccountForm((prev) => ({ ...prev, iban: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input value={accountForm.crypto_currency} onChange={(event) => setAccountForm((prev) => ({ ...prev, crypto_currency: event.target.value.toUpperCase() }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="USDT" />
+                        <input value={accountForm.crypto_network} onChange={(event) => setAccountForm((prev) => ({ ...prev, crypto_network: event.target.value.toUpperCase() }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TRC20" />
+                      </div>
+                      <input value={accountForm.wallet_address} onChange={(event) => setAccountForm((prev) => ({ ...prev, wallet_address: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Cüzdan adresi" />
+                      <input value={accountForm.memo_tag} onChange={(event) => setAccountForm((prev) => ({ ...prev, memo_tag: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Memo / Tag, opsiyonel" />
+                    </>
+                  )}
+                  <textarea value={accountForm.user_note} onChange={(event) => setAccountForm((prev) => ({ ...prev, user_note: event.target.value }))} rows={2} className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Admin için not, opsiyonel" />
+                </div>
+                <button disabled={saving} className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50">
+                  Onaya Gönder
+                </button>
+              </form>
+
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <h3 className="text-lg font-extrabold text-gray-900">Hesaplarım</h3>
+                <div className="mt-4 space-y-3">
+                  {data.accounts.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 py-6 text-center text-sm font-semibold text-gray-400">Henüz hesap eklenmemiş.</div>
+                  ) : data.accounts.map((account) => (
+                    <div key={account.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-extrabold text-gray-900">{account.label || (account.type === 'bank' ? account.bank_name : `${account.crypto_currency} ${account.crypto_network}`)}</p>
+                          <p className="mt-1 truncate text-xs font-semibold text-gray-500">{describeAccount(account)}</p>
+                          {account.admin_note ? <p className="mt-2 text-xs font-semibold text-rose-500">{account.admin_note}</p> : null}
+                        </div>
+                        <StatusPill status={account.status} map={PAYMENT_ACCOUNT_STATUS} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ListingDopingModal({ listing, balance, vitrineOptions, featuredOptions, onClose, onSubmit, saving }) {
   const [selectedDopings, setSelectedDopings] = useState({});
 
@@ -2375,4 +2729,3 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     </div>
   );
 }
-

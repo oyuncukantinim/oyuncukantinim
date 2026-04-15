@@ -42,6 +42,7 @@ const AdminSupport       = lazy(() => import('./pages/admin/Support'));
 const AdminSettings      = lazy(() => import('./pages/admin/Settings'));
 const AdminPopularGames  = lazy(() => import('./pages/admin/PopularGames'));
 const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
+const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
 const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
 const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
 
@@ -299,6 +300,7 @@ export default function App() {
               <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
               <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
               <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+              <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
               <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
               <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
               <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
