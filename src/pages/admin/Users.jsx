@@ -18,7 +18,6 @@ import {
   Globe,
   MapPin,
   Monitor,
-  Package,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -97,30 +96,6 @@ function ListingPreviewGrid({ rows, emptyText, fmtDateTime, fmtMoney, filter, on
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3">
-          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-violet-500">Toplam İlan</div>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-2xl font-black text-slate-950">{summary.total}</div>
-            <FileText size={18} className="text-violet-400" />
-          </div>
-        </div>
-        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
-          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">Aktif / Stoklu</div>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-2xl font-black text-slate-950">{summary.active} / {summary.stock}</div>
-            <Package size={18} className="text-emerald-500" />
-          </div>
-        </div>
-        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3">
-          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-600">Pasif / Satıldı</div>
-          <div className="mt-2 flex items-end justify-between gap-3">
-            <div className="text-2xl font-black text-slate-950">{summary.passive} / {summary.sold}</div>
-            <Clock size={18} className="text-amber-500" />
-          </div>
-        </div>
-      </div>
-
       <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-2">
         {filterItems.map((item) => (
           <button
