@@ -15,6 +15,9 @@ import {
   Mail,
   FileText,
   CheckCircle2,
+  Globe,
+  MapPin,
+  Monitor,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -798,7 +801,41 @@ export default function AdminUsers() {
                     }
                   />
                   <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
+                  <InfoRow icon={Monitor} label="Kayıt IP" value={detailUser.registration_ip || '—'} />
+                  <InfoRow icon={Globe} label="Kayıt Ülke" value={detailUser.registration_country || '—'} />
                 </div>
+
+                {/* Son Giris IP Loglari */}
+                {detailUser.login_logs && detailUser.login_logs.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-gray-700">
+                      <MapPin className="h-4 w-4 text-violet-500" />
+                      Son Giris IP Kayitlari
+                    </h4>
+                    <div className="overflow-x-auto rounded-xl border border-gray-200">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-3 py-2 font-semibold text-gray-600">IP</th>
+                            <th className="px-3 py-2 font-semibold text-gray-600">Sehir / Ulke</th>
+                            <th className="px-3 py-2 font-semibold text-gray-600">Tarih</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {detailUser.login_logs.map((log, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50">
+                              <td className="whitespace-nowrap px-3 py-2 font-mono text-gray-800">{log.ip}</td>
+                              <td className="whitespace-nowrap px-3 py-2 text-gray-600">
+                                {[log.city, log.country].filter(Boolean).join(', ') || '—'}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-2 text-gray-500">{fmtDateTime(log.created_at)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-end">
                   <button
