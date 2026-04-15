@@ -43,27 +43,17 @@ const navItems = [
   { path: '/admin/logs', label: 'Güvenlik & Log', icon: Shield },
 ];
 
-export default function AdminLayout({ children }) {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
-
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
-    navigate('/admin/login');
-  };
-
-  const adminUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('admin_user') || '{}');
-    } catch {
-      return {};
-    }
-  })();
-
-  const Sidebar = () => (
+function AdminSidebar({
+  locationPath,
+  onClose,
+  onLogout,
+  adminUser,
+  defaultAvatar,
+  siteName,
+  siteLogo,
+  siteLogoText,
+}) {
+  return (
     <aside className="flex h-full w-64 flex-col bg-gray-900 text-white">
       <div className="border-b border-white/10 px-6 py-5">
         <SiteBrand
@@ -82,12 +72,12 @@ export default function AdminLayout({ children }) {
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
         {navItems.map((item) => {
-          const active = location.pathname === item.path;
+          const active = locationPath === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
-              onClick={() => setSidebarOpen(false)}
+              onClick={onClose}
               className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
                 active
                   ? 'bg-violet-600 text-white shadow-lg shadow-violet-900/50'
@@ -113,7 +103,7 @@ export default function AdminLayout({ children }) {
           </div>
         </div>
         <button
-          onClick={handleLogout}
+          onClick={onLogout}
           className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-red-400 transition-all hover:bg-red-500/10"
         >
           <LogOut size={15} /> Çıkış Yap
@@ -121,18 +111,57 @@ export default function AdminLayout({ children }) {
       </div>
     </aside>
   );
+}
+
+export default function AdminLayout({ children }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    navigate('/admin/login');
+  };
+
+  const adminUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('admin_user') || '{}');
+    } catch {
+      return {};
+    }
+  })();
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
       <div className="hidden flex-shrink-0 md:flex">
-        <Sidebar />
+        <AdminSidebar
+          locationPath={location.pathname}
+          onClose={() => setSidebarOpen(false)}
+          onLogout={handleLogout}
+          adminUser={adminUser}
+          defaultAvatar={defaultAvatar}
+          siteName={siteName}
+          siteLogo={siteLogo}
+          siteLogoText={siteLogoText}
+        />
       </div>
 
       {sidebarOpen ? (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
           <div className="relative z-50 h-full w-64">
-            <Sidebar />
+            <AdminSidebar
+              locationPath={location.pathname}
+              onClose={() => setSidebarOpen(false)}
+              onLogout={handleLogout}
+              adminUser={adminUser}
+              defaultAvatar={defaultAvatar}
+              siteName={siteName}
+              siteLogo={siteLogo}
+              siteLogoText={siteLogoText}
+            />
           </div>
         </div>
       ) : null}

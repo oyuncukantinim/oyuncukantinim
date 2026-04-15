@@ -60,8 +60,9 @@ function ChatPanel({ conv, onBack }) {
       setText('');
       load(false);
       setTimeout(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-    } catch { }
-    finally { setSending(false); inputRef.current?.focus(); }
+    } catch {
+      // Admin chat send failures are surfaced by keeping the draft intact.
+    } finally { setSending(false); inputRef.current?.focus(); }
   };
 
   // Group messages by date

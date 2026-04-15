@@ -476,7 +476,6 @@ export default function AdminUsers() {
   }, [userTxns]);
 
   const fmtMoney = (n) => `${Number(n || 0).toFixed(2)} ₺`;
-  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('tr-TR') : '—');
   const fmtDateTime = (d) =>
     d
       ? new Date(d).toLocaleString('tr-TR', {

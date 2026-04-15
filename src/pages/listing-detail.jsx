@@ -86,8 +86,9 @@ export default function ListingDetailPage() {
     try {
       const r = await toggleFavorite(listing.id);
       setFavorited(r.data?.favorited ?? false);
-    } catch {}
-    finally { setFavLoading(false); }
+    } catch {
+      // Keep the current favorite state if the toggle request fails.
+    } finally { setFavLoading(false); }
   };
 
   if (loading) return (

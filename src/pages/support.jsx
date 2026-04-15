@@ -396,7 +396,7 @@ export default function SupportPage() {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [selectedListings, setSelectedListings] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [loadingMeta, setLoadingMeta] = useState(true);
+  const [, setLoadingMeta] = useState(true);
   const [loadingTickets, setLoadingTickets] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -427,11 +427,6 @@ export default function SupportPage() {
   const maxLinkedListings = Number(meta.settings?.max_linked_listings || 5);
   const subjectMaxLength = Number(meta.settings?.support_subject_max_length || 120);
   const detailMaxLength = Number(meta.settings?.support_message_max_length || 2000);
-  const selectedListingRows = useMemo(() => {
-    const ids = new Set(form.selected_listing_ids.map(Number));
-    return activeListingPool.filter((item) => ids.has(Number(item.id)));
-  }, [activeListingPool, form.selected_listing_ids]);
-
   const canAdvance = wizardStep === 0
     ? Boolean(form.category)
     : wizardStep === 1

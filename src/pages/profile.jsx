@@ -405,7 +405,6 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
     finally { setLoading(false); }
   };
 
-  const isManual = order.item_type === 'listing' && !order.delivery_content;
   const status = (order.delivery_status ?? 0);
   const orderImages = Array.isArray(order.item_images) ? order.item_images.filter(Boolean) : [];
   const coverImage = order.item_cover || orderImages[0] || (order.item_type === 'listing' ? defaultListingImage : null);
@@ -619,34 +618,32 @@ export default function ProfilePage() {
     }
   }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
-  if (!user) return null;
-
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
-  const emailChanged = normalizedEmail !== (user.email || '');
-  const emailVerified = Boolean(user.email_verified_at) && !emailChanged;
+  const emailChanged = normalizedEmail !== (user?.email || '');
+  const emailVerified = Boolean(user?.email_verified_at) && !emailChanged;
   const emailVerificationPending = pendingEmailVerification !== '' && pendingEmailVerification === normalizedEmail;
   const verificationExpiryTime = emailVerificationExpiresAt ? new Date(emailVerificationExpiresAt).getTime() : 0;
   const verificationSecondsLeft = verificationExpiryTime ? Math.max(0, Math.ceil((verificationExpiryTime - verificationNow) / 1000)) : 0;
   const verificationCanResend = emailVerificationPending && verificationSecondsLeft <= 0;
   const profileDirty =
-    selectedAvatar !== (user.avatar || defaultAvatar) ||
-    normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '');
+    selectedAvatar !== (user?.avatar || defaultAvatar) ||
+    normalizedBannerImage !== (user?.banner_image || defaultProfileBanner || '');
   const personalDirty =
-    personalInfo.full_name !== (user.full_name || '') ||
-    personalInfo.country !== (user.country || '') ||
-    personalInfo.city !== (user.city || '') ||
-    personalInfo.district !== (user.district || '') ||
-    personalInfo.address !== (user.address || '') ||
-    normalizedEmail !== (user.email || '') ||
+    personalInfo.full_name !== (user?.full_name || '') ||
+    personalInfo.country !== (user?.country || '') ||
+    personalInfo.city !== (user?.city || '') ||
+    personalInfo.district !== (user?.district || '') ||
+    personalInfo.address !== (user?.address || '') ||
+    normalizedEmail !== (user?.email || '') ||
     Boolean(newPassword);
   const personalDirtyWithoutEmail =
-    personalInfo.full_name !== (user.full_name || '') ||
-    personalInfo.country !== (user.country || '') ||
-    personalInfo.city !== (user.city || '') ||
-    personalInfo.district !== (user.district || '') ||
-    personalInfo.address !== (user.address || '') ||
+    personalInfo.full_name !== (user?.full_name || '') ||
+    personalInfo.country !== (user?.country || '') ||
+    personalInfo.city !== (user?.city || '') ||
+    personalInfo.district !== (user?.district || '') ||
+    personalInfo.address !== (user?.address || '') ||
     Boolean(newPassword);
 
   useEffect(() => {
@@ -767,42 +764,6 @@ export default function ProfilePage() {
   };
 
   const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
-
-  const handleSavePersonalInfo = async () => {
-    setSaving(true);
-    try {
-      if (!personalDirty) {
-        showToast('Değişiklik yok.');
-        setSaving(false);
-        return;
-      }
-      const payload = { ...personalInfo };
-      if (newPassword && newPassword !== confirmPassword) {
-        showToast('Şifre tekrar alanı eşleşmiyor.');
-        setSaving(false);
-        return;
-      }
-      if (newPassword && !currentPassword) {
-        showToast('Şifre değiştirmek için mevcut şifrenizi girmelisiniz.');
-        setSaving(false);
-        return;
-      }
-      if (normalizedEmail !== (user.email || '')) payload.email = normalizedEmail;
-      if (newPassword) {
-        payload.new_password = newPassword;
-        payload.current_password = currentPassword;
-      }
-      const res = await updateProfile(payload);
-      updateUser(res.data);
-      setEditEmail(res.data.email || '');
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      setShowPassword(false);
-      showToast('Kişisel bilgiler güncellendi!');
-    } catch (err) { showToast(err.message); }
-    finally { setSaving(false); }
-  };
 
   const handleSavePersonalInfoV2 = async () => {
     setSaving(true);
@@ -955,6 +916,8 @@ export default function ProfilePage() {
       setActiveTab('finance');
     }
   }, [activeTab, balanceAddEnabled]);
+
+  if (!user) return null;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -1810,7 +1773,6 @@ function PriceAnalyzeModal({ listing, onClose }) {
                     const y = 90 - ((h.price - minP) / range) * 80;
                     return `${x},${y}`;
                   }).join(' ');
-                  const first = pts.split(' ')[0];
                   const last  = pts.split(' ').slice(-1)[0];
                   const [lx] = last.split(',');
                   return (
@@ -2413,5 +2375,4 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     </div>
   );
 }
-
 

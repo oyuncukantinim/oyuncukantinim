@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState } from 'react';
 import { ArrowLeft, Check, ChevronRight, Search, X } from 'lucide-react';
 
-function CategoryCard({ category, selected, hasChildren, subtitle, onClick }) {
+function CategoryCard({ category, selected, subtitle, onClick }) {
   return (
     <button
       type="button"
@@ -103,8 +103,6 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const renderCards = (items, withPath = false) => (
     <div className="grid grid-cols-3 gap-3 p-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
       {items.map((category) => {
-        const children = childrenOf(category.id);
-        const hasChildren = children.length > 0;
         const isSelected = value === category.id;
         const subtitle = withPath
           ? getPath(category.id)
@@ -117,7 +115,6 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
             key={category.id}
             category={category}
             selected={isSelected}
-            hasChildren={hasChildren}
             subtitle={subtitle}
             onClick={() => navigate(category)}
           />

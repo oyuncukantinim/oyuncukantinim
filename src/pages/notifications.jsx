@@ -68,7 +68,9 @@ export default function NotificationsPage() {
       await markNotificationsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: 1 })));
       window.dispatchEvent(new CustomEvent('notifications-read'));
-    } catch {}
+    } catch {
+      // The local notification list remains unchanged if marking read fails.
+    }
   };
 
   const handleDelete = async (id) => {
@@ -78,6 +80,7 @@ export default function NotificationsPage() {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       window.dispatchEvent(new CustomEvent('notifications-read'));
     } catch {
+      // The item remains visible if deletion fails.
     } finally {
       setBusyId(null);
     }
@@ -90,6 +93,7 @@ export default function NotificationsPage() {
       setNotifications([]);
       window.dispatchEvent(new CustomEvent('notifications-read'));
     } catch {
+      // Notifications remain visible if clearing fails.
     } finally {
       setBusyId(null);
     }

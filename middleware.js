@@ -74,7 +74,9 @@ export default async function middleware(request) {
 
         type = 'product';
       }
-    } catch (_) {}
+    } catch {
+      // Metadata is optional; keep serving the app if the API is unreachable.
+    }
   }
 
   // /p/username
@@ -92,7 +94,9 @@ export default async function middleware(request) {
           : `${s.total_sales ?? 0} satış · ${s.review_count ?? 0} değerlendirme`;
         if (s.avatar && s.avatar.startsWith('http')) image = s.avatar;
       }
-    } catch (_) {}
+    } catch {
+      // Metadata is optional; keep serving the app if the API is unreachable.
+    }
   }
 
   const html = buildHtml({ title, desc, image, url: request.url, type });
