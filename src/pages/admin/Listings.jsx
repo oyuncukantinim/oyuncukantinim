@@ -902,6 +902,9 @@ export default function AdminListings() {
                     };
                     const coverImage = getListingCoverImage(listing, defaultListingImage);
                     const activeDopingTypes = getListingActiveDopingTypes(listing);
+                    const categoryName = listing.category_name || listing.category || 'Kategorisiz';
+                    const lastUpdatedAt = listing.last_updated_at || listing.updated_at || listing.created_at;
+                    const viewCount = Number(listing.view_count || 0);
 
                     return (
                       <tr key={listing.id} className="border-t border-gray-50 hover:bg-gray-50/50">
@@ -918,6 +921,11 @@ export default function AdminListings() {
                               <div className="max-w-[200px] truncate font-bold text-gray-800">{listing.title}</div>
                               <div className="text-xs text-gray-400">
                                 #{listing.id} · {listing.delivery_type === 'stock' ? `Stok(${listing.stock_count || 0})` : 'Manuel'}
+                              </div>
+                              <div className="mt-0.5 flex max-w-[260px] flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-semibold text-gray-400">
+                                <span className="truncate">{categoryName}</span>
+                                <span>{viewCount} goruntulenme</span>
+                                <span>Guncel: {fmtDateTime(lastUpdatedAt)}</span>
                               </div>
                               {activeDopingTypes.length ? (
                                 <div className="mt-1">
