@@ -877,7 +877,6 @@ export default function AdminListings() {
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Kategori</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 md:table-cell">Satici</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 sm:table-cell">Fiyat</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Goruntulenme</th>
                   <th className="hidden px-4 py-3 text-left text-xs font-bold uppercase text-gray-500 lg:table-cell">Tarih</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Son Guncelleme</th>
                   <th className="px-4 py-3 text-left text-xs font-bold uppercase text-gray-500">Durum</th>
@@ -887,13 +886,13 @@ export default function AdminListings() {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                       Yukleniyor...
                     </td>
                   </tr>
                 ) : visibleListings.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-4 py-8 text-center text-gray-400">
+                    <td colSpan={8} className="px-4 py-8 text-center text-gray-400">
                       Ilan bulunamadi.
                     </td>
                   </tr>
@@ -925,6 +924,9 @@ export default function AdminListings() {
                               <div className="text-xs text-gray-400">
                                 #{listing.id} · {listing.delivery_type === 'stock' ? `Stok(${listing.stock_count || 0})` : 'Manuel'}
                               </div>
+                              <div className="mt-0.5 text-[11px] font-semibold text-gray-400">
+                                {viewCount} goruntulenme
+                              </div>
                               {activeDopingTypes.length ? (
                                 <div className="mt-1">
                                   <div className="flex flex-wrap gap-1">
@@ -946,7 +948,6 @@ export default function AdminListings() {
                         </td>
                         <td className="hidden px-4 py-3 text-gray-600 md:table-cell">{listing.seller}</td>
                         <td className="hidden px-4 py-3 font-bold text-emerald-600 sm:table-cell">{fmtMoney(listing.price)}</td>
-                        <td className="px-4 py-3 text-xs font-bold text-slate-600">{viewCount}</td>
                         <td className="hidden px-4 py-3 text-xs text-gray-400 lg:table-cell">{fmtDate(listing.created_at)}</td>
                         <td className="px-4 py-3 text-xs text-gray-400">{fmtDateTime(lastUpdatedAt)}</td>
                         <td className="px-4 py-3">
