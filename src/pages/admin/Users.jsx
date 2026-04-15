@@ -24,6 +24,7 @@ import AdminLayout from '../../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
+import useSiteBrand from '../../hooks/useSiteBrand';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -42,7 +43,7 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-function ListingPreviewGrid({ rows, emptyText, fmtMoney, filter, onFilterChange }) {
+function ListingPreviewGrid({ rows, emptyText, fmtMoney, filter, onFilterChange, defaultListingImage }) {
   if (!rows?.length) {
     return <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">{emptyText}</div>;
   }
@@ -106,7 +107,7 @@ function ListingPreviewGrid({ rows, emptyText, fmtMoney, filter, onFilterChange 
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           {filteredRows.map((row) => {
-            const coverImage = getListingCoverImage(row);
+            const coverImage = getListingCoverImage(row, defaultListingImage);
 
             return (
               <Link
@@ -203,6 +204,7 @@ const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none';
 
 export default function AdminUsers() {
+  const { defaultListingImage } = useSiteBrand();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -995,6 +997,7 @@ export default function AdminUsers() {
                     fmtMoney={fmtMoney}
                     filter={listingStatusFilter}
                     onFilterChange={setListingStatusFilter}
+                    defaultListingImage={defaultListingImage}
                   />
                 </div>
               </div>
