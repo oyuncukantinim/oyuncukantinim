@@ -18,11 +18,13 @@ import {
   Globe,
   MapPin,
   Monitor,
+  Package,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
+import { getListingCoverImage } from '../../lib/listingMedia';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -41,29 +43,177 @@ function Modal({ title, onClose, children }) {
   );
 }
 
-function ListingPreviewGrid({ rows, emptyText, fmtDateTime, fmtMoney }) {
+const listingStatusMeta = {
+  active: { label: 'Aktif', className: 'border-emerald-100 bg-emerald-50 text-emerald-700' },
+  passive: { label: 'Pasif', className: 'border-slate-200 bg-slate-100 text-slate-600' },
+  inactive: { label: 'Pasif', className: 'border-slate-200 bg-slate-100 text-slate-600' },
+  sold: { label: 'Satıldı', className: 'border-amber-100 bg-amber-50 text-amber-700' },
+  expired: { label: 'Süresi Doldu', className: 'border-rose-100 bg-rose-50 text-rose-700' },
+};
+
+function getListingStatusMeta(status) {
+  return listingStatusMeta[status] || { label: status || 'Bilinmiyor', className: 'border-slate-200 bg-slate-50 text-slate-500' };
+}
+
+function ListingPreviewGrid({ rows, emptyText, fmtDateTime, fmtMoney, filter, onFilterChange }) {
   if (!rows?.length) {
     return <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">{emptyText}</div>;
   }
 
+  const summary = rows.reduce(
+    (acc, row) => {
+      const status = row.status || 'unknown';
+      acc.total += 1;
+      if (status === 'active') acc.active += 1;
+      if (['passive', 'inactive'].includes(status)) acc.passive += 1;
+      if (status === 'sold') acc.sold += 1;
+      if (status === 'expired') acc.expired += 1;
+      if (row.delivery_type === 'stock') acc.stock += 1;
+      if (row.delivery_type !== 'stock') acc.manual += 1;
+      return acc;
+    },
+    { total: 0, active: 0, passive: 0, sold: 0, expired: 0, stock: 0, manual: 0 },
+  );
+
+  const filterItems = [
+    { id: 'all', label: 'Tümü', count: summary.total },
+    { id: 'active', label: 'Aktif', count: summary.active },
+    { id: 'passive', label: 'Pasif', count: summary.passive },
+    { id: 'sold', label: 'Satıldı', count: summary.sold },
+    { id: 'stock', label: 'Stoklu', count: summary.stock },
+    { id: 'manual', label: 'Manuel', count: summary.manual },
+    { id: 'expired', label: 'Süresi Dolan', count: summary.expired },
+  ];
+
+  const filteredRows = rows.filter((row) => {
+    if (filter === 'active') return row.status === 'active';
+    if (filter === 'passive') return ['passive', 'inactive'].includes(row.status);
+    if (filter === 'sold') return row.status === 'sold';
+    if (filter === 'stock') return row.delivery_type === 'stock';
+    if (filter === 'manual') return row.delivery_type !== 'stock';
+    if (filter === 'expired') return row.status === 'expired';
+    return true;
+  });
+
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {rows.map((row) => (
-        <Link
-          key={`listing-${row.id}`}
-          to={listingSlug(row.title || row.item_title || 'ilan', row.id)}
-          className="rounded-2xl border border-slate-100 bg-slate-50 p-3 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-white"
-        >
-          <div className="flex min-h-[84px] flex-col">
-            <div className="line-clamp-2 text-sm font-bold leading-tight text-slate-800">{row.title || row.item_title || 'İlan'}</div>
-            <div className="mt-2 text-xs text-slate-400">{fmtDateTime(row.created_at)}</div>
-            <div className="mt-auto pt-3">
-              {row.price != null ? <div className="text-sm font-black text-emerald-600">{fmtMoney(row.price)}</div> : null}
-              {row.status ? <div className="mt-1 text-[11px] font-bold text-slate-500">{row.status}</div> : null}
-            </div>
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-violet-500">Toplam İlan</div>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div className="text-2xl font-black text-slate-950">{summary.total}</div>
+            <FileText size={18} className="text-violet-400" />
           </div>
-        </Link>
-      ))}
+        </div>
+        <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 px-4 py-3">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-600">Aktif / Stoklu</div>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div className="text-2xl font-black text-slate-950">{summary.active} / {summary.stock}</div>
+            <Package size={18} className="text-emerald-500" />
+          </div>
+        </div>
+        <div className="rounded-2xl border border-amber-100 bg-amber-50/70 px-4 py-3">
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-600">Pasif / Satıldı</div>
+          <div className="mt-2 flex items-end justify-between gap-3">
+            <div className="text-2xl font-black text-slate-950">{summary.passive} / {summary.sold}</div>
+            <Clock size={18} className="text-amber-500" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-slate-100 bg-slate-50 p-2">
+        {filterItems.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => onFilterChange(item.id)}
+            className={`rounded-xl px-3 py-2 text-xs font-extrabold transition-all ${
+              filter === item.id
+                ? 'bg-white text-violet-700 shadow-sm ring-1 ring-violet-100'
+                : 'text-slate-500 hover:bg-white/70 hover:text-slate-800'
+            }`}
+          >
+            {item.label} <span className="ml-1 text-slate-400">{item.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {filteredRows.length === 0 ? (
+        <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">Bu filtrede ilan bulunmuyor.</div>
+      ) : (
+        <div className="space-y-3">
+          {filteredRows.map((row) => {
+            const statusMeta = getListingStatusMeta(row.status);
+            const coverImage = getListingCoverImage(row);
+            const stockCount = Number(row.stock_count || 0);
+            const isStock = row.delivery_type === 'stock';
+
+            return (
+              <div
+                key={`listing-${row.id}`}
+                className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md"
+              >
+                <div className="flex flex-col gap-4 p-3 sm:flex-row sm:items-center">
+                  <Link
+                    to={listingSlug(row.title || row.item_title || 'ilan', row.id)}
+                    className="relative h-28 w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 sm:h-24 sm:w-32 sm:flex-none"
+                  >
+                    {coverImage ? (
+                      <img src={coverImage} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-3xl text-slate-300">#</div>
+                    )}
+                    <div className="absolute left-2 top-2 rounded-full bg-slate-950/70 px-2.5 py-1 text-[11px] font-black text-white backdrop-blur">
+                      İlan No #{row.id}
+                    </div>
+                  </Link>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black ${statusMeta.className}`}>
+                        {statusMeta.label}
+                      </span>
+                      <span className="rounded-full border border-cyan-100 bg-cyan-50 px-2.5 py-1 text-[11px] font-black text-cyan-700">
+                        {isStock ? `Stoklu · ${stockCount} stok` : 'Manuel teslimat'}
+                      </span>
+                      {row.category_name ? (
+                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-500">{row.category_name}</span>
+                      ) : null}
+                    </div>
+
+                    <Link
+                      to={listingSlug(row.title || row.item_title || 'ilan', row.id)}
+                      className="mt-2 block line-clamp-2 text-sm font-black leading-tight text-slate-900 transition-colors hover:text-violet-700"
+                    >
+                      {row.title || row.item_title || 'İlan'}
+                    </Link>
+
+                    <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-400">
+                      <span>{fmtDateTime(row.created_at)}</span>
+                      <span className="flex items-center gap-1">
+                        <Eye size={13} /> {Number(row.view_count || 0)} görüntülenme
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-row items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:w-36 sm:flex-col sm:items-end sm:border-t-0 sm:pt-0">
+                    <div className="text-left sm:text-right">
+                      <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Fiyat</div>
+                      <div className="mt-1 text-lg font-black text-emerald-600">{fmtMoney(row.price)}</div>
+                    </div>
+                    <Link
+                      to={listingSlug(row.title || row.item_title || 'ilan', row.id)}
+                      className="rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-violet-700"
+                    >
+                      İlana Git
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -144,6 +294,7 @@ export default function AdminUsers() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailTab, setDetailTab] = useState('general');
+  const [listingStatusFilter, setListingStatusFilter] = useState('all');
   const [userTxns, setUserTxns] = useState(null);
   const [txLoading, setTxLoading] = useState(false);
 
@@ -215,6 +366,7 @@ export default function AdminUsers() {
     setSelectedUser(user);
     setDrawerOpen(true);
     setDetailTab('general');
+    setListingStatusFilter('all');
     setUserTxns(null);
     setDetailUser(null);
     setDetailLoading(true);
@@ -233,6 +385,7 @@ export default function AdminUsers() {
     setDetailUser(null);
     setUserTxns(null);
     setDetailTab('general');
+    setListingStatusFilter('all');
     setDetailLoading(false);
     setTxLoading(false);
   };
@@ -904,12 +1057,22 @@ export default function AdminUsers() {
             {detailTab === 'listings' && (
               <div className="space-y-4">
                 <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <div className="mb-3 text-sm font-extrabold text-slate-900">Son İlanlar</div>
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">İlan Yönetimi</div>
+                      <div className="mt-1 text-xs font-semibold text-slate-400">Görsel, ilan no, durum ve stok bilgisiyle hızlı kontrol.</div>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
+                      {detailUser.listings?.length || 0} kayıt
+                    </span>
+                  </div>
                   <ListingPreviewGrid
                     rows={detailUser.listings}
                     emptyText="İlan bulunmuyor."
                     fmtDateTime={fmtDateTime}
                     fmtMoney={fmtMoney}
+                    filter={listingStatusFilter}
+                    onFilterChange={setListingStatusFilter}
                   />
                 </div>
               </div>
