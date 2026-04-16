@@ -196,6 +196,14 @@ export function addPaymentAccount(payload) {
   return request('add_payment_account', { method: 'POST', body: payload, auth: true });
 }
 
+export function deletePaymentAccount(accountId) {
+  return request('delete_payment_account', {
+    method: 'POST',
+    body: { account_id: accountId },
+    auth: true,
+  });
+}
+
 export function createWithdrawalRequest(payload) {
   return request('create_withdrawal_request', { method: 'POST', body: payload, auth: true });
 }

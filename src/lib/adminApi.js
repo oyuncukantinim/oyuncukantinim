@@ -173,6 +173,8 @@ export const adminGetPaymentManagement = (params = {}) =>
   adminRequest('admin_get_payment_management', { query: params });
 export const adminUpdatePaymentAccount = (body) =>
   adminRequest('admin_update_payment_account', { method: 'POST', body });
+export const adminDeletePaymentAccount = (account_id) =>
+  adminRequest('admin_delete_payment_account', { method: 'POST', body: { account_id } });
 export const adminUpdateWithdrawal = (body) =>
   adminRequest('admin_update_withdrawal', { method: 'POST', body });
 

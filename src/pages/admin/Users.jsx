@@ -18,6 +18,7 @@ import {
   Globe,
   MapPin,
   Monitor,
+  CreditCard,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
@@ -203,6 +204,17 @@ function FormField({ label, children, span = '' }) {
 const inputClass =
   'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none';
 
+const RESTRICTION_FIELDS = [
+  { key: 'listing_create', label: 'İlan oluşturma', description: 'Yeni ilan eklemesini engeller.' },
+  { key: 'withdrawal', label: 'Para çekimi', description: 'Banka hesabı ekleme ve çekim talebini engeller.' },
+  { key: 'message_send', label: 'Mesaj gönderme', description: 'Diğer kullanıcılara mesaj yazmasını engeller.' },
+  { key: 'balance_use', label: 'Bakiye kullanımı', description: 'Satın alma ve bakiye ile işlem yapmasını engeller.' },
+  { key: 'selling', label: 'Satış yapma', description: 'Kullanıcının ilanlarının satın alınmasını kapatır.' },
+  { key: 'balance_topup', label: 'Bakiye yükleme', description: 'Bakiye yükleme ekranını etkiler.' },
+  { key: 'listing_edit', label: 'İlan düzenleme', description: 'Mevcut ilanlarını düzenlemesini engeller.' },
+  { key: 'review_create', label: 'Yorum gönderme', description: 'Sipariş sonrası yorum bırakmasını engeller.' },
+];
+
 export default function AdminUsers() {
   const { defaultListingImage } = useSiteBrand();
   const [users, setUsers] = useState([]);
@@ -235,8 +247,10 @@ export default function AdminUsers() {
   const [drawerSaving, setDrawerSaving] = useState('');
   const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '', level: '0', xp: '0' });
   const [personalForm, setPersonalForm] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
-  const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '' });
+  const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '', restrictions: {} });
   const [financeForm, setFinanceForm] = useState({ amount: '', action: 'add' });
+  const [financeSearch, setFinanceSearch] = useState('');
+  const [financeTypeFilter, setFinanceTypeFilter] = useState('all');
 
   const showToast = (msg) => {
     setToast(msg);
@@ -282,9 +296,12 @@ export default function AdminUsers() {
       is_admin: Number(detailUser.is_admin) === 1,
       is_banned: Number(detailUser.is_banned) === 1,
       ban_reason: detailUser.ban_reason || '',
+      restrictions: detailUser.restrictions || {},
       new_password: '',
     });
     setFinanceForm({ amount: '', action: 'add' });
+    setFinanceSearch('');
+    setFinanceTypeFilter('all');
   }, [detailUser]);
 
   const openDetail = async (user) => {
@@ -428,6 +445,7 @@ export default function AdminUsers() {
         is_admin: moderationForm.is_admin ? 1 : 0,
         is_banned: moderationForm.is_banned ? 1 : 0,
         ban_reason: moderationForm.is_banned ? moderationForm.ban_reason.trim() : '',
+        restrictions_json: moderationForm.restrictions || {},
       };
 
       if (moderationForm.new_password.trim()) {
@@ -552,6 +570,22 @@ export default function AdminUsers() {
       { total_spent: 0, total_earned: 0, pending_earn: 0 },
     );
   }, [userTxns]);
+
+  const filteredUserTxns = useMemo(() => {
+    const rows = userTxns || [];
+    return rows.filter((tx) => {
+      if (financeTypeFilter !== 'all' && tx.tx_type !== financeTypeFilter) return false;
+      const query = financeSearch.trim().toLocaleLowerCase('tr-TR');
+      if (!query) return true;
+      const haystack = [
+        tx.item_title,
+        tx.counterparty,
+        tx.note,
+        tx.status,
+      ].join(' ').toLocaleLowerCase('tr-TR');
+      return haystack.includes(query);
+    });
+  }, [userTxns, financeSearch, financeTypeFilter]);
 
   const fmtMoney = (n) => `${Number(n || 0).toFixed(2)} ₺`;
   const fmtDateTime = (d) =>
@@ -795,12 +829,13 @@ export default function AdminUsers() {
               </div>
             </div>
             
-            <div className="rounded-2xl bg-slate-100 p-1">
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-7">
+              <div className="rounded-2xl bg-slate-100 p-1">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-6">
                 {[
                   { id: 'general', label: 'Genel' },
                   { id: 'personal', label: 'Kişisel' },
                   { id: 'listings', label: 'İlanlar' },
+                  { id: 'bank_accounts', label: 'Banka Hesapları' },
                   { id: 'finance', label: 'Finans' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
@@ -1003,6 +1038,64 @@ export default function AdminUsers() {
               </div>
             )}
 
+            {detailTab === 'bank_accounts' && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">Banka Hesapları</div>
+                      <div className="mt-1 text-xs font-semibold text-slate-400">Onaylı ve bekleyen çekim hesaplarını kullanıcı özelinde inceleyin.</div>
+                    </div>
+                    <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
+                      {detailUser.payment_accounts?.length || 0} kayıt
+                    </span>
+                  </div>
+
+                  {!detailUser.payment_accounts || detailUser.payment_accounts.length === 0 ? (
+                    <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">Kayıtlı banka hesabı bulunmuyor.</div>
+                  ) : (
+                    <div className="overflow-x-auto rounded-2xl border border-slate-100">
+                      <table className="min-w-full text-left text-sm">
+                        <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                          <tr>
+                            <th className="px-3 py-2 font-black">Banka</th>
+                            <th className="px-3 py-2 font-black">Ad Soyad</th>
+                            <th className="px-3 py-2 font-black">IBAN</th>
+                            <th className="px-3 py-2 font-black">Durum</th>
+                            <th className="px-3 py-2 font-black">Tarih</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {detailUser.payment_accounts.map((account) => (
+                            <tr key={account.id}>
+                              <td className="px-3 py-3">
+                                <div className="font-semibold text-slate-800">{account.bank_name || account.label || 'Banka'}</div>
+                                {account.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{account.admin_note}</div> : null}
+                              </td>
+                              <td className="px-3 py-3 font-semibold text-slate-700">{account.account_holder || '—'}</td>
+                              <td className="px-3 py-3 font-mono text-xs text-slate-600">{account.iban || '—'}</td>
+                              <td className="px-3 py-3">
+                                <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-extrabold ${
+                                  account.status === 'approved'
+                                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                                    : account.status === 'rejected'
+                                      ? 'border-rose-100 bg-rose-50 text-rose-700'
+                                      : 'border-amber-100 bg-amber-50 text-amber-700'
+                                }`}>
+                                  {account.status === 'approved' ? 'Onaylandı' : account.status === 'rejected' ? 'Reddedildi' : 'Beklemede'}
+                                </span>
+                              </td>
+                              <td className="px-3 py-3 text-xs font-semibold text-slate-500">{fmtDateTime(account.created_at)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {detailTab === 'finance' && (
               <div className="space-y-4">
                 <div className="rounded-2xl border border-slate-100 bg-white p-4">
@@ -1068,15 +1161,41 @@ export default function AdminUsers() {
                     </div>
 
                     <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                      <div className="mb-3 text-sm font-extrabold text-slate-900">Son Finansal Hareketler</div>
-                      {(userTxns || []).length === 0 ? (
+                      <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="text-sm font-extrabold text-slate-900">Son Finansal Hareketler</div>
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          <input
+                            value={financeSearch}
+                            onChange={(e) => setFinanceSearch(e.target.value)}
+                            placeholder="İşlem ara..."
+                            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none"
+                          />
+                          <select
+                            value={financeTypeFilter}
+                            onChange={(e) => setFinanceTypeFilter(e.target.value)}
+                            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none"
+                          >
+                            <option value="all">Tüm işlemler</option>
+                            <option value="purchase">Alımlar</option>
+                            <option value="sale">Satışlar</option>
+                            <option value="balance">Bakiye</option>
+                            <option value="withdrawal">Çekimler</option>
+                          </select>
+                        </div>
+                      </div>
+                      {filteredUserTxns.length === 0 ? (
                         <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">İşlem bulunamadı.</div>
                       ) : (
-                        <div className="space-y-2">
-                          {(userTxns || []).slice(0, 20).map((tx, i) => {
+                        <div className="max-h-[560px] space-y-2 overflow-y-auto pr-1">
+                          {filteredUserTxns.map((tx, i) => {
                             const isPurchase = tx.tx_type === 'purchase';
                             const isBalance = tx.tx_type === 'balance';
-                            const net = isPurchase ? -Number(tx.amount || 0) : Number(tx.seller_amount ?? tx.amount ?? 0);
+                            const isWithdrawal = tx.tx_type === 'withdrawal';
+                            const net = isPurchase
+                              ? -Number(tx.amount || 0)
+                              : isWithdrawal
+                                ? -Number(tx.total_amount ?? tx.amount ?? 0)
+                                : Number(tx.seller_amount ?? tx.amount ?? 0);
                             return (
                               <div key={`${tx.tx_type}-${tx.id}-${i}`} className="rounded-xl bg-slate-50 px-3 py-3">
                                 <div className="flex items-start justify-between gap-3">
@@ -1085,7 +1204,9 @@ export default function AdminUsers() {
                                     <div className="mt-1 text-xs text-slate-400">
                                       {isBalance
                                         ? `${tx.counterparty || 'Sistem'}${tx.balance_before != null ? ` · Eski bakiye: ${Number(tx.balance_before).toFixed(2)} ₺` : ''}${tx.balance_after != null ? ` · Yeni bakiye: ${Number(tx.balance_after).toFixed(2)} ₺` : ''} · ${fmtDateTime(tx.created_at)}`
-                                        : `${tx.counterparty || '—'} · ${fmtDateTime(tx.created_at)}`}
+                                        : isWithdrawal
+                                          ? `${tx.counterparty || 'Banka'} · ${tx.status || 'Beklemede'} · ${fmtDateTime(tx.created_at)}`
+                                          : `${tx.counterparty || '—'} · ${fmtDateTime(tx.created_at)}`}
                                     </div>
                                   </div>
                                   <div className="text-right">
@@ -1093,8 +1214,11 @@ export default function AdminUsers() {
                                       {net < 0 ? '' : '+'}
                                       {Number(net).toFixed(2)} ₺
                                     </div>
-                                    <div className={`mt-1 text-[11px] font-bold ${isBalance ? 'text-violet-600' : isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
-                                      {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
+                                    {isWithdrawal && Number(tx.fee_amount || 0) > 0 ? (
+                                      <div className="mt-1 text-[11px] font-bold text-rose-500">Masraf: {Number(tx.fee_amount).toFixed(2)} ₺</div>
+                                    ) : null}
+                                    <div className={`mt-1 text-[11px] font-bold ${isBalance ? 'text-violet-600' : isWithdrawal ? 'text-amber-600' : isPurchase ? 'text-red-500' : 'text-emerald-600'}`}>
+                                      {isBalance ? 'Bakiye' : isWithdrawal ? 'Çekim' : isPurchase ? 'Alım' : 'Satış'}
                                     </div>
                                   </div>
                                 </div>
@@ -1167,6 +1291,39 @@ export default function AdminUsers() {
                       className={inputClass}
                     />
                   </FormField>
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 flex items-center gap-2 text-sm font-extrabold text-slate-900">
+                    <CreditCard size={16} className="text-violet-500" />
+                    Gelişmiş Kısıtlamalar
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {RESTRICTION_FIELDS.map((item) => (
+                      <label key={item.key} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className="text-sm font-bold text-slate-900">{item.label}</div>
+                            <div className="mt-1 text-xs text-slate-400">{item.description}</div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(moderationForm.restrictions?.[item.key])}
+                            onChange={(e) =>
+                              setModerationForm((prev) => ({
+                                ...prev,
+                                restrictions: {
+                                  ...(prev.restrictions || {}),
+                                  [item.key]: e.target.checked,
+                                },
+                              }))
+                            }
+                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">

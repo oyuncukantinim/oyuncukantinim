@@ -14,7 +14,7 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -1832,6 +1832,7 @@ function FinanceTabContent() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('all');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     setLoading(true);
@@ -1844,6 +1845,19 @@ function FinanceTabContent() {
   const transactions = data?.transactions || [];
   const summary      = data?.summary || {};
   const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
+  const filteredTransactions = transactions.filter((tx) => {
+    const query = search.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return true;
+    const haystack = [
+      tx.item_title,
+      tx.counterparty,
+      tx.note,
+      tx.status,
+      tx.bank_name,
+      tx.account_label,
+    ].join(' ').toLocaleLowerCase('tr-TR');
+    return haystack.includes(query);
+  });
 
   return (
     <div className="space-y-5">
@@ -1873,49 +1887,76 @@ function FinanceTabContent() {
       )}
 
       {/* Filtreler */}
-      <div className="flex gap-2">
-        {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'},{v:'balance',l:'Sistem'}].map(f => (
-          <button key={f.v} onClick={() => setTypeFilter(f.v)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${typeFilter === f.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-            {f.l}
-          </button>
-        ))}
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {[{v:'all',l:'Tümü'},{v:'purchase',l:'Alımlar'},{v:'sale',l:'Satışlar'},{v:'balance',l:'Sistem'},{v:'withdrawal',l:'Çekimler'}].map(f => (
+            <button key={f.v} onClick={() => setTypeFilter(f.v)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${typeFilter === f.v ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+              {f.l}
+            </button>
+          ))}
+        </div>
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="İşlem, banka veya açıklama ara..."
+          className="input-field max-w-md"
+        />
       </div>
 
       {/* Liste */}
       {loading ? (
         <div className="flex justify-center py-10"><div className="w-7 h-7 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
-      ) : transactions.length === 0 ? (
+      ) : filteredTransactions.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <FinanceIcon size={36} className="mx-auto mb-3 opacity-20"/>
           <p className="font-semibold">Bu kategoride işlem yok.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {transactions.map((tx, i) => {
+        <div className="max-h-[620px] space-y-2 overflow-y-auto pr-1">
+          {filteredTransactions.map((tx, i) => {
             const isPurchase = tx.tx_type === 'purchase';
             const isBalance = tx.tx_type === 'balance';
-            const net = isPurchase ? -tx.amount : (tx.seller_amount ?? tx.amount);
+            const isWithdrawal = tx.tx_type === 'withdrawal';
+            const net = isPurchase
+              ? -tx.amount
+              : isWithdrawal
+                ? -Number(tx.total_amount ?? tx.amount ?? 0)
+                : (tx.seller_amount ?? tx.amount);
             const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
             const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
             return (
               <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${isBalance ? 'bg-violet-50 text-violet-700' : isPurchase ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                  {isBalance ? 'Bakiye' : isPurchase ? 'Alım' : 'Satış'}
+                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${
+                  isBalance
+                    ? 'bg-violet-50 text-violet-700'
+                    : isWithdrawal
+                      ? 'bg-amber-50 text-amber-700'
+                      : isPurchase
+                        ? 'bg-red-50 text-red-600'
+                        : 'bg-emerald-50 text-emerald-700'
+                }`}>
+                  {isBalance ? 'Bakiye' : isWithdrawal ? 'Çekim' : isPurchase ? 'Alım' : 'Satış'}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
                   <p className="text-[10px] text-gray-400">
                     {isBalance
                       ? `${tx.counterparty || ''}${tx.balance_before != null ? ` Eski bakiye: ${Number(tx.balance_before).toFixed(2)}` : ''}${tx.balance_after != null ? ` Yeni bakiye: ${Number(tx.balance_after).toFixed(2)}` : ''}`.trim()
-                      : `${tx.counterparty || ''} · `}
-                    {!isBalance && <span className={delivColor}>{delivLabel}</span>}
+                      : isWithdrawal
+                        ? `${tx.counterparty || tx.bank_name || 'Banka'} · ${tx.status || 'Beklemede'}`
+                        : `${tx.counterparty || ''} · `}
+                    {!isBalance && !isWithdrawal && <span className={delivColor}>{delivLabel}</span>}
+                    {isBalance && tx.note ? <span> · {tx.note}</span> : null}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
                   <div className={`text-sm font-extrabold ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
                     {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
                   </div>
+                  {isWithdrawal && Number(tx.fee_amount || 0) > 0 ? (
+                    <div className="text-[10px] font-bold text-rose-500">Masraf: {Number(tx.fee_amount).toFixed(2)} ₺</div>
+                  ) : null}
                   <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
                 </div>
               </div>
@@ -1951,20 +1992,15 @@ function StatusPill({ status, map }) {
 function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [data, setData] = useState({ accounts: [], withdrawals: [], pending_total: 0, min_withdrawal: 50 });
-  const [accountType, setAccountType] = useState('bank');
+  const [data, setData] = useState({ accounts: [], withdrawals: [], pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0 });
+  const [showAccountForm, setShowAccountForm] = useState(false);
   const [accountForm, setAccountForm] = useState({
-    label: '',
     bank_name: '',
     account_holder: user?.full_name || '',
     iban: '',
-    crypto_currency: 'USDT',
-    crypto_network: 'TRC20',
-    wallet_address: '',
-    memo_tag: '',
-    user_note: '',
+    accepted_rules: false,
   });
-  const [withdrawalForm, setWithdrawalForm] = useState({ account_id: '', amount: '', user_note: '' });
+  const [withdrawalForm, setWithdrawalForm] = useState({ account_id: '', amount: '' });
 
   const loadPayments = useCallback(() => {
     setLoading(true);
@@ -1976,6 +2012,10 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
           withdrawals: nextData.withdrawals || [],
           pending_total: Number(nextData.pending_total || 0),
           min_withdrawal: Number(nextData.min_withdrawal || 50),
+          banks: nextData.banks || [],
+          fee_type: nextData.fee_type || 'fixed',
+          fee_value: Number(nextData.fee_value || 0),
+          withdrawal_enabled: nextData.withdrawal_enabled !== false,
         });
       })
       .catch((error) => showToast(error.message))
@@ -1989,32 +2029,25 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   const approvedAccounts = data.accounts.filter((account) => account.status === 'approved');
   const selectedAccount = approvedAccounts.find((account) => String(account.id) === String(withdrawalForm.account_id));
   const minWithdrawal = Number(data.min_withdrawal || 50);
+  const feePreviewAmount = Number(withdrawalForm.amount || 0);
+  const feePreview = data.fee_type === 'percent'
+    ? (feePreviewAmount * Number(data.fee_value || 0) / 100)
+    : Number(data.fee_value || 0);
+  const totalPreview = feePreviewAmount > 0 ? feePreviewAmount + feePreview : 0;
 
   const submitAccount = async (event) => {
     event.preventDefault();
     setSaving(true);
     try {
-      const payload = accountType === 'bank'
-        ? {
-            type: 'bank',
-            label: accountForm.label,
-            bank_name: accountForm.bank_name,
-            account_holder: accountForm.account_holder,
-            iban: accountForm.iban,
-            user_note: accountForm.user_note,
-          }
-        : {
-            type: 'crypto',
-            label: accountForm.label,
-            crypto_currency: accountForm.crypto_currency,
-            crypto_network: accountForm.crypto_network,
-            wallet_address: accountForm.wallet_address,
-            memo_tag: accountForm.memo_tag,
-            user_note: accountForm.user_note,
-          };
-      await addPaymentAccount(payload);
+      await addPaymentAccount(accountForm);
       showToast('Hesabınız admin onayına gönderildi.');
-      setAccountForm((prev) => ({ ...prev, label: '', iban: '', wallet_address: '', memo_tag: '', user_note: '' }));
+      setAccountForm({
+        bank_name: '',
+        account_holder: user?.full_name || '',
+        iban: '',
+        accepted_rules: false,
+      });
+      setShowAccountForm(false);
       loadPayments();
     } catch (error) {
       showToast(error.message);
@@ -2030,11 +2063,24 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
       const response = await createWithdrawalRequest({
         account_id: withdrawalForm.account_id,
         amount: withdrawalForm.amount,
-        user_note: withdrawalForm.user_note,
       });
       if (response.data?.new_balance !== undefined) onBalanceChange(Number(response.data.new_balance));
       showToast('Para çekme talebiniz oluşturuldu.');
-      setWithdrawalForm({ account_id: '', amount: '', user_note: '' });
+      setWithdrawalForm({ account_id: '', amount: '' });
+      loadPayments();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteAccountRow = async (accountId) => {
+    if (!confirm('Bu banka hesabını silmek istiyor musun?')) return;
+    setSaving(true);
+    try {
+      await deletePaymentAccount(accountId);
+      showToast('Banka hesabı silindi.');
       loadPayments();
     } catch (error) {
       showToast(error.message);
@@ -2060,8 +2106,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
 
   const describeAccount = (account) => {
     if (!account) return 'Hesap seçilmedi';
-    if (account.type === 'bank') return `${account.bank_name || 'Banka'} · ${account.iban || ''}`;
-    return `${account.crypto_currency || 'Kripto'} · ${account.crypto_network || 'Ağ'} · ${account.wallet_address || ''}`;
+    return `${account.bank_name || 'Banka'} · ${account.iban || ''}`;
   };
 
   return (
@@ -2071,26 +2116,15 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
           <div className="absolute right-8 top-4 h-24 w-24 rounded-full bg-cyan-400/20 blur-3xl" />
           <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-cyan-100">
-                <ShieldCheck size={13} /> Admin onaylı güvenli çekim
-              </div>
               <h2 className="text-2xl font-extrabold">Para Çek</h2>
               <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-300">
-                Banka veya kripto hesabını ekle, admin onayından sonra çekim talebi oluştur. Bekleyen talepler sonuçlanana kadar takip edilebilir.
+                Onaylı banka hesabınla çekim talebi oluşturabilir, hesaplarını ve geçmiş taleplerini tablo görünümünde takip edebilirsin.
               </p>
             </div>
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-[10px] font-black uppercase text-slate-300">Bakiye</p>
+            <div className="grid grid-cols-1 gap-2 text-center">
+              <div className="rounded-2xl bg-white/10 px-5 py-4 backdrop-blur">
+                <p className="text-[10px] font-black uppercase text-slate-300">Çekilebilir Bakiye</p>
                 <p className="mt-1 text-lg font-black">{Number(user?.balance || 0).toFixed(2)} ₺</p>
-              </div>
-              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-[10px] font-black uppercase text-slate-300">Bekleyen</p>
-                <p className="mt-1 text-lg font-black">{Number(data.pending_total || 0).toFixed(2)} ₺</p>
-              </div>
-              <div className="rounded-2xl bg-white/10 px-4 py-3 backdrop-blur">
-                <p className="text-[10px] font-black uppercase text-slate-300">Onaylı</p>
-                <p className="mt-1 text-lg font-black">{approvedAccounts.length}</p>
               </div>
             </div>
           </div>
@@ -2107,7 +2141,9 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
                     <h3 className="text-lg font-extrabold text-gray-900">Çekim Talebi Oluştur</h3>
-                    <p className="text-xs font-semibold text-gray-500">Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺.</p>
+                    <p className="text-xs font-semibold text-gray-500">
+                      Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺. {data.fee_type === 'percent' ? `%${Number(data.fee_value || 0).toFixed(2)}` : `${Number(data.fee_value || 0).toFixed(2)} ₺`} işlem masrafı uygulanır.
+                    </p>
                   </div>
                   <Wallet className="text-violet-500" size={22} />
                 </div>
@@ -2123,7 +2159,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                       <option value="">{approvedAccounts.length ? 'Hesap seç' : 'Onaylı hesap yok'}</option>
                       {approvedAccounts.map((account) => (
                         <option key={account.id} value={account.id}>
-                          {account.label || (account.type === 'bank' ? account.bank_name : `${account.crypto_currency} ${account.crypto_network}`)}
+                          {account.label || account.bank_name}
                         </option>
                       ))}
                     </select>
@@ -2146,13 +2182,11 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                     {describeAccount(selectedAccount)}
                   </div>
                 ) : null}
-                <textarea
-                  value={withdrawalForm.user_note}
-                  onChange={(event) => setWithdrawalForm((prev) => ({ ...prev, user_note: event.target.value }))}
-                  rows={2}
-                  className="mt-3 w-full resize-none rounded-xl border border-white bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
-                  placeholder="İsteğe bağlı not"
-                />
+                <div className="mt-3 rounded-xl border border-white bg-white/80 px-3 py-2 text-xs font-semibold text-gray-500">
+                  <div>Çekim: {feePreviewAmount > 0 ? feePreviewAmount.toFixed(2) : '0.00'} ₺</div>
+                  <div>İşlem masrafı: {feePreview > 0 ? feePreview.toFixed(2) : '0.00'} ₺</div>
+                  <div className="font-extrabold text-gray-700">Toplam düşülecek: {totalPreview > 0 ? totalPreview.toFixed(2) : '0.00'} ₺</div>
+                </div>
                 <button disabled={saving || !approvedAccounts.length} className="mt-3 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/20 transition-colors hover:bg-violet-500 disabled:opacity-50">
                   Talebi Gönder
                 </button>
@@ -2163,104 +2197,142 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                   <h3 className="text-lg font-extrabold text-gray-900">Çekim Geçmişi</h3>
                   <span className="text-xs font-bold text-gray-400">{data.withdrawals.length} talep</span>
                 </div>
-                <div className="space-y-3">
-                  {data.withdrawals.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-semibold text-gray-400">Henüz çekim talebi yok.</div>
-                  ) : data.withdrawals.map((request) => (
-                    <div key={request.id} className="rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-extrabold text-gray-900">#{request.id} · {Number(request.amount).toFixed(2)} ₺</p>
-                            <StatusPill status={request.status} map={WITHDRAWAL_STATUS} />
-                          </div>
-                          <p className="mt-1 text-xs font-semibold text-gray-500">{describeAccount(request)}</p>
-                          {request.admin_note ? <p className="mt-2 text-xs font-semibold text-rose-500">Admin notu: {request.admin_note}</p> : null}
-                          {request.payment_reference ? <p className="mt-2 text-xs font-semibold text-emerald-600">Referans: {request.payment_reference}</p> : null}
-                        </div>
-                        <div className="text-left sm:text-right">
-                          <p className="text-xs font-bold text-gray-400">{new Date(request.created_at).toLocaleString('tr-TR')}</p>
-                          {request.status === 'pending' ? (
-                            <button
-                              type="button"
-                              onClick={() => cancelRequest(request.id)}
-                              disabled={saving}
-                              className="mt-2 rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
-                            >
-                              İptal Et
-                            </button>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {data.withdrawals.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-semibold text-gray-400">Henüz çekim talebi yok.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-left text-sm">
+                      <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                        <tr>
+                          <th className="px-3 py-2 font-black">Talep</th>
+                          <th className="px-3 py-2 font-black">Banka</th>
+                          <th className="px-3 py-2 font-black">Çekim</th>
+                          <th className="px-3 py-2 font-black">Masraf</th>
+                          <th className="px-3 py-2 font-black">Durum</th>
+                          <th className="px-3 py-2 font-black">Tarih</th>
+                          <th className="px-3 py-2 font-black">İşlem</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {data.withdrawals.map((request) => (
+                          <tr key={request.id}>
+                            <td className="px-3 py-3 font-extrabold text-gray-900">#{request.id}</td>
+                            <td className="px-3 py-3">
+                              <div className="font-semibold text-gray-700">{request.bank_name || request.account_label || '-'}</div>
+                              <div className="text-xs text-gray-400">{request.iban || '-'}</div>
+                              {request.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{request.admin_note}</div> : null}
+                            </td>
+                            <td className="px-3 py-3 font-semibold text-gray-700">{Number(request.amount || 0).toFixed(2)} ₺</td>
+                            <td className="px-3 py-3 text-xs font-semibold text-rose-500">{Number(request.fee_amount || 0).toFixed(2)} ₺</td>
+                            <td className="px-3 py-3"><StatusPill status={request.status} map={WITHDRAWAL_STATUS} /></td>
+                            <td className="px-3 py-3 text-xs font-semibold text-gray-500">{new Date(request.created_at).toLocaleString('tr-TR')}</td>
+                            <td className="px-3 py-3">
+                              {request.status === 'pending' ? (
+                                <button
+                                  type="button"
+                                  onClick={() => cancelRequest(request.id)}
+                                  disabled={saving}
+                                  className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+                                >
+                                  İptal Et
+                                </button>
+                              ) : <span className="text-xs font-semibold text-gray-400">—</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="space-y-5">
-              <form onSubmit={submitAccount} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-extrabold text-gray-900">Hesap Ekle</h3>
-                <p className="mt-1 text-xs font-semibold text-gray-500">Eklenen hesaplar admin onayından sonra çekime açılır.</p>
-                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1">
-                  {[
-                    { id: 'bank', label: 'Banka' },
-                    { id: 'crypto', label: 'Kripto' },
-                  ].map((option) => (
-                    <button
-                      key={option.id}
-                      type="button"
-                      onClick={() => setAccountType(option.id)}
-                      className={`rounded-lg px-3 py-2 text-xs font-extrabold transition-all ${accountType === option.id ? 'bg-white text-violet-600 shadow-sm' : 'text-gray-500'}`}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-extrabold text-gray-900">Banka Hesabı Ekle</h3>
+                    <p className="mt-1 text-xs font-semibold text-gray-500">Eklenen hesaplar admin onayından sonra çekime açılır.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAccountForm((prev) => !prev)}
+                    className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-extrabold text-white"
+                  >
+                    {showAccountForm ? 'Formu Kapat' : 'Hesap Ekle'}
+                  </button>
                 </div>
 
-                <div className="mt-4 space-y-3">
-                  <input value={accountForm.label} onChange={(event) => setAccountForm((prev) => ({ ...prev, label: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Hesap adı, opsiyonel" />
-                  {accountType === 'bank' ? (
-                    <>
-                      <input value={accountForm.bank_name} onChange={(event) => setAccountForm((prev) => ({ ...prev, bank_name: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Banka adı" />
-                      <input value={accountForm.account_holder} onChange={(event) => setAccountForm((prev) => ({ ...prev, account_holder: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Hesap sahibi" />
-                      <input value={accountForm.iban} onChange={(event) => setAccountForm((prev) => ({ ...prev, iban: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
-                    </>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-2 gap-2">
-                        <input value={accountForm.crypto_currency} onChange={(event) => setAccountForm((prev) => ({ ...prev, crypto_currency: event.target.value.toUpperCase() }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="USDT" />
-                        <input value={accountForm.crypto_network} onChange={(event) => setAccountForm((prev) => ({ ...prev, crypto_network: event.target.value.toUpperCase() }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TRC20" />
-                      </div>
-                      <input value={accountForm.wallet_address} onChange={(event) => setAccountForm((prev) => ({ ...prev, wallet_address: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Cüzdan adresi" />
-                      <input value={accountForm.memo_tag} onChange={(event) => setAccountForm((prev) => ({ ...prev, memo_tag: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Memo / Tag, opsiyonel" />
-                    </>
-                  )}
-                  <textarea value={accountForm.user_note} onChange={(event) => setAccountForm((prev) => ({ ...prev, user_note: event.target.value }))} rows={2} className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Admin için not, opsiyonel" />
-                </div>
-                <button disabled={saving} className="mt-4 w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50">
-                  Onaya Gönder
-                </button>
-              </form>
+                {showAccountForm ? (
+                  <form onSubmit={submitAccount} className="mt-4 space-y-3">
+                    <select
+                      value={accountForm.bank_name}
+                      onChange={(event) => setAccountForm((prev) => ({ ...prev, bank_name: event.target.value }))}
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+                    >
+                      <option value="">Banka seç</option>
+                      {data.banks.map((bank) => <option key={bank} value={bank}>{bank}</option>)}
+                    </select>
+                    <input value={accountForm.account_holder} onChange={(event) => setAccountForm((prev) => ({ ...prev, account_holder: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Ad Soyad" />
+                    <input value={accountForm.iban} onChange={(event) => setAccountForm((prev) => ({ ...prev, iban: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
+                    <label className="flex items-start gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-xs font-semibold text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={accountForm.accepted_rules}
+                        onChange={(event) => setAccountForm((prev) => ({ ...prev, accepted_rules: event.target.checked }))}
+                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-violet-600"
+                      />
+                      <span>Yanlış banka veya hatalı IBAN bilgisi girmenin sorumluluğu bana aittir, kuralları kabul ediyorum.</span>
+                    </label>
+                    <button disabled={saving} className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50">
+                      Onaya Gönder
+                    </button>
+                  </form>
+                ) : null}
+              </div>
 
               <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <h3 className="text-lg font-extrabold text-gray-900">Hesaplarım</h3>
-                <div className="mt-4 space-y-3">
-                  {data.accounts.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-gray-200 py-6 text-center text-sm font-semibold text-gray-400">Henüz hesap eklenmemiş.</div>
-                  ) : data.accounts.map((account) => (
-                    <div key={account.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-extrabold text-gray-900">{account.label || (account.type === 'bank' ? account.bank_name : `${account.crypto_currency} ${account.crypto_network}`)}</p>
-                          <p className="mt-1 truncate text-xs font-semibold text-gray-500">{describeAccount(account)}</p>
-                          {account.admin_note ? <p className="mt-2 text-xs font-semibold text-rose-500">{account.admin_note}</p> : null}
-                        </div>
-                        <StatusPill status={account.status} map={PAYMENT_ACCOUNT_STATUS} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {data.accounts.length === 0 ? (
+                  <div className="mt-4 rounded-2xl border border-dashed border-gray-200 py-6 text-center text-sm font-semibold text-gray-400">Henüz hesap eklenmemiş.</div>
+                ) : (
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="min-w-full text-left text-sm">
+                      <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                        <tr>
+                          <th className="px-3 py-2 font-black">Banka</th>
+                          <th className="px-3 py-2 font-black">Ad Soyad</th>
+                          <th className="px-3 py-2 font-black">IBAN</th>
+                          <th className="px-3 py-2 font-black">Durum</th>
+                          <th className="px-3 py-2 font-black">İşlem</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {data.accounts.map((account) => (
+                          <tr key={account.id}>
+                            <td className="px-3 py-3">
+                              <div className="font-semibold text-gray-700">{account.bank_name || account.label || '-'}</div>
+                              {account.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{account.admin_note}</div> : null}
+                            </td>
+                            <td className="px-3 py-3 font-semibold text-gray-700">{account.account_holder || '-'}</td>
+                            <td className="px-3 py-3 font-mono text-xs text-gray-600">{account.iban || '-'}</td>
+                            <td className="px-3 py-3"><StatusPill status={account.status} map={PAYMENT_ACCOUNT_STATUS} /></td>
+                            <td className="px-3 py-3">
+                              <button
+                                type="button"
+                                onClick={() => deleteAccountRow(account.id)}
+                                disabled={saving}
+                                className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+                              >
+                                Sil
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
