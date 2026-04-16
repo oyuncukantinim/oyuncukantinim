@@ -314,9 +314,9 @@ export default function PaymentManagement() {
         <div className="rounded-3xl border border-gray-100 bg-white p-3 shadow-sm">
           <div className="grid gap-2 md:grid-cols-3">
             {[
-              { id: 'withdrawals', label: 'Çekim Talepleri', count: withdrawals.length },
-              { id: 'accounts', label: 'Çekim Talebi Hesapları', count: accounts.length },
-              { id: 'settings', label: 'Ayarlar', count: settingsForm.banks.length },
+              { id: 'withdrawals', label: 'Çekim Talepleri', count: Number(summary.pending_withdrawals || 0) + Number(summary.processing_withdrawals || 0) },
+              { id: 'accounts', label: 'Çekim Talebi Hesapları', count: summary.pending_accounts || 0 },
+              { id: 'settings', label: 'Ayarlar' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -327,7 +327,8 @@ export default function PaymentManagement() {
                     : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
                 }`}
               >
-                {tab.label} <span className="ml-1 opacity-70">({tab.count})</span>
+                {tab.label}
+                {tab.count !== undefined ? <span className="ml-1 opacity-70">({tab.count})</span> : null}
               </button>
             ))}
           </div>
