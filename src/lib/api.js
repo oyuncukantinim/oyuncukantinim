@@ -188,8 +188,8 @@ export function addBalance(amount) {
   return request('add_balance', { method: 'POST', body: { amount }, auth: true });
 }
 
-export function getPaymentOverview() {
-  return request('get_payment_overview', { auth: true });
+export function getPaymentOverview(query = {}) {
+  return request('get_payment_overview', { query, auth: true });
 }
 
 export function addPaymentAccount(payload) {
@@ -326,8 +326,8 @@ export function getListingPriceHistory(listingId) {
 }
 
 // --- FINANCIAL TRANSACTIONS ---
-export function getMyTransactions(type = 'all') {
-  return request('get_my_transactions', { query: { type }, auth: true });
+export function getMyTransactions(type = 'all', query = {}) {
+  return request('get_my_transactions', { query: { type, ...query }, auth: true });
 }
 
 // --- SHARED ORDERS (for messages) ---

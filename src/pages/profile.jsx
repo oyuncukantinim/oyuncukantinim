@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 const FinanceIcon = TrendingUp;
+const PROFILE_PAGE_SIZE = 20;
 import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
@@ -1831,15 +1832,41 @@ const FINANCE_STATUS_COLORS   = ['text-gray-500', 'text-blue-500', 'text-emerald
 function FinanceTabContent() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    setLoading(true);
-    getMyTransactions(typeFilter)
-      .then(r => setData(r.data))
+  const loadTransactions = useCallback((offset = 0, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
+
+    getMyTransactions(typeFilter, { limit: PROFILE_PAGE_SIZE, offset })
+      .then((response) => {
+        const nextData = response.data || {};
+        setData((prev) => ({
+          ...nextData,
+          transactions: append
+            ? [...(prev?.transactions || []), ...(nextData.transactions || [])]
+            : (nextData.transactions || []),
+        }));
+      })
       .catch(() => {})
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      });
+  }, [typeFilter]);
+
+  useEffect(() => {
+    loadTransactions(0, false);
+  }, [loadTransactions]);
+
+  const loadMoreTransactions = () => {
+    loadTransactions(transactions.length, true);
+  };
+
+  useEffect(() => {
+    setSearch('');
   }, [typeFilter]);
 
   const transactions = data?.transactions || [];
@@ -1908,60 +1935,84 @@ function FinanceTabContent() {
       {loading ? (
         <div className="flex justify-center py-10"><div className="w-7 h-7 border-2 border-violet-200 border-t-violet-600 rounded-full animate-spin"/></div>
       ) : filteredTransactions.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <FinanceIcon size={36} className="mx-auto mb-3 opacity-20"/>
-          <p className="font-semibold">Bu kategoride işlem yok.</p>
+        <div className="space-y-3">
+          <div className="text-center py-12 text-gray-400">
+            <FinanceIcon size={36} className="mx-auto mb-3 opacity-20"/>
+            <p className="font-semibold">Bu kategoride işlem yok.</p>
+          </div>
+          {data?.has_more ? (
+            <button
+              type="button"
+              onClick={loadMoreTransactions}
+              disabled={loadingMore}
+              className="w-full rounded-xl border border-violet-100 bg-violet-50 px-4 py-2.5 text-xs font-extrabold text-violet-700 transition-colors hover:bg-violet-100 disabled:opacity-50"
+            >
+              {loadingMore ? 'Yükleniyor...' : 'Daha fazla yükle'}
+            </button>
+          ) : null}
         </div>
       ) : (
-        <div className="max-h-[620px] space-y-2 overflow-y-auto pr-1">
-          {filteredTransactions.map((tx, i) => {
-            const isPurchase = tx.tx_type === 'purchase';
-            const isBalance = tx.tx_type === 'balance';
-            const isWithdrawal = tx.tx_type === 'withdrawal';
-            const net = isPurchase
-              ? -tx.amount
-              : isWithdrawal
-                ? -Number(tx.total_amount ?? tx.amount ?? 0)
-                : (tx.seller_amount ?? tx.amount);
-            const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
-            const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
-            return (
-              <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
-                <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${
-                  isBalance
-                    ? 'bg-violet-50 text-violet-700'
-                    : isWithdrawal
-                      ? 'bg-amber-50 text-amber-700'
-                      : isPurchase
-                        ? 'bg-red-50 text-red-600'
-                        : 'bg-emerald-50 text-emerald-700'
-                }`}>
-                  {isBalance ? 'Bakiye' : isWithdrawal ? 'Çekim' : isPurchase ? 'Alım' : 'Satış'}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
-                  <p className="text-[10px] text-gray-400">
-                    {isBalance
-                      ? `${tx.counterparty || ''}${tx.balance_before != null ? ` Eski bakiye: ${Number(tx.balance_before).toFixed(2)}` : ''}${tx.balance_after != null ? ` Yeni bakiye: ${Number(tx.balance_after).toFixed(2)}` : ''}`.trim()
+        <div className="space-y-3">
+          <div className="max-h-[620px] space-y-2 overflow-y-auto pr-1">
+            {filteredTransactions.map((tx, i) => {
+              const isPurchase = tx.tx_type === 'purchase';
+              const isBalance = tx.tx_type === 'balance';
+              const isWithdrawal = tx.tx_type === 'withdrawal';
+              const net = isPurchase
+                ? -tx.amount
+                : isWithdrawal
+                  ? -Number(tx.total_amount ?? tx.amount ?? 0)
+                  : (tx.seller_amount ?? tx.amount);
+              const delivColor = FINANCE_STATUS_COLORS[tx.delivery_status] || 'text-gray-400';
+              const delivLabel = FINANCE_DELIVERY_LABELS[tx.delivery_status] || '—';
+              return (
+                <div key={`${tx.tx_type}-${tx.id}-${i}`} className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+                  <span className={`text-[10px] font-extrabold px-2 py-1 rounded-lg flex-shrink-0 ${
+                    isBalance
+                      ? 'bg-violet-50 text-violet-700'
                       : isWithdrawal
-                        ? `${tx.counterparty || tx.bank_name || 'Banka'} · ${tx.status || 'Beklemede'}`
-                        : `${tx.counterparty || ''} · `}
-                    {!isBalance && !isWithdrawal && <span className={delivColor}>{delivLabel}</span>}
-                    {isBalance && tx.note ? <span> · {tx.note}</span> : null}
-                  </p>
-                </div>
-                <div className="text-right flex-shrink-0">
-                  <div className={`text-sm font-extrabold ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
-                    {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                        ? 'bg-amber-50 text-amber-700'
+                        : isPurchase
+                          ? 'bg-red-50 text-red-600'
+                          : 'bg-emerald-50 text-emerald-700'
+                  }`}>
+                    {isBalance ? 'Bakiye' : isWithdrawal ? 'Çekim' : isPurchase ? 'Alım' : 'Satış'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-700 truncate">{tx.item_title || '—'}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {isBalance
+                        ? `${tx.counterparty || ''}${tx.balance_before != null ? ` Eski bakiye: ${Number(tx.balance_before).toFixed(2)}` : ''}${tx.balance_after != null ? ` Yeni bakiye: ${Number(tx.balance_after).toFixed(2)}` : ''}`.trim()
+                        : isWithdrawal
+                          ? `${tx.counterparty || tx.bank_name || 'Banka'} · ${tx.status || 'Beklemede'}`
+                          : `${tx.counterparty || ''} · `}
+                      {!isBalance && !isWithdrawal && <span className={delivColor}>{delivLabel}</span>}
+                      {isBalance && tx.note ? <span> · {tx.note}</span> : null}
+                    </p>
                   </div>
-                  {isWithdrawal && Number(tx.fee_amount || 0) > 0 ? (
-                    <div className="text-[10px] font-bold text-rose-500">Masraf: {Number(tx.fee_amount).toFixed(2)} ₺</div>
-                  ) : null}
-                  <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
+                  <div className="text-right flex-shrink-0">
+                    <div className={`text-sm font-extrabold ${isBalance ? (net < 0 ? 'text-red-500' : 'text-violet-600') : net < 0 ? 'text-red-500' : 'text-emerald-600'}`}>
+                      {net < 0 ? '' : '+'}{Number(net).toFixed(2)} ₺
+                    </div>
+                    {isWithdrawal && Number(tx.fee_amount || 0) > 0 ? (
+                      <div className="text-[10px] font-bold text-rose-500">Masraf: {Number(tx.fee_amount).toFixed(2)} ₺</div>
+                    ) : null}
+                    <div className="text-[10px] text-gray-400">{fmtDate(tx.created_at)}</div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+          {data?.has_more ? (
+            <button
+              type="button"
+              onClick={loadMoreTransactions}
+              disabled={loadingMore}
+              className="w-full rounded-xl border border-violet-100 bg-violet-50 px-4 py-2.5 text-xs font-extrabold text-violet-700 transition-colors hover:bg-violet-100 disabled:opacity-50"
+            >
+              {loadingMore ? 'Yükleniyor...' : 'Daha fazla yükle'}
+            </button>
+          ) : null}
         </div>
       )}
     </div>
@@ -1991,8 +2042,9 @@ function StatusPill({ status, map }) {
 
 function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [data, setData] = useState({ accounts: [], withdrawals: [], pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0 });
+  const [data, setData] = useState({ accounts: [], withdrawals: [], withdrawals_total: 0, withdrawals_has_more: false, pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0 });
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [accountForm, setAccountForm] = useState({
@@ -2003,29 +2055,42 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   });
   const [withdrawalForm, setWithdrawalForm] = useState({ account_id: '', amount: '' });
 
-  const loadPayments = useCallback(() => {
-    setLoading(true);
-    getPaymentOverview()
+  const loadPayments = useCallback((offset = 0, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
+
+    getPaymentOverview({ withdrawal_limit: PROFILE_PAGE_SIZE, withdrawal_offset: offset })
       .then((response) => {
         const nextData = response.data || {};
-        setData({
+        setData((prev) => ({
           accounts: nextData.accounts || [],
-          withdrawals: nextData.withdrawals || [],
+          withdrawals: append
+            ? [...(prev.withdrawals || []), ...(nextData.withdrawals || [])]
+            : (nextData.withdrawals || []),
+          withdrawals_total: Number(nextData.withdrawals_total || 0),
+          withdrawals_has_more: Boolean(nextData.withdrawals_has_more),
           pending_total: Number(nextData.pending_total || 0),
           min_withdrawal: Number(nextData.min_withdrawal || 50),
           banks: nextData.banks || [],
           fee_type: nextData.fee_type || 'fixed',
           fee_value: Number(nextData.fee_value || 0),
           withdrawal_enabled: nextData.withdrawal_enabled !== false,
-        });
+        }));
       })
       .catch((error) => showToast(error.message))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (append) setLoadingMore(false);
+        else setLoading(false);
+      });
   }, [showToast]);
 
   useEffect(() => {
     loadPayments();
   }, [loadPayments]);
+
+  const loadMoreWithdrawals = () => {
+    loadPayments(data.withdrawals.length, true);
+  };
 
   const approvedAccounts = data.accounts.filter((account) => account.status === 'approved');
   const selectedAccount = approvedAccounts.find((account) => String(account.id) === String(withdrawalForm.account_id));
@@ -2212,53 +2277,67 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
               <div className="rounded-2xl border border-gray-100 bg-white p-5">
                 <div className="mb-4 flex items-center justify-between">
                   <h3 className="text-lg font-extrabold text-gray-900">Çekim Geçmişi</h3>
-                  <span className="text-xs font-bold text-gray-400">{data.withdrawals.length} talep</span>
+                  <span className="text-xs font-bold text-gray-400">
+                    {data.withdrawals.length}{data.withdrawals_total > data.withdrawals.length ? `/${data.withdrawals_total}` : ''} talep
+                  </span>
                 </div>
                 {data.withdrawals.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-semibold text-gray-400">Henüz çekim talebi yok.</div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-sm">
-                      <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                        <tr>
-                          <th className="px-3 py-2 font-black">Talep</th>
-                          <th className="px-3 py-2 font-black">Banka</th>
-                          <th className="px-3 py-2 font-black">Çekim</th>
-                          <th className="px-3 py-2 font-black">Masraf</th>
-                          <th className="px-3 py-2 font-black">Durum</th>
-                          <th className="px-3 py-2 font-black">Tarih</th>
-                          <th className="px-3 py-2 font-black">İşlem</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {data.withdrawals.map((request) => (
-                          <tr key={request.id}>
-                            <td className="px-3 py-3 font-extrabold text-gray-900">#{request.id}</td>
-                            <td className="px-3 py-3">
-                              <div className="font-semibold text-gray-700">{request.bank_name || request.account_label || '-'}</div>
-                              <div className="text-xs text-gray-400">{request.iban || '-'}</div>
-                              {request.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{request.admin_note}</div> : null}
-                            </td>
-                            <td className="px-3 py-3 font-semibold text-gray-700">{Number(request.amount || 0).toFixed(2)} ₺</td>
-                            <td className="px-3 py-3 text-xs font-semibold text-rose-500">{Number(request.fee_amount || 0).toFixed(2)} ₺</td>
-                            <td className="px-3 py-3"><StatusPill status={request.status} map={WITHDRAWAL_STATUS} /></td>
-                            <td className="px-3 py-3 text-xs font-semibold text-gray-500">{new Date(request.created_at).toLocaleString('tr-TR')}</td>
-                            <td className="px-3 py-3">
-                              {request.status === 'pending' ? (
-                                <button
-                                  type="button"
-                                  onClick={() => cancelRequest(request.id)}
-                                  disabled={saving}
-                                  className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
-                                >
-                                  İptal Et
-                                </button>
-                              ) : <span className="text-xs font-semibold text-gray-400">—</span>}
-                            </td>
+                  <div className="space-y-3">
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-left text-sm">
+                        <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                          <tr>
+                            <th className="px-3 py-2 font-black">Talep</th>
+                            <th className="px-3 py-2 font-black">Banka</th>
+                            <th className="px-3 py-2 font-black">Çekim</th>
+                            <th className="px-3 py-2 font-black">Masraf</th>
+                            <th className="px-3 py-2 font-black">Durum</th>
+                            <th className="px-3 py-2 font-black">Tarih</th>
+                            <th className="px-3 py-2 font-black">İşlem</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {data.withdrawals.map((request) => (
+                            <tr key={request.id}>
+                              <td className="px-3 py-3 font-extrabold text-gray-900">#{request.id}</td>
+                              <td className="px-3 py-3">
+                                <div className="font-semibold text-gray-700">{request.bank_name || request.account_label || '-'}</div>
+                                <div className="text-xs text-gray-400">{request.iban || '-'}</div>
+                                {request.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{request.admin_note}</div> : null}
+                              </td>
+                              <td className="px-3 py-3 font-semibold text-gray-700">{Number(request.amount || 0).toFixed(2)} ₺</td>
+                              <td className="px-3 py-3 text-xs font-semibold text-rose-500">{Number(request.fee_amount || 0).toFixed(2)} ₺</td>
+                              <td className="px-3 py-3"><StatusPill status={request.status} map={WITHDRAWAL_STATUS} /></td>
+                              <td className="px-3 py-3 text-xs font-semibold text-gray-500">{new Date(request.created_at).toLocaleString('tr-TR')}</td>
+                              <td className="px-3 py-3">
+                                {request.status === 'pending' ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => cancelRequest(request.id)}
+                                    disabled={saving}
+                                    className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+                                  >
+                                    İptal Et
+                                  </button>
+                                ) : <span className="text-xs font-semibold text-gray-400">—</span>}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {data.withdrawals_has_more ? (
+                      <button
+                        type="button"
+                        onClick={loadMoreWithdrawals}
+                        disabled={loadingMore}
+                        className="w-full rounded-xl border border-violet-100 bg-violet-50 px-4 py-2.5 text-xs font-extrabold text-violet-700 transition-colors hover:bg-violet-100 disabled:opacity-50"
+                      >
+                        {loadingMore ? 'Yükleniyor...' : 'Daha fazla yükle'}
+                      </button>
+                    ) : null}
                   </div>
                 )}
               </div>
