@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   CheckCircle,
   Clock,
@@ -72,6 +72,7 @@ export default function PaymentManagement() {
   const [accountStatus, setAccountStatus] = useState('');
   const [withdrawalSearch, setWithdrawalSearch] = useState('');
   const [accountSearch, setAccountSearch] = useState('');
+  const [expandedWithdrawalId, setExpandedWithdrawalId] = useState(null);
   const [notes, setNotes] = useState({});
   const [references, setReferences] = useState({});
   const [settingsForm, setSettingsForm] = useState({
@@ -184,6 +185,7 @@ export default function PaymentManagement() {
     try {
       await adminDeletePaymentAccount(accountId);
       showToast('Banka hesabı silindi.');
+      setExpandedWithdrawalId(null);
       loadData();
     } catch (error) {
       showToast(error.message);
@@ -208,6 +210,7 @@ export default function PaymentManagement() {
         payment_reference: paymentReference,
       });
       showToast('Çekim talebi güncellendi.');
+      setExpandedWithdrawalId(null);
       loadData();
     } catch (error) {
       showToast(error.message);
@@ -369,115 +372,179 @@ export default function PaymentManagement() {
             ) : filteredWithdrawals.length === 0 ? (
               <div className="py-12 text-center text-sm font-semibold text-gray-400">Çekim talebi bulunamadı.</div>
             ) : (
-              <div className="divide-y divide-gray-100">
-                {filteredWithdrawals.map((request) => (
-                  <div key={request.id} className="p-4">
-                    <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-lg font-black text-gray-900">#{request.id}</p>
-                          <StatusPill status={request.status} map={WITHDRAWAL_STATUS} />
-                        </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-[1100px] w-full text-left text-sm">
+                  <thead className="border-b border-gray-100 bg-gray-50/80 text-[11px] uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3 font-black">Talep</th>
+                      <th className="px-4 py-3 font-black">Kullanıcı</th>
+                      <th className="px-4 py-3 font-black">Banka / IBAN</th>
+                      <th className="px-4 py-3 font-black">Tutar</th>
+                      <th className="px-4 py-3 font-black">Masraf</th>
+                      <th className="px-4 py-3 font-black">Durum</th>
+                      <th className="px-4 py-3 font-black">Tarih</th>
+                      <th className="px-4 py-3 text-right font-black">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredWithdrawals.map((request) => {
+                      const isExpanded = expandedWithdrawalId === request.id;
+                      const canProcess = ['pending', 'processing'].includes(request.status);
+                      const totalAmount = request.total_amount || (Number(request.amount || 0) + Number(request.fee_amount || 0));
+                      const shortIban = request.iban ? `...${String(request.iban).slice(-8)}` : '-';
 
-                        <div className="grid gap-3 md:grid-cols-3">
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] font-black uppercase text-gray-400">Kullanıcı</p>
-                            <p className="mt-1 font-extrabold text-gray-800">{request.username || '-'}</p>
-                            <p className="mt-1 text-xs font-semibold text-gray-500">{request.email || '-'}</p>
-                            <p className="mt-1 text-xs font-semibold text-gray-500">Güncel bakiye: {fmtMoney(request.user_balance)}</p>
-                          </div>
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] font-black uppercase text-gray-400">Banka Hesabı</p>
-                            <p className="mt-1 text-sm font-extrabold text-gray-800">{request.bank_name || request.account_label || '-'}</p>
-                            <p className="mt-1 text-xs font-semibold text-gray-500">{request.account_holder || '-'}</p>
-                            <p className="mt-1 break-all text-xs font-semibold text-gray-500">{request.iban || '-'}</p>
-                          </div>
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] font-black uppercase text-gray-400">Tutar Özeti</p>
-                            <p className="mt-1 text-sm font-extrabold text-gray-900">Çekim: {fmtMoney(request.amount)}</p>
-                            <p className="mt-1 text-xs font-semibold text-rose-500">Masraf: {fmtMoney(request.fee_amount)}</p>
-                            <p className="mt-1 text-xs font-semibold text-emerald-600">Toplam düşülen: {fmtMoney(request.total_amount || (Number(request.amount || 0) + Number(request.fee_amount || 0)))}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-3 text-xs font-semibold text-gray-500">
-                          <span>Talep: {fmtDate(request.created_at)}</span>
-                          <span>Güncelleme: {fmtDate(request.updated_at)}</span>
-                          {request.processed_at ? <span>Son işlem: {fmtDate(request.processed_at)}</span> : null}
-                        </div>
-
-                        {request.user_note ? (
-                          <div className="rounded-2xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-                            Kullanıcı notu: {request.user_note}
-                          </div>
-                        ) : null}
-
-                        {request.payment_reference ? (
-                          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-                            Dekont: {request.payment_reference}
-                          </div>
-                        ) : null}
-
-                        {request.admin_note ? (
-                          <div className="rounded-2xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600">
-                            Admin notu: {request.admin_note}
-                          </div>
-                        ) : null}
-                      </div>
-
-                      <div className="space-y-2">
-                        {['pending', 'processing'].includes(request.status) ? (
-                          <>
-                            <input
-                              value={references[`withdrawal-${request.id}`] || ''}
-                              onChange={(event) => setReferences((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
-                              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
-                              placeholder="Dekont / işlem referansı"
-                            />
-                            <textarea
-                              value={notes[`withdrawal-${request.id}`] || ''}
-                              onChange={(event) => setNotes((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
-                              rows={3}
-                              className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
-                              placeholder="Admin notu, opsiyonel"
-                            />
-                            <div className="grid grid-cols-3 gap-2">
-                              {request.status === 'pending' ? (
-                                <button
-                                  disabled={saving}
-                                  onClick={() => updateWithdrawal(request.id, 'processing')}
-                                  className="rounded-xl bg-blue-50 px-2 py-2 text-xs font-black text-blue-700 hover:bg-blue-100 disabled:opacity-50"
-                                >
-                                  İşleme Al
-                                </button>
-                              ) : (
-                                <div />
-                              )}
+                      return (
+                        <Fragment key={request.id}>
+                          <tr className={`align-middle transition-colors ${isExpanded ? 'bg-violet-50/40' : 'hover:bg-slate-50/70'}`}>
+                            <td className="px-4 py-3">
+                              <p className="font-black text-gray-900">#{request.id}</p>
+                              <p className="mt-0.5 text-[11px] font-bold text-gray-400">Toplam: {fmtMoney(totalAmount)}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="max-w-[150px] truncate font-extrabold text-gray-800">{request.username || '-'}</p>
+                              <p className="mt-0.5 max-w-[190px] truncate text-xs font-semibold text-gray-400">{request.email || '-'}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="max-w-[180px] truncate font-extrabold text-gray-800">{request.bank_name || request.account_label || '-'}</p>
+                              <p className="mt-0.5 text-xs font-semibold text-gray-400">{shortIban}</p>
+                            </td>
+                            <td className="px-4 py-3 font-black text-gray-900">{fmtMoney(request.amount)}</td>
+                            <td className="px-4 py-3 font-bold text-rose-500">{fmtMoney(request.fee_amount)}</td>
+                            <td className="px-4 py-3">
+                              <StatusPill status={request.status} map={WITHDRAWAL_STATUS} />
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="text-xs font-bold text-gray-600">{fmtDate(request.created_at)}</p>
+                              {request.processed_at ? (
+                                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">Son işlem: {fmtDate(request.processed_at)}</p>
+                              ) : null}
+                            </td>
+                            <td className="px-4 py-3 text-right">
                               <button
-                                disabled={saving}
-                                onClick={() => updateWithdrawal(request.id, 'completed')}
-                                className="rounded-xl bg-emerald-50 px-2 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                                type="button"
+                                onClick={() => setExpandedWithdrawalId(isExpanded ? null : request.id)}
+                                className={`rounded-xl px-3 py-2 text-xs font-black transition-colors ${
+                                  isExpanded
+                                    ? 'bg-slate-900 text-white hover:bg-slate-800'
+                                    : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
+                                }`}
                               >
-                                Tamamla
+                                {isExpanded ? 'Kapat' : 'İşlem'}
                               </button>
-                              <button
-                                disabled={saving}
-                                onClick={() => updateWithdrawal(request.id, 'rejected')}
-                                className="rounded-xl bg-rose-50 px-2 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 disabled:opacity-50"
-                              >
-                                Reddet
-                              </button>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="rounded-2xl bg-gray-50 p-4 text-center text-xs font-bold text-gray-400">
-                            Bu talep sonuçlandı.
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                            </td>
+                          </tr>
+
+                          {isExpanded ? (
+                            <tr className="bg-slate-50/80">
+                              <td colSpan={8} className="px-4 py-4">
+                                <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+                                  <div className="space-y-3">
+                                    <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+                                      <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Kullanıcı</p>
+                                        <p className="mt-1 text-sm font-black text-gray-900">{request.username || '-'}</p>
+                                        <p className="mt-0.5 truncate text-xs font-semibold text-gray-500">{request.email || '-'}</p>
+                                      </div>
+                                      <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Hesap Sahibi</p>
+                                        <p className="mt-1 text-sm font-black text-gray-900">{request.account_holder || '-'}</p>
+                                        <p className="mt-0.5 text-xs font-semibold text-gray-500">Bakiye: {fmtMoney(request.user_balance)}</p>
+                                      </div>
+                                      <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Banka</p>
+                                        <p className="mt-1 text-sm font-black text-gray-900">{request.bank_name || request.account_label || '-'}</p>
+                                        <p className="mt-0.5 text-xs font-semibold text-emerald-600">Toplam düşülen: {fmtMoney(totalAmount)}</p>
+                                      </div>
+                                      <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Güncelleme</p>
+                                        <p className="mt-1 text-sm font-black text-gray-900">{fmtDate(request.updated_at)}</p>
+                                        <p className="mt-0.5 text-xs font-semibold text-gray-500">Talep: {fmtDate(request.created_at)}</p>
+                                      </div>
+                                    </div>
+
+                                    <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
+                                      <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">IBAN</p>
+                                      <p className="mt-1 break-all text-sm font-black text-gray-800">{request.iban || '-'}</p>
+                                    </div>
+
+                                    <div className="grid gap-2 md:grid-cols-3">
+                                      {request.user_note ? (
+                                        <div className="rounded-2xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
+                                          <span className="font-black text-slate-400">Kullanıcı notu:</span> {request.user_note}
+                                        </div>
+                                      ) : null}
+                                      {request.payment_reference ? (
+                                        <div className="rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+                                          <span className="font-black">Dekont:</span> {request.payment_reference}
+                                        </div>
+                                      ) : null}
+                                      {request.admin_note ? (
+                                        <div className="rounded-2xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600">
+                                          <span className="font-black">Admin notu:</span> {request.admin_note}
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  </div>
+
+                                  <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                                    {canProcess ? (
+                                      <div className="space-y-2">
+                                        <input
+                                          value={references[`withdrawal-${request.id}`] || ''}
+                                          onChange={(event) => setReferences((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
+                                          className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                                          placeholder="Dekont / işlem referansı"
+                                        />
+                                        <textarea
+                                          value={notes[`withdrawal-${request.id}`] || ''}
+                                          onChange={(event) => setNotes((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
+                                          rows={2}
+                                          className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                                          placeholder="Admin notu, opsiyonel"
+                                        />
+                                        <div className="grid grid-cols-3 gap-2">
+                                          {request.status === 'pending' ? (
+                                            <button
+                                              disabled={saving}
+                                              onClick={() => updateWithdrawal(request.id, 'processing')}
+                                              className="rounded-xl bg-blue-50 px-2 py-2 text-xs font-black text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                                            >
+                                              İşleme Al
+                                            </button>
+                                          ) : (
+                                            <div />
+                                          )}
+                                          <button
+                                            disabled={saving}
+                                            onClick={() => updateWithdrawal(request.id, 'completed')}
+                                            className="rounded-xl bg-emerald-50 px-2 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                                          >
+                                            Tamamla
+                                          </button>
+                                          <button
+                                            disabled={saving}
+                                            onClick={() => updateWithdrawal(request.id, 'rejected')}
+                                            className="rounded-xl bg-rose-50 px-2 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                                          >
+                                            Reddet
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="flex h-full min-h-[116px] items-center justify-center rounded-2xl bg-gray-50 p-4 text-center text-xs font-bold text-gray-400">
+                                        Bu talep sonuçlandı.
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
