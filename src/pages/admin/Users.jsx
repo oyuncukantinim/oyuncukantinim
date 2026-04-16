@@ -162,14 +162,14 @@ function Drawer({ open, title, onClose, children }) {
   );
 }
 
-function SummaryCard({ icon: Icon, label, value, tone }) {
+function SummaryCard({ icon: Icon, label, value, tone, compact = false }) {
   return (
-    <div className={`rounded-2xl border px-4 py-3 ${tone}`}>
+    <div className={`rounded-2xl border ${compact ? 'px-3 py-2' : 'px-4 py-3'} ${tone}`}>
       <div className="flex items-center justify-between">
-        <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">{label}</div>
-        <Icon size={16} className="text-slate-400" />
+        <div className={`${compact ? 'text-[9px] tracking-[0.12em]' : 'text-[11px] tracking-[0.16em]'} font-bold uppercase text-slate-500`}>{label}</div>
+        <Icon size={compact ? 14 : 16} className="text-slate-400" />
       </div>
-      <div className="mt-2 text-xl font-black text-slate-900">{value}</div>
+      <div className={`${compact ? 'mt-1 text-base' : 'mt-2 text-xl'} font-black text-slate-900`}>{value}</div>
     </div>
   );
 }
@@ -215,6 +215,14 @@ const RESTRICTION_FIELDS = [
   { key: 'review_create', label: 'Yorum gönderme', description: 'Sipariş sonrası yorum bırakmasını engeller.' },
 ];
 
+const FINANCE_ACTIONS = [
+  { key: 'balance_add', field: 'balance_add', label: 'Bakiye Ekle', submitLabel: 'Bakiye Ekle', success: 'Bakiye eklendi.' },
+  { key: 'balance_subtract', field: 'balance_subtract', label: 'Bakiye Eksilt', submitLabel: 'Bakiye Eksilt', success: 'Bakiye eksiltildi.' },
+  { key: 'balance_set', field: 'balance_set', label: 'Bakiyeyi Ayarla', submitLabel: 'Bakiyeyi Kaydet', success: 'Bakiye güncellendi.' },
+  { key: 'withdrawable_add', field: 'withdrawable_balance_add', label: 'Çekilebilir Arttır', submitLabel: 'Çekilebilir Arttır', success: 'Çekilebilir bakiye arttırıldı.' },
+  { key: 'withdrawable_subtract', field: 'withdrawable_balance_subtract', label: 'Çekilebilir Azalt', submitLabel: 'Çekilebilir Azalt', success: 'Çekilebilir bakiye azaltıldı.' },
+];
+
 export default function AdminUsers() {
   const { defaultListingImage } = useSiteBrand();
   const [users, setUsers] = useState([]);
@@ -248,7 +256,7 @@ export default function AdminUsers() {
   const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '', level: '0', xp: '0' });
   const [personalForm, setPersonalForm] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '', restrictions: {} });
-  const [financeForm, setFinanceForm] = useState({ amount: '', action: 'add' });
+  const [financeForm, setFinanceForm] = useState({ amount: '', action: 'balance_add' });
   const [financeSearch, setFinanceSearch] = useState('');
   const [financeTypeFilter, setFinanceTypeFilter] = useState('all');
 
@@ -299,7 +307,7 @@ export default function AdminUsers() {
       restrictions: detailUser.restrictions || {},
       new_password: '',
     });
-    setFinanceForm({ amount: '', action: 'add' });
+    setFinanceForm({ amount: '', action: 'balance_add' });
     setFinanceSearch('');
     setFinanceTypeFilter('all');
   }, [detailUser]);
@@ -419,17 +427,18 @@ export default function AdminUsers() {
       showToast('Geçerli bir tutar girin.');
       return;
     }
+    const selectedAction = FINANCE_ACTIONS.find((action) => action.key === financeForm.action) || FINANCE_ACTIONS[0];
 
     setDrawerSaving('finance');
     try {
       await adminUpdateUser({
         user_id: detailUser.id,
-        [financeForm.action === 'set' ? 'balance_set' : 'balance_add']: amount,
+        [selectedAction.field]: amount,
       });
       setFinanceForm((prev) => ({ ...prev, amount: '' }));
       await refreshDetail(detailUser.id, { reloadTransactions: true });
       await load();
-      showToast(financeForm.action === 'set' ? 'Bakiye güncellendi.' : 'Bakiye eklendi.');
+      showToast(selectedAction.success);
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -601,6 +610,7 @@ export default function AdminUsers() {
   const detailBalance = Number(detailUser?.balance || 0);
   const detailWithdrawableBalance = Math.max(0, Math.min(Number(detailUser?.withdrawable_balance || 0), detailBalance));
   const detailLockedBalance = Math.max(0, detailBalance - detailWithdrawableBalance);
+  const selectedFinanceAction = FINANCE_ACTIONS.find((action) => action.key === financeForm.action) || FINANCE_ACTIONS[0];
 
   return (
     <AdminLayout>
@@ -1100,38 +1110,33 @@ export default function AdminUsers() {
             )}
 
             {detailTab === 'finance' && (
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-slate-100 bg-white p-3">
+                  <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <div className="text-sm font-extrabold text-slate-900">Hızlı Bakiye İşlemi</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        Manuel eklenen tutar toplam bakiyeye eklenir; çekilebilir satış kazancını artırmaz.
+                        Toplam bakiye ve çekilebilir satış kazancını ayrı ayrı yönetebilirsin.
                       </div>
                     </div>
-                    <div className="rounded-xl bg-slate-100 p-1">
-                      <div className="flex gap-1">
+                    <div className="flex max-w-2xl flex-wrap gap-1.5">
+                      {FINANCE_ACTIONS.map((action) => (
                         <button
-                          onClick={() => setFinanceForm((prev) => ({ ...prev, action: 'add' }))}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                            financeForm.action === 'add' ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500'
+                          key={action.key}
+                          onClick={() => setFinanceForm((prev) => ({ ...prev, action: action.key }))}
+                          className={`rounded-xl px-3 py-1.5 text-[11px] font-black transition-all ${
+                            financeForm.action === action.key
+                              ? 'bg-violet-600 text-white shadow-sm shadow-violet-500/20'
+                              : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
                           }`}
                         >
-                          Bakiye Ekle
+                          {action.label}
                         </button>
-                        <button
-                          onClick={() => setFinanceForm((prev) => ({ ...prev, action: 'set' }))}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-bold ${
-                            financeForm.action === 'set' ? 'bg-white text-violet-700 shadow-sm' : 'text-slate-500'
-                          }`}
-                        >
-                          Bakiyeyi Ayarla
-                        </button>
-                      </div>
+                      ))}
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <input
                       type="number"
                       min="0"
@@ -1146,7 +1151,7 @@ export default function AdminUsers() {
                       disabled={drawerSaving === 'finance'}
                       className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-emerald-500 disabled:opacity-50"
                     >
-                      {drawerSaving === 'finance' ? 'Kaydediliyor...' : financeForm.action === 'set' ? 'Bakiyeyi Kaydet' : 'Bakiye Ekle'}
+                      {drawerSaving === 'finance' ? 'Kaydediliyor...' : selectedFinanceAction.submitLabel}
                     </button>
                   </div>
                 </div>
@@ -1157,16 +1162,16 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <SummaryCard icon={Wallet} label="Toplam Bakiye" value={fmtMoney(detailBalance)} tone="border-slate-100 bg-slate-50/80" />
-                      <SummaryCard icon={TrendingUp} label="Çekilebilir Satış Kazancı" value={fmtMoney(detailWithdrawableBalance)} tone="border-emerald-100 bg-emerald-50/70" />
-                      <SummaryCard icon={CreditCard} label="Çekilemez Bakiye" value={fmtMoney(detailLockedBalance)} tone="border-violet-100 bg-violet-50/70" />
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <SummaryCard compact icon={Wallet} label="Toplam Bakiye" value={fmtMoney(detailBalance)} tone="border-slate-100 bg-slate-50/80" />
+                      <SummaryCard compact icon={TrendingUp} label="Çekilebilir Satış Kazancı" value={fmtMoney(detailWithdrawableBalance)} tone="border-emerald-100 bg-emerald-50/70" />
+                      <SummaryCard compact icon={CreditCard} label="Çekilemez Bakiye" value={fmtMoney(detailLockedBalance)} tone="border-violet-100 bg-violet-50/70" />
                     </div>
 
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <SummaryCard icon={TrendingDown} label="Harcama" value={fmtMoney(transactionSummary.total_spent)} tone="border-red-100 bg-red-50/70" />
-                      <SummaryCard icon={TrendingUp} label="Kazanç" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
-                      <SummaryCard icon={Clock} label="Bekleyen" value={fmtMoney(transactionSummary.pending_earn)} tone="border-amber-100 bg-amber-50/70" />
+                    <div className="grid gap-2 sm:grid-cols-3">
+                      <SummaryCard compact icon={TrendingDown} label="Harcama" value={fmtMoney(transactionSummary.total_spent)} tone="border-red-100 bg-red-50/70" />
+                      <SummaryCard compact icon={TrendingUp} label="Kazanç" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
+                      <SummaryCard compact icon={Clock} label="Bekleyen" value={fmtMoney(transactionSummary.pending_earn)} tone="border-amber-100 bg-amber-50/70" />
                     </div>
 
                     <div className="rounded-2xl border border-slate-100 bg-white p-4">
