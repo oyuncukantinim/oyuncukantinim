@@ -76,6 +76,14 @@ export function loginUser(payload) {
   return request('login', { method: 'POST', body: payload });
 }
 
+export function requestPasswordReset(payload) {
+  return request('request_password_reset', { method: 'POST', body: payload });
+}
+
+export function resetPassword(payload) {
+  return request('reset_password', { method: 'POST', body: payload });
+}
+
 export function registerUser(payload) {
   return request('register', { method: 'POST', body: payload });
 }

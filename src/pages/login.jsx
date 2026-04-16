@@ -1,21 +1,34 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, User } from 'lucide-react';
-import { loginUser, registerUser, verifyRegistrationCode } from '../lib/api';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, KeyRound, Lock, Mail, User } from 'lucide-react';
+import {
+  loginUser,
+  registerUser,
+  requestPasswordReset,
+  resetPassword,
+  verifyRegistrationCode,
+} from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from '../components/SiteBrand';
 
 export default function LoginPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [awaitingVerification, setAwaitingVerification] = useState(false);
+  const [resetRequested, setResetRequested] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [searchParams] = useSearchParams();
+  const resetToken = searchParams.get('reset') || '';
+  const navigate = useNavigate();
 
   const {
     siteName,
@@ -30,13 +43,29 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const { showToast } = useCart();
-  const navigate = useNavigate();
 
-  const switchMode = (nextLogin) => {
-    setIsLogin(nextLogin);
+  useEffect(() => {
+    if (resetToken) {
+      setMode('reset');
+      setError('');
+      setAwaitingVerification(false);
+    }
+  }, [resetToken]);
+
+  const isLogin = mode === 'login';
+  const isRegister = mode === 'register';
+  const isForgot = mode === 'forgot';
+  const isReset = mode === 'reset';
+
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
     setAwaitingVerification(false);
     setVerificationCode('');
+    setResetRequested(false);
+    setNewPassword('');
+    setConfirmPassword('');
     setError('');
+    if (resetToken && nextMode !== 'reset') navigate('/login', { replace: true });
   };
 
   const resendVerificationCode = async () => {
@@ -58,11 +87,31 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      if (!isLogin && !registrationEnabled) {
+      if (isForgot) {
+        await requestPasswordReset({ email });
+        setResetRequested(true);
+        showToast('Şifre sıfırlama bağlantısı e-posta adresine gönderildi.');
+        return;
+      }
+
+      if (isReset) {
+        if (!resetToken) throw new Error('Şifre sıfırlama bağlantısı geçersiz.');
+        if (newPassword !== confirmPassword) throw new Error('Yeni şifreler eşleşmiyor.');
+        await resetPassword({ token: resetToken, password: newPassword });
+        showToast('Şifren güncellendi. Yeni şifrenle giriş yapabilirsin.');
+        setPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        switchMode('login');
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      if (isRegister && !registrationEnabled) {
         throw new Error('Yeni üyelik şu an kapalı.');
       }
 
-      if (!isLogin && awaitingVerification) {
+      if (isRegister && awaitingVerification) {
         const response = await verifyRegistrationCode({ email, code: verificationCode });
         login(response.data.token, response.data.user);
         showToast('E-posta doğrulandı. Hoş geldin!');
@@ -74,7 +123,7 @@ export default function LoginPage() {
         ? await loginUser({ email, password })
         : await registerUser({ username, email, password });
 
-      if (!isLogin && response.data?.verification_required) {
+      if (isRegister && response.data?.verification_required) {
         setAwaitingVerification(true);
         setVerificationCode('');
         showToast('Doğrulama kodu e-posta adresine gönderildi.');
@@ -90,6 +139,40 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  const title = isReset
+    ? 'Yeni Şifre Belirle'
+    : isForgot
+      ? 'Şifreni Sıfırla'
+      : isLogin
+        ? 'Giriş Yap'
+        : awaitingVerification
+          ? 'E-posta Kodunu Doğrula'
+          : 'Kayıt Ol';
+
+  const description = isReset
+    ? 'Hesabın için güçlü ve yeni bir şifre oluştur.'
+    : isForgot
+      ? 'Kayıtlı e-posta adresini yaz, sana güvenli bir sıfırlama bağlantısı gönderelim.'
+      : isLogin
+        ? 'Kaldığın yerden devam et.'
+        : awaitingVerification
+          ? `${email} adresine gelen kodu gir.`
+          : `${siteName} topluluğuna katıl.`;
+
+  const submitLabel = loading
+    ? ''
+    : isForgot
+      ? 'Sıfırlama Bağlantısı Gönder'
+      : isReset
+        ? 'Şifremi Güncelle'
+        : isLogin
+          ? 'Giriş Yap'
+          : awaitingVerification
+            ? 'Kodu Doğrula ve Hesap Aç'
+            : registrationEmailVerificationEnabled
+              ? 'Kodu Gönder'
+              : 'Hesap Oluştur';
 
   return (
     <div className="mx-auto max-w-md py-12">
@@ -111,46 +194,56 @@ export default function LoginPage() {
                 titleClassName="text-xl font-extrabold glow-text"
               />
             </div>
-            <h1 className="mb-2 text-3xl font-extrabold text-slate-900">
-              {isLogin ? 'Giriş Yap' : awaitingVerification ? 'E-posta Kodunu Doğrula' : 'Kayıt Ol'}
-            </h1>
-            <p className="font-medium text-gray-500">
-              {isLogin
-                ? 'Kaldığın yerden devam et.'
-                : awaitingVerification
-                  ? `${email} adresine gelen kodu gir.`
-                  : `${siteName} topluluğuna katıl.`}
-            </p>
+            <div className="mb-3 flex justify-center">
+              {(isForgot || isReset) && (
+                <div className="rounded-2xl border border-neon-purple/20 bg-neon-purple/10 p-3 text-neon-purple">
+                  <KeyRound size={24} />
+                </div>
+              )}
+            </div>
+            <h1 className="mb-2 text-3xl font-extrabold text-slate-900">{title}</h1>
+            <p className="font-medium text-gray-500">{description}</p>
           </div>
 
-          <div className="mb-8 flex rounded-xl bg-surface-100 p-1">
+          {!isForgot && !isReset ? (
+            <div className="mb-8 flex rounded-xl bg-surface-100 p-1">
+              <button
+                type="button"
+                onClick={() => switchMode('login')}
+                className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
+                  isLogin ? 'bg-neon-purple text-white shadow-neon-purple' : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                Giriş Yap
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!registrationEnabled) return;
+                  switchMode('register');
+                }}
+                disabled={!registrationEnabled}
+                className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
+                  !registrationEnabled
+                    ? 'cursor-not-allowed text-gray-600 opacity-50'
+                    : isRegister
+                      ? 'bg-neon-purple text-white shadow-neon-purple'
+                      : 'text-gray-500 hover:text-white'
+                }`}
+              >
+                Kayıt Ol
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={() => switchMode(true)}
-              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
-                isLogin ? 'bg-neon-purple text-white shadow-neon-purple' : 'text-gray-500 hover:text-white'
-              }`}
+              onClick={() => switchMode('login')}
+              className="mb-6 inline-flex items-center gap-2 text-sm font-bold text-gray-500 transition-colors hover:text-neon-purple"
             >
-              Giriş Yap
+              <ArrowLeft size={16} />
+              Giriş ekranına dön
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (!registrationEnabled) return;
-                switchMode(false);
-              }}
-              disabled={!registrationEnabled}
-              className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${
-                !registrationEnabled
-                  ? 'cursor-not-allowed text-gray-600 opacity-50'
-                  : !isLogin
-                    ? 'bg-neon-purple text-white shadow-neon-purple'
-                    : 'text-gray-500 hover:text-white'
-              }`}
-            >
-              Kayıt Ol
-            </button>
-          </div>
+          )}
 
           {error ? (
             <div className="mb-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400">
@@ -158,14 +251,20 @@ export default function LoginPage() {
             </div>
           ) : null}
 
-          {!isLogin && !registrationEnabled ? (
+          {resetRequested ? (
+            <div className="mb-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-500">
+              Eğer bu e-posta sistemde kayıtlıysa şifre sıfırlama bağlantısı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.
+            </div>
+          ) : null}
+
+          {isRegister && !registrationEnabled ? (
             <div className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-300">
               Yeni üyelik şu an yönetici tarafından kapatıldı.
             </div>
           ) : null}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && !awaitingVerification ? (
+            {isRegister && !awaitingVerification ? (
               <div>
                 <label className="mb-1 block text-sm font-bold text-gray-400">Kullanıcı Adı</label>
                 <div className="relative">
@@ -184,40 +283,88 @@ export default function LoginPage() {
               </div>
             ) : null}
 
-            <div>
-              <label className="mb-1 block text-sm font-bold text-gray-400">E-posta</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
-                <input
-                  required
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="E-posta adresin..."
-                  className="input-field pl-12"
-                  disabled={awaitingVerification}
-                />
+            {!isReset ? (
+              <div>
+                <label className="mb-1 block text-sm font-bold text-gray-400">E-posta</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="E-posta adresin..."
+                    className="input-field pl-12"
+                    disabled={awaitingVerification}
+                  />
+                </div>
               </div>
-            </div>
+            ) : null}
 
-            <div>
-              <label className="mb-1 block text-sm font-bold text-gray-400">Şifre</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
-                <input
-                  required
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  minLength={passwordMinLength}
-                  placeholder="Şifren..."
-                  className="input-field pl-12"
-                  disabled={awaitingVerification}
-                />
+            {(isLogin || isRegister) && (
+              <div>
+                <label className="mb-1 block text-sm font-bold text-gray-400">Şifre</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                  <input
+                    required
+                    type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    minLength={passwordMinLength}
+                    placeholder="Şifren..."
+                    className="input-field pl-12"
+                    disabled={awaitingVerification}
+                  />
+                </div>
+                {isLogin ? (
+                  <button
+                    type="button"
+                    onClick={() => switchMode('forgot')}
+                    className="mt-3 text-sm font-bold text-neon-purple transition-colors hover:text-neon-cyan"
+                  >
+                    Şifremi unuttum
+                  </button>
+                ) : null}
               </div>
-            </div>
+            )}
 
-            {!isLogin && awaitingVerification ? (
+            {isReset ? (
+              <>
+                <div>
+                  <label className="mb-1 block text-sm font-bold text-gray-400">Yeni Şifre</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                    <input
+                      required
+                      type="password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                      minLength={passwordMinLength}
+                      placeholder="Yeni şifren..."
+                      className="input-field pl-12"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-bold text-gray-400">Yeni Şifre Tekrar</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600" size={18} />
+                    <input
+                      required
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(event) => setConfirmPassword(event.target.value)}
+                      minLength={passwordMinLength}
+                      placeholder="Yeni şifreni tekrar yaz..."
+                      className="input-field pl-12"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : null}
+
+            {isRegister && awaitingVerification ? (
               <div>
                 <label className="mb-1 block text-sm font-bold text-gray-400">Mail Doğrulama Kodu</label>
                 <div className="relative">
@@ -243,19 +390,13 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={loading || (!isLogin && !registrationEnabled)}
+              disabled={loading || (isRegister && !registrationEnabled)}
               className="btn-primary mt-4 flex w-full items-center justify-center gap-2 py-4 text-lg disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? (
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              ) : isLogin ? (
-                'Giriş Yap'
-              ) : awaitingVerification ? (
-                'Kodu Doğrula ve Hesap Aç'
-              ) : registrationEmailVerificationEnabled ? (
-                'Kodu Gönder'
               ) : (
-                'Hesap Oluştur'
+                submitLabel
               )}
             </button>
           </form>
