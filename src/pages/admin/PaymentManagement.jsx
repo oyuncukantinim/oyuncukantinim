@@ -196,10 +196,6 @@ export default function PaymentManagement() {
 
   const updateWithdrawal = async (withdrawalId, status) => {
     const paymentReference = (references[`withdrawal-${withdrawalId}`] || '').trim();
-    if (status === 'completed' && !paymentReference) {
-      showToast('Tamamlamak için dekont girin.');
-      return;
-    }
 
     setSaving(true);
     try {
@@ -391,7 +387,6 @@ export default function PaymentManagement() {
                       const isExpanded = expandedWithdrawalId === request.id;
                       const canProcess = ['pending', 'processing'].includes(request.status);
                       const totalAmount = request.total_amount || (Number(request.amount || 0) + Number(request.fee_amount || 0));
-                      const shortIban = request.iban ? `...${String(request.iban).slice(-8)}` : '-';
 
                       return (
                         <Fragment key={request.id}>
@@ -405,8 +400,8 @@ export default function PaymentManagement() {
                               <p className="mt-0.5 max-w-[190px] truncate text-xs font-semibold text-gray-400">{request.email || '-'}</p>
                             </td>
                             <td className="px-4 py-3">
-                              <p className="max-w-[180px] truncate font-extrabold text-gray-800">{request.bank_name || request.account_label || '-'}</p>
-                              <p className="mt-0.5 text-xs font-semibold text-gray-400">{shortIban}</p>
+                              <p className="max-w-[260px] whitespace-normal break-words font-extrabold text-gray-800">{request.bank_name || request.account_label || '-'}</p>
+                              <p className="mt-0.5 max-w-[260px] whitespace-normal break-all text-xs font-semibold text-gray-400">{request.iban || '-'}</p>
                             </td>
                             <td className="px-4 py-3 font-black text-gray-900">{fmtMoney(request.amount)}</td>
                             <td className="px-4 py-3 font-bold text-rose-500">{fmtMoney(request.fee_amount)}</td>
