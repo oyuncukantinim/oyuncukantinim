@@ -224,7 +224,13 @@ export default function CreatePage() {
         stocks: deliveryType === 'stock' ? validStocks : [],
       });
       if (selectedDopingPrice > 0 && res.data?.new_balance !== undefined) {
-        updateUser({ ...user, balance: Number(res.data.new_balance) });
+        updateUser({
+          ...user,
+          balance: Number(res.data.new_balance),
+          ...(res.data.new_withdrawable_balance !== undefined
+            ? { withdrawable_balance: Number(res.data.new_withdrawable_balance) }
+            : {}),
+        });
       }
       showToast('İlan başarıyla yayınlandı!');
       navigate('/profile');

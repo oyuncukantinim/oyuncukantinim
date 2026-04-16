@@ -569,8 +569,12 @@ export default function ProfilePage() {
   const [editModal, setEditModal] = useState(null); // listing being edited
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
 
-  const handlePaymentBalanceChange = useCallback((newBalance) => {
-    updateUser({ ...(user || {}), balance: newBalance });
+  const handlePaymentBalanceChange = useCallback((newBalance, newWithdrawableBalance) => {
+    updateUser({
+      ...(user || {}),
+      balance: newBalance,
+      ...(newWithdrawableBalance !== undefined ? { withdrawable_balance: newWithdrawableBalance } : {}),
+    });
   }, [updateUser, user]);
   const [favorites, setFavorites] = useState([]);
   const [analyzeModal, setAnalyzeModal] = useState(null); // { listing_id, title }
@@ -756,7 +760,13 @@ export default function ProfilePage() {
         lastResponse = await applyListingDoping({ listing_id: listingId, doping_type: type, doping_hours: hours });
       }
       if (lastResponse?.data?.new_balance !== undefined) {
-        updateUser({ ...user, balance: Number(lastResponse.data.new_balance) });
+        updateUser({
+          ...user,
+          balance: Number(lastResponse.data.new_balance),
+          ...(lastResponse.data.new_withdrawable_balance !== undefined
+            ? { withdrawable_balance: Number(lastResponse.data.new_withdrawable_balance) }
+            : {}),
+        });
       }
       await loadListings();
       setDopingModal(null);
@@ -2044,7 +2054,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [data, setData] = useState({ accounts: [], withdrawals: [], withdrawals_total: 0, withdrawals_has_more: false, pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0 });
+  const [data, setData] = useState({ accounts: [], withdrawals: [], withdrawals_total: 0, withdrawals_has_more: false, pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0, withdrawable_balance: 0 });
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [accountForm, setAccountForm] = useState({
@@ -2074,6 +2084,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
           banks: nextData.banks || [],
           fee_type: nextData.fee_type || 'fixed',
           fee_value: Number(nextData.fee_value || 0),
+          withdrawable_balance: Number(nextData.withdrawable_balance || 0),
           withdrawal_enabled: nextData.withdrawal_enabled !== false,
         }));
       })
@@ -2100,6 +2111,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
     ? (feePreviewAmount * Number(data.fee_value || 0) / 100)
     : Number(data.fee_value || 0);
   const totalPreview = feePreviewAmount > 0 ? feePreviewAmount + feePreview : 0;
+  const withdrawableBalance = Number(data.withdrawable_balance ?? user?.withdrawable_balance ?? 0);
 
   const submitAccount = async (event) => {
     event.preventDefault();
@@ -2130,7 +2142,9 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
         account_id: withdrawalForm.account_id,
         amount: withdrawalForm.amount,
       });
-      if (response.data?.new_balance !== undefined) onBalanceChange(Number(response.data.new_balance));
+      if (response.data?.new_balance !== undefined) {
+        onBalanceChange(Number(response.data.new_balance), response.data.new_withdrawable_balance !== undefined ? Number(response.data.new_withdrawable_balance) : undefined);
+      }
       showToast('Para çekme talebiniz oluşturuldu.');
       setWithdrawalForm({ account_id: '', amount: '' });
       loadPayments();
@@ -2160,7 +2174,9 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
     setSaving(true);
     try {
       const response = await cancelWithdrawalRequest(withdrawalId);
-      if (response.data?.new_balance !== undefined) onBalanceChange(Number(response.data.new_balance));
+      if (response.data?.new_balance !== undefined) {
+        onBalanceChange(Number(response.data.new_balance), response.data.new_withdrawable_balance !== undefined ? Number(response.data.new_withdrawable_balance) : undefined);
+      }
       showToast('Talep iptal edildi ve tutar bakiyenize iade edildi.');
       loadPayments();
     } catch (error) {
@@ -2190,7 +2206,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
             <div className="grid grid-cols-1 gap-2 text-center">
               <div className="rounded-2xl bg-white/10 px-5 py-4 backdrop-blur">
                 <p className="text-[10px] font-black uppercase text-slate-300">Çekilebilir Bakiye</p>
-                <p className="mt-1 text-lg font-black">{Number(user?.balance || 0).toFixed(2)} ₺</p>
+                <p className="mt-1 text-lg font-black">{withdrawableBalance.toFixed(2)} ₺</p>
               </div>
             </div>
           </div>
@@ -2208,7 +2224,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                   <div>
                     <h3 className="text-lg font-extrabold text-gray-900">Çekim Talebi Oluştur</h3>
                     <p className="text-xs font-semibold text-gray-500">
-                      Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺. {data.fee_type === 'percent' ? `%${Number(data.fee_value || 0).toFixed(2)}` : `${Number(data.fee_value || 0).toFixed(2)} ₺`} işlem masrafı uygulanır.
+                      Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺. Sadece ilan satış kazançları çekilebilir. {data.fee_type === 'percent' ? `%${Number(data.fee_value || 0).toFixed(2)}` : `${Number(data.fee_value || 0).toFixed(2)} ₺`} işlem masrafı uygulanır.
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -2268,8 +2284,11 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                   <div>Çekim: {feePreviewAmount > 0 ? feePreviewAmount.toFixed(2) : '0.00'} ₺</div>
                   <div>İşlem masrafı: {feePreview > 0 ? feePreview.toFixed(2) : '0.00'} ₺</div>
                   <div className="font-extrabold text-gray-700">Toplam düşülecek: {totalPreview > 0 ? totalPreview.toFixed(2) : '0.00'} ₺</div>
+                  <div className={totalPreview > withdrawableBalance ? 'font-extrabold text-rose-500' : 'font-semibold text-emerald-600'}>
+                    Çekilebilir satış kazancı: {withdrawableBalance.toFixed(2)} ₺
+                  </div>
                 </div>
-                <button disabled={saving || !approvedAccounts.length} className="mt-3 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/20 transition-colors hover:bg-violet-500 disabled:opacity-50">
+                <button disabled={saving || !approvedAccounts.length || totalPreview > withdrawableBalance} className="mt-3 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/20 transition-colors hover:bg-violet-500 disabled:opacity-50">
                   Talebi Gönder
                 </button>
               </form>
