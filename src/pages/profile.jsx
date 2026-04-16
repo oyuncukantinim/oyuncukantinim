@@ -1994,6 +1994,7 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
   const [saving, setSaving] = useState(false);
   const [data, setData] = useState({ accounts: [], withdrawals: [], pending_total: 0, min_withdrawal: 50, banks: [], fee_type: 'fixed', fee_value: 0 });
   const [showAccountForm, setShowAccountForm] = useState(false);
+  const [showAccountsModal, setShowAccountsModal] = useState(false);
   const [accountForm, setAccountForm] = useState({
     bank_name: '',
     account_holder: user?.full_name || '',
@@ -2135,17 +2136,33 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-100 border-t-violet-600" />
           </div>
         ) : (
-          <div className="grid gap-5 p-5 xl:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="space-y-5 p-5">
             <div className="space-y-5">
               <form onSubmit={submitWithdrawal} className="rounded-2xl border border-gray-100 bg-gradient-to-br from-violet-50 to-cyan-50/60 p-5">
-                <div className="mb-4 flex items-start justify-between gap-3">
+                <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <h3 className="text-lg font-extrabold text-gray-900">Çekim Talebi Oluştur</h3>
                     <p className="text-xs font-semibold text-gray-500">
                       Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺. {data.fee_type === 'percent' ? `%${Number(data.fee_value || 0).toFixed(2)}` : `${Number(data.fee_value || 0).toFixed(2)} ₺`} işlem masrafı uygulanır.
                     </p>
                   </div>
-                  <Wallet className="text-violet-500" size={22} />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowAccountForm(true)}
+                      className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-extrabold text-white transition-colors hover:bg-slate-800"
+                    >
+                      Banka Hesabı Ekle
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowAccountsModal(true)}
+                      className="rounded-xl border border-violet-100 bg-white px-4 py-2 text-xs font-extrabold text-violet-700 transition-colors hover:bg-violet-50"
+                    >
+                      Banka Hesaplarım ({data.accounts.length})
+                    </button>
+                    <Wallet className="text-violet-500" size={22} />
+                  </div>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
@@ -2247,96 +2264,106 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
               </div>
             </div>
 
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-extrabold text-gray-900">Banka Hesabı Ekle</h3>
-                    <p className="mt-1 text-xs font-semibold text-gray-500">Eklenen hesaplar admin onayından sonra çekime açılır.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowAccountForm((prev) => !prev)}
-                    className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-extrabold text-white"
-                  >
-                    {showAccountForm ? 'Formu Kapat' : 'Hesap Ekle'}
-                  </button>
-                </div>
-
-                {showAccountForm ? (
-                  <form onSubmit={submitAccount} className="mt-4 space-y-3">
-                    <select
-                      value={accountForm.bank_name}
-                      onChange={(event) => setAccountForm((prev) => ({ ...prev, bank_name: event.target.value }))}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
-                    >
-                      <option value="">Banka seç</option>
-                      {data.banks.map((bank) => <option key={bank} value={bank}>{bank}</option>)}
-                    </select>
-                    <input value={accountForm.account_holder} onChange={(event) => setAccountForm((prev) => ({ ...prev, account_holder: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none" placeholder="Ad Soyad" />
-                    <input value={accountForm.iban} onChange={(event) => setAccountForm((prev) => ({ ...prev, iban: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
-                    <label className="flex items-start gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-xs font-semibold text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={accountForm.accepted_rules}
-                        onChange={(event) => setAccountForm((prev) => ({ ...prev, accepted_rules: event.target.checked }))}
-                        className="mt-0.5 h-4 w-4 rounded border-gray-300 text-violet-600"
-                      />
-                      <span>Yanlış banka veya hatalı IBAN bilgisi girmenin sorumluluğu bana aittir, kuralları kabul ediyorum.</span>
-                    </label>
-                    <button disabled={saving} className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50">
-                      Onaya Gönder
-                    </button>
-                  </form>
-                ) : null}
-              </div>
-
-              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-extrabold text-gray-900">Hesaplarım</h3>
-                {data.accounts.length === 0 ? (
-                  <div className="mt-4 rounded-2xl border border-dashed border-gray-200 py-6 text-center text-sm font-semibold text-gray-400">Henüz hesap eklenmemiş.</div>
-                ) : (
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="min-w-full text-left text-sm">
-                      <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                        <tr>
-                          <th className="px-3 py-2 font-black">Banka</th>
-                          <th className="px-3 py-2 font-black">Ad Soyad</th>
-                          <th className="px-3 py-2 font-black">IBAN</th>
-                          <th className="px-3 py-2 font-black">Durum</th>
-                          <th className="px-3 py-2 font-black">İşlem</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100">
-                        {data.accounts.map((account) => (
-                          <tr key={account.id}>
-                            <td className="px-3 py-3">
-                              <div className="font-semibold text-gray-700">{account.bank_name || account.label || '-'}</div>
-                              {account.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{account.admin_note}</div> : null}
-                            </td>
-                            <td className="px-3 py-3 font-semibold text-gray-700">{account.account_holder || '-'}</td>
-                            <td className="px-3 py-3 font-mono text-xs text-gray-600">{account.iban || '-'}</td>
-                            <td className="px-3 py-3"><StatusPill status={account.status} map={PAYMENT_ACCOUNT_STATUS} /></td>
-                            <td className="px-3 py-3">
-                              <button
-                                type="button"
-                                onClick={() => deleteAccountRow(account.id)}
-                                disabled={saving}
-                                className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
-                              >
-                                Sil
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         )}
+
+        {showAccountForm ? (
+          <div className="fixed inset-0 z-50 flex items-end justify-center px-4 py-4 sm:items-center">
+            <div className="absolute inset-0 bg-slate-950/50" onClick={() => setShowAccountForm(false)} />
+            <form onSubmit={submitAccount} className="relative w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-extrabold text-gray-900">Banka Hesabı Ekle</h3>
+                  <p className="mt-1 text-xs font-semibold text-gray-500">Eklenen hesaplar admin onayından sonra çekime açılır.</p>
+                </div>
+                <button type="button" onClick={() => setShowAccountForm(false)} className="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="space-y-3">
+                <select
+                  value={accountForm.bank_name}
+                  onChange={(event) => setAccountForm((prev) => ({ ...prev, bank_name: event.target.value }))}
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                >
+                  <option value="">Banka seç</option>
+                  {data.banks.map((bank) => <option key={bank} value={bank}>{bank}</option>)}
+                </select>
+                <input value={accountForm.account_holder} onChange={(event) => setAccountForm((prev) => ({ ...prev, account_holder: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none" placeholder="Ad Soyad" />
+                <input value={accountForm.iban} onChange={(event) => setAccountForm((prev) => ({ ...prev, iban: event.target.value }))} className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm uppercase focus:border-violet-400 focus:outline-none" placeholder="TR00 0000 0000 0000 0000 0000 00" />
+                <label className="flex items-start gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-3 text-xs font-semibold text-gray-600">
+                  <input
+                    type="checkbox"
+                    checked={accountForm.accepted_rules}
+                    onChange={(event) => setAccountForm((prev) => ({ ...prev, accepted_rules: event.target.checked }))}
+                    className="mt-0.5 h-4 w-4 rounded border-gray-300 text-violet-600"
+                  />
+                  <span>Yanlış banka veya hatalı IBAN bilgisi girmenin sorumluluğu bana aittir, kuralları kabul ediyorum.</span>
+                </label>
+                <button disabled={saving} className="w-full rounded-xl bg-slate-900 px-4 py-3 text-sm font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50">
+                  Onaya Gönder
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : null}
+
+        {showAccountsModal ? (
+          <div className="fixed inset-0 z-50 flex items-end justify-center px-4 py-4 sm:items-center">
+            <div className="absolute inset-0 bg-slate-950/50" onClick={() => setShowAccountsModal(false)} />
+            <div className="relative max-h-[82vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-extrabold text-gray-900">Banka Hesaplarım</h3>
+                  <p className="mt-1 text-xs font-semibold text-gray-500">Onaylı ve bekleyen banka hesaplarını buradan yönetebilirsin.</p>
+                </div>
+                <button type="button" onClick={() => setShowAccountsModal(false)} className="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                  <X size={18} />
+                </button>
+              </div>
+              {data.accounts.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-semibold text-gray-400">Henüz hesap eklenmemiş.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left text-sm">
+                    <thead className="border-b border-gray-100 bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
+                      <tr>
+                        <th className="px-3 py-2 font-black">Banka</th>
+                        <th className="px-3 py-2 font-black">Ad Soyad</th>
+                        <th className="px-3 py-2 font-black">IBAN</th>
+                        <th className="px-3 py-2 font-black">Durum</th>
+                        <th className="px-3 py-2 font-black">İşlem</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {data.accounts.map((account) => (
+                        <tr key={account.id}>
+                          <td className="px-3 py-3">
+                            <div className="font-semibold text-gray-700">{account.bank_name || account.label || '-'}</div>
+                            {account.admin_note ? <div className="mt-1 text-xs font-semibold text-rose-500">{account.admin_note}</div> : null}
+                          </td>
+                          <td className="px-3 py-3 font-semibold text-gray-700">{account.account_holder || '-'}</td>
+                          <td className="px-3 py-3 font-mono text-xs text-gray-600">{account.iban || '-'}</td>
+                          <td className="px-3 py-3"><StatusPill status={account.status} map={PAYMENT_ACCOUNT_STATUS} /></td>
+                          <td className="px-3 py-3">
+                            <button
+                              type="button"
+                              onClick={() => deleteAccountRow(account.id)}
+                              disabled={saving}
+                              className="rounded-xl border border-rose-100 bg-white px-3 py-1.5 text-xs font-extrabold text-rose-500 hover:bg-rose-50 disabled:opacity-50"
+                            >
+                              Sil
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -547,11 +547,10 @@ export default function PaymentManagement() {
                           <div className="flex min-w-[250px] flex-col gap-2">
                             {account.status === 'pending' ? (
                               <>
-                                <textarea
+                                <input
                                   value={notes[`account-${account.id}`] || ''}
                                   onChange={(event) => setNotes((prev) => ({ ...prev, [`account-${account.id}`]: event.target.value }))}
-                                  rows={2}
-                                  className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold focus:border-violet-400 focus:outline-none"
+                                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold focus:border-violet-400 focus:outline-none"
                                   placeholder="Admin notu, opsiyonel"
                                 />
                                 <div className="flex gap-2">
