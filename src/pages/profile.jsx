@@ -1084,7 +1084,7 @@ export default function ProfilePage() {
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : listingsView === 'grid' ? (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {filteredListings.map(listing => {
                     const gridDopingTypes = getListingActiveDopingTypes(listing);
                     const gridRingClass = gridDopingTypes.includes('vitrine') ? 'ring-2 ring-amber-400/60' : gridDopingTypes.includes('featured') ? 'ring-2 ring-violet-500/60' : '';
@@ -1110,7 +1110,7 @@ export default function ProfilePage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-1 flex-col gap-2 p-3">
+                      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
                         <div className="space-y-1">
                           <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-400">
                             <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
@@ -1119,9 +1119,9 @@ export default function ProfilePage() {
                             {listing.title}
                           </Link>
                         </div>
-                        <div className="mt-auto space-y-2">
+                        <div className="mt-auto space-y-1.5">
                           <div className="flex items-end justify-between gap-2">
-                            <div className="text-lg font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
+                            <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
                           </div>
                           <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {isToggleableListing(listing) && (
