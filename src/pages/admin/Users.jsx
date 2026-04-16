@@ -596,8 +596,11 @@ export default function AdminUsers() {
           year: 'numeric',
           hour: '2-digit',
           minute: '2-digit',
-        })
+      })
       : '—';
+  const detailBalance = Number(detailUser?.balance || 0);
+  const detailWithdrawableBalance = Math.max(0, Math.min(Number(detailUser?.withdrawable_balance || 0), detailBalance));
+  const detailLockedBalance = Math.max(0, detailBalance - detailWithdrawableBalance);
 
   return (
     <AdminLayout>
@@ -1103,7 +1106,7 @@ export default function AdminUsers() {
                     <div>
                       <div className="text-sm font-extrabold text-slate-900">Hızlı Bakiye İşlemi</div>
                       <div className="mt-1 text-xs text-slate-400">
-                        Drawer içinden ekleme veya doğrudan bakiye ayarlama yapabilirsiniz.
+                        Manuel eklenen tutar toplam bakiyeye eklenir; çekilebilir satış kazancını artırmaz.
                       </div>
                     </div>
                     <div className="rounded-xl bg-slate-100 p-1">
@@ -1154,6 +1157,12 @@ export default function AdminUsers() {
                   </div>
                 ) : (
                   <>
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <SummaryCard icon={Wallet} label="Toplam Bakiye" value={fmtMoney(detailBalance)} tone="border-slate-100 bg-slate-50/80" />
+                      <SummaryCard icon={TrendingUp} label="Çekilebilir Satış Kazancı" value={fmtMoney(detailWithdrawableBalance)} tone="border-emerald-100 bg-emerald-50/70" />
+                      <SummaryCard icon={CreditCard} label="Çekilemez Bakiye" value={fmtMoney(detailLockedBalance)} tone="border-violet-100 bg-violet-50/70" />
+                    </div>
+
                     <div className="grid gap-3 sm:grid-cols-3">
                       <SummaryCard icon={TrendingDown} label="Harcama" value={fmtMoney(transactionSummary.total_spent)} tone="border-red-100 bg-red-50/70" />
                       <SummaryCard icon={TrendingUp} label="Kazanç" value={fmtMoney(transactionSummary.total_earned)} tone="border-emerald-100 bg-emerald-50/70" />
@@ -1419,8 +1428,16 @@ export default function AdminUsers() {
 
       {modalType === 'balance' && selectedUser && (
         <Modal title={`${selectedUser.username} · Bakiye Düzenle`} onClose={() => setModalType('')}>
-          <div className="mb-4 rounded-xl bg-gray-50 p-3 text-sm">
-            Mevcut Bakiye: <span className="font-extrabold text-emerald-600">{fmtMoney(selectedUser.balance)}</span>
+          <div className="mb-4 space-y-2 rounded-xl bg-gray-50 p-3 text-sm">
+            <div>
+              Toplam Bakiye: <span className="font-extrabold text-emerald-600">{fmtMoney(selectedUser.balance)}</span>
+            </div>
+            <div>
+              Çekilebilir Satış Kazancı: <span className="font-extrabold text-violet-600">{fmtMoney(selectedUser.withdrawable_balance)}</span>
+            </div>
+            <div className="text-xs font-semibold text-gray-500">
+              Manuel ekleme çekilebilir bakiyeyi artırmaz; bakiyeyi düşürürsen çekilebilir bakiye toplam bakiyeyi aşmayacak şekilde sınırlandırılır.
+            </div>
           </div>
           <div className="mb-4 flex gap-2">
             {['add', 'set'].map((action) => (
