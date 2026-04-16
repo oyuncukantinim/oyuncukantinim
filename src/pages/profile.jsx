@@ -2223,9 +2223,6 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                 <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div>
                     <h3 className="text-lg font-extrabold text-gray-900">Çekim Talebi Oluştur</h3>
-                    <p className="text-xs font-semibold text-gray-500">
-                      Minimum çekim tutarı {minWithdrawal.toFixed(2)} ₺. Sadece ilan satış kazançları çekilebilir. {data.fee_type === 'percent' ? `%${Number(data.fee_value || 0).toFixed(2)}` : `${Number(data.fee_value || 0).toFixed(2)} ₺`} işlem masrafı uygulanır.
-                    </p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
@@ -2281,12 +2278,8 @@ function WithdrawalsTabContent({ user, onBalanceChange, showToast }) {
                   </div>
                 ) : null}
                 <div className="mt-3 rounded-xl border border-white bg-white/80 px-3 py-2 text-xs font-semibold text-gray-500">
-                  <div>Çekim: {feePreviewAmount > 0 ? feePreviewAmount.toFixed(2) : '0.00'} ₺</div>
                   <div>İşlem masrafı: {feePreview > 0 ? feePreview.toFixed(2) : '0.00'} ₺</div>
                   <div className="font-extrabold text-gray-700">Toplam düşülecek: {totalPreview > 0 ? totalPreview.toFixed(2) : '0.00'} ₺</div>
-                  <div className={totalPreview > withdrawableBalance ? 'font-extrabold text-rose-500' : 'font-semibold text-emerald-600'}>
-                    Çekilebilir satış kazancı: {withdrawableBalance.toFixed(2)} ₺
-                  </div>
                 </div>
                 <button disabled={saving || !approvedAccounts.length || totalPreview > withdrawableBalance} className="mt-3 w-full rounded-xl bg-violet-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/20 transition-colors hover:bg-violet-500 disabled:opacity-50">
                   Talebi Gönder
