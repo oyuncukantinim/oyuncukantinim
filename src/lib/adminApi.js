@@ -181,6 +181,8 @@ export const adminUpdateWithdrawal = (body) =>
 // Admin Logs
 export const adminGetLogs = (params = {}) =>
   adminRequest('admin_get_logs', { query: params });
+export const adminDeleteLog = (log_id) =>
+  adminRequest('admin_delete_log', { method: 'POST', body: { log_id } });
 
 // Suspicious Accounts
 export const adminGetSuspicious = () => adminRequest('admin_get_suspicious');

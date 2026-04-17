@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
+  adminDeleteLog,
   adminGetLogs,
   adminGetSuspicious,
   adminGetIpBlacklist,
@@ -49,6 +50,23 @@ const TARGET_LABELS = {
   ip: 'IP adresi',
 };
 
+const STATUS_LABELS = {
+  pending: 'Onay bekliyor',
+  approved: 'Onaylandı',
+  processing: 'İşleniyor',
+  completed: 'Tamamlandı',
+  rejected: 'Reddedildi',
+  cancelled: 'İptal edildi',
+};
+
+const SEGMENT_LABELS = {
+  all: 'Tüm kullanıcılar',
+  buyers: 'Alıcılar',
+  sellers: 'Satıcılar',
+  active: 'Aktif kullanıcılar',
+  banned: 'Banlı kullanıcılar',
+};
+
 function formatAction(action) {
   if (!action) return 'Bilinmeyen işlem';
   return ACTION_LABELS[action] || action
@@ -64,10 +82,62 @@ function formatTarget(log) {
   return log.target_id ? `${label} #${log.target_id}` : label;
 }
 
+function humanizeLogDetails(log) {
+  const details = String(log?.details || '').trim();
+  const target = formatTarget(log);
+
+  if (log?.action === 'user_update') {
+    return `${target !== '-' ? target : 'Kullanıcı'} bilgileri ve yetkileri güncellendi.`;
+  }
+
+  if (log?.action === 'withdrawal_update') {
+    const status = details.match(/talebi\s+([^:]+):/i)?.[1]?.trim();
+    const statusLabel = STATUS_LABELS[status] || status;
+    return statusLabel
+      ? `${target !== '-' ? target : 'Para çekim talebi'} durumu "${statusLabel}" olarak güncellendi.`
+      : `${target !== '-' ? target : 'Para çekim talebi'} güncellendi.`;
+  }
+
+  if (log?.action === 'payment_account_update') {
+    const status = details.match(/hesabı\s+([^:]+):/i)?.[1]?.trim();
+    const statusLabel = STATUS_LABELS[status] || status;
+    return statusLabel
+      ? `${target !== '-' ? target : 'Çekim hesabı'} durumu "${statusLabel}" olarak güncellendi.`
+      : `${target !== '-' ? target : 'Çekim hesabı'} güncellendi.`;
+  }
+
+  if (log?.action === 'payment_account_delete') {
+    return `${target !== '-' ? target : 'Çekim talebi hesabı'} silindi.`;
+  }
+
+  if (log?.action === 'broadcast') {
+    const singleTitle = details.match(/^Tekil bildirim gönderildi:\s*(.+)$/i)?.[1]?.trim();
+    if (singleTitle) return `Kullanıcıya bildirim gönderildi: "${singleTitle}".`;
+
+    const bulk = details.match(/^Toplu duyuru gönderildi\s*\(segment:\s*([^)]+)\):\s*(.+)$/i);
+    if (bulk) {
+      const segment = SEGMENT_LABELS[bulk[1]?.trim()] || bulk[1]?.trim();
+      return `Toplu duyuru gönderildi. Hedef: ${segment}. Başlık: "${bulk[2]?.trim()}".`;
+    }
+  }
+
+  if (log?.action === 'ip_blacklist_add') {
+    return details.replace('IP kara listeye eklendi:', 'Kara listeye eklenen IP:') || 'IP kara listeye eklendi.';
+  }
+
+  if (log?.action === 'ip_blacklist_remove') {
+    return details.replace('IP kara listeden çıkarıldı', 'Kara listeden çıkarılan IP kaydı') || 'IP kara listeden kaldırıldı.';
+  }
+
+  return details || '-';
+}
+
 /* ──────────────────────────── LOGS TAB ──────────────────────────── */
 function LogsTab() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -88,10 +158,31 @@ function LogsTab() {
 
   useEffect(() => { load(); }, [load]);
 
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
+
+  const handleDeleteLog = async (log) => {
+    if (!window.confirm(`#${log.id} numaralı işlem logu silinsin mi?`)) return;
+    setDeletingId(log.id);
+    try {
+      await adminDeleteLog(log.id);
+      showToast('İşlem logu silindi.');
+      if (logs.length === 1 && page > 1) {
+        setPage((current) => Math.max(1, current - 1));
+      } else {
+        load();
+      }
+    } catch (e) {
+      showToast(e.message || 'İşlem logu silinemedi.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {toast && <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-700">{toast}</div>}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Toplam {total} işlem kaydı</p>
+        <p className="text-sm text-gray-500">Toplam {total} işlem kaydı · Sayfa başına 20 kayıt</p>
         <button onClick={load} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
           <RefreshCw size={13} /> Yenile
         </button>
@@ -112,6 +203,7 @@ function LogsTab() {
                 <th className="px-4 py-3 text-left hidden md:table-cell">Detay</th>
                 <th className="px-4 py-3 text-left hidden xl:table-cell">IP</th>
                 <th className="px-4 py-3 text-left">Tarih</th>
+                <th className="px-4 py-3 text-right">Sil</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -123,12 +215,28 @@ function LogsTab() {
                   </td>
                   <td className="hidden px-4 py-3 text-sm font-semibold text-gray-500 lg:table-cell">{formatTarget(log)}</td>
                   <td className="hidden px-4 py-3 text-gray-500 md:table-cell max-w-md">
-                    <div className="line-clamp-2" title={log.details || '-'}>
-                      {log.details || '-'}
+                    <div className="line-clamp-2" title={humanizeLogDetails(log)}>
+                      {humanizeLogDetails(log)}
                     </div>
                   </td>
                   <td className="hidden px-4 py-3 font-mono text-xs text-gray-400 xl:table-cell">{log.ip_address || '-'}</td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{fmtDate(log.created_at)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteLog(log)}
+                      disabled={deletingId === log.id}
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      title="Logu sil"
+                      aria-label="Logu sil"
+                    >
+                      {deletingId === log.id ? (
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-rose-300 border-t-transparent" />
+                      ) : (
+                        <Trash2 size={15} />
+                      )}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
