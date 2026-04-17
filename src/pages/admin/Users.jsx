@@ -454,7 +454,7 @@ export default function AdminUsers() {
         is_admin: moderationForm.is_admin ? 1 : 0,
         is_banned: moderationForm.is_banned ? 1 : 0,
         ban_reason: moderationForm.is_banned ? moderationForm.ban_reason.trim() : '',
-        restrictions_json: moderationForm.restrictions || {},
+        restrictions_json: JSON.stringify(moderationForm.restrictions || {}),
       };
 
       if (moderationForm.new_password.trim()) {
