@@ -148,21 +148,35 @@ html.theme-dark select {
 
 html.theme-dark [class~="bg-surface-50"],
 html.theme-dark [class~="bg-gray-50"],
-html.theme-dark [class~="bg-slate-50"] {
+html.theme-dark [class~="bg-gray-50/30"],
+html.theme-dark [class~="bg-gray-50/40"],
+html.theme-dark [class~="bg-gray-50/50"],
+html.theme-dark [class~="bg-gray-50/60"],
+html.theme-dark [class~="bg-gray-50/70"],
+html.theme-dark [class~="bg-gray-50/80"],
+html.theme-dark [class~="bg-slate-50"],
+html.theme-dark [class~="bg-slate-50/60"],
+html.theme-dark [class~="bg-slate-50/70"],
+html.theme-dark [class~="bg-slate-50/80"] {
   background-color: var(--ok-bg) !important;
 }
 
 html.theme-dark [class~="bg-white"],
+html.theme-dark [class~="bg-white/50"],
+html.theme-dark [class~="bg-white/60"],
 html.theme-dark [class~="bg-white/70"],
 html.theme-dark [class~="bg-white/80"],
 html.theme-dark [class~="bg-white/90"],
-html.theme-dark [class~="bg-white/92"] {
+html.theme-dark [class~="bg-white/92"],
+html.theme-dark [class~="bg-white/95"] {
   background-color: var(--ok-panel) !important;
 }
 
 html.theme-dark [class~="bg-surface-100"],
 html.theme-dark [class~="bg-gray-100"],
+html.theme-dark [class~="bg-gray-200/60"],
 html.theme-dark [class~="bg-slate-100"],
+html.theme-dark [class~="bg-slate-100/80"],
 html.theme-dark [class~="bg-violet-50/70"] {
   background-color: var(--ok-panel-soft) !important;
 }
@@ -175,15 +189,22 @@ html.theme-dark [class~="bg-slate-200"] {
 
 html.theme-dark [class~="border-gray-50"],
 html.theme-dark [class~="border-gray-100"],
+html.theme-dark [class~="border-gray-100/80"],
 html.theme-dark [class~="border-gray-200"],
+html.theme-dark [class~="border-gray-300"],
 html.theme-dark [class~="border-slate-50"],
 html.theme-dark [class~="border-slate-100"],
 html.theme-dark [class~="border-slate-200"],
+html.theme-dark [class~="border-slate-200/80"],
+html.theme-dark [class~="border-slate-300"],
+html.theme-dark [class~="border-white"],
+html.theme-dark [class~="border-t-white"],
 html.theme-dark [class~="border-violet-100"] {
   border-color: var(--ok-border) !important;
 }
 
 html.theme-dark [class~="divide-gray-100"] > :not([hidden]) ~ :not([hidden]),
+html.theme-dark [class~="divide-gray-50"] > :not([hidden]) ~ :not([hidden]),
 html.theme-dark [class~="divide-slate-100"] > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--ok-border-soft) !important;
 }
@@ -208,25 +229,89 @@ html.theme-dark [class~="text-slate-400"] {
 }
 
 html.theme-dark [class~="text-gray-300"],
+html.theme-dark [class~="text-gray-200"],
 html.theme-dark [class~="text-slate-300"],
 html.theme-dark [class~="text-slate-200"] {
   color: #cbd5e1 !important;
 }
 
+html.theme-dark [class~="placeholder:text-gray-400"]::placeholder,
+html.theme-dark [class~="placeholder:text-slate-400"]::placeholder {
+  color: var(--ok-subtle) !important;
+}
+
+html.theme-dark [class~="focus:bg-white"]:focus {
+  background-color: var(--ok-panel-soft) !important;
+}
+
 html.theme-dark [class~="hover:bg-slate-50"]:hover,
+html.theme-dark [class~="hover:bg-slate-50/70"]:hover,
 html.theme-dark [class~="hover:bg-slate-100"]:hover,
+html.theme-dark [class~="hover:bg-slate-200"]:hover,
 html.theme-dark [class~="hover:bg-gray-50"]:hover,
+html.theme-dark [class~="hover:bg-gray-50/50"]:hover,
 html.theme-dark [class~="hover:bg-gray-100"]:hover,
+html.theme-dark [class~="hover:bg-gray-200"]:hover,
+html.theme-dark [class~="hover:bg-white"]:hover,
+html.theme-dark [class~="hover:bg-white/60"]:hover,
+html.theme-dark [class~="hover:bg-white/70"]:hover,
 html.theme-dark [class~="hover:bg-violet-50"]:hover,
-html.theme-dark [class~="hover:bg-violet-100/80"]:hover {
+html.theme-dark [class~="hover:bg-violet-100/80"]:hover,
+html.theme-dark [class~="hover:bg-emerald-50"]:hover,
+html.theme-dark [class~="hover:bg-blue-50"]:hover,
+html.theme-dark [class~="hover:bg-red-50"]:hover,
+html.theme-dark [class~="hover:bg-pink-50"]:hover,
+html.theme-dark [class~="hover:bg-cyan-50"]:hover {
   background-color: rgba(139, 92, 246, 0.12) !important;
 }
 
 html.theme-dark [class~="hover:text-slate-800"]:hover,
 html.theme-dark [class~="hover:text-slate-700"]:hover,
 html.theme-dark [class~="hover:text-slate-600"]:hover,
-html.theme-dark [class~="hover:text-gray-700"]:hover {
+html.theme-dark [class~="hover:text-gray-800"]:hover,
+html.theme-dark [class~="hover:text-gray-700"]:hover,
+html.theme-dark [class~="hover:text-gray-600"]:hover,
+html.theme-dark [class~="hover:text-gray-500"]:hover {
   color: var(--ok-heading) !important;
+}
+
+html.theme-dark [class~="hover:border-gray-300"]:hover,
+html.theme-dark [class~="hover:border-slate-200"]:hover,
+html.theme-dark [class~="hover:border-slate-300"]:hover,
+html.theme-dark [class~="hover:border-violet-200"]:hover,
+html.theme-dark [class~="hover:border-violet-300"]:hover,
+html.theme-dark [class~="hover:border-cyan-200"]:hover,
+html.theme-dark [class~="hover:border-pink-200"]:hover {
+  border-color: rgba(139, 92, 246, 0.38) !important;
+}
+
+html.theme-dark [class~="ring-slate-100"],
+html.theme-dark [class~="ring-gray-400"],
+html.theme-dark [class~="ring-white/70"] {
+  --tw-ring-color: rgba(148, 163, 184, 0.24) !important;
+}
+
+html.theme-dark [class~="from-white"],
+html.theme-dark [class~="from-gray-50"],
+html.theme-dark [class~="from-slate-50"],
+html.theme-dark [class~="from-slate-100"],
+html.theme-dark [class~="from-slate-200"] {
+  --tw-gradient-from: var(--ok-panel) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgba(17, 24, 39, 0) var(--tw-gradient-to-position) !important;
+}
+
+html.theme-dark [class~="via-white"] {
+  --tw-gradient-to: rgba(21, 27, 46, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--ok-panel-soft) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+}
+
+html.theme-dark [class~="to-violet-50"],
+html.theme-dark [class~="to-violet-50/50"],
+html.theme-dark [class~="to-cyan-50"],
+html.theme-dark [class~="to-slate-200"],
+html.theme-dark [class~="to-slate-300"],
+html.theme-dark [class~="to-gray-300"] {
+  --tw-gradient-to: rgba(139, 92, 246, 0.16) var(--tw-gradient-to-position) !important;
 }
 
 html.theme-dark [class~="bg-red-50"],
@@ -251,7 +336,10 @@ html.theme-dark [class~="bg-cyan-50/70"] {
 }
 
 html.theme-dark [class~="bg-violet-50"],
-html.theme-dark [class~="bg-purple-50"] {
+html.theme-dark [class~="bg-violet-100"],
+html.theme-dark [class~="bg-purple-50"],
+html.theme-dark [class~="bg-blue-50"],
+html.theme-dark [class~="bg-pink-50"] {
   background-color: rgba(139, 92, 246, 0.12) !important;
 }
 
