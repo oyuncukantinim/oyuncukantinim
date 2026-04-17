@@ -588,6 +588,10 @@ export default function ProfilePage() {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
     setEditEmail(user.email || '');
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
     setEmailVerificationCode('');
     setPendingEmailVerification('');
     setEmailVerificationExpiresAt('');
@@ -782,6 +786,13 @@ export default function ProfilePage() {
 
   const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
 
+  const resetSecurityFields = () => {
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setShowPassword(false);
+  };
+
   const handleSavePersonalInfoV2 = async () => {
     setSaving(true);
     try {
@@ -812,10 +823,9 @@ export default function ProfilePage() {
         const res = await updateProfile(payload);
         updatedUser = res.data;
         updateUser(res.data);
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-        setShowPassword(false);
+        resetSecurityFields();
+      } else if (currentPassword || confirmPassword) {
+        resetSecurityFields();
       }
 
       if (emailChanged || !user.email_verified_at) {
@@ -1653,6 +1663,8 @@ export default function ProfilePage() {
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
+                          name="profile_current_password_no_autofill"
+                          autoComplete="new-password"
                           value={currentPassword}
                           onChange={e => setCurrentPassword(e.target.value)}
                           placeholder="Değiştirmek istemiyorsan boş bırak"
@@ -1673,6 +1685,8 @@ export default function ProfilePage() {
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
+                          name="profile_new_password"
+                          autoComplete="new-password"
                           value={newPassword}
                           onChange={e => setNewPassword(e.target.value)}
                           placeholder="Yeni şifreni gir"
@@ -1694,6 +1708,8 @@ export default function ProfilePage() {
                       <div className="relative">
                         <input
                           type={showPassword ? 'text' : 'password'}
+                          name="profile_confirm_password"
+                          autoComplete="new-password"
                           value={confirmPassword}
                           onChange={e => setConfirmPassword(e.target.value)}
                           placeholder="Yeni şifreyi tekrar yaz"
