@@ -20,6 +20,7 @@ import { getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, 
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
+import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
@@ -390,6 +391,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
           </div>
 
           <div className="ml-auto hidden items-center gap-2 md:flex">
+            <ThemeToggle />
+
             <Link
               to="/create"
               className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-[0_12px_25px_rgba(124,58,237,0.24)] transition-transform hover:-translate-y-0.5"
@@ -522,6 +525,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             >
               <Search size={19} />
             </button>
+            <ThemeToggle />
             <Link
               to="/cart"
               aria-label="Sepete git"
@@ -624,6 +628,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             </div>
 
             <div className="space-y-2 border-t border-slate-100 pt-3">
+              <ThemeToggle showLabel className="w-full justify-center" />
+
               <Link
                 to="/create"
                 onClick={() => setMobileOpen(false)}
