@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Star,
   ShoppingBag,
-  X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
@@ -31,6 +30,38 @@ const TABS = [
 function fmtDate(dt) {
   if (!dt) return '-';
   return new Date(dt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+const ACTION_LABELS = {
+  user_update: 'Kullanıcı güncelleme',
+  withdrawal_update: 'Para çekim talebi güncelleme',
+  payment_account_update: 'Çekim hesabı güncelleme',
+  payment_account_delete: 'Çekim hesabı silme',
+  broadcast: 'Bildirim / duyuru gönderimi',
+  ip_blacklist_add: 'IP kara listeye ekleme',
+  ip_blacklist_remove: 'IP kara listeden kaldırma',
+};
+
+const TARGET_LABELS = {
+  user: 'Kullanıcı',
+  withdrawal: 'Para çekim talebi',
+  payment_account: 'Çekim hesabı',
+  ip: 'IP adresi',
+};
+
+function formatAction(action) {
+  if (!action) return 'Bilinmeyen işlem';
+  return ACTION_LABELS[action] || action
+    .split('_')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase('tr-TR') + part.slice(1))
+    .join(' ');
+}
+
+function formatTarget(log) {
+  if (!log?.target_type && !log?.target_id) return '-';
+  const label = TARGET_LABELS[log.target_type] || formatAction(log.target_type);
+  return log.target_id ? `${label} #${log.target_id}` : label;
 }
 
 /* ──────────────────────────── LOGS TAB ──────────────────────────── */
@@ -57,13 +88,6 @@ function LogsTab() {
 
   useEffect(() => { load(); }, [load]);
 
-  const ACTION_COLOR = {
-    user_update: 'bg-blue-50 text-blue-700',
-    ip_blacklist_add: 'bg-red-50 text-red-700',
-    ip_blacklist_remove: 'bg-green-50 text-green-700',
-    broadcast: 'bg-orange-50 text-orange-700',
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -84,8 +108,9 @@ function LogsTab() {
               <tr>
                 <th className="px-4 py-3 text-left">Admin</th>
                 <th className="px-4 py-3 text-left">İşlem</th>
+                <th className="px-4 py-3 text-left hidden lg:table-cell">Kayıt</th>
                 <th className="px-4 py-3 text-left hidden md:table-cell">Detay</th>
-                <th className="px-4 py-3 text-left hidden lg:table-cell">IP</th>
+                <th className="px-4 py-3 text-left hidden xl:table-cell">IP</th>
                 <th className="px-4 py-3 text-left">Tarih</th>
               </tr>
             </thead>
@@ -94,12 +119,15 @@ function LogsTab() {
                 <tr key={log.id} className="hover:bg-gray-50/50">
                   <td className="px-4 py-3 font-semibold text-gray-800">{log.admin_username}</td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${ACTION_COLOR[log.action] || 'bg-gray-100 text-gray-600'}`}>
-                      {log.action}
-                    </span>
+                    <span className="font-bold text-gray-800">{formatAction(log.action)}</span>
                   </td>
-                  <td className="hidden px-4 py-3 text-gray-500 md:table-cell max-w-xs truncate">{log.details}</td>
-                  <td className="hidden px-4 py-3 font-mono text-xs text-gray-400 lg:table-cell">{log.ip_address}</td>
+                  <td className="hidden px-4 py-3 text-sm font-semibold text-gray-500 lg:table-cell">{formatTarget(log)}</td>
+                  <td className="hidden px-4 py-3 text-gray-500 md:table-cell max-w-md">
+                    <div className="line-clamp-2" title={log.details || '-'}>
+                      {log.details || '-'}
+                    </div>
+                  </td>
+                  <td className="hidden px-4 py-3 font-mono text-xs text-gray-400 xl:table-cell">{log.ip_address || '-'}</td>
                   <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{fmtDate(log.created_at)}</td>
                 </tr>
               ))}
