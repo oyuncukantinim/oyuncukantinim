@@ -848,7 +848,7 @@ export default function AdminUsers() {
                   { id: 'general', label: 'Genel' },
                   { id: 'personal', label: 'Kişisel' },
                   { id: 'listings', label: 'İlanlar' },
-                  { id: 'bank_accounts', label: 'Banka Hesapları' },
+                  { id: 'bank_accounts', label: 'Bankalar' },
                   { id: 'finance', label: 'Finans' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
@@ -1056,7 +1056,7 @@ export default function AdminUsers() {
                 <div className="rounded-2xl border border-slate-100 bg-white p-4">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <div>
-                      <div className="text-sm font-extrabold text-slate-900">Banka Hesapları</div>
+                      <div className="text-sm font-extrabold text-slate-900">Bankalar</div>
                       <div className="mt-1 text-xs font-semibold text-slate-400">Onaylı ve bekleyen çekim hesaplarını kullanıcı özelinde inceleyin.</div>
                     </div>
                     <span className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-500">
