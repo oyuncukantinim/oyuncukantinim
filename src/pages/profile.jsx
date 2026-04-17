@@ -591,7 +591,7 @@ export default function ProfilePage() {
     setEmailVerificationCode('');
     setPendingEmailVerification('');
     setEmailVerificationExpiresAt('');
-    setBannerImage(user.banner_image || defaultProfileBanner || '');
+    setBannerImage(user.banner_image ?? defaultProfileBanner ?? '');
     setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
       full_name: user.full_name || '',
@@ -630,6 +630,8 @@ export default function ProfilePage() {
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
+  const savedBannerImage = user?.banner_image ?? defaultProfileBanner ?? '';
+  const profileHeaderBanner = user?.banner_image ?? defaultProfileBanner ?? '';
   const emailChanged = normalizedEmail !== (user?.email || '');
   const emailVerified = Boolean(user?.email_verified_at) && !emailChanged;
   const emailVerificationPending = pendingEmailVerification !== '' && pendingEmailVerification === normalizedEmail;
@@ -638,7 +640,7 @@ export default function ProfilePage() {
   const verificationCanResend = emailVerificationPending && verificationSecondsLeft <= 0;
   const profileDirty =
     selectedAvatar !== (user?.avatar || defaultAvatar) ||
-    normalizedBannerImage !== (user?.banner_image || defaultProfileBanner || '');
+    normalizedBannerImage !== savedBannerImage;
   const personalDirty =
     personalInfo.full_name !== (user?.full_name || '') ||
     personalInfo.country !== (user?.country || '') ||
@@ -679,13 +681,13 @@ export default function ProfilePage() {
         return;
       }
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
-      if (normalizedBannerImage !== (user.banner_image || defaultProfileBanner || '')) payload.banner_image = normalizedBannerImage;
+      if (normalizedBannerImage !== savedBannerImage) payload.banner_image = normalizedBannerImage;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
       const res = await updateProfile(payload);
       updateUser(res.data);
       setEditUsername(res.data.username || '');
       setEditEmail(res.data.email || '');
-      setBannerImage(res.data.banner_image || defaultProfileBanner || '');
+      setBannerImage(res.data.banner_image ?? defaultProfileBanner ?? '');
       setSelectedAvatar(res.data.avatar || defaultAvatar);
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
@@ -940,8 +942,8 @@ export default function ProfilePage() {
       {/* Profile Header */}
       <div className="rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white">
         <div className="aspect-[5/1] relative overflow-hidden bg-gradient-to-br from-violet-600 via-purple-600 to-cyan-500">
-          {(user.banner_image || defaultProfileBanner) ? (
-            <img src={user.banner_image || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+          {profileHeaderBanner ? (
+            <img src={profileHeaderBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <>
               <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
@@ -1458,15 +1460,15 @@ export default function ProfilePage() {
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
-                        {(normalizedBannerImage || defaultProfileBanner) ? (
-                          <img src={normalizedBannerImage || defaultProfileBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        {normalizedBannerImage ? (
+                          <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
                           <>
                             <div className="absolute inset-0 bg-white/25" />
                             <div className="absolute -top-8 right-6 w-24 h-24 rounded-full bg-white/25 blur-2xl" />
                             <div className="absolute -bottom-8 left-8 w-28 h-20 rounded-full bg-cyan-200/25 blur-2xl" />
                             <div className="absolute inset-x-0 bottom-3 flex justify-center text-gray-500 text-xs font-semibold">
-                              Varsayılan banner görünümü
+                              Banner kaldırılacak
                             </div>
                           </>
                         )}
