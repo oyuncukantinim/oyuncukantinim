@@ -1560,13 +1560,13 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col">
+                <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col gap-5">
                   <div className="flex items-center gap-2 text-gray-700 font-bold">
                     <Shield size={16} className="text-cyan-600" />
                     Hesap Güvenliği
                   </div>
 
-                  <div className="mt-4 space-y-4 text-sm">
+                  <div className="space-y-4 text-sm">
                     <div>
                       <div className="mb-1.5 flex items-center justify-between gap-3">
                         <label className="block text-sm font-bold text-gray-600">E-posta</label>
@@ -1711,9 +1711,8 @@ export default function ProfilePage() {
                         <p className="text-xs text-red-500 mt-1">Şifreler eşleşmiyor.</p>
                       )}
                     </div>
-
                   </div>
-                  <button onClick={handleSavePersonalInfoV2} disabled={saving || !personalDirty} className="btn-primary w-full disabled:opacity-50 mt-auto">
+                  <button onClick={handleSavePersonalInfoV2} disabled={saving || !personalDirty} className="btn-primary w-full shrink-0 disabled:opacity-50">
                     {saving ? 'Kaydediliyor...' : (emailChanged || !user.email_verified_at) ? 'Kodu Gönder ve Kaydet' : personalDirty ? 'Kişisel Bilgileri Kaydet' : 'Bilgiler Güncel'}
                   </button>
                 </div>
