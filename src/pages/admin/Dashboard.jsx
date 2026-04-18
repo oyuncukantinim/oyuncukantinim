@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -15,23 +15,22 @@ import {
   Sparkles,
   Star,
   TrendingUp,
-  User,
   Users,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminStats } from '../../lib/adminApi';
 
 const ORDER_STATUS_STYLES = {
-  completed: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60',
-  pending: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60',
-  refunded: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60',
+  completed: 'bg-emerald-50 text-emerald-700',
+  pending: 'bg-amber-50 text-amber-700',
+  refunded: 'bg-rose-50 text-rose-700',
 };
 
 const LISTING_STATUS_STYLES = {
-  active: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60',
-  sold: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/60',
-  pending: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60',
-  removed: 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60',
+  active: 'bg-emerald-50 text-emerald-700',
+  sold: 'bg-slate-100 text-slate-700',
+  pending: 'bg-amber-50 text-amber-700',
+  removed: 'bg-rose-50 text-rose-700',
 };
 
 function formatNumber(value) {
@@ -112,120 +111,75 @@ function normalizeSeries(rows = [], valueKey) {
 function DashboardSkeleton() {
   return (
     <AdminLayout>
-      <div className="space-y-4 animate-pulse">
-        <div className="h-56 rounded-3xl bg-slate-200/70" />
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <div key={index} className="h-32 rounded-3xl bg-slate-200/70" />
+      <div className="space-y-3 animate-pulse">
+        <div className="h-52 rounded-[24px] bg-slate-200" />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="h-28 rounded-[24px] bg-slate-200" />
           ))}
         </div>
         <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr]">
-          <div className="h-96 rounded-3xl bg-slate-200/70" />
-          <div className="h-96 rounded-3xl bg-slate-200/70" />
+          <div className="h-80 rounded-[24px] bg-slate-200" />
+          <div className="h-80 rounded-[24px] bg-slate-200" />
         </div>
       </div>
     </AdminLayout>
   );
 }
 
-/* ----------  CARD PRIMITIVES  ---------- */
-
-function PanelCard({ children, className = '' }) {
-  return (
-    <div
-      className={`relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/90 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_24px_-12px_rgba(15,23,42,0.12)] backdrop-blur ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function SectionHeader({ title, subtitle, badge, badgeTone = 'slate', action }) {
-  const toneMap = {
-    slate: 'bg-slate-100 text-slate-600',
-    violet: 'bg-violet-100 text-violet-700',
-    emerald: 'bg-emerald-100 text-emerald-700',
-    amber: 'bg-amber-100 text-amber-700',
-  };
-  return (
-    <div className="flex items-start justify-between gap-4">
-      <div className="min-w-0">
-        <h3 className="text-[15px] font-black tracking-tight text-slate-950">{title}</h3>
-        {subtitle ? <p className="mt-1 text-[12px] leading-5 text-slate-500">{subtitle}</p> : null}
-      </div>
-      {badge ? (
-        <div className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] ${toneMap[badgeTone] || toneMap.slate}`}>
-          {badge}
-        </div>
-      ) : null}
-      {action}
-    </div>
-  );
-}
-
-/* ----------  METRIC CARDS  ---------- */
-
-function MetricCard({ title, value, detail, icon: Icon, gradient, to }) {
+function MetricCard({ title, value, detail, icon: Icon, accentClass, to }) {
   const content = (
-    <div className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/90 p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-slate-300 hover:shadow-[0_12px_40px_-12px_rgba(15,23,42,0.2)]">
-      {/* glow accent */}
-      <div className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-20 blur-2xl transition-opacity group-hover:opacity-40`} />
-
-      <div className="relative flex items-start justify-between gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} shadow-lg shadow-slate-900/10 ring-1 ring-white/60`}>
-          <Icon size={18} className="text-white" strokeWidth={2.4} />
+    <div className="group rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg">
+      <div className="flex items-start justify-between gap-3">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${accentClass}`}>
+          <Icon size={18} className="text-white" />
         </div>
         {to ? (
-          <div className="flex items-center gap-1 rounded-full bg-slate-100/80 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-slate-500 transition-colors group-hover:bg-slate-900 group-hover:text-white">
+          <div className="flex items-center gap-1 text-xs font-semibold text-slate-400 transition-colors group-hover:text-slate-700">
             Detay
-            <ArrowUpRight size={12} />
+            <ArrowUpRight size={14} />
           </div>
         ) : null}
       </div>
 
-      <div className="relative mt-4 text-[26px] font-black tracking-tight text-slate-950">{value}</div>
-      <div className="relative mt-0.5 text-[12px] font-bold text-slate-600">{title}</div>
-      <div className="relative mt-2 text-[11px] leading-5 text-slate-400">{detail}</div>
+      <div className="mt-4 text-2xl font-black tracking-tight text-slate-950">{value}</div>
+      <div className="mt-1 text-[13px] font-semibold text-slate-500">{title}</div>
+      <div className="mt-2 text-[11px] leading-5 text-slate-400">{detail}</div>
     </div>
   );
 
   return to ? <Link to={to}>{content}</Link> : content;
 }
 
-function ProgressCard({ title, value, helper, progress, gradient }) {
+function ProgressCard({ title, value, helper, progress, toneClass }) {
   return (
-    <PanelCard className="p-4">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-[13px] font-black text-slate-900">{title}</div>
+        <div>
+          <div className="text-[13px] font-bold text-slate-800">{title}</div>
           <div className="mt-1 text-[11px] leading-5 text-slate-500">{helper}</div>
         </div>
-        <div className="text-lg font-black tracking-tight text-slate-950">{value}</div>
+        <div className="text-base font-black text-slate-950">{value}</div>
       </div>
 
-      <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-100">
         <div
-          className={`h-full rounded-full bg-gradient-to-r ${gradient} shadow-[0_0_12px_rgba(139,92,246,0.35)]`}
+          className={`h-full rounded-full ${toneClass}`}
           style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
         />
       </div>
 
-      <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
-        <span>{formatPercent(progress)} oran</span>
-        <span className="text-slate-300">/ 100%</span>
-      </div>
-    </PanelCard>
+      <div className="mt-2 text-[11px] font-semibold text-slate-400">{formatPercent(progress)} oran</div>
+    </div>
   );
 }
 
-/* ----------  CHARTS  ---------- */
-
 function buildChartGeometry(series = []) {
   const width = 320;
-  const height = 200;
+  const height = 188;
   const paddingX = 18;
-  const paddingTop = 20;
-  const paddingBottom = 48;
+  const paddingTop = 18;
+  const paddingBottom = 46;
   const chartWidth = width - (paddingX * 2);
   const chartHeight = height - paddingTop - paddingBottom;
   const maxValue = Math.max(...series.map((item) => item.value), 1);
@@ -254,17 +208,25 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
   const gradientId = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
   return (
-    <PanelCard className="p-4">
-      <SectionHeader title={title} subtitle={subtitle} badge="Son 7 Gün" badgeTone="violet" />
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-[15px] font-black text-slate-950">{title}</h3>
+          <p className="mt-1 text-[12px] text-slate-500">{subtitle}</p>
+        </div>
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          Son 7 Gün
+        </div>
+      </div>
 
-      <div className="mt-4 rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50/90 via-white to-slate-50/60 p-3">
+      <div className="mt-3 rounded-[22px] border border-slate-100 bg-slate-50/80 p-3">
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Güncel</div>
-            <div className="mt-1 text-2xl font-black tracking-tight text-slate-950">{formatter(latestPoint?.value || 0)}</div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Güncel</div>
+            <div className="mt-1 text-xl font-black text-slate-950">{formatter(latestPoint?.value || 0)}</div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tepe</div>
+            <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Tepe</div>
             <div className="mt-1 text-sm font-bold text-slate-700">
               {peakPoint ? `${formatter(peakPoint.value)} · ${peakPoint.label}` : '-'}
             </div>
@@ -274,17 +236,13 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
         <svg viewBox={`0 0 ${width} ${height}`} className="h-44 w-full overflow-visible">
           <defs>
             <linearGradient id={`${gradientId}-fill`} x1="0%" x2="0%" y1="0%" y2="100%">
-              <stop offset="0%" stopColor={tone.fill} stopOpacity="0.45" />
-              <stop offset="100%" stopColor={tone.fill} stopOpacity="0" />
-            </linearGradient>
-            <linearGradient id={`${gradientId}-stroke`} x1="0%" x2="100%" y1="0%" y2="0%">
-              <stop offset="0%" stopColor={tone.stroke} />
-              <stop offset="100%" stopColor={tone.strokeEnd || tone.stroke} />
+              <stop offset="0%" stopColor={tone.fill} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={tone.fill} stopOpacity="0.02" />
             </linearGradient>
           </defs>
 
           {[0, 1, 2].map((index) => {
-            const y = 24 + (index * 44);
+            const y = 24 + (index * 42);
             return (
               <line
                 key={index}
@@ -293,7 +251,7 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
                 x2={width - 16}
                 y2={y}
                 stroke="#E2E8F0"
-                strokeDasharray="3 6"
+                strokeDasharray="4 6"
                 strokeWidth="1"
               />
             );
@@ -304,8 +262,8 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
             <path
               d={linePath}
               fill="none"
-              stroke={`url(#${gradientId}-stroke)`}
-              strokeWidth="3.5"
+              stroke={tone.stroke}
+              strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -313,21 +271,21 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
 
           {points.map((point) => (
             <g key={point.day}>
-              <circle cx={point.x} cy={point.y} r="6.5" fill="white" stroke={tone.stroke} strokeWidth="2" />
-              <circle cx={point.x} cy={point.y} r="2.5" fill={tone.stroke} />
+              <circle cx={point.x} cy={point.y} r="5.5" fill="white" />
+              <circle cx={point.x} cy={point.y} r="3.5" fill={tone.stroke} />
               <text
                 x={point.x}
-                y={height - 20}
+                y={height - 18}
                 textAnchor="middle"
-                className="fill-slate-700 text-[11px] font-black"
+                className="fill-slate-600 text-[11px] font-bold"
               >
                 {formatter(point.value)}
               </text>
               <text
                 x={point.x}
-                y={height - 6}
+                y={height - 4}
                 textAnchor="middle"
-                className="fill-slate-400 text-[10px] font-bold uppercase tracking-wider"
+                className="fill-slate-400 text-[11px] font-semibold"
               >
                 {point.label}
               </text>
@@ -335,64 +293,66 @@ function TrendCard({ title, subtitle, series, formatter, tone }) {
           ))}
         </svg>
       </div>
-    </PanelCard>
+    </div>
   );
 }
 
-/* ----------  SIDE PANELS  ---------- */
 
 function InsightCard({ items }) {
   return (
-    <PanelCard className="p-4">
-      <SectionHeader
-        title="Yönetici İçgörüleri"
-        subtitle="Karar vermeyi hızlandıran kısa özetler."
-        action={
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30">
-            <Sparkles size={15} />
-          </div>
-        }
-      />
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-[15px] font-black text-slate-950">Yönetici İçgörüleri</h3>
+          <p className="mt-1 text-[12px] text-slate-500">Karar vermeyi hızlandıran kısa özetler.</p>
+        </div>
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+          <Sparkles size={16} />
+        </div>
+      </div>
 
       <div className="mt-4 space-y-2.5">
         {items.map((item) => (
-          <div key={item.title} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50/60 p-3.5 transition-all hover:border-slate-200 hover:shadow-sm">
+          <div key={item.title} className="rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5">
             <div className="flex items-start gap-3">
-              <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} shadow-md ring-1 ring-white/40`}>
-                <item.icon size={15} className="text-white" strokeWidth={2.4} />
+              <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl ${item.iconClass}`}>
+                <item.icon size={15} className="text-white" />
               </div>
               <div className="min-w-0">
-                <div className="text-[13px] font-black text-slate-900">{item.title}</div>
+                <div className="text-[13px] font-bold text-slate-900">{item.title}</div>
                 <p className="mt-1 text-[12px] leading-5 text-slate-500">{item.text}</p>
               </div>
             </div>
           </div>
         ))}
       </div>
-    </PanelCard>
+    </div>
   );
 }
 
 function FocusList({ items }) {
   return (
-    <PanelCard className="p-4">
-      <SectionHeader
-        title="Öncelikli Takip"
-        subtitle="İlk bakışta ilgilenmen gereken başlıklar."
-        badge="Bugün"
-        badgeTone="amber"
-      />
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-[15px] font-black text-slate-950">Öncelikli Takip</h3>
+          <p className="mt-1 text-[12px] text-slate-500">İlk bakışta ilgilenmen gereken başlıklar.</p>
+        </div>
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          Bugün
+        </div>
+      </div>
 
       <div className="mt-4 space-y-2.5">
         {items.map((item) => (
-          <div key={item.title} className="flex items-start gap-3 rounded-2xl border border-slate-100 p-3.5 transition-all hover:border-slate-200 hover:bg-slate-50/60">
-            <div className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} shadow-md ring-1 ring-white/40`}>
-              <item.icon size={15} className="text-white" strokeWidth={2.4} />
+          <div key={item.title} className="flex items-start gap-3 rounded-2xl border border-slate-100 p-3.5">
+            <div className={`mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl ${item.iconClass}`}>
+              <item.icon size={16} className="text-white" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3">
-                <div className="text-[13px] font-black text-slate-900">{item.title}</div>
-                <div className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${item.badgeClass}`}>
+                <div className="text-[13px] font-bold text-slate-900">{item.title}</div>
+                <div className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${item.badgeClass}`}>
                   {item.badge}
                 </div>
               </div>
@@ -401,69 +361,69 @@ function FocusList({ items }) {
           </div>
         ))}
       </div>
-    </PanelCard>
+    </div>
   );
 }
 
 function QuickLinks({ items }) {
   return (
-    <PanelCard className="p-4">
-      <SectionHeader title="Hızlı Aksiyonlar" subtitle="En sık kullanılan yönetim alanlarına geç." />
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-[15px] font-black text-slate-950">Hızlı Aksiyonlar</h3>
+          <p className="mt-1 text-[12px] text-slate-500">En sık kullanılan yönetim alanlarına geç.</p>
+        </div>
+      </div>
 
       <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {items.map((item) => (
           <Link
             key={item.title}
             to={item.to}
-            className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-br from-white to-slate-50/40 p-3.5 transition-all hover:-translate-y-0.5 hover:border-slate-200 hover:shadow-md"
+            className="group rounded-2xl border border-slate-100 p-3.5 transition-colors hover:border-slate-200 hover:bg-slate-50"
           >
-            <div className={`pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${item.gradient} opacity-0 blur-2xl transition-opacity group-hover:opacity-30`} />
-            <div className="relative flex items-start justify-between gap-3">
-              <div className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${item.gradient} shadow-md ring-1 ring-white/40`}>
-                <item.icon size={15} className="text-white" strokeWidth={2.4} />
+            <div className="flex items-start justify-between gap-3">
+              <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${item.iconClass}`}>
+                <item.icon size={16} className="text-white" />
               </div>
-              <ArrowRight size={16} className="text-slate-300 transition-all group-hover:translate-x-1 group-hover:text-violet-600" />
+              <ArrowRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-slate-500" />
             </div>
-            <div className="relative mt-3 text-[13px] font-black text-slate-900">{item.title}</div>
-            <p className="relative mt-1 text-[12px] leading-5 text-slate-500">{item.text}</p>
+            <div className="mt-3 text-[13px] font-bold text-slate-900">{item.title}</div>
+            <p className="mt-1 text-[12px] leading-5 text-slate-500">{item.text}</p>
           </Link>
         ))}
       </div>
-    </PanelCard>
+    </div>
   );
 }
 
 function ActivitySection({ title, subtitle, linkTo, linkLabel, children }) {
   return (
-    <PanelCard className="p-4">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3">
         <div>
-          <h3 className="text-[15px] font-black tracking-tight text-slate-950">{title}</h3>
+          <h3 className="text-[15px] font-black text-slate-950">{title}</h3>
           <p className="mt-1 text-[12px] text-slate-500">{subtitle}</p>
         </div>
-        <Link
-          to={linkTo}
-          className="group flex items-center gap-1 rounded-full bg-violet-50 px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-violet-700 transition-colors hover:bg-violet-600 hover:text-white"
-        >
+        <Link to={linkTo} className="text-[12px] font-bold text-violet-600 transition-colors hover:text-violet-700">
           {linkLabel}
-          <ArrowRight size={12} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
       <div className="mt-2">{children}</div>
-    </PanelCard>
+    </div>
   );
 }
 
 function LeaderboardCard({ title, subtitle, badge, rows, columns, emptyText }) {
   return (
-    <PanelCard className="p-4">
+    <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
         <div>
-          <h3 className="text-[15px] font-black tracking-tight text-slate-950">{title}</h3>
+          <h3 className="text-[15px] font-black text-slate-950">{title}</h3>
           <p className="mt-1 text-[12px] text-slate-500">{subtitle}</p>
         </div>
         {badge ? (
-          <div className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-md shadow-violet-500/30">
+          <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
             {badge}
           </div>
         ) : null}
@@ -474,53 +434,43 @@ function LeaderboardCard({ title, subtitle, badge, rows, columns, emptyText }) {
           <EmptyRow text={emptyText} />
         ) : (
           <div className="space-y-2.5">
-            {rows.map((row, index) => {
-              const rankStyle =
-                index === 0
-                  ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-amber-500/40'
-                  : index === 1
-                  ? 'bg-gradient-to-br from-slate-300 to-slate-500 shadow-md shadow-slate-400/40'
-                  : index === 2
-                  ? 'bg-gradient-to-br from-orange-700 to-amber-800 shadow-md shadow-orange-700/40'
-                  : 'bg-slate-900';
-              return (
-                <div key={`${title}-${index}`} className="rounded-2xl border border-slate-100 p-3 transition-colors hover:bg-slate-50/60">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className={`flex h-9 w-9 items-center justify-center rounded-xl text-[12px] font-black text-white ring-1 ring-white/20 ${rankStyle}`}>
-                        {index + 1}
+            {rows.map((row, index) => (
+              <div key={`${title}-${index}`} className="rounded-2xl border border-slate-100 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-[11px] font-black text-white">
+                      {index + 1}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="truncate text-[13px] font-bold text-slate-900">{row.title}</div>
+                      <div className="mt-1 text-[11px] text-slate-500">{row.subtitle}</div>
+                    </div>
+                  </div>
+                  {row.trailing ? (
+                    <div className="text-right text-[11px] font-semibold text-slate-400">
+                      {row.trailing}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  {columns.map((column) => (
+                    <div key={column.key} className="rounded-xl bg-slate-50 px-2.5 py-2">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                        {column.label}
                       </div>
-                      <div className="min-w-0">
-                        <div className="truncate text-[13px] font-black text-slate-900">{row.title}</div>
-                        <div className="mt-0.5 text-[11px] text-slate-500">{row.subtitle}</div>
+                      <div className="mt-1 text-[12px] font-bold text-slate-900">
+                        {column.render(row.raw)}
                       </div>
                     </div>
-                    {row.trailing ? (
-                      <div className="text-right text-[11px] font-bold text-slate-500">
-                        {row.trailing}
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {columns.map((column) => (
-                      <div key={column.key} className="rounded-xl bg-slate-50 px-2.5 py-2 ring-1 ring-slate-100">
-                        <div className="text-[9px] font-black uppercase tracking-[0.14em] text-slate-400">
-                          {column.label}
-                        </div>
-                        <div className="mt-1 text-[12px] font-black text-slate-900">
-                          {column.render(row.raw)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>
-    </PanelCard>
+    </div>
   );
 }
 
@@ -529,8 +479,6 @@ function EmptyRow({ text }) {
     <div className="px-2 py-8 text-center text-sm text-slate-400">{text}</div>
   );
 }
-
-/* ----------  MAIN  ---------- */
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -607,25 +555,25 @@ export default function AdminDashboard() {
       title: 'Bugünkü trafik yoğunluğu',
       text: `${formatNumber(stats?.orders_today)} sipariş bugün işlendi. Bu, haftalık akışın ${formatPercent(derived.todayShare)} bölümünü tek günde oluşturuyor.`,
       icon: Activity,
-      gradient: 'from-slate-800 to-slate-950',
+      iconClass: 'bg-slate-900',
     },
     {
       title: 'İlan stoğu dengesi',
       text: `${formatPercent(derived.activeListingRate)} aktif, ${formatPercent(derived.soldListingRate)} satılmış ilan oranı ile pazar yeri ritmi korunuyor.`,
       icon: ShoppingBag,
-      gradient: 'from-cyan-400 to-sky-600',
+      iconClass: 'bg-cyan-500',
     },
     {
       title: 'Ortalama sipariş değeri',
       text: `Son 7 günde işlem başına yaklaşık ${formatMoney(derived.avgTicket)} değer oluştu. Bu metrik kampanya ve komisyon kararlarında ana referans olabilir.`,
       icon: BadgeDollarSign,
-      gradient: 'from-emerald-400 to-teal-600',
+      iconClass: 'bg-emerald-500',
     },
     {
       title: 'Komisyon verimi',
       text: `Toplam komisyon geliri ${formatMoney(stats?.commission_total)} seviyesinde. Genel komisyon verimi ${formatPercent(derived.commissionRate)} olarak ilerliyor.`,
       icon: TrendingUp,
-      gradient: 'from-amber-400 to-orange-600',
+      iconClass: 'bg-amber-500',
     },
   ], [derived, stats]);
 
@@ -634,27 +582,27 @@ export default function AdminDashboard() {
       title: 'Bekleyen siparişler',
       text: `Son sipariş akışında ${formatNumber(derived.recentPendingOrders)} işlem beklemede görünüyor. Teslimat ve satıcı dönüşü hızını kontrol etmek faydalı olur.`,
       badge: `${formatNumber(derived.recentPendingOrders)} adet`,
-      badgeClass: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200/60',
+      badgeClass: 'bg-amber-50 text-amber-700',
       icon: Clock3,
-      gradient: 'from-amber-400 to-orange-500',
+      iconClass: 'bg-amber-500',
     },
     {
       title: 'İade / risk sinyali',
       text: `Yakın dönemde ${formatNumber(derived.recentRefundedOrders)} iade ve ${formatNumber(derived.recentRemovedListings)} kaldırılmış ilan dikkat çekiyor.`,
       badge: derived.recentRefundedOrders > 0 || derived.recentRemovedListings > 0 ? 'İncelenmeli' : 'Stabil',
       badgeClass: derived.recentRefundedOrders > 0 || derived.recentRemovedListings > 0
-        ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60'
-        : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60',
+        ? 'bg-rose-50 text-rose-700'
+        : 'bg-emerald-50 text-emerald-700',
       icon: AlertTriangle,
-      gradient: 'from-rose-500 to-red-600',
+      iconClass: 'bg-rose-500',
     },
     {
       title: 'Topluluk güvenliği',
       text: `Toplam banlı kullanıcı oranı ${formatPercent(derived.bannedRate)}. Son kullanıcı akışında ${formatNumber(derived.recentBannedUsers)} problemli hesap görünüyor.`,
       badge: formatPercent(derived.bannedRate),
-      badgeClass: 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/60',
+      badgeClass: 'bg-slate-100 text-slate-700',
       icon: ShieldAlert,
-      gradient: 'from-violet-500 to-fuchsia-600',
+      iconClass: 'bg-violet-500',
     },
   ], [derived]);
 
@@ -664,35 +612,35 @@ export default function AdminDashboard() {
       text: 'Bekleyen ve problemli siparişleri hızla filtrele.',
       to: '/admin/orders',
       icon: Package,
-      gradient: 'from-emerald-400 to-teal-600',
+      iconClass: 'bg-emerald-500',
     },
     {
       title: 'Finans ekranı',
       text: 'Hacim, komisyon ve ödeme bekleyen işlemleri incele.',
       to: '/admin/finance',
       icon: TrendingUp,
-      gradient: 'from-cyan-400 to-sky-600',
+      iconClass: 'bg-cyan-500',
     },
     {
       title: 'Kullanıcı moderasyonu',
       text: 'Ban, yetki ve profil hareketlerini kontrol et.',
       to: '/admin/users',
       icon: Users,
-      gradient: 'from-violet-500 to-fuchsia-600',
+      iconClass: 'bg-violet-500',
     },
     {
       title: 'Mesajlar ve yorumlar',
       text: 'Topluluk hareketini ve destek ihtiyacını gözden geçir.',
       to: '/admin/messages',
       icon: MessageSquare,
-      gradient: 'from-amber-400 to-orange-600',
+      iconClass: 'bg-amber-500',
     },
   ], []);
 
   const topCategoryRows = useMemo(
     () => (stats?.top_categories || []).map((item) => ({
       title: item.category_name || 'Kategorisiz',
-      subtitle: `${formatNumber(item.order_count)} sipariş`,
+      subtitle: `${formatNumber(item.order_count)} siparis`,
       trailing: `${formatMoney(item.revenue)} ciro`,
       raw: item,
     })),
@@ -701,8 +649,8 @@ export default function AdminDashboard() {
 
   const topSellerRows = useMemo(
     () => (stats?.top_sellers || []).map((item) => ({
-      title: item.username || 'Bilinmeyen satıcı',
-      subtitle: `${formatNumber(item.order_count)} satış`,
+      title: item.username || 'Bilinmeyen satici',
+      subtitle: `${formatNumber(item.order_count)} satis`,
       trailing: `${formatMoney(item.paid_earnings)} net`,
       raw: item,
     })),
@@ -715,8 +663,8 @@ export default function AdminDashboard() {
     return (
       <AdminLayout>
         <div className="flex min-h-[360px] items-center justify-center">
-          <div className="max-w-md rounded-3xl border border-rose-200 bg-white p-8 text-center shadow-lg">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/30">
+          <div className="max-w-md rounded-[28px] border border-rose-200 bg-white p-8 text-center shadow-sm">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
               <AlertTriangle size={24} />
             </div>
             <h2 className="mt-5 text-xl font-black text-slate-950">Dashboard yüklenemedi</h2>
@@ -729,117 +677,84 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-4">
-        {/* ==========  HERO  ========== */}
-        <section className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#0B1120] via-[#0F172A] to-[#1E1B4B] px-5 py-6 text-white shadow-2xl shadow-slate-900/20 sm:px-7">
-          {/* Ambient blobs — AdminLayout ile uyumlu */}
-          <div className="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-violet-600/25 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 top-10 h-72 w-72 rounded-full bg-cyan-500/20 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-0 left-1/3 h-48 w-48 rounded-full bg-fuchsia-500/20 blur-3xl" />
-          {/* Grid pattern */}
-          <div
-            className="pointer-events-none absolute inset-0 opacity-[0.03]"
-            style={{
-              backgroundImage:
-                'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-              backgroundSize: '32px 32px',
-            }}
-          />
+      <div className="space-y-3">
+        <section className="relative overflow-hidden rounded-[26px] bg-slate-950 px-5 py-5 text-white shadow-2xl shadow-slate-900/10 sm:px-6">
+          <div className="absolute -left-16 top-0 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
+          <div className="absolute right-0 top-10 h-56 w-56 rounded-full bg-violet-500/20 blur-3xl" />
+          <div className="absolute bottom-0 left-1/3 h-40 w-40 rounded-full bg-amber-400/10 blur-3xl" />
 
-          <div className="relative grid gap-5 xl:grid-cols-[1.5fr_1fr]">
+          <div className="relative grid gap-4 xl:grid-cols-[1.5fr_1fr]">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200 backdrop-blur">
-                <BarChart3 size={13} />
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
+                <BarChart3 size={14} />
                 Yönetim Merkezi
-                <span className="ml-1 flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
               </div>
 
-              <h2 className="mt-4 max-w-2xl text-3xl font-black leading-tight tracking-tight sm:text-[32px]">
-                Platformun nabzını <span className="bg-gradient-to-r from-cyan-300 via-violet-300 to-fuchsia-300 bg-clip-text text-transparent">tek ekrandan</span> takip et.
+              <h2 className="mt-4 max-w-2xl text-2xl font-black tracking-tight sm:text-3xl">
+                Platformın nabzını tek ekrandan takip et.
               </h2>
-              <p className="mt-3 max-w-2xl text-[13px] leading-6 text-slate-300 sm:text-sm">
-                Bugün <span className="font-bold text-white">{formatNumber(stats?.orders_today)}</span> sipariş,{' '}
-                <span className="font-bold text-white">{formatMoney(stats?.revenue_today)}</span> ciro ve{' '}
-                <span className="font-bold text-white">{formatNumber(stats?.new_users_today)}</span> yeni kullanıcı üretildi.
-                Aşağıda performans trendi ve kritik operasyon sinyalleri hazır.
+              <p className="mt-2 max-w-2xl text-[13px] leading-6 text-slate-300 sm:text-sm">
+                Bugün {formatNumber(stats?.orders_today)} sipariş, {formatMoney(stats?.revenue_today)} ciro ve {formatNumber(stats?.new_users_today)} yeni kullanıcı üretildi. Aşağıda performans trendi ve kritik operasyon sinyalleri hazır.
               </p>
 
-              <div className="mt-5 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
-                <HeroStat
-                  label="Haftalık Ciro"
-                  value={formatCompactMoney(stats?.revenue_week)}
-                  sub={`${formatMoney(stats?.revenue_week)} toplam`}
-                  accent="from-emerald-400 to-cyan-400"
-                />
-                <HeroStat
-                  label="Haftalık Sipariş"
-                  value={formatNumber(derived.weeklyOrders)}
-                  sub={`Sepet ort. ${formatMoney(derived.avgTicket)}`}
-                  accent="from-cyan-400 to-violet-400"
-                />
-                <HeroStat
-                  label="Yeni Kullanıcı"
-                  value={formatNumber(stats?.new_users_week)}
-                  sub="7 günlük toplam"
-                  accent="from-violet-400 to-fuchsia-400"
-                />
-                <HeroStat
-                  label="Haftalık Komisyon"
-                  value={formatCompactMoney(stats?.commission_week)}
-                  sub={`${formatPercent(derived.weeklyCommissionRate)} verim`}
-                  accent="from-amber-400 to-orange-400"
-                />
+              <div className="mt-4 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Haftalık Ciro</div>
+                  <div className="mt-2 text-2xl font-black text-white">{formatCompactMoney(stats?.revenue_week)}</div>
+                  <div className="mt-1 text-sm text-slate-300">{formatMoney(stats?.revenue_week)} toplam hacim</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Haftalık Sipariş</div>
+                  <div className="mt-2 text-2xl font-black text-white">{formatNumber(derived.weeklyOrders)}</div>
+                  <div className="mt-1 text-sm text-slate-300">Ortalama sepet {formatMoney(derived.avgTicket)}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Yeni Kullanıcı</div>
+                  <div className="mt-2 text-2xl font-black text-white">{formatNumber(stats?.new_users_week)}</div>
+                  <div className="mt-1 text-sm text-slate-300">7 günlük toplam kayıt</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Haftalık Komisyon</div>
+                  <div className="mt-2 text-2xl font-black text-white">{formatCompactMoney(stats?.commission_week)}</div>
+                  <div className="mt-1 text-sm text-slate-300">{formatPercent(derived.weeklyCommissionRate)} komisyon verimi</div>
+                </div>
               </div>
             </div>
 
-            {/* Durum özeti kart */}
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl">
+            <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 backdrop-blur">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-base font-black text-white">Durum Özeti</h3>
-                  <p className="mt-1 text-[12px] text-slate-300">Anlık karar için kısa görünüm.</p>
+                  <p className="mt-1 text-[12px] text-slate-300">Anlık karar vermeyi kolaylaştıran kısa görünüm.</p>
                 </div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 text-white shadow-lg ring-1 ring-white/20">
-                  <Sparkles size={15} />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-cyan-200">
+                  <Sparkles size={16} />
                 </div>
               </div>
 
               <div className="mt-4 space-y-2.5">
-                <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-3.5">
-                  <div className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200">Platform Sağlığı</div>
-                  <div className="mt-2 text-2xl font-black tracking-tight text-white">{formatPercent(derived.activeListingRate)}</div>
-                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-400"
-                      style={{ width: `${Math.min(100, derived.activeListingRate)}%` }}
-                    />
-                  </div>
-                  <p className="mt-2 text-[11px] text-slate-300">İlan havuzunun aktif kalan bölümü.</p>
+                <div className="rounded-2xl border border-white/10 bg-black/10 p-3">
+                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Platform Sağlığı</div>
+                  <div className="mt-2 text-2xl font-black text-white">{formatPercent(derived.activeListingRate)}</div>
+                  <p className="mt-1 text-sm text-slate-300">İlan havuzunun aktif kalan bölümü.</p>
                 </div>
-
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-200">
-                      <Star size={10} /> Yorumlar
-                    </div>
-                    <div className="mt-1.5 text-xl font-black text-white">{formatNumber(stats?.total_reviews)}</div>
+                  <div className="rounded-2xl border border-white/10 bg-black/10 p-3">
+                    <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Yorumlar</div>
+                    <div className="mt-2 text-xl font-black text-white">{formatNumber(stats?.total_reviews)}</div>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-violet-200">
-                      <MessageSquare size={10} /> Mesajlar
-                    </div>
-                    <div className="mt-1.5 text-xl font-black text-white">{formatNumber(stats?.total_messages)}</div>
+                  <div className="rounded-2xl border border-white/10 bg-black/10 p-3">
+                    <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Mesajlar</div>
+                    <div className="mt-2 text-xl font-black text-white">{formatNumber(stats?.total_messages)}</div>
                   </div>
                 </div>
-
-                <div className="rounded-2xl border border-amber-400/30 bg-gradient-to-br from-amber-500/15 to-orange-500/5 p-3">
-                  <div className="flex items-center gap-2 text-[12px] font-black uppercase tracking-wider text-amber-200">
-                    <Clock3 size={14} />
+                <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 p-3">
+                  <div className="flex items-center gap-2 text-sm font-bold text-amber-200">
+                    <Clock3 size={16} />
                     Operasyon Notu
                   </div>
-                  <p className="mt-2 text-[12px] leading-5 text-amber-50">
-                    Son akışta <span className="font-bold">{formatNumber(derived.recentPendingOrders)}</span> bekleyen sipariş ve{' '}
-                    <span className="font-bold">{formatNumber(derived.recentRefundedOrders)}</span> iade kaydı öne çıkıyor.
+                  <p className="mt-2 text-sm leading-6 text-amber-50">
+                    Son akışta {formatNumber(derived.recentPendingOrders)} bekleyen sipariş ve {formatNumber(derived.recentRefundedOrders)} iade kaydı öne çıkıyor.
                   </p>
                 </div>
               </div>
@@ -847,14 +762,13 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* ==========  METRIC CARDS  ========== */}
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
           <MetricCard
             title="Toplam Kullanıcı"
             value={formatNumber(stats?.total_users)}
             detail={`${formatNumber(stats?.new_users_today)} kullanıcı bugün katıldı.`}
             icon={Users}
-            gradient="from-violet-500 to-fuchsia-600"
+            accentClass="bg-violet-500"
             to="/admin/users"
           />
           <MetricCard
@@ -862,7 +776,7 @@ export default function AdminDashboard() {
             value={formatNumber(stats?.active_listings)}
             detail={`${formatNumber(stats?.sold_listings)} ilan satılmış durumda.`}
             icon={ShoppingBag}
-            gradient="from-cyan-400 to-sky-600"
+            accentClass="bg-cyan-500"
             to="/admin/listings"
           />
           <MetricCard
@@ -870,7 +784,7 @@ export default function AdminDashboard() {
             value={formatNumber(stats?.total_orders)}
             detail={`${formatNumber(stats?.orders_today)} sipariş bugün işlendi.`}
             icon={Package}
-            gradient="from-emerald-400 to-teal-600"
+            accentClass="bg-emerald-500"
             to="/admin/orders"
           />
           <MetricCard
@@ -878,19 +792,18 @@ export default function AdminDashboard() {
             value={formatMoney(stats?.revenue_total)}
             detail={`${formatMoney(stats?.revenue_today)} bugünkü tamamlanan ciro.`}
             icon={BadgeDollarSign}
-            gradient="from-orange-400 to-red-500"
+            accentClass="bg-orange-500"
           />
           <MetricCard
             title="Toplam Komisyon"
             value={formatMoney(stats?.commission_total)}
-            detail={`${formatMoney(stats?.commission_today)} bugün kasaya yansıyan komisyon.`}
+            detail={`${formatMoney(stats?.commission_today)} bugun kasaya yansiyan komisyon.`}
             icon={TrendingUp}
-            gradient="from-amber-400 to-orange-500"
+            accentClass="bg-amber-500"
             to="/admin/finance"
           />
         </section>
 
-        {/* ==========  TRENDS + SIDE  ========== */}
         <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.6fr_1fr]">
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
@@ -899,14 +812,14 @@ export default function AdminDashboard() {
                 subtitle="Gün bazında sipariş yoğunluğu"
                 series={orderCountSeries}
                 formatter={(value) => formatNumber(value)}
-                tone={{ stroke: '#7C3AED', strokeEnd: '#EC4899', fill: '#A78BFA' }}
+                tone={{ stroke: '#7C3AED', fill: '#A78BFA' }}
               />
               <TrendCard
                 title="Kullanıcı Kazanımı"
                 subtitle="Son 7 günde yeni kayıtlar"
                 series={userSeries}
                 formatter={(value) => formatNumber(value)}
-                tone={{ stroke: '#0891B2', strokeEnd: '#6366F1', fill: '#22D3EE' }}
+                tone={{ stroke: '#0F172A', fill: '#94A3B8' }}
               />
             </div>
 
@@ -916,21 +829,21 @@ export default function AdminDashboard() {
                 value={formatNumber(stats?.active_listings)}
                 helper="Toplam ilan havuzunun şu anda satışa açık kalan bölümü."
                 progress={derived.activeListingRate}
-                gradient="from-cyan-500 to-violet-500"
+                toneClass="bg-gradient-to-r from-cyan-500 to-violet-500"
               />
               <ProgressCard
                 title="Satılan İlan Oranı"
                 value={formatNumber(stats?.sold_listings)}
                 helper="Tamamlanmış satışların ilan havuzundaki payı."
                 progress={derived.soldListingRate}
-                gradient="from-emerald-500 to-cyan-500"
+                toneClass="bg-gradient-to-r from-emerald-500 to-cyan-500"
               />
               <ProgressCard
                 title="Banlı Kullanıcı Oranı"
                 value={formatNumber(stats?.banned_users)}
                 helper="Toplam kullanıcılar içinde moderasyon gerektiren pay."
                 progress={derived.bannedRate}
-                gradient="from-rose-500 to-orange-500"
+                toneClass="bg-gradient-to-r from-rose-500 to-orange-500"
               />
             </div>
           </div>
@@ -941,70 +854,71 @@ export default function AdminDashboard() {
           </div>
         </section>
 
-        {/* ==========  QUICK LINKS + REVENUE  ========== */}
         <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.1fr_0.9fr]">
           <QuickLinks items={quickLinks} />
 
-          <PanelCard className="p-4">
-            <SectionHeader title="Gelir Özeti" subtitle="Ciro ve komisyon performansını birlikte izle." badge="Son 7 Gün" badgeTone="violet" />
-
-            <div className="relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1120] via-[#0F172A] to-[#1E1B4B] p-4 text-white">
-              <div className="pointer-events-none absolute -right-10 top-0 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl" />
-              <div className="pointer-events-none absolute -left-10 bottom-0 h-40 w-40 rounded-full bg-fuchsia-500/20 blur-3xl" />
-
-              <div className="relative">
-                <div className="text-[10px] font-black uppercase tracking-[0.22em] text-cyan-200">İşlem Hacmi</div>
-                <div className="mt-2 text-3xl font-black tracking-tight">{formatMoney(derived.weeklyRevenue)}</div>
-                <p className="mt-1 text-[13px] text-slate-300">{formatNumber(derived.weeklyOrders)} siparişten oluşan 7 günlük hacim.</p>
-
-                <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
-                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-200">Komisyon</div>
-                    <div className="mt-2 text-lg font-black">{formatMoney(derived.weeklyCommission)}</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
-                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200">Komisyon Oranı</div>
-                    <div className="mt-2 text-lg font-black">{formatPercent(derived.weeklyCommissionRate)}</div>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur">
-                    <div className="text-[10px] font-black uppercase tracking-[0.18em] text-violet-200">Bekleyen Ödeme</div>
-                    <div className="mt-2 text-lg font-black">{formatMoney(stats?.pending_payout)}</div>
-                  </div>
-                </div>
-
-                <div className="mt-5 space-y-2.5">
-                  {revenueSeries.map((item) => {
-                    const maxRevenue = Math.max(...revenueSeries.map((entry) => entry.value), 1);
-                    const width = 6 + ((item.value / maxRevenue) * 94);
-                    return (
-                      <div key={item.day}>
-                        <div className="mb-1 flex items-center justify-between gap-3 text-[11px] font-bold text-slate-300">
-                          <span className="uppercase tracking-wider">{item.label}</span>
-                          <span className="text-white">{formatMoney(item.value)}</span>
-                        </div>
-                        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                          <div
-                            className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-400 shadow-[0_0_12px_rgba(139,92,246,0.5)]"
-                            style={{ width: `${width}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+          <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-[15px] font-black text-slate-950">Gelir Özeti</h3>
+                <p className="mt-1 text-[12px] text-slate-500">Ciro ve komisyon performansini birlikte izle.</p>
+              </div>
+              <div className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                Son 7 Gün
               </div>
             </div>
-          </PanelCard>
+
+            <div className="mt-4 rounded-[24px] bg-slate-950 p-4 text-white">
+              <div className="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">İşlem Hacmi</div>
+              <div className="mt-2 text-3xl font-black">{formatMoney(derived.weeklyRevenue)}</div>
+              <p className="mt-1 text-sm text-slate-300">{formatNumber(derived.weeklyOrders)} siparişten oluşan 7 günlük hacim.</p>
+
+              <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Komisyon</div>
+                  <div className="mt-2 text-lg font-black text-white">{formatMoney(derived.weeklyCommission)}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Komisyon Orani</div>
+                  <div className="mt-2 text-lg font-black text-white">{formatPercent(derived.weeklyCommissionRate)}</div>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-2.5">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Bekleyen Odeme</div>
+                  <div className="mt-2 text-lg font-black text-white">{formatMoney(stats?.pending_payout)}</div>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2.5">
+                {revenueSeries.map((item) => {
+                  const maxRevenue = Math.max(...revenueSeries.map((entry) => entry.value), 1);
+                  const width = 20 + ((item.value / maxRevenue) * 80);
+                  return (
+                    <div key={item.day}>
+                      <div className="mb-1 flex items-center justify-between gap-3 text-xs font-semibold text-slate-300">
+                        <span>{item.label}</span>
+                        <span>{formatMoney(item.value)}</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-500"
+                          style={{ width: `${width}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </section>
 
-        {/* ==========  LEADERBOARDS  ========== */}
         <section className="grid grid-cols-1 gap-3 xl:grid-cols-2">
           <LeaderboardCard
-            title="Kategori Bazlı Kazanç"
-            subtitle="Yalnızca listing siparişlerinden gelen kategori performansı"
+            title="Kategori Bazli Kazanc"
+            subtitle="Yalnizca listing siparislerinden gelen kategori performansi"
             badge="Top 5"
             rows={topCategoryRows}
-            emptyText="Kategori bazlı satış verisi yok."
+            emptyText="Kategori bazli satis verisi yok."
             columns={[
               { key: 'revenue', label: 'Ciro', render: (row) => formatMoney(row.revenue) },
               { key: 'commission', label: 'Komisyon', render: (row) => formatMoney(row.commission) },
@@ -1013,11 +927,11 @@ export default function AdminDashboard() {
           />
 
           <LeaderboardCard
-            title="Üye Bazlı Kazanç"
-            subtitle="En fazla net kazanç üreten satıcılar"
+            title="Uye Bazli Kazanc"
+            subtitle="En fazla net kazanc ureten saticilar"
             badge="Top 5"
             rows={topSellerRows}
-            emptyText="Satıcı bazlı satış verisi yok."
+            emptyText="Satici bazli satis verisi yok."
             columns={[
               { key: 'revenue', label: 'Ciro', render: (row) => formatMoney(row.revenue) },
               { key: 'pending_earnings', label: 'Bekleyen', render: (row) => formatMoney(row.pending_earnings) },
@@ -1026,13 +940,12 @@ export default function AdminDashboard() {
           />
         </section>
 
-        {/* ==========  ACTIVITY STREAMS  ========== */}
         <section className="grid grid-cols-1 gap-3 xl:grid-cols-3">
           <ActivitySection
             title="Yeni Kullanıcılar"
             subtitle="Son kayıt olan hesaplar ve durum bilgileri"
             linkTo="/admin/users"
-            linkLabel="Git"
+            linkLabel="Kullanıcılara git"
           >
             {(stats?.recent_users || []).length === 0 ? (
               <EmptyRow text="Yeni kullanıcı kaydı yok." />
@@ -1040,22 +953,18 @@ export default function AdminDashboard() {
               <div className="divide-y divide-slate-100">
                 {stats.recent_users.map((user) => (
                   <div key={user.id} className="flex items-center gap-3 py-2.5">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-base font-black text-white shadow-md ring-1 ring-white/40">
-                      {user.avatar ? (
-                        <span>{user.avatar}</span>
-                      ) : (
-                        <User size={16} strokeWidth={2.4} />
-                      )}
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base">
+                      {user.avatar || 'ğŸ‘¤'}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13px] font-black text-slate-900">{user.username}</div>
-                      <div className="truncate text-[11px] text-slate-500">{user.email}</div>
+                      <div className="truncate text-[13px] font-bold text-slate-900">{user.username}</div>
+                      <div className="truncate text-[12px] text-slate-500">{user.email}</div>
                     </div>
                     <div className="text-right">
-                      <div className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${Number(user.is_banned) === 1 ? 'bg-rose-50 text-rose-700 ring-1 ring-rose-200/60' : 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200/60'}`}>
+                      <div className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${Number(user.is_banned) === 1 ? 'bg-rose-50 text-rose-700' : 'bg-emerald-50 text-emerald-700'}`}>
                         {Number(user.is_banned) === 1 ? 'Banlı' : 'Aktif'}
                       </div>
-                      <div className="mt-1 text-[10px] text-slate-400">{formatDateTime(user.created_at)}</div>
+                      <div className="mt-1 text-[11px] text-slate-400">{formatDateTime(user.created_at)}</div>
                     </div>
                   </div>
                 ))}
@@ -1067,7 +976,7 @@ export default function AdminDashboard() {
             title="Son Siparişler"
             subtitle="Akışın son hareketleri ve işlem durumları"
             linkTo="/admin/orders"
-            linkLabel="Git"
+            linkLabel="Siparişlere git"
           >
             {(stats?.recent_orders || []).length === 0 ? (
               <EmptyRow text="Yeni sipariş yok." />
@@ -1077,17 +986,17 @@ export default function AdminDashboard() {
                   <div key={order.id} className="py-2.5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="truncate text-[13px] font-black text-slate-900">{order.item_title || 'Ürün bilgisi yok'}</div>
-                        <div className="mt-0.5 text-[11px] text-slate-500">{order.buyer || 'Alıcı yok'} • {order.seller || 'Satıcı yok'}</div>
+                        <div className="truncate text-[13px] font-bold text-slate-900">{order.item_title || 'Ürün bilgisi yok'}</div>
+                        <div className="mt-1 text-[12px] text-slate-500">{order.buyer || 'Alıcı yok'} • {order.seller || 'Satıcı yok'}</div>
                       </div>
                       <div className="text-right">
                         <div className="font-black text-emerald-600">{formatMoney(order.amount)}</div>
-                        <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${ORDER_STATUS_STYLES[order.status] || 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/60'}`}>
+                        <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${ORDER_STATUS_STYLES[order.status] || 'bg-slate-100 text-slate-700'}`}>
                           {order.status === 'completed' ? 'Tamamlandı' : order.status === 'pending' ? 'Bekliyor' : order.status === 'refunded' ? 'İade' : order.status}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-1.5 text-[10px] text-slate-400">{formatDateTime(order.created_at)}</div>
+                    <div className="mt-1.5 text-[11px] text-slate-400">{formatDateTime(order.created_at)}</div>
                   </div>
                 ))}
               </div>
@@ -1098,7 +1007,7 @@ export default function AdminDashboard() {
             title="Yeni İlanlar"
             subtitle="Pazaryerine eklenen son içerikler"
             linkTo="/admin/listings"
-            linkLabel="Git"
+            linkLabel="İlanlara git"
           >
             {(stats?.recent_listings || []).length === 0 ? (
               <EmptyRow text="Yeni ilan yok." />
@@ -1108,17 +1017,17 @@ export default function AdminDashboard() {
                   <div key={listing.id} className="py-2.5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="truncate text-[13px] font-black text-slate-900">{listing.title}</div>
-                        <div className="mt-0.5 text-[11px] text-slate-500">{listing.seller || 'Satıcı bilgisi yok'}</div>
+                        <div className="truncate text-[13px] font-bold text-slate-900">{listing.title}</div>
+                        <div className="mt-1 text-[12px] text-slate-500">{listing.seller || 'Satıcı bilgisi yok'}</div>
                       </div>
                       <div className="text-right">
                         <div className="font-black text-emerald-600">{formatMoney(listing.price)}</div>
-                        <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${LISTING_STATUS_STYLES[listing.status] || 'bg-slate-100 text-slate-700 ring-1 ring-slate-200/60'}`}>
+                        <div className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${LISTING_STATUS_STYLES[listing.status] || 'bg-slate-100 text-slate-700'}`}>
                           {listing.status === 'active' ? 'Aktif' : listing.status === 'sold' ? 'Satıldı' : listing.status === 'pending' ? 'Bekliyor' : listing.status === 'removed' ? 'Kaldırıldı' : listing.status}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-1.5 text-[10px] text-slate-400">{formatDateTime(listing.created_at)}</div>
+                    <div className="mt-1.5 text-[11px] text-slate-400">{formatDateTime(listing.created_at)}</div>
                   </div>
                 ))}
               </div>
@@ -1126,21 +1035,20 @@ export default function AdminDashboard() {
           </ActivitySection>
         </section>
 
-        {/* ==========  SECONDARY METRICS  ========== */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <MetricCard
             title="Haftalık Kullanıcı"
             value={formatNumber(derived.weeklyUsers)}
             detail="Son 7 gün içinde açılan toplam kullanıcı hesabı."
             icon={Users}
-            gradient="from-slate-700 to-slate-950"
+            accentClass="bg-slate-900"
           />
           <MetricCard
             title="Toplam Yorum"
             value={formatNumber(stats?.total_reviews)}
             detail="Topluluk etkileşimi ve memnuniyet sinyali."
             icon={Star}
-            gradient="from-amber-400 to-orange-500"
+            accentClass="bg-amber-500"
             to="/admin/reviews"
           />
           <MetricCard
@@ -1148,7 +1056,7 @@ export default function AdminDashboard() {
             value={formatNumber(stats?.total_messages)}
             detail="Destek ve kullanıcı iletişim havuzunun genel büyüklüğü."
             icon={MessageSquare}
-            gradient="from-violet-500 to-fuchsia-600"
+            accentClass="bg-violet-500"
             to="/admin/messages"
           />
         </section>
@@ -1157,17 +1065,4 @@ export default function AdminDashboard() {
   );
 }
 
-/* ----------  HERO STAT  ---------- */
 
-function HeroStat({ label, value, sub, accent }) {
-  return (
-    <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3 backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/10">
-      <div className={`pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gradient-to-br ${accent} opacity-20 blur-2xl transition-opacity group-hover:opacity-40`} />
-      <div className="relative text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">{label}</div>
-      <div className={`relative mt-2 bg-gradient-to-r ${accent} bg-clip-text text-2xl font-black tracking-tight text-transparent`}>
-        {value}
-      </div>
-      <div className="relative mt-0.5 text-[11px] text-slate-300">{sub}</div>
-    </div>
-  );
-}
