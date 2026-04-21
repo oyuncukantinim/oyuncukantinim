@@ -259,18 +259,24 @@ export default function StoreApplicationPage() {
               {submitting ? 'Başvuru gönderiliyor...' : 'Başvuruyu Gönder'}
             </button>
           </div>
-          <div className="mb-4 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50/70 p-3">
-            <img
-              src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
-              alt="Örnek kimlik ve selfie doğrulama"
-              className="h-24 w-24 shrink-0 rounded-xl border border-amber-200 bg-white object-cover shadow-sm sm:h-28 sm:w-28"
-            />
-            <div className="min-w-0">
+          <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-3">
+            <div className="mb-2 flex items-center justify-between gap-2">
               <div className="text-xs font-black uppercase tracking-wide text-amber-700">Örnek Görsel</div>
-              <p className="mt-1 text-xs font-semibold leading-5 text-slate-600">
-                Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
-              </p>
+              <p className="text-[11px] font-semibold text-slate-500">Önerilen poz ve kadraj</p>
             </div>
+            <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+              <div className="aspect-[2816/1536] w-full">
+                <img
+                  src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
+                  alt="Örnek kimlik ve selfie doğrulama"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            </div>
+            <p className="mx-auto mt-2 max-w-2xl text-xs font-semibold leading-5 text-slate-600">
+              Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
+            </p>
           </div>
           <div className="grid gap-3 xl:grid-cols-[1fr_1fr_1.2fr]">
             <FileDrop
