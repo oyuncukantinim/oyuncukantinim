@@ -104,6 +104,7 @@ export default function StoreApplicationPage() {
   const [identityImage, setIdentityImage] = useState(null);
   const [selfieImage, setSelfieImage] = useState(null);
   const [userNote, setUserNote] = useState('');
+  const [exampleOpen, setExampleOpen] = useState(false);
 
   const loadOverview = useCallback(() => {
     setLoading(true);
@@ -265,16 +266,21 @@ export default function StoreApplicationPage() {
               <p className="text-[11px] font-semibold text-slate-500">Önerilen poz ve kadraj</p>
             </div>
             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-              <div className="w-full max-w-sm shrink-0 overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm sm:w-64">
+              <button
+                type="button"
+                onClick={() => setExampleOpen(true)}
+                className="group w-full max-w-sm shrink-0 overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm transition-all hover:shadow-md hover:ring-2 hover:ring-amber-300 sm:w-64"
+                title="Büyük göster"
+              >
                 <div className="aspect-[2816/1536] w-full">
                   <img
                     src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
                     alt="Örnek kimlik ve selfie doğrulama"
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                     loading="lazy"
                   />
                 </div>
-              </div>
+              </button>
               <p className="text-xs font-semibold leading-5 text-slate-600">
                 Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
               </p>
@@ -295,15 +301,43 @@ export default function StoreApplicationPage() {
               file={selfieImage}
               onChange={setSelfieImage}
             />
-            <textarea
-              value={userNote}
-              onChange={(event) => setUserNote(event.target.value)}
-              rows={4}
-              placeholder="Admin için kısa not bırakmak istersen yazabilirsin."
-              className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition-colors focus:border-violet-400"
-            />
+            <div className="relative flex flex-col">
+              <textarea
+                value={userNote}
+                onChange={(event) => setUserNote(event.target.value.slice(0, 200))}
+                rows={4}
+                maxLength={200}
+                placeholder="Admin için kısa not bırakmak istersen yazabilirsin."
+                className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition-colors focus:border-violet-400"
+              />
+              <div className="mt-1 text-right text-[11px] font-semibold text-slate-400">
+                {userNote.length}/200
+              </div>
+            </div>
           </div>
         </section>
+      ) : null}
+
+      {exampleOpen ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setExampleOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setExampleOpen(false)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            title="Kapat"
+          >
+            <XCircle size={22} />
+          </button>
+          <img
+            src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
+            alt="Örnek kimlik ve selfie doğrulama - büyük"
+            className="max-h-[90vh] max-w-[95vw] rounded-2xl object-contain shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
       ) : null}
 
       <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
