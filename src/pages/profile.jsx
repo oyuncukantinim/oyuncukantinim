@@ -928,6 +928,7 @@ export default function ProfilePage() {
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
     ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
     { id: 'withdrawals',   label: 'Para Çek',          icon: TrendingDown },
+    { id: 'store_application', label: 'Onaylı Mağaza', icon: ShieldCheck },
     { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
@@ -936,6 +937,13 @@ export default function ProfilePage() {
   const isToggleableListing = (listing) => ['active', 'passive', 'inactive'].includes(listing.status);
   const isSoldManualListing = (listing) => listing.status === 'sold' && listing.delivery_type !== 'stock';
   const isPassiveListing = (listing) => ['passive', 'inactive'].includes(listing.status) || isSoldManualListing(listing);
+  const handleTabClick = (tabId) => {
+    if (tabId === 'store_application') {
+      navigate('/magaza-basvuru');
+      return;
+    }
+    setActiveTab(tabId);
+  };
 
   const filteredListings = myListings.filter(l => {
     if (listingFilter === 'active') return l.status === 'active';
@@ -1015,7 +1023,7 @@ export default function ProfilePage() {
           <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 space-y-0.5 sticky top-4">
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">İşlemler</p>
             {tabs.filter(t => ['listings','orders','sales'].includes(t.id)).map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                 }`}
@@ -1026,7 +1034,7 @@ export default function ProfilePage() {
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
             {tabs.filter(t => ['favorites','achievements','reviews','finance'].includes(t.id)).map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                 }`}
@@ -1036,8 +1044,8 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Hesap</p>
-            {tabs.filter(t => ['balance','withdrawals','profile','personal'].includes(t.id)).map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            {tabs.filter(t => ['balance','withdrawals','store_application','profile','personal'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                 }`}
@@ -1361,7 +1369,7 @@ export default function ProfilePage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 {(storeOverview?.badges || []).map((badge) => (
-                  <AchievementCard key={badge.id} badge={badge} currentSales={storeOverview?.criteria?.sales || 0} />
+                  <AchievementCard key={badge.id} badge={badge} />
                 ))}
                 {(!storeOverview?.badges || storeOverview.badges.length === 0) ? (
                   <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">

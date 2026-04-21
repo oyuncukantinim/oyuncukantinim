@@ -46,6 +46,7 @@ export default function AdminStoreManagement() {
   const [toast, setToast] = useState('');
   const [uploading, setUploading] = useState(false);
   const [notes, setNotes] = useState({});
+  const [activePanel, setActivePanel] = useState('applications');
 
   const showToast = useCallback((message) => {
     setToast(message);
@@ -157,6 +158,29 @@ export default function AdminStoreManagement() {
           </div>
         </div>
 
+        <div className="rounded-2xl bg-slate-100 p-1">
+          <div className="grid gap-1 sm:grid-cols-2">
+            {[
+              { id: 'applications', label: 'Başvurular', count: data.pending_count || 0 },
+              { id: 'badges', label: 'Rozet Yönetimi', count: data.badges?.length || 0 },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActivePanel(tab.id)}
+                className={`rounded-xl px-4 py-3 text-sm font-black transition-all ${
+                  activePanel === tab.id
+                    ? 'bg-white text-violet-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {tab.label}
+                <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px]">{tab.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {activePanel === 'applications' ? (
         <div className="rounded-3xl border border-slate-100 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-100 p-5 md:flex-row md:items-center md:justify-between">
             <div>
@@ -264,7 +288,9 @@ export default function AdminStoreManagement() {
             </table>
           </div>
         </div>
+        ) : null}
 
+        {activePanel === 'badges' ? (
         <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
@@ -383,6 +409,7 @@ export default function AdminStoreManagement() {
             </div>
           </div>
         </div>
+        ) : null}
       </div>
     </AdminLayout>
   );

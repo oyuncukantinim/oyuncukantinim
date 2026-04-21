@@ -1,16 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  ArrowUpWideNarrow,
   BadgeCheck,
   CheckCircle2,
   Clock,
   Crown,
-  FileImage,
   Gamepad2,
+  Headphones,
   Lock,
+  MessageCircle,
   ShieldCheck,
   Sparkles,
   Upload,
+  Users,
   XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -24,11 +27,54 @@ const statusMeta = {
   rejected: { label: 'Reddedildi', className: 'border-rose-200 bg-rose-50 text-rose-700', icon: XCircle },
 };
 
+const benefits = [
+  {
+    icon: ShieldCheck,
+    title: 'Güven Rozeti',
+    text: 'Satıcı kartında yeşil Onaylı Mağaza rozetiyle daha net güven sinyali verirsin.',
+  },
+  {
+    icon: ArrowUpWideNarrow,
+    title: 'Daha Üst Görünürlük',
+    text: 'Mağaza ilanların pazar alanında standart üyelere göre daha güçlü konumlandırılabilir.',
+  },
+  {
+    icon: Crown,
+    title: 'Satış Rütbeleri',
+    text: 'Satış başarına göre özel rütbe rozetleri kazanır ve profilinde sergilersin.',
+  },
+  {
+    icon: Sparkles,
+    title: 'Özel Rozetler',
+    text: 'Admin tarafından oluşturulan şirin oyuncu temalı rozetler mağaza kimliğini güçlendirir.',
+  },
+  {
+    icon: Headphones,
+    title: 'Öncelikli Destek',
+    text: 'Destek taleplerin mağaza modülü yönetim akışında daha hızlı takip edilebilir.',
+  },
+  {
+    icon: MessageCircle,
+    title: 'Discord Rolü',
+    text: 'Discord sunucusunda Mağaza Üye rolüyle topluluk içinde daha görünür olursun.',
+  },
+  {
+    icon: Users,
+    title: 'Profesyonel Vitrin',
+    text: 'Başarımlar, doğrulama ve rütbe alanları mağazanı daha kurumsal gösterir.',
+  },
+  {
+    icon: Gamepad2,
+    title: 'Oyuncu Teması',
+    text: 'Rozetler ve başarımlar pazarın oyun odaklı görsel diline uygun şekilde sergilenir.',
+  },
+];
+
 function FileDrop({ id, label, description, file, onChange }) {
   return (
     <label
       htmlFor={id}
-      className="group flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-200 bg-white/80 p-5 text-center transition-all hover:border-violet-400 hover:bg-violet-50"
+      className="group flex min-h-[120px] cursor-pointer items-center gap-4 rounded-2xl border-2 border-dashed border-violet-200 bg-white/80 p-4 transition-all hover:border-violet-400 hover:bg-violet-50"
     >
       <input
         id={id}
@@ -37,11 +83,13 @@ function FileDrop({ id, label, description, file, onChange }) {
         className="hidden"
         onChange={(event) => onChange(event.target.files?.[0] || null)}
       />
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-200">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-cyan-500 text-white shadow-lg shadow-violet-200">
         {file ? <CheckCircle2 size={22} /> : <Upload size={22} />}
       </div>
-      <div className="text-sm font-black text-slate-900">{label}</div>
-      <div className="mt-1 text-xs font-semibold leading-5 text-slate-400">{file ? file.name : description}</div>
+      <div className="min-w-0">
+        <div className="text-sm font-black text-slate-900">{label}</div>
+        <div className="mt-1 truncate text-xs font-semibold leading-5 text-slate-400">{file ? file.name : description}</div>
+      </div>
     </label>
   );
 }
@@ -111,20 +159,20 @@ export default function StoreApplicationPage() {
   const canApply = criteria.eligible && !overview.is_verified_store && application?.status !== 'pending';
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-screen-2xl space-y-8">
       <section className="relative overflow-hidden rounded-[2rem] border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-2xl shadow-violet-200 sm:p-8">
         <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="absolute -bottom-16 left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl" />
-        <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div className="relative grid gap-8 xl:grid-cols-[1.55fr_0.45fr] xl:items-center">
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-black text-cyan-100 backdrop-blur">
               <Gamepad2 size={14} /> Mağaza güçlendirme merkezi
             </div>
-            <h1 className="max-w-3xl text-3xl font-black leading-tight sm:text-5xl">
-              Onaylı Mağaza ol, oyunculara daha güvenli görün.
+            <h1 className="max-w-5xl text-3xl font-black leading-tight sm:text-5xl">
+              Onaylı Mağaza ol, oyunculara daha güvenli ve profesyonel görün.
             </h1>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-white/70">
-              Yeşil verify rozetiyle mağazanı öne çıkar, satış rütbelerini başarımlarında sergile ve profesyonel satıcı görünümünü güçlendir.
+            <p className="mt-4 max-w-4xl text-sm font-semibold leading-7 text-white/70">
+              Yeşil verify rozeti, satış rütbeleri, özel rozetler ve mağaza odaklı avantajlarla satıcı profilini daha güçlü bir vitrine dönüştür.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               {overview.is_verified_store ? <VerifiedStoreBadge /> : null}
@@ -155,12 +203,8 @@ export default function StoreApplicationPage() {
         </div>
       </section>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          { icon: ShieldCheck, title: 'Daha fazla güven', text: 'Satıcı bloğunda yeşil doğrulama rozetiyle güven sinyali ver.' },
-          { icon: Crown, title: 'Rütbe sistemi', text: 'Satış sayına göre yalnızca en yüksek uygun rozet öne çıkar.' },
-          { icon: Sparkles, title: 'Şirin oyuncu vitrini', text: 'Başarımlar sekmesinde rozetlerin açıklama ve ilerleme durumuyla görünür.' },
-        ].map((item) => (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {benefits.map((item) => (
           <div key={item.title} className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <item.icon size={24} className="mb-3 text-violet-600" />
             <div className="font-black text-slate-900">{item.title}</div>
@@ -169,83 +213,74 @@ export default function StoreApplicationPage() {
         ))}
       </div>
 
-      <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-black text-slate-900">Başvuru kriterleri</h2>
-          <div className="space-y-3">
-            {criteria.items?.map((item) => (
-              <div key={item.key} className="flex gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
-                <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.passed ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
-                  {item.passed ? <CheckCircle2 size={18} /> : <Lock size={18} />}
-                </div>
-                <div>
-                  <div className="text-sm font-black text-slate-900">{item.title}</div>
-                  <p className="text-xs font-semibold leading-5 text-slate-500">{item.description}</p>
-                  {item.required !== undefined ? (
-                    <div className="mt-1 text-[11px] font-black text-slate-400">Mevcut: {item.current} / Gerekli: {item.required}</div>
-                  ) : null}
-                </div>
-              </div>
-            ))}
+      <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-slate-900">Başvuru kriterleri</h2>
+            <p className="mt-1 text-xs font-semibold text-slate-400">Tüm şartlar tamamlandığında doğrulama yükleme alanı aşağıda açılır.</p>
           </div>
+          {application?.status === 'rejected' && application.admin_note ? (
+            <div className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600">Red sebebi: {application.admin_note}</div>
+          ) : null}
         </div>
-
-        <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-black text-slate-900">Doğrulama görselleri</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-400">Görseller WebP formatına çevrilir ve özel klasörde saklanır.</p>
-            </div>
-            <FileImage className="text-violet-500" />
-          </div>
-
-          {!canApply ? (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5 text-sm font-semibold leading-6 text-slate-500">
-              {overview.is_verified_store
-                ? 'Mağazanız zaten onaylı. Rozetiniz profilinizde görünecek.'
-                : application?.status === 'pending'
-                  ? 'Başvurunuz incelemede. Admin onayından sonra yeşil rozet aktif olur.'
-                  : 'Başvuru formu tüm kriterler tamamlandığında açılır.'}
-              {application?.status === 'rejected' && application.admin_note ? (
-                <div className="mt-3 rounded-xl bg-rose-50 p-3 text-rose-600">Red sebebi: {application.admin_note}</div>
-              ) : null}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <FileDrop
-                  id="identity-image"
-                  label="Kimlik görseli"
-                  description="Kimliğin net göründüğü görsel"
-                  file={identityImage}
-                  onChange={setIdentityImage}
-                />
-                <FileDrop
-                  id="selfie-image"
-                  label="Selfie doğrulama"
-                  description="Kimlikle birlikte selfie görseli"
-                  file={selfieImage}
-                  onChange={setSelfieImage}
-                />
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {criteria.items?.map((item) => (
+            <div key={item.key} className="flex gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+              <div className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${item.passed ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                {item.passed ? <CheckCircle2 size={18} /> : <Lock size={18} />}
               </div>
-              <textarea
-                value={userNote}
-                onChange={(event) => setUserNote(event.target.value)}
-                rows={3}
-                placeholder="Admin için kısa not bırakmak istersen yazabilirsin."
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold outline-none transition-colors focus:border-violet-400"
-              />
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="w-full rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-violet-200 transition-all hover:scale-[1.01] disabled:opacity-50"
-              >
-                {submitting ? 'Başvuru gönderiliyor...' : 'Onaylı Mağaza Başvurusu Gönder'}
-              </button>
+              <div>
+                <div className="text-sm font-black text-slate-900">{item.title}</div>
+                <p className="text-xs font-semibold leading-5 text-slate-500">{item.description}</p>
+                {item.required !== undefined ? (
+                  <div className="mt-1 text-[11px] font-black text-slate-400">Mevcut: {item.current} / Gerekli: {item.required}</div>
+                ) : null}
+              </div>
             </div>
-          )}
+          ))}
         </div>
       </section>
+
+      {canApply ? (
+        <section className="rounded-3xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-cyan-50 p-5 shadow-sm">
+          <div className="mb-4 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <h2 className="text-lg font-black text-slate-900">Doğrulama görsellerini yükle</h2>
+              <p className="mt-1 text-xs font-semibold text-slate-500">Kimlik ve selfie görselleri WebP formatına çevrilir, özel klasörde saklanır ve yalnızca admin tarafından görüntülenir.</p>
+            </div>
+            <button
+              onClick={handleSubmit}
+              disabled={submitting}
+              className="rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-violet-200 transition-all hover:scale-[1.01] disabled:opacity-50"
+            >
+              {submitting ? 'Başvuru gönderiliyor...' : 'Başvuruyu Gönder'}
+            </button>
+          </div>
+          <div className="grid gap-3 xl:grid-cols-[1fr_1fr_1.2fr]">
+            <FileDrop
+              id="identity-image"
+              label="Kimlik görseli"
+              description="Kimliğin net göründüğü görsel"
+              file={identityImage}
+              onChange={setIdentityImage}
+            />
+            <FileDrop
+              id="selfie-image"
+              label="Selfie doğrulama"
+              description="Kimlikle birlikte selfie görseli"
+              file={selfieImage}
+              onChange={setSelfieImage}
+            />
+            <textarea
+              value={userNote}
+              onChange={(event) => setUserNote(event.target.value)}
+              rows={4}
+              placeholder="Admin için kısa not bırakmak istersen yazabilirsin."
+              className="min-h-[120px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition-colors focus:border-violet-400"
+            />
+          </div>
+        </section>
+      ) : null}
 
       <section className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
         <div className="mb-4 flex items-center justify-between gap-3">
@@ -257,9 +292,9 @@ export default function StoreApplicationPage() {
             Profilimi Gör
           </Link>
         </div>
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {(overview.badges || []).map((badge) => (
-            <AchievementCard key={badge.id} badge={badge} currentSales={criteria.sales || 0} />
+            <AchievementCard key={badge.id} badge={badge} />
           ))}
           {(!overview.badges || overview.badges.length === 0) ? (
             <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-400">

@@ -29,9 +29,8 @@ export function StoreRankPill({ badge }) {
   );
 }
 
-export function AchievementCard({ badge, currentSales = 0 }) {
+export function AchievementCard({ badge }) {
   const unlocked = Boolean(badge?.is_unlocked);
-  const progress = Number(badge?.progress || 0);
   const requiredSales = Number(badge?.required_sales || 0);
 
   return (
@@ -67,17 +66,8 @@ export function AchievementCard({ badge, currentSales = 0 }) {
             ) : null}
           </div>
           <p className="mt-1 text-sm font-semibold leading-5 text-slate-500">{badge.description || 'Satış başarım rozeti.'}</p>
-          <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between text-[11px] font-black text-slate-400">
-              <span>{currentSales} / {requiredSales} satış</span>
-              <span>%{Math.min(100, progress)}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full rounded-full ${unlocked ? 'bg-gradient-to-r from-amber-400 to-orange-500' : 'bg-slate-300'}`}
-                style={{ width: `${Math.min(100, progress)}%` }}
-              />
-            </div>
+          <div className="mt-3 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
+            {requiredSales > 0 ? `${requiredSales} satış rütbesi` : 'Başlangıç rozeti'}
           </div>
         </div>
         <Gamepad2 size={18} className={unlocked ? 'text-violet-400' : 'text-slate-300'} />

@@ -300,7 +300,7 @@ export default function SellerPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             {(seller.store_badges || []).map((badge) => (
-              <AchievementCard key={badge.id} badge={badge} currentSales={seller.total_sales || 0} />
+              <AchievementCard key={badge.id} badge={badge} />
             ))}
             {(!seller.store_badges || seller.store_badges.length === 0) ? (
               <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
