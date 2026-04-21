@@ -67,7 +67,7 @@ export function AchievementCard({ badge }) {
           </div>
           <p className="mt-1 text-sm font-semibold leading-5 text-slate-500">{badge.description || 'Satış başarım rozeti.'}</p>
           <div className="mt-3 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-            {requiredSales > 0 ? `${requiredSales} satış rütbesi` : 'Başlangıç rozeti'}
+            {requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti'}
           </div>
         </div>
         <Gamepad2 size={18} className={unlocked ? 'text-violet-400' : 'text-slate-300'} />
