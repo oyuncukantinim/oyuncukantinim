@@ -45,6 +45,11 @@ export function StoreRankPill({ badge }) {
 export function AchievementCard({ badge }) {
   const unlocked = Boolean(badge?.is_unlocked);
   const requiredSales = Number(badge?.required_sales || 0);
+  const memberLimit = Number(badge?.member_limit || 0);
+  const badgeType = badge?.badge_type || 'sales_rank';
+  const requirementText = badgeType === 'founding_member'
+    ? `İlk ${memberLimit || 1000} Üye`
+    : requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti';
 
   return (
     <div
@@ -76,7 +81,7 @@ export function AchievementCard({ badge }) {
         {badge.description || 'Satış başarım rozeti.'}
       </p>
       <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-amber-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
-        {requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti'}
+        {requirementText}
       </div>
       <Gamepad2 size={16} className={`absolute bottom-3 right-3 ${unlocked ? 'text-violet-400' : 'text-slate-300'}`} />
     </div>

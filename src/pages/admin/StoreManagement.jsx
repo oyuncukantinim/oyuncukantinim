@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
+  Users,
   XCircle,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
@@ -27,7 +28,9 @@ const emptyBadge = {
   title: '',
   description: '',
   image_url: '',
+  badge_type: 'sales_rank',
   required_sales: 0,
+  member_limit: 1000,
   sort_order: 0,
   is_active: 1,
 };
@@ -86,7 +89,9 @@ export default function AdminStoreManagement() {
       title: badge.title || '',
       description: badge.description || '',
       image_url: badge.image_url || '',
+      badge_type: badge.badge_type || 'sales_rank',
       required_sales: Number(badge.required_sales || 0),
+      member_limit: Number(badge.member_limit || 0) || 1000,
       sort_order: Number(badge.sort_order || 0),
       is_active: Number(badge.is_active) === 1 ? 1 : 0,
     });
@@ -185,7 +190,7 @@ export default function AdminStoreManagement() {
                 <ShieldCheck size={14} /> Onaylı Mağaza
               </div>
               <h1 className="mt-3 text-2xl font-black text-slate-900">Mağaza Yönetimi</h1>
-              <p className="mt-1 text-sm font-semibold text-slate-500">Onaylı mağaza başvuruları ve satış rütbesi rozetleri.</p>
+              <p className="mt-1 text-sm font-semibold text-slate-500">Onaylı mağaza başvuruları, satış rütbeleri ve özel üye rozetleri.</p>
             </div>
             <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-700">
               {data.pending_count || 0} bekleyen başvuru
@@ -406,9 +411,20 @@ export default function AdminStoreManagement() {
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-2">
               <BadgeCheck size={18} className="text-violet-600" />
-              <h2 className="font-black text-slate-900">{form.id ? 'Rozeti Düzenle' : 'Satış Rozeti Ekle'}</h2>
+              <h2 className="font-black text-slate-900">{form.id ? 'Rozeti Düzenle' : 'Rozet Ekle'}</h2>
             </div>
             <div className="space-y-3">
+              <label className="block">
+                <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Rozet Türü</span>
+                <select
+                  value={form.badge_type || 'sales_rank'}
+                  onChange={(event) => setForm((prev) => ({ ...prev, badge_type: event.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black outline-none focus:border-violet-400"
+                >
+                  <option value="sales_rank">Satış rütbesi</option>
+                  <option value="founding_member">İlk üye rozeti</option>
+                </select>
+              </label>
               <input
                 value={form.title}
                 onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -424,15 +440,27 @@ export default function AdminStoreManagement() {
               />
               <div className="grid gap-3 sm:grid-cols-2">
                 <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Gerekli Satış Sayısı</span>
+                  <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">
+                    {(form.badge_type || 'sales_rank') === 'founding_member' ? 'Üye Limiti' : 'Gerekli Satış Sayısı'}
+                  </span>
                   <input
                   type="number"
                   min="0"
-                  value={form.required_sales}
-                  onChange={(event) => setForm((prev) => ({ ...prev, required_sales: Number(event.target.value || 0) }))}
-                  placeholder="Gerekli satış"
+                  value={(form.badge_type || 'sales_rank') === 'founding_member' ? form.member_limit : form.required_sales}
+                  onChange={(event) => {
+                    const value = Number(event.target.value || 0);
+                    setForm((prev) => (prev.badge_type || 'sales_rank') === 'founding_member'
+                      ? { ...prev, member_limit: value }
+                      : { ...prev, required_sales: value });
+                  }}
+                  placeholder={(form.badge_type || 'sales_rank') === 'founding_member' ? 'Örn: 1000' : 'Gerekli satış'}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
                   />
+                  <span className="mt-1 block text-[11px] font-semibold text-slate-400">
+                    {(form.badge_type || 'sales_rank') === 'founding_member'
+                      ? 'Kullanıcı ID değeri bu limit içinde olan üyelerde otomatik açılır.'
+                      : 'Bu satış sayısına ulaşan kullanıcıda rozet açılır.'}
+                  </span>
                 </label>
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Gösterim Sırası</span>
@@ -494,17 +522,19 @@ export default function AdminStoreManagement() {
           </div>
 
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 font-black text-slate-900">Satış Rütbesi Rozetleri</h2>
+            <h2 className="mb-4 font-black text-slate-900">Rozetler</h2>
             <div className="grid gap-3 md:grid-cols-2">
               {data.badges?.map((badge) => (
                 <div key={badge.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
                   <div className="flex gap-3">
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
-                      {badge.image_url ? <img src={badge.image_url} alt="" className="h-full w-full object-cover" /> : <BadgeCheck className="text-violet-400" />}
+                      {badge.image_url ? <img src={badge.image_url} alt="" className="h-full w-full object-cover" /> : badge.badge_type === 'founding_member' ? <Users className="text-emerald-400" /> : <BadgeCheck className="text-violet-400" />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="font-black text-slate-900">{badge.title}</div>
-                      <div className="text-xs font-black text-violet-600">{badge.required_sales} satış</div>
+                      <div className={`text-xs font-black ${badge.badge_type === 'founding_member' ? 'text-emerald-600' : 'text-violet-600'}`}>
+                        {badge.badge_type === 'founding_member' ? `İlk ${badge.member_limit || 1000} üye` : `${badge.required_sales} satış`}
+                      </div>
                       <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{badge.description}</p>
                     </div>
                   </div>
@@ -520,7 +550,7 @@ export default function AdminStoreManagement() {
               ))}
               {(!data.badges || data.badges.length === 0) ? (
                 <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-400">
-                  Henüz satış rozeti eklenmemiş. Örn: Rozet 1 için 500, Rozet 2 için 1000 satış.
+                  Henüz rozet eklenmemiş. Örn: 500 satış rozeti veya ilk 1000 üye rozeti ekleyebilirsiniz.
                 </div>
               ) : null}
             </div>
