@@ -19,6 +19,7 @@ import AdminLayout from '../../components/AdminLayout';
 import {
   adminDeleteStoreBadge,
   adminGetStoreManagement,
+  adminGetStoreVerificationImageBase64,
   adminReorderStoreBadges,
   adminSaveStoreCriteriaSettings,
   adminSaveStoreBadge,
@@ -91,31 +92,20 @@ export default function AdminStoreManagement() {
     setTimeout(() => setToast(''), 3000);
   }, []);
 
-  const openImagePreview = useCallback(async (url, title) => {
-    if (!url) {
-      showToast('Görsel URL bulunamadı.');
-      return;
-    }
+  const openImagePreview = useCallback(async (applicationId, type, title) => {
     setImagePreview({ url: null, title, loading: true, error: null });
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error('Görsel yüklenemedi (HTTP ' + res.status + ')');
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      setImagePreview({ url: objectUrl, title, loading: false, error: null });
+      const res = await adminGetStoreVerificationImageBase64(applicationId, type);
+      const dataUrl = res?.data?.data_url;
+      if (!dataUrl) throw new Error('Görsel verisi alınamadı.');
+      setImagePreview({ url: dataUrl, title, loading: false, error: null });
     } catch (e) {
       setImagePreview({ url: null, title, loading: false, error: e.message });
     }
-  }, [showToast]);
+  }, []);
 
   const closeImagePreview = useCallback(() => {
-    setImagePreview((prev) => {
-      if (prev?.url) URL.revokeObjectURL(prev.url);
-      return null;
-    });
+    setImagePreview(null);
   }, []);
 
   const load = useCallback(() => {
@@ -443,10 +433,10 @@ export default function AdminStoreManagement() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">
-                          <button type="button" onClick={() => openImagePreview(application.identity_image_url, `Kimlik · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-black text-violet-700 hover:bg-violet-100">
+                          <button type="button" onClick={() => openImagePreview(application.id, 'identity', `Kimlik · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-black text-violet-700 hover:bg-violet-100">
                             <Eye size={13} /> Kimlik
                           </button>
-                          <button type="button" onClick={() => openImagePreview(application.selfie_image_url, `Selfie · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2.5 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100">
+                          <button type="button" onClick={() => openImagePreview(application.id, 'selfie', `Selfie · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2.5 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100">
                             <Eye size={13} /> Selfie
                           </button>
                         </div>

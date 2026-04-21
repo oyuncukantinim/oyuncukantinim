@@ -190,6 +190,8 @@ export const adminUpdateStoreApplication = (body) =>
   adminRequest('admin_update_store_application', { method: 'POST', body });
 export const adminSaveStoreCriteriaSettings = (body) =>
   adminRequest('admin_save_store_criteria_settings', { method: 'POST', body });
+export const adminGetStoreVerificationImageBase64 = (id, type) =>
+  adminRequest('admin_get_store_verification_image_base64', { query: { id, type } });
 
 // Suspicious Accounts
 export const adminGetSuspicious = () => adminRequest('admin_get_suspicious');
