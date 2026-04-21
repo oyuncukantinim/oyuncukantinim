@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BadgeCheck,
   CheckCircle2,
@@ -53,6 +53,21 @@ const statusMeta = {
   rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-200', icon: XCircle },
 };
 
+const normalizeBadgeOrder = (badges) => badges.map((badge, index) => ({ ...badge, sort_order: index + 1 }));
+
+const moveBadgeBeforeTarget = (badges, sourceId, targetId) => {
+  if (!sourceId || !targetId || Number(sourceId) === Number(targetId)) return badges;
+  const sourceIndex = badges.findIndex((badge) => Number(badge.id) === Number(sourceId));
+  const targetIndex = badges.findIndex((badge) => Number(badge.id) === Number(targetId));
+  if (sourceIndex < 0 || targetIndex < 0) return badges;
+
+  const nextBadges = [...badges];
+  const [moved] = nextBadges.splice(sourceIndex, 1);
+  const insertIndex = sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+  nextBadges.splice(insertIndex, 0, moved);
+  return normalizeBadgeOrder(nextBadges);
+};
+
 export default function AdminStoreManagement() {
   const [data, setData] = useState({ badges: [], applications: [], pending_count: 0 });
   const [status, setStatus] = useState('all');
@@ -67,6 +82,8 @@ export default function AdminStoreManagement() {
   const [savingCriteria, setSavingCriteria] = useState(false);
   const [draggingBadgeId, setDraggingBadgeId] = useState(null);
   const [savingBadgeOrder, setSavingBadgeOrder] = useState(false);
+  const dragStartBadgesRef = useRef(null);
+  const badgeOrderSavedRef = useRef(false);
 
   const showToast = useCallback((message) => {
     setToast(message);
@@ -129,18 +146,21 @@ export default function AdminStoreManagement() {
     }
   };
 
-  const reorderBadges = async (sourceId, targetId) => {
+  const previewBadgeOrder = (sourceId, targetId) => {
     if (!sourceId || !targetId || sourceId === targetId || savingBadgeOrder) return;
-    const badges = data.badges || [];
-    const sourceIndex = badges.findIndex((badge) => Number(badge.id) === Number(sourceId));
-    const targetIndex = badges.findIndex((badge) => Number(badge.id) === Number(targetId));
-    if (sourceIndex < 0 || targetIndex < 0) return;
+    setData((prev) => {
+      const badges = prev.badges || [];
+      const nextBadges = moveBadgeBeforeTarget(badges, sourceId, targetId);
+      if (nextBadges === badges) return prev;
+      return { ...prev, badges: nextBadges };
+    });
+  };
 
-    const nextBadges = [...badges];
-    const [moved] = nextBadges.splice(sourceIndex, 1);
-    nextBadges.splice(targetIndex, 0, moved);
-    const normalized = nextBadges.map((badge, index) => ({ ...badge, sort_order: index + 1 }));
+  const saveBadgeOrder = async (badges) => {
+    if (savingBadgeOrder) return;
+    const normalized = normalizeBadgeOrder(badges || []);
     setData((prev) => ({ ...prev, badges: normalized }));
+    badgeOrderSavedRef.current = true;
     setSavingBadgeOrder(true);
 
     try {
@@ -152,7 +172,17 @@ export default function AdminStoreManagement() {
     } finally {
       setSavingBadgeOrder(false);
       setDraggingBadgeId(null);
+      dragStartBadgesRef.current = null;
     }
+  };
+
+  const finishBadgeDrag = () => {
+    if (!badgeOrderSavedRef.current && dragStartBadgesRef.current) {
+      setData((prev) => ({ ...prev, badges: dragStartBadgesRef.current }));
+    }
+    setDraggingBadgeId(null);
+    dragStartBadgesRef.current = null;
+    badgeOrderSavedRef.current = false;
   };
 
   const uploadBadgeImage = async (file) => {
@@ -560,19 +590,24 @@ export default function AdminStoreManagement() {
                   draggable
                   onDragStart={(event) => {
                     setDraggingBadgeId(badge.id);
+                    dragStartBadgesRef.current = data.badges || [];
+                    badgeOrderSavedRef.current = false;
                     event.dataTransfer.effectAllowed = 'move';
                     event.dataTransfer.setData('text/plain', String(badge.id));
                   }}
                   onDragOver={(event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = 'move';
+                    const sourceId = Number(draggingBadgeId || event.dataTransfer.getData('text/plain'));
+                    previewBadgeOrder(sourceId, badge.id);
                   }}
                   onDrop={(event) => {
                     event.preventDefault();
                     const sourceId = Number(draggingBadgeId || event.dataTransfer.getData('text/plain'));
-                    reorderBadges(sourceId, badge.id);
+                    const nextBadges = moveBadgeBeforeTarget(data.badges || [], sourceId, badge.id);
+                    saveBadgeOrder(nextBadges);
                   }}
-                  onDragEnd={() => setDraggingBadgeId(null)}
+                  onDragEnd={finishBadgeDrag}
                   className={`rounded-2xl border bg-slate-50/70 p-4 transition ${
                     Number(draggingBadgeId) === Number(badge.id)
                       ? 'border-violet-300 opacity-60 ring-2 ring-violet-100'
