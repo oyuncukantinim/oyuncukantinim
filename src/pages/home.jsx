@@ -97,21 +97,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <h2 className="sr-only">Platform Avantajları</h2>
-        {[
-          { icon: '⚡', title: 'Anında Teslimat', desc: 'Satın aldığın E-Pin kodları saniyeler içinde hesabına tanımlanır.' },
-          { icon: '🛡️', title: '%100 Güvenli', desc: 'Oyuncu pazarında paran havuzda bekler, işlem onaylanınca satıcıya aktarılır.' },
-          { icon: '💬', title: '7/24 Destek', desc: 'Yapay zeka destekli botumuz ve canlı destek ekibimiz her zaman yanında.' },
-        ].map((f, i) => (
-          <div key={i} className="card p-8 hover:shadow-neon-purple">
-            <div className="mb-4 text-4xl">{f.icon}</div>
-            <h3 className="mb-2 text-xl font-bold text-gray-800">{f.title}</h3>
-            <p className="text-sm text-gray-500">{f.desc}</p>
-          </div>
-        ))}
-      </section>
-
       {(popularGames.length > 0 || !popularGamesLoaded) && (
         <section>
           <div className="mb-6 flex items-center justify-between">
