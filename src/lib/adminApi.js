@@ -184,6 +184,8 @@ export const adminSaveStoreBadge = (body) =>
   adminRequest('admin_save_store_badge', { method: 'POST', body });
 export const adminDeleteStoreBadge = (badge_id) =>
   adminRequest('admin_delete_store_badge', { method: 'POST', body: { badge_id } });
+export const adminReorderStoreBadges = (badge_ids) =>
+  adminRequest('admin_reorder_store_badges', { method: 'POST', body: { badge_ids } });
 export const adminUpdateStoreApplication = (body) =>
   adminRequest('admin_update_store_application', { method: 'POST', body });
 export const adminSaveStoreCriteriaSettings = (body) =>

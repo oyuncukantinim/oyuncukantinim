@@ -4,6 +4,7 @@ import {
   CheckCircle2,
   Clock,
   Eye,
+  GripVertical,
   Image as ImageIcon,
   Loader2,
   Plus,
@@ -18,6 +19,7 @@ import AdminLayout from '../../components/AdminLayout';
 import {
   adminDeleteStoreBadge,
   adminGetStoreManagement,
+  adminReorderStoreBadges,
   adminSaveStoreCriteriaSettings,
   adminSaveStoreBadge,
   adminUpdateStoreApplication,
@@ -63,6 +65,8 @@ export default function AdminStoreManagement() {
   const [activePanel, setActivePanel] = useState('applications');
   const [criteriaForm, setCriteriaForm] = useState(defaultCriteriaSettings);
   const [savingCriteria, setSavingCriteria] = useState(false);
+  const [draggingBadgeId, setDraggingBadgeId] = useState(null);
+  const [savingBadgeOrder, setSavingBadgeOrder] = useState(false);
 
   const showToast = useCallback((message) => {
     setToast(message);
@@ -122,6 +126,32 @@ export default function AdminStoreManagement() {
       showToast(error.message);
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const reorderBadges = async (sourceId, targetId) => {
+    if (!sourceId || !targetId || sourceId === targetId || savingBadgeOrder) return;
+    const badges = data.badges || [];
+    const sourceIndex = badges.findIndex((badge) => Number(badge.id) === Number(sourceId));
+    const targetIndex = badges.findIndex((badge) => Number(badge.id) === Number(targetId));
+    if (sourceIndex < 0 || targetIndex < 0) return;
+
+    const nextBadges = [...badges];
+    const [moved] = nextBadges.splice(sourceIndex, 1);
+    nextBadges.splice(targetIndex, 0, moved);
+    const normalized = nextBadges.map((badge, index) => ({ ...badge, sort_order: index + 1 }));
+    setData((prev) => ({ ...prev, badges: normalized }));
+    setSavingBadgeOrder(true);
+
+    try {
+      await adminReorderStoreBadges(normalized.map((badge) => badge.id));
+      showToast('Rozet sırası kaydedildi.');
+    } catch (error) {
+      showToast(error.message);
+      load();
+    } finally {
+      setSavingBadgeOrder(false);
+      setDraggingBadgeId(null);
     }
   };
 
@@ -438,7 +468,7 @@ export default function AdminStoreManagement() {
                 rows={3}
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
               />
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3">
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">
                     {(form.badge_type || 'sales_rank') === 'founding_member' ? 'Üye Limiti' : 'Gerekli Satış Sayısı'}
@@ -461,16 +491,6 @@ export default function AdminStoreManagement() {
                       ? 'Kullanıcı ID değeri bu limit içinde olan üyelerde otomatik açılır.'
                       : 'Bu satış sayısına ulaşan kullanıcıda rozet açılır.'}
                   </span>
-                </label>
-                <label className="block">
-                  <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Gösterim Sırası</span>
-                  <input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(event) => setForm((prev) => ({ ...prev, sort_order: Number(event.target.value || 0) }))}
-                  placeholder="Sıralama"
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
-                  />
                 </label>
               </div>
               <div className="rounded-2xl border border-slate-200 p-3">
@@ -522,11 +542,47 @@ export default function AdminStoreManagement() {
           </div>
 
           <div className="rounded-3xl border border-slate-100 bg-white p-5 shadow-sm">
-            <h2 className="mb-4 font-black text-slate-900">Rozetler</h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="font-black text-slate-900">Rozetler</h2>
+                <p className="mt-1 text-xs font-semibold text-slate-400">Sıralamayı değiştirmek için rozet kartlarını sürükleyip bırakın.</p>
+              </div>
+              {savingBadgeOrder ? (
+                <span className="inline-flex items-center gap-2 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-black text-violet-700">
+                  <Loader2 size={13} className="animate-spin" /> Sıra kaydediliyor
+                </span>
+              ) : null}
+            </div>
             <div className="grid gap-3 md:grid-cols-2">
               {data.badges?.map((badge) => (
-                <div key={badge.id} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                <div
+                  key={badge.id}
+                  draggable
+                  onDragStart={(event) => {
+                    setDraggingBadgeId(badge.id);
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', String(badge.id));
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const sourceId = Number(draggingBadgeId || event.dataTransfer.getData('text/plain'));
+                    reorderBadges(sourceId, badge.id);
+                  }}
+                  onDragEnd={() => setDraggingBadgeId(null)}
+                  className={`rounded-2xl border bg-slate-50/70 p-4 transition ${
+                    Number(draggingBadgeId) === Number(badge.id)
+                      ? 'border-violet-300 opacity-60 ring-2 ring-violet-100'
+                      : 'border-slate-100 hover:border-violet-200 hover:bg-white'
+                  }`}
+                >
                   <div className="flex gap-3">
+                    <div className="flex h-14 w-7 shrink-0 cursor-grab items-center justify-center rounded-2xl bg-white text-slate-300 active:cursor-grabbing">
+                      <GripVertical size={17} />
+                    </div>
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
                       {badge.image_url ? <img src={badge.image_url} alt="" className="h-full w-full object-cover" /> : badge.badge_type === 'founding_member' ? <Users className="text-emerald-400" /> : <BadgeCheck className="text-violet-400" />}
                     </div>
