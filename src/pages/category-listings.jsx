@@ -286,9 +286,9 @@ export default function CategoryListingsPage() {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
               {filtered.map((listing) => (
-                <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
+                <ListingCard key={listing.id} listing={listing} dense fallbackImage={defaultListingImage} />
               ))}
             </div>
           )}
