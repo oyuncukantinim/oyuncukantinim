@@ -264,7 +264,7 @@ export default function StoreApplicationPage() {
               <div className="text-xs font-black uppercase tracking-wide text-amber-700">Örnek Görsel</div>
               <p className="text-[11px] font-semibold text-slate-500">Önerilen poz ve kadraj</p>
             </div>
-            <div className="mx-auto w-full max-w-2xl overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
+            <div className="mx-auto w-full max-w-sm overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
               <div className="aspect-[2816/1536] w-full">
                 <img
                   src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
@@ -274,7 +274,7 @@ export default function StoreApplicationPage() {
                 />
               </div>
             </div>
-            <p className="mx-auto mt-2 max-w-2xl text-xs font-semibold leading-5 text-slate-600">
+            <p className="mx-auto mt-2 max-w-sm text-xs font-semibold leading-5 text-slate-600">
               Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
             </p>
           </div>
