@@ -42,6 +42,43 @@ export function StoreRankPill({ badge }) {
   );
 }
 
+export function VerifiedAchievementCard({ isVerified = false }) {
+  const unlocked = Boolean(isVerified);
+  return (
+    <div
+      className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
+        unlocked
+          ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 shadow-emerald-100'
+          : 'border-slate-200 bg-slate-50 grayscale'
+      }`}
+    >
+      <div className={`absolute -right-10 -top-10 h-24 w-24 rounded-full ${unlocked ? 'bg-emerald-200/40' : 'bg-slate-200/70'}`} />
+      {!unlocked ? (
+        <div className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-500 shadow-inner">
+          <Lock size={15} />
+        </div>
+      ) : null}
+
+      <div className="relative mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border bg-white shadow-sm">
+        {unlocked ? (
+          <CheckCircle2 size={44} className="fill-emerald-500 text-white" />
+        ) : (
+          <Lock size={30} className="text-slate-300" />
+        )}
+      </div>
+
+      <h3 className={`mt-3 line-clamp-1 text-sm font-black ${unlocked ? 'text-slate-900' : 'text-slate-500'}`}>Onaylı Satıcı</h3>
+      <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${unlocked ? 'text-slate-500' : 'text-slate-400'}`}>
+        Admin tarafından doğrulanmış güvenilir satıcı rozeti.
+      </p>
+      <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-emerald-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
+        Mağaza Onayı
+      </div>
+      <Gamepad2 size={16} className={`absolute bottom-3 right-3 ${unlocked ? 'text-emerald-400' : 'text-slate-300'}`} />
+    </div>
+  );
+}
+
 export function AchievementCard({ badge }) {
   const unlocked = Boolean(badge?.is_unlocked);
   const requiredSales = Number(badge?.required_sales || 0);

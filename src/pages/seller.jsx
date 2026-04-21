@@ -24,7 +24,7 @@ import {
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
-import { AchievementCard } from '../components/StoreBadges';
+import { AchievementCard, VerifiedAchievementCard } from '../components/StoreBadges';
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
@@ -293,14 +293,10 @@ export default function SellerPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            <VerifiedAchievementCard isVerified={Boolean(seller.is_verified_store)} />
             {(seller.store_badges || []).map((badge) => (
               <AchievementCard key={badge.id} badge={badge} />
             ))}
-            {(!seller.store_badges || seller.store_badges.length === 0) ? (
-              <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
-                Henüz mağaza başarım rozeti bulunmuyor.
-              </div>
-            ) : null}
           </div>
         </div>
       )}

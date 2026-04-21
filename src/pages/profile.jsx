@@ -19,7 +19,7 @@ import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteLis
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
-import { AchievementCard } from '../components/StoreBadges';
+import { AchievementCard, VerifiedAchievementCard } from '../components/StoreBadges';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -460,7 +460,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
           )}
 
           {/* Aksiyon butonları */}
-          {!isSellerView && order.item_type === 'listing' && (
+          {!isSellerView && (
             <div className="flex flex-wrap gap-2">
               {status === 1 && (
                 <>
@@ -488,7 +488,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
             </div>
           )}
 
-          {isSellerView && order.item_type === 'listing' && status === 0 && (
+          {isSellerView && status === 0 && (
             <button onClick={() => act('mark_delivered', { order_id: order.id })} disabled={loading}
               className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition-colors disabled:opacity-50">
               <Truck size={13}/> Teslim Ettim
@@ -1364,14 +1364,10 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+                <VerifiedAchievementCard isVerified={Boolean(storeOverview?.is_verified_store)} />
                 {(storeOverview?.badges || []).map((badge) => (
                   <AchievementCard key={badge.id} badge={badge} />
                 ))}
-                {(!storeOverview?.badges || storeOverview.badges.length === 0) ? (
-                  <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
-                    Henüz mağaza başarım rozeti bulunmuyor.
-                  </div>
-                ) : null}
               </div>
             </div>
           )}
