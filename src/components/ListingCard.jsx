@@ -9,7 +9,7 @@ const DOPING_META = {
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
-export default function ListingCard({ listing, compact = false, fallbackImage = '' }) {
+export default function ListingCard({ listing, compact = false, dense = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
@@ -90,10 +90,24 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
     );
   }
 
+  const cardPad = dense ? 'p-2.5' : 'p-4';
+  const imgMb = dense ? 'mb-2.5' : 'mb-4';
+  const badgeMb = dense ? 'mb-2' : 'mb-3';
+  const titleCls = dense
+    ? 'mb-2 text-[12px] leading-snug'
+    : 'mb-3 text-[15px] leading-snug';
+  const sellerBox = dense ? 'mb-2.5 gap-1.5 rounded-lg p-1.5' : 'mb-4 gap-2 rounded-xl p-2.5';
+  const avatarCls = dense ? 'h-5 w-5 text-[11px]' : 'h-7 w-7 text-base';
+  const sellerNameCls = dense ? 'text-[10px]' : 'text-[11px]';
+  const priceCls = dense ? 'text-sm' : 'text-xl';
+  const footerTopCls = dense ? 'pt-2' : 'pt-3';
+  const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
+  const imageFallbackSize = dense ? 26 : 40;
+
   return (
-    <article className={`card group flex h-full flex-col overflow-hidden p-4 ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
+    <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
       <Link to={listingUrl} className="block">
-        <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-100">
+        <div className={`relative ${imgMb} aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-100`}>
           {coverImg ? (
             <img
               src={coverImg}
@@ -102,7 +116,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-gray-300">
-              <ImageIcon size={40} />
+              <ImageIcon size={imageFallbackSize} />
             </div>
           )}
 
@@ -113,9 +127,9 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
                 return (
                   <div
                     key={type}
-                    className={`flex flex-1 items-center justify-center gap-1 py-1 text-[10px] font-extrabold tracking-wide text-white ${meta.strip}`}
+                    className={`flex flex-1 items-center justify-center gap-1 ${dense ? 'py-0.5 text-[9px]' : 'py-1 text-[10px]'} font-extrabold tracking-wide text-white ${meta.strip}`}
                   >
-                    <meta.Icon size={9} strokeWidth={2.5} />
+                    <meta.Icon size={dense ? 8 : 9} strokeWidth={2.5} />
                     {meta.label}
                   </div>
                 );
@@ -124,7 +138,7 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
           ) : null}
         </div>
 
-        <div className="mb-3">
+        <div className={badgeMb}>
           <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
         </div>
 
@@ -134,29 +148,29 @@ export default function ListingCard({ listing, compact = false, fallbackImage = 
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
           }}
-          className="mb-3 w-full min-w-0 overflow-hidden break-words text-[15px] font-bold leading-snug text-gray-800 transition-colors group-hover:text-neon-purple"
+          className={`${titleCls} w-full min-w-0 overflow-hidden break-words font-bold text-gray-800 transition-colors group-hover:text-neon-purple`}
         >
           {listing.title}
         </h3>
       </Link>
 
-      <div className="mb-4 flex min-w-0 items-center gap-2 rounded-xl bg-surface-100 p-2.5">
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white text-base shadow-sm">
+      <div className={`${sellerBox} flex min-w-0 items-center bg-surface-100`}>
+        <div className={`${avatarCls} flex shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white shadow-sm`}>
           {listing.avatar || '👤'}
         </div>
         <Link
           to={`/p/${listing.seller}`}
-          className="min-w-0 truncate text-[11px] font-bold text-gray-700 transition-colors hover:text-neon-purple"
+          className={`${sellerNameCls} min-w-0 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
         >
           {listing.seller || 'Satıcı'}
         </Link>
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
-        <div className="text-xl font-extrabold text-emerald-700">
+      <div className={`mt-auto flex items-center justify-between border-t border-gray-100 ${footerTopCls}`}>
+        <div className={`${priceCls} font-extrabold text-emerald-700`}>
           {Number(listing.price).toFixed(2)} ₺
         </div>
-        <Link to={listingUrl} className="badge-purple inline-flex min-h-[36px] items-center text-xs">
+        <Link to={listingUrl} className={`badge-purple inline-flex items-center ${detailBtnCls}`}>
           Detay
         </Link>
       </div>
