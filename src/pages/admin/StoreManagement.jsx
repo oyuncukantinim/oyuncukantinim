@@ -312,21 +312,27 @@ export default function AdminStoreManagement() {
                 className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
               />
               <div className="grid gap-3 sm:grid-cols-2">
-                <input
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Gerekli Satış Sayısı</span>
+                  <input
                   type="number"
                   min="0"
                   value={form.required_sales}
                   onChange={(event) => setForm((prev) => ({ ...prev, required_sales: Number(event.target.value || 0) }))}
                   placeholder="Gerekli satış"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
-                />
-                <input
+                  />
+                </label>
+                <label className="block">
+                  <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">Gösterim Sırası</span>
+                  <input
                   type="number"
                   value={form.sort_order}
                   onChange={(event) => setForm((prev) => ({ ...prev, sort_order: Number(event.target.value || 0) }))}
                   placeholder="Sıralama"
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
-                />
+                  />
+                </label>
               </div>
               <div className="rounded-2xl border border-slate-200 p-3">
                 <div className="mb-3 flex items-center gap-3">
