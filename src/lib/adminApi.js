@@ -186,6 +186,8 @@ export const adminDeleteStoreBadge = (badge_id) =>
   adminRequest('admin_delete_store_badge', { method: 'POST', body: { badge_id } });
 export const adminUpdateStoreApplication = (body) =>
   adminRequest('admin_update_store_application', { method: 'POST', body });
+export const adminSaveStoreCriteriaSettings = (body) =>
+  adminRequest('admin_save_store_criteria_settings', { method: 'POST', body });
 
 // Suspicious Accounts
 export const adminGetSuspicious = () => adminRequest('admin_get_suspicious');

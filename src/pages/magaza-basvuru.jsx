@@ -157,6 +157,9 @@ export default function StoreApplicationPage() {
   const appMeta = application ? statusMeta[application.status] : null;
   const AppIcon = appMeta?.icon || Clock;
   const canApply = criteria.eligible && !overview.is_verified_store && application?.status !== 'pending';
+  const criteriaProgress = criteria.total_count > 0
+    ? Math.round((criteria.passed_count / criteria.total_count) * 100)
+    : 100;
 
   return (
     <div className="mx-auto max-w-screen-2xl space-y-8">
@@ -196,7 +199,7 @@ export default function StoreApplicationPage() {
             <div className="h-3 overflow-hidden rounded-full bg-white/10">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-cyan-300"
-                style={{ width: `${Math.round((criteria.passed_count / criteria.total_count) * 100)}%` }}
+                style={{ width: `${criteriaProgress}%` }}
               />
             </div>
           </div>
