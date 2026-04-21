@@ -9,6 +9,8 @@ const DOPING_META = {
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
+const CATEGORY_CHIP_BASE = 'inline-flex items-center rounded-full border border-neon-cyan/20 bg-neon-cyan/10 font-bold text-cyan-700';
+
 export default function ListingCard({ listing, compact = false, dense = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
@@ -55,7 +57,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         {/* Sağ: Detaylar */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-3">
           <div className="min-w-0">
-            <span className="badge-cyan mb-1 inline-block">{listing.category_name || listing.category || listing.type}</span>
+            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{listing.category_name || listing.category || listing.type}</span>
             <Link to={listingUrl}>
               <h3
                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -139,7 +141,9 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         </div>
 
         <div className={badgeMb}>
-          <span className="badge-cyan">{listing.category_name || listing.category || listing.type}</span>
+          <span className={`${CATEGORY_CHIP_BASE} ${dense ? 'px-1.5 py-0 text-[9px] leading-4' : 'px-2 py-0.5 text-[10px]'}`}>
+            {listing.category_name || listing.category || listing.type}
+          </span>
         </div>
 
         <h3
