@@ -264,19 +264,21 @@ export default function StoreApplicationPage() {
               <div className="text-xs font-black uppercase tracking-wide text-amber-700">Örnek Görsel</div>
               <p className="text-[11px] font-semibold text-slate-500">Önerilen poz ve kadraj</p>
             </div>
-            <div className="mx-auto w-full max-w-sm overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm">
-              <div className="aspect-[2816/1536] w-full">
-                <img
-                  src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
-                  alt="Örnek kimlik ve selfie doğrulama"
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                />
+            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <div className="w-full max-w-sm shrink-0 overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm sm:w-64">
+                <div className="aspect-[2816/1536] w-full">
+                  <img
+                    src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
+                    alt="Örnek kimlik ve selfie doğrulama"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
               </div>
+              <p className="text-xs font-semibold leading-5 text-slate-600">
+                Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
+              </p>
             </div>
-            <p className="mx-auto mt-2 max-w-sm text-xs font-semibold leading-5 text-slate-600">
-              Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net, iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
-            </p>
           </div>
           <div className="grid gap-3 xl:grid-cols-[1fr_1fr_1.2fr]">
             <FileDrop
