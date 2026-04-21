@@ -6,7 +6,7 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload, Trophy
 } from 'lucide-react';
 
 const FinanceIcon = TrendingUp;
@@ -15,10 +15,11 @@ import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
+import { AchievementCard, StoreRankPill, VerifiedStoreBadge } from '../components/StoreBadges';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -580,6 +581,7 @@ export default function ProfilePage() {
   const [dopingModal, setDopingModal] = useState(null);
   const [myReviews, setMyReviews] = useState([]);
   const [reviewStarFilter, setReviewStarFilter] = useState(0);
+  const [storeOverview, setStoreOverview] = useState(null);
 
   const token = localStorage.getItem('token');
 
@@ -627,6 +629,9 @@ export default function ProfilePage() {
     }
     else if (activeTab === 'reviews') {
       apiAuth('get_my_reviews', null, token).then(data => setMyReviews(data || [])).catch(() => {});
+    }
+    else if (activeTab === 'achievements') {
+      getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
     }
   }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
@@ -919,6 +924,7 @@ export default function ProfilePage() {
     { id: 'orders',        label: 'Siparişlerim',      icon: Package },
     { id: 'sales',         label: 'Satışlarım',        icon: Store },
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
+    { id: 'achievements',  label: 'Başarımlar',        icon: Trophy },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
     ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
     { id: 'withdrawals',   label: 'Para Çek',          icon: TrendingDown },
@@ -1019,7 +1025,7 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
-            {tabs.filter(t => ['favorites','reviews','finance'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['favorites','achievements','reviews','finance'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
@@ -1328,6 +1334,41 @@ export default function ProfilePage() {
               )}
               {/* Analiz Modal */}
               {analyzeModal && <PriceAnalyzeModal listing={analyzeModal} onClose={() => setAnalyzeModal(null)} />}
+            </div>
+          )}
+
+          {/* BAŞARIMLARIM */}
+          {activeTab === 'achievements' && (
+            <div className="space-y-5">
+              <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-5 text-white shadow-xl shadow-violet-100">
+                <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
+                <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
+                      <Trophy size={14} /> Başarımlar
+                    </div>
+                    <h2 className="mt-3 text-2xl font-black">Mağaza rozetlerin</h2>
+                    <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-white/65">
+                      Satış rütbelerinde yalnızca en yüksek uygun rozet profil başlığında öne çıkar.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {Number(storeOverview?.is_verified_store) === 1 ? <VerifiedStoreBadge /> : null}
+                    <StoreRankPill badge={storeOverview?.highest_badge} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {(storeOverview?.badges || []).map((badge) => (
+                  <AchievementCard key={badge.id} badge={badge} currentSales={storeOverview?.criteria?.sales || 0} />
+                ))}
+                {(!storeOverview?.badges || storeOverview.badges.length === 0) ? (
+                  <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
+                    Henüz mağaza başarım rozeti bulunmuyor.
+                  </div>
+                ) : null}
+              </div>
             </div>
           )}
 

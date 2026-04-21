@@ -25,6 +25,7 @@ const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
   { to: '/market', label: 'Pazar', icon: Users },
   { to: '/categories', label: 'Kategoriler' },
+  { to: '/magaza-basvuru', label: 'Onaylı Mağaza', icon: ShieldCheck },
   { to: '/support', label: 'Destek', icon: LifeBuoy },
 ];
 

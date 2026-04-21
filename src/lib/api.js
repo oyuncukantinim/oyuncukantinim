@@ -113,6 +113,35 @@ export function verifyProfileEmailCode(payload) {
   return request('verify_profile_email_code', { method: 'POST', body: payload, auth: true });
 }
 
+export function getStoreApplicationOverview() {
+  return request('get_store_application_overview', { auth: true });
+}
+
+export async function submitStoreApplication({ identityImage, selfieImage, userNote = '' }) {
+  const formData = new FormData();
+  formData.append('identity_image', identityImage);
+  formData.append('selfie_image', selfieImage);
+  formData.append('user_note', userNote);
+
+  const token = getToken();
+  const response = await fetch(`${API_URL}?action=submit_store_application`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({
+    status: 'error',
+    message: 'Sunucudan gecerli JSON donmedi.',
+  }));
+
+  if (!response.ok || data.status !== 'success') {
+    throw new Error(data.message || 'Basvuru gonderilemedi.');
+  }
+
+  return data;
+}
+
 // --- LISTINGS ---
 export function getListings(query = {}) {
   return request('get_listings', { query });

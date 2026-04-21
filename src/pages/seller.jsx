@@ -9,6 +9,7 @@ import {
   ThumbsUp,
   Clock,
   Trophy,
+  BadgeCheck,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -23,6 +24,7 @@ import {
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { AchievementCard, StoreRankPill, VerifiedStoreBadge } from '../components/StoreBadges';
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
@@ -167,6 +169,7 @@ export default function SellerPage() {
 
   const tabs = [
     { id: 'listings', label: `İlanlar (${seller.listing_count ?? 0})` },
+    { id: 'achievements', label: 'Başarımlar' },
     { id: 'reviews', label: `Değerlendirmeler (${seller.review_count ?? 0})` },
     { id: 'followers', label: `Takipçiler (${seller.follower_count ?? 0})` },
   ];
@@ -217,6 +220,8 @@ export default function SellerPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-extrabold text-gray-900">{seller.username}</h1>
               <span className="text-sm text-gray-400 font-medium">@{seller.username}</span>
+              {Number(seller.is_verified_store) === 1 ? <VerifiedStoreBadge compact /> : null}
+              <StoreRankPill badge={seller.highest_store_badge} />
             </div>
             {seller.bio && <p className="text-gray-500 text-sm mt-1 leading-relaxed">{seller.bio}</p>}
             <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
@@ -269,6 +274,40 @@ export default function SellerPage() {
               {listings.map((listing) => <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />)}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'achievements' && (
+        <div className="space-y-5">
+          <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-xl shadow-violet-100">
+            <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
+            <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
+                  <BadgeCheck size={14} /> Mağaza başarımları
+                </div>
+                <h2 className="mt-3 text-2xl font-black">Satıcı rütbeleri ve rozetler</h2>
+                <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-white/65">
+                  Satış rütbelerinde hiyerarşi kullanılır; profil başlığında yalnızca en yüksek uygun satış rozeti öne çıkar.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {Number(seller.is_verified_store) === 1 ? <VerifiedStoreBadge /> : null}
+                <StoreRankPill badge={seller.highest_store_badge} />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {(seller.store_badges || []).map((badge) => (
+              <AchievementCard key={badge.id} badge={badge} currentSales={seller.total_sales || 0} />
+            ))}
+            {(!seller.store_badges || seller.store_badges.length === 0) ? (
+              <div className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400">
+                Henüz mağaza başarım rozeti bulunmuyor.
+              </div>
+            ) : null}
+          </div>
         </div>
       )}
 

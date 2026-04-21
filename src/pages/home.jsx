@@ -69,7 +69,7 @@ function SectionHeader({
   );
 }
 
-function PillLink({ to, accent, children }) {
+function PillLink({ to, accent }) {
   return (
     <Link
       to={to}

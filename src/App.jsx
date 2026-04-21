@@ -24,6 +24,7 @@ const SellerPage          = lazy(() => import('./pages/seller'));
 const CategoriesPage      = lazy(() => import('./pages/categories'));
 const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
 const FinancePage         = lazy(() => import('./pages/finance'));
+const StoreApplicationPage = lazy(() => import('./pages/magaza-basvuru'));
 
 // Admin sayfaları — lazy (ayrı chunk)
 const AdminLogin         = lazy(() => import('./pages/admin/Login'));
@@ -43,6 +44,7 @@ const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
 const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
 const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
 const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
+const AdminStoreManagement = lazy(() => import('./pages/admin/StoreManagement'));
 
 function PageLoader() {
   return (
@@ -260,6 +262,7 @@ function SiteLayout() {
             <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
             <Route path="/p/:username" element={<SellerPage />} />
             <Route path="/finance" element={<FinancePage />} />
+            <Route path="/magaza-basvuru" element={<StoreApplicationPage />} />
           </Routes>
         </Suspense>
       </main>
@@ -297,6 +300,7 @@ export default function App() {
               <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
               <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
               <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
+              <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
               <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
               <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
               <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />

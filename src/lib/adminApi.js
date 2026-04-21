@@ -177,6 +177,16 @@ export const adminGetLogs = (params = {}) =>
 export const adminDeleteLog = (log_id) =>
   adminRequest('admin_delete_log', { method: 'POST', body: { log_id } });
 
+// Store Verification / Badges
+export const adminGetStoreManagement = (params = {}) =>
+  adminRequest('admin_get_store_management', { query: { ...params, viewer_token: getAdminToken() } });
+export const adminSaveStoreBadge = (body) =>
+  adminRequest('admin_save_store_badge', { method: 'POST', body });
+export const adminDeleteStoreBadge = (badge_id) =>
+  adminRequest('admin_delete_store_badge', { method: 'POST', body: { badge_id } });
+export const adminUpdateStoreApplication = (body) =>
+  adminRequest('admin_update_store_application', { method: 'POST', body });
+
 // Suspicious Accounts
 export const adminGetSuspicious = () => adminRequest('admin_get_suspicious');
 

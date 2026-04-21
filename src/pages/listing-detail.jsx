@@ -10,6 +10,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
+import { StoreRankPill, VerifiedStoreBadge } from '../components/StoreBadges';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -287,6 +288,10 @@ export default function ListingDetailPage() {
                     <span className="flex-shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">
                       {sellerLevel}
                     </span>
+                  </div>
+                  <div className="mt-1 flex flex-wrap gap-1.5">
+                    {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreBadge compact /> : null}
+                    <StoreRankPill badge={listing.seller_highest_store_badge} />
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
                     <span className="flex items-center gap-1"><Clock size={11} /> {sellerLastSeen}</span>
