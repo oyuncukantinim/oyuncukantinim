@@ -11,7 +11,6 @@ import ErrorBoundary from './components/ErrorBoundary';
 
 // Kullanıcı sayfaları — lazy
 const Home                = lazy(() => import('./pages/home'));
-const StorePage           = lazy(() => import('./pages/store'));
 const MarketPage          = lazy(() => import('./pages/market'));
 const ListingDetailPage   = lazy(() => import('./pages/listing-detail'));
 const CartPage            = lazy(() => import('./pages/cart'));
@@ -35,7 +34,6 @@ const AdminOrders        = lazy(() => import('./pages/admin/Orders'));
 const AdminReviews       = lazy(() => import('./pages/admin/Reviews'));
 const AdminCategories    = lazy(() => import('./pages/admin/Categories'));
 const AdminDoping        = lazy(() => import('./pages/admin/Doping'));
-const AdminEpins         = lazy(() => import('./pages/admin/Epins'));
 const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'));
 const AdminMessages      = lazy(() => import('./pages/admin/Messages'));
 const AdminSupport       = lazy(() => import('./pages/admin/Support'));
@@ -248,7 +246,6 @@ function SiteLayout() {
         <Suspense fallback={<SitePageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/store" element={<StorePage />} />
             <Route path="/market" element={<MarketPage />} />
             <Route path="/listing/:slug" element={<ListingDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
@@ -293,7 +290,6 @@ export default function App() {
               <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
               <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
               <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
-              <Route path="/admin/epins" element={<AdminRoute><AdminEpins /></AdminRoute>} />
               <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
               <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
               <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />

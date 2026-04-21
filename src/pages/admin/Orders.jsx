@@ -54,7 +54,7 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
   const fmtDate = (d) => d ? new Date(d).toLocaleString('tr-TR') : '—';
   const ds = parseInt(order.delivery_status ?? 0);
   const isCancelled = ds === 4;
-  const showAutoConfirm = Boolean(order.auto_confirm_at) && order.item_type === 'listing' && ![2, 3, 4].includes(ds);
+  const showAutoConfirm = Boolean(order.auto_confirm_at) && ![2, 3, 4].includes(ds);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -76,10 +76,6 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
               <span className="font-bold text-gray-800">{order.item_title || '—'}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Tür</span>
-              <span className="font-semibold text-gray-700">{order.item_type === 'epin' ? 'E-Pin' : 'İlan'}</span>
-            </div>
-            <div className="flex justify-between text-sm">
               <span className="text-gray-500">Alıcı</span>
               <span className="font-semibold text-gray-700">{order.buyer || '—'}</span>
             </div>
@@ -97,12 +93,10 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 <span className="font-semibold text-blue-600">{Number(order.seller_amount).toFixed(2)} ₺</span>
               </div>
             )}
-            {order.item_type === 'listing' && (
-              <div className="flex justify-between text-sm items-center">
-                <span className="text-gray-500">Teslimat Durumu</span>
-                <DeliveryBadge status={ds} />
-              </div>
-            )}
+            <div className="flex justify-between text-sm items-center">
+              <span className="text-gray-500">Teslimat Durumu</span>
+              <DeliveryBadge status={ds} />
+            </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Satıcı Ödendi?</span>
               <span className={`text-xs font-bold px-2 py-1 rounded-full ${
@@ -153,44 +147,31 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
             </div>
           ) : (
             <>
-              {/* Teslimat durumu güncelle — ilan siparişleri */}
-              {order.item_type === 'listing' && (
-                <div>
-                  <div className="text-xs text-gray-500 mb-1.5">Teslimat Durumunu Değiştir:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(DELIVERY_STATUS_MAP).map(([val, info]) => {
-                      const Icon = info.icon;
-                      return (
-                        <button
-                          key={val}
-                          disabled={loading || ds === parseInt(val)}
-                          onClick={() => update({ delivery_status: parseInt(val) })}
-                          className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all disabled:opacity-40 ${
-                            ds === parseInt(val)
-                              ? `bg-${info.color}-100 text-${info.color}-700 border-${info.color}-300`
-                              : parseInt(val) === 4
-                              ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                              : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'
-                          }`}
-                        >
-                          <Icon size={11} /> {info.label}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Teslimat durumu güncelle */}
+              <div>
+                <div className="text-xs text-gray-500 mb-1.5">Teslimat Durumunu Değiştir:</div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(DELIVERY_STATUS_MAP).map(([val, info]) => {
+                    const Icon = info.icon;
+                    return (
+                      <button
+                        key={val}
+                        disabled={loading || ds === parseInt(val)}
+                        onClick={() => update({ delivery_status: parseInt(val) })}
+                        className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all disabled:opacity-40 ${
+                          ds === parseInt(val)
+                            ? `bg-${info.color}-100 text-${info.color}-700 border-${info.color}-300`
+                            : parseInt(val) === 4
+                            ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                            : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'
+                        }`}
+                      >
+                        <Icon size={11} /> {info.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
-
-              {/* E-Pin siparişleri için iptal & iade */}
-              {order.item_type === 'epin' && (
-                <button
-                  disabled={loading}
-                  onClick={() => update({ delivery_status: 4 })}
-                  className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-sm font-bold py-2.5 rounded-xl disabled:opacity-50 transition-colors"
-                >
-                  <XCircle size={15} /> İptal & İade Et
-                </button>
-              )}
+              </div>
 
               {/* Satıcıya öde */}
               {order.seller_id && order.seller_paid == 0 && ds === 2 && (
@@ -316,7 +297,6 @@ export default function AdminOrders() {
                       <td className="px-4 py-3 text-gray-400 text-xs font-mono">#{o.id}</td>
                       <td className="px-4 py-3">
                         <div className="font-semibold text-gray-800 max-w-[150px] truncate">{o.item_title || '—'}</div>
-                        <div className="text-[10px] text-gray-400 mt-0.5">{o.item_type === 'epin' ? 'E-Pin' : 'İlan'}</div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell text-sm">{o.buyer || '—'}</td>
                       <td className="px-4 py-3 text-gray-600 hidden md:table-cell text-sm">{o.seller || '—'}</td>

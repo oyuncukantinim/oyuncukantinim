@@ -177,11 +177,6 @@ export function applyListingDoping(payload) {
   return request('apply_listing_doping', { method: 'POST', body: payload, auth: true });
 }
 
-// --- EPINS ---
-export function getEpins() {
-  return request('get_epins');
-}
-
 // --- ORDERS ---
 export function createOrder(items) {
   return request('create_order', { method: 'POST', body: { items }, auth: true });

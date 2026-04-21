@@ -408,8 +408,8 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   const status = (order.delivery_status ?? 0);
   const orderImages = Array.isArray(order.item_images) ? order.item_images.filter(Boolean) : [];
-  const coverImage = order.item_cover || orderImages[0] || (order.item_type === 'listing' ? defaultListingImage : null);
-  const coverFallback = order.item_type === 'epin' ? '🎫' : '🖼️';
+  const coverImage = order.item_cover || orderImages[0] || defaultListingImage;
+  const coverFallback = '🖼️';
 
   return (
     <>
@@ -435,7 +435,6 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
           </div>
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
             <DeliveryBadge status={status} />
-            {order.item_type === 'epin' && <span className="text-[10px] bg-yellow-100 text-yellow-700 font-bold px-2 py-0.5 rounded-lg">E-Pin</span>}
           </div>
         </div>
         <div className="text-right flex-shrink-0 flex flex-col items-end gap-1.5">

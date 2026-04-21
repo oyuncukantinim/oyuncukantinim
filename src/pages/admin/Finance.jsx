@@ -31,18 +31,17 @@ export default function AdminFinance() {
   const [page, setPage] = useState(1);
   const [username, setUsername] = useState('');
   const [date, setDate] = useState('');
-  const [itemType, setItemType] = useState('');
   const [toast, setToast] = useState('');
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
 
   const load = useCallback(() => {
     setLoading(true);
-    adminGetAllTransactions({ page, username, date, type: itemType })
+    adminGetAllTransactions({ page, username, date })
       .then(r => setData(r.data))
       .catch(e => showToast(e.message))
       .finally(() => setLoading(false));
-  }, [page, username, date, itemType]);
+  }, [page, username, date]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -80,16 +79,7 @@ export default function AdminFinance() {
             onChange={e => { setDate(e.target.value); setPage(1); }}
             className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400"
           />
-          <select
-            value={itemType}
-            onChange={e => { setItemType(e.target.value); setPage(1); }}
-            className="px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-violet-400"
-          >
-            <option value="">Tüm Türler</option>
-            <option value="listing">İlan</option>
-            <option value="epin">E-Pin</option>
-          </select>
-          <button onClick={() => { setUsername(''); setDate(''); setItemType(''); setPage(1); }}
+          <button onClick={() => { setUsername(''); setDate(''); setPage(1); }}
             className="px-3 py-2 text-sm bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 font-bold">
             Temizle
           </button>
@@ -132,7 +122,6 @@ export default function AdminFinance() {
                       <td className="px-4 py-3 text-gray-400 font-mono">{tx.id}</td>
                       <td className="px-4 py-3">
                         <div className="font-semibold text-gray-700 max-w-[140px] truncate">{tx.item_title || '—'}</div>
-                        <span className="text-gray-400">{tx.item_type}</span>
                       </td>
                       <td className="px-4 py-3 text-gray-600 font-semibold">{tx.buyer_username || '—'}</td>
                       <td className="px-4 py-3 text-gray-600 font-semibold">{tx.seller_username || '—'}</td>

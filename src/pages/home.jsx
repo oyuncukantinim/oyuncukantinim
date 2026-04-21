@@ -2,18 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronRight,
-  Clock3,
   Flame,
   Gamepad2,
   ShieldCheck,
   Sparkles,
-  Star,
   Trophy,
-  Zap,
 } from 'lucide-react';
-import { getListings, getEpins } from '../lib/api';
+import { getListings } from '../lib/api';
 import ListingCard from '../components/ListingCard';
-import EPinCard from '../components/EPinCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
 
@@ -137,10 +133,8 @@ function CategoryCard({ game, index }) {
 export default function Home() {
   const { defaultListingImage } = useSiteBrand();
   const [listings, setListings] = useState([]);
-  const [epins, setEpins] = useState([]);
   const [popularGames, setPopularGames] = useState([]);
   const [listingsLoaded, setListingsLoaded] = useState(false);
-  const [epinsLoaded, setEpinsLoaded] = useState(false);
   const [popularGamesLoaded, setPopularGamesLoaded] = useState(false);
 
   useEffect(() => {
@@ -148,11 +142,6 @@ export default function Home() {
       .then((r) => setListings(r.data || []))
       .catch(() => {})
       .finally(() => setListingsLoaded(true));
-
-    getEpins()
-      .then((r) => setEpins(r.data || []))
-      .catch(() => {})
-      .finally(() => setEpinsLoaded(true));
 
     fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_popular_games')
       .then((r) => r.json())
@@ -191,21 +180,21 @@ export default function Home() {
         </h1>
 
         <p className="relative z-10 mb-10 max-w-2xl text-lg text-purple-100 md:text-xl">
-          En uygun fiyatlı E-Pinler, güvenilir oyuncu pazarı ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.
+          Güvenilir oyuncu pazarı, onaylı satıcılar ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.
         </p>
 
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row">
           <Link
-            to="/store"
+            to="/market"
             className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-purple-700 shadow-lg transition-all hover:scale-105 hover:bg-purple-50 active:scale-95"
           >
-            Mağazaya Göz At
+            Oyuncu Pazarı
           </Link>
           <Link
-            to="/market"
+            to="/categories"
             className="rounded-xl border border-white/25 bg-white/15 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/25 active:scale-95"
           >
-            Oyuncu Pazarı
+            Kategorileri Keşfet
           </Link>
         </div>
       </section>
@@ -242,41 +231,6 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
                 {Array.from({ length: 7 }).map((_, index) => (
                   <HomeCardSkeleton key={`popular-skeleton-${index}`} className="h-[164px]" />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* ============  E-PIN MAĞAZASI  ============ */}
-      {(epins.length > 0 || !epinsLoaded) && (
-        <section className="relative">
-          <SectionHeader
-            eyebrow="Anında Teslimat"
-            title="E-Pin Mağazası"
-            icon={Zap}
-            accent="from-yellow-400 via-amber-500 to-orange-500"
-            count={epins.length || null}
-            countLabel="Ürün"
-            action={
-              <PillLink to="/store" accent="from-amber-500 to-orange-500">
-                Tümünü Gör
-              </PillLink>
-            }
-          />
-
-          <div className="min-h-[272px]">
-            {epins.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {epins.slice(0, 4).map((epin) => (
-                  <EPinCard key={epin.id} epin={epin} />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <HomeCardSkeleton key={`epin-skeleton-${index}`} className="h-[272px]" />
                 ))}
               </div>
             )}

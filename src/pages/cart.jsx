@@ -24,9 +24,7 @@ export default function CartPage() {
 
     setProcessing(true);
     try {
-      const items = cart.map((item) =>
-        item.itemType === 'listing' ? { listing_id: item.listing_id } : { epin_id: item.epin_id }
-      );
+      const items = cart.map((item) => ({ listing_id: item.listing_id }));
       await createOrder(items);
       clearCart();
       await refreshUser();
@@ -49,8 +47,8 @@ export default function CartPage() {
         <div className="card p-12 text-center">
           <div className="text-6xl mb-4">🛒</div>
           <h2 className="text-2xl font-bold text-gray-700 mb-2">Sepetin boş!</h2>
-          <p className="text-gray-400 mb-6">Hemen mağazayı veya pazarı gezerek sepetini doldurabilirsin.</p>
-          <button onClick={() => navigate('/store')} className="btn-primary">Alışverişe Başla</button>
+          <p className="text-gray-400 mb-6">Pazara göz atarak sepetini doldurabilirsin.</p>
+          <button onClick={() => navigate('/market')} className="btn-primary">Alışverişe Başla</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -61,9 +59,7 @@ export default function CartPage() {
                   {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
                     <img src={item.image} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-2xl">
-                      {item.itemType === 'epin' ? '💎' : '🎮'}
-                    </div>
+                    <div className="w-full h-full flex items-center justify-center text-2xl">🎮</div>
                   )}
                 </div>
 

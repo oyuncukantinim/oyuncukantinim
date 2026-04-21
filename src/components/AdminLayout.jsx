@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronRight,
-  CreditCard,
   Gamepad2,
   LayoutDashboard,
   LifeBuoy,
@@ -33,7 +32,6 @@ const navItems = [
   { path: '/admin/reviews', label: 'Yorumlar', icon: Star },
   { path: '/admin/categories', label: 'Kategoriler', icon: Tag },
   { path: '/admin/doping', label: 'Doping', icon: Zap },
-  { path: '/admin/epins', label: 'E-Pinler', icon: CreditCard },
   { path: '/admin/payment-management', label: 'Ödeme Yönetimi', icon: Wallet },
   { path: '/admin/finance', label: 'Finansal', icon: Wallet },
   { path: '/admin/messages', label: 'Mesajlar', icon: MessageSquare },

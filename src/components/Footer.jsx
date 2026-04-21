@@ -26,9 +26,8 @@ export default function Footer({
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500">
-            <Link to="/store" className="transition-colors hover:text-violet-700">E-Pin</Link>
             <Link to="/market" className="transition-colors hover:text-violet-700">Pazar</Link>
-            <span className="cursor-default">SSS</span>
+            <Link to="/categories" className="transition-colors hover:text-violet-700">Kategoriler</Link>
             <Link to="/support" className="transition-colors hover:text-violet-700">Destek</Link>
           </div>
 

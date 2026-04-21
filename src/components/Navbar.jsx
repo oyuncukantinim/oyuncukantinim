@@ -9,7 +9,6 @@ import {
   Search,
   ShieldCheck,
   ShoppingCart,
-  Store,
   Users,
   X,
   Zap,
@@ -24,7 +23,6 @@ import ThemeToggle from './ThemeToggle';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
-  { to: '/store', label: 'E-Pin', icon: Store },
   { to: '/market', label: 'Pazar', icon: Users },
   { to: '/categories', label: 'Kategoriler' },
   { to: '/support', label: 'Destek', icon: LifeBuoy },
@@ -251,7 +249,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               iconWrapperClassName="rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2.5 text-white shadow-[0_10px_30px_rgba(124,58,237,0.24)] transition-transform group-hover:rotate-6"
               titleClassName="hidden text-xl font-black tracking-tight bg-gradient-to-r from-neon-purple to-neon-cyan bg-clip-text text-transparent lg:inline"
               subtitleClassName="hidden text-xs font-medium text-slate-400 lg:block"
-              subtitle={siteLogo ? '' : 'Oyuncu pazarı ve E-Pin mağazası'}
+              subtitle={siteLogo ? '' : 'Güvenli oyuncu pazarı'}
             />
           </div>
 
@@ -460,7 +458,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                           {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
                             <img src={item.image} alt="" className="h-full w-full object-cover" />
                           ) : (
-                            <span className="text-base">{item.itemType === 'epin' ? '💎' : '🎮'}</span>
+                            <span className="text-base">🎮</span>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">

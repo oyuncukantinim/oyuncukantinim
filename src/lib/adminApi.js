@@ -134,13 +134,6 @@ export const adminSaveCategoryAttribute = (body) =>
 export const adminDeleteCategoryAttribute = (attribute_id) =>
   adminRequest('admin_delete_category_attribute', { method: 'POST', body: { attribute_id } });
 
-// E-Pins
-export const adminGetEpins = () => adminRequest('admin_get_epins');
-export const adminSaveEpin = (body) =>
-  adminRequest('admin_save_epin', { method: 'POST', body });
-export const adminDeleteEpin = (epin_id) =>
-  adminRequest('admin_delete_epin', { method: 'POST', body: { epin_id } });
-
 // Settings
 export const adminGetSettings = () => adminRequest('admin_get_settings');
 export const adminSaveSettings = (body) =>
