@@ -501,7 +501,7 @@ export default function AdminStoreManagement() {
               <div className="grid gap-3">
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">
-                    {(form.badge_type || 'sales_rank') === 'founding_member' ? 'Üye Limiti' : 'Gerekli Tamamlanmış Satış'}
+                    {(form.badge_type || 'sales_rank') === 'founding_member' ? 'Üye Limiti' : 'Gerekli Başarılı Satış'}
                   </span>
                   <input
                   type="number"
@@ -513,7 +513,7 @@ export default function AdminStoreManagement() {
                       ? { ...prev, member_limit: value }
                       : { ...prev, required_sales: value });
                   }}
-                  placeholder={(form.badge_type || 'sales_rank') === 'founding_member' ? 'Örn: 1000' : 'Gerekli tamamlanmış satış'}
+                  placeholder={(form.badge_type || 'sales_rank') === 'founding_member' ? 'Örn: 1000' : 'Gerekli başarılı satış'}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
                   />
                   <span className="mt-1 block text-[11px] font-semibold text-slate-400">
@@ -624,7 +624,7 @@ export default function AdminStoreManagement() {
                     <div className="min-w-0 flex-1">
                       <div className="font-black text-slate-900">{badge.title}</div>
                       <div className={`text-xs font-black ${badge.badge_type === 'founding_member' ? 'text-emerald-600' : 'text-violet-600'}`}>
-                        {badge.badge_type === 'founding_member' ? `İlk ${badge.member_limit || 1000} üye` : `${badge.required_sales} tamamlanmış satış`}
+                        {badge.badge_type === 'founding_member' ? `İlk ${badge.member_limit || 1000} üye` : `${badge.required_sales} başarılı satış`}
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{badge.description}</p>
                     </div>
@@ -641,7 +641,7 @@ export default function AdminStoreManagement() {
               ))}
               {(!data.badges || data.badges.length === 0) ? (
                 <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-400">
-                  Henüz rozet eklenmemiş. Örn: 500 tamamlanmış satış rozeti veya ilk 1000 üye rozeti ekleyebilirsiniz.
+                  Henüz rozet eklenmemiş. Örn: 500 başarılı satış rozeti veya ilk 1000 üye rozeti ekleyebilirsiniz.
                 </div>
               ) : null}
             </div>
