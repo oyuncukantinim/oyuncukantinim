@@ -24,7 +24,7 @@ import {
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
-import { AchievementCard, StoreRankPill, VerifiedStoreBadge } from '../components/StoreBadges';
+import { AchievementCard } from '../components/StoreBadges';
 
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
@@ -220,8 +220,6 @@ export default function SellerPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-extrabold text-gray-900">{seller.username}</h1>
               <span className="text-sm text-gray-400 font-medium">@{seller.username}</span>
-              {Number(seller.is_verified_store) === 1 ? <VerifiedStoreBadge compact /> : null}
-              <StoreRankPill badge={seller.highest_store_badge} />
             </div>
             {seller.bio && <p className="text-gray-500 text-sm mt-1 leading-relaxed">{seller.bio}</p>}
             <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">
@@ -286,19 +284,15 @@ export default function SellerPage() {
                 <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
                   <BadgeCheck size={14} /> Mağaza başarımları
                 </div>
-                <h2 className="mt-3 text-2xl font-black">Satıcı rütbeleri ve rozetler</h2>
+                <h2 className="mt-3 text-2xl font-black">Başarım koleksiyonu</h2>
                 <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-white/65">
-                  Satış rütbelerinde hiyerarşi kullanılır; profil başlığında yalnızca en yüksek uygun satış rozeti öne çıkar.
+                  Açılmış rozetler canlı görünür, henüz kazanılmamış rozetler kilitli ve gri olarak listelenir.
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {Number(seller.is_verified_store) === 1 ? <VerifiedStoreBadge /> : null}
-                <StoreRankPill badge={seller.highest_store_badge} />
               </div>
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {(seller.store_badges || []).map((badge) => (
               <AchievementCard key={badge.id} badge={badge} />
             ))}

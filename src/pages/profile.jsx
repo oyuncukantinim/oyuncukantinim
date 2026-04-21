@@ -19,7 +19,7 @@ import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteLis
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
-import { AchievementCard, StoreRankPill, VerifiedStoreBadge } from '../components/StoreBadges';
+import { AchievementCard } from '../components/StoreBadges';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -1355,19 +1355,15 @@ export default function ProfilePage() {
                     <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
                       <Trophy size={14} /> Başarımlar
                     </div>
-                    <h2 className="mt-3 text-2xl font-black">Mağaza rozetlerin</h2>
-                    <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-white/65">
-                      Satış rütbelerinde yalnızca en yüksek uygun rozet profil başlığında öne çıkar.
+                    <h2 className="mt-3 text-2xl font-black">Rozet koleksiyonun</h2>
+                    <p className="mt-1 max-w-3xl text-sm font-semibold leading-6 text-white/65">
+                      Kazandığın rozetler canlı renkleriyle görünür, henüz açılmamış rozetler kilitli ve gri olarak listelenir.
                     </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {Number(storeOverview?.is_verified_store) === 1 ? <VerifiedStoreBadge /> : null}
-                    <StoreRankPill badge={storeOverview?.highest_badge} />
                   </div>
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {(storeOverview?.badges || []).map((badge) => (
                   <AchievementCard key={badge.id} badge={badge} />
                 ))}

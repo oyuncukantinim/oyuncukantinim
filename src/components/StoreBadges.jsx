@@ -1,4 +1,4 @@
-import { CheckCircle2, Gamepad2, Lock, Sparkles, Trophy } from 'lucide-react';
+import { CheckCircle2, Gamepad2, Lock, Trophy } from 'lucide-react';
 
 export function VerifiedStoreBadge({ compact = false }) {
   return (
@@ -14,17 +14,30 @@ export function VerifiedStoreBadge({ compact = false }) {
   );
 }
 
-export function StoreRankPill({ badge }) {
-  if (!badge) return null;
+export function VerifiedStoreIcon({ compact = false }) {
+  const sizeClass = compact ? 'h-6 w-6' : 'h-7 w-7';
+  const iconSize = compact ? 15 : 17;
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 px-2.5 py-1 text-xs font-black text-amber-700 shadow-sm">
-      {badge.image_url ? (
-        <img src={badge.image_url} alt="" className="h-4 w-4 rounded-full object-cover" />
-      ) : (
-        <Trophy size={14} className="text-amber-500" />
-      )}
-      {badge.title}
+    <span
+      className={`inline-flex ${sizeClass} items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100`}
+      title="Onaylı Mağaza"
+      aria-label="Onaylı Mağaza"
+    >
+      <CheckCircle2 size={iconSize} className="fill-emerald-500 text-white" />
+    </span>
+  );
+}
+
+export function StoreRankPill({ badge }) {
+  if (!badge?.image_url) return null;
+
+  return (
+    <span
+      className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm"
+      title={badge.title}
+    >
+      <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
     </span>
   );
 }
@@ -35,43 +48,37 @@ export function AchievementCard({ badge }) {
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border p-4 shadow-sm transition-all ${
+      className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
-          ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50'
-          : 'border-slate-200 bg-white opacity-80'
+          ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-amber-100'
+          : 'border-slate-200 bg-slate-50 grayscale'
       }`}
     >
-      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-violet-100/60" />
-      <div className="relative flex items-start gap-3">
-        <div
-          className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border ${
-            unlocked ? 'border-amber-200 bg-white' : 'border-slate-200 bg-slate-50'
-          }`}
-        >
-          {badge.image_url ? (
-            <img src={badge.image_url} alt="" className="h-full w-full object-cover" />
-          ) : unlocked ? (
-            <Trophy size={24} className="text-amber-500" />
-          ) : (
-            <Lock size={22} className="text-slate-300" />
-          )}
+      <div className={`absolute -right-10 -top-10 h-24 w-24 rounded-full ${unlocked ? 'bg-amber-200/40' : 'bg-slate-200/70'}`} />
+      {!unlocked ? (
+        <div className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-500 shadow-inner">
+          <Lock size={15} />
         </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-black text-slate-900">{badge.title}</h3>
-            {unlocked ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-black text-emerald-700">
-                <Sparkles size={11} /> Açıldı
-              </span>
-            ) : null}
-          </div>
-          <p className="mt-1 text-sm font-semibold leading-5 text-slate-500">{badge.description || 'Satış başarım rozeti.'}</p>
-          <div className="mt-3 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">
-            {requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti'}
-          </div>
-        </div>
-        <Gamepad2 size={18} className={unlocked ? 'text-violet-400' : 'text-slate-300'} />
+      ) : null}
+
+      <div className="relative mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-3xl border bg-white shadow-sm">
+        {badge.image_url ? (
+          <img src={badge.image_url} alt="" className={`h-full w-full object-cover ${unlocked ? '' : 'opacity-45'}`} />
+        ) : unlocked ? (
+          <Trophy size={32} className="text-amber-500" />
+        ) : (
+          <Lock size={30} className="text-slate-300" />
+        )}
       </div>
+
+      <h3 className={`mt-3 line-clamp-1 text-sm font-black ${unlocked ? 'text-slate-900' : 'text-slate-500'}`}>{badge.title}</h3>
+      <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${unlocked ? 'text-slate-500' : 'text-slate-400'}`}>
+        {badge.description || 'Satış başarım rozeti.'}
+      </p>
+      <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-amber-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
+        {requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti'}
+      </div>
+      <Gamepad2 size={16} className={`absolute bottom-3 right-3 ${unlocked ? 'text-violet-400' : 'text-slate-300'}`} />
     </div>
   );
 }
