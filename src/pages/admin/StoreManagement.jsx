@@ -82,12 +82,40 @@ export default function AdminStoreManagement() {
   const [savingCriteria, setSavingCriteria] = useState(false);
   const [draggingBadgeId, setDraggingBadgeId] = useState(null);
   const [savingBadgeOrder, setSavingBadgeOrder] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null); // { url, title, loading, error }
   const dragStartBadgesRef = useRef(null);
   const badgeOrderSavedRef = useRef(false);
 
   const showToast = useCallback((message) => {
     setToast(message);
     setTimeout(() => setToast(''), 3000);
+  }, []);
+
+  const openImagePreview = useCallback(async (url, title) => {
+    if (!url) {
+      showToast('Görsel URL bulunamadı.');
+      return;
+    }
+    setImagePreview({ url: null, title, loading: true, error: null });
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error('Görsel yüklenemedi (HTTP ' + res.status + ')');
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setImagePreview({ url: objectUrl, title, loading: false, error: null });
+    } catch (e) {
+      setImagePreview({ url: null, title, loading: false, error: e.message });
+    }
+  }, [showToast]);
+
+  const closeImagePreview = useCallback(() => {
+    setImagePreview((prev) => {
+      if (prev?.url) URL.revokeObjectURL(prev.url);
+      return null;
+    });
   }, []);
 
   const load = useCallback(() => {
@@ -415,12 +443,12 @@ export default function AdminStoreManagement() {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">
-                          <a href={application.identity_image_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-black text-violet-700 hover:bg-violet-100">
+                          <button type="button" onClick={() => openImagePreview(application.identity_image_url, `Kimlik · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-violet-50 px-2.5 py-1.5 text-xs font-black text-violet-700 hover:bg-violet-100">
                             <Eye size={13} /> Kimlik
-                          </a>
-                          <a href={application.selfie_image_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2.5 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100">
+                          </button>
+                          <button type="button" onClick={() => openImagePreview(application.selfie_image_url, `Selfie · ${application.username}`)} className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2.5 py-1.5 text-xs font-black text-cyan-700 hover:bg-cyan-100">
                             <Eye size={13} /> Selfie
-                          </a>
+                          </button>
                         </div>
                       </td>
                       <td className="px-4 py-4">
@@ -649,6 +677,40 @@ export default function AdminStoreManagement() {
         </div>
         ) : null}
       </div>
+
+      {imagePreview ? (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={closeImagePreview}
+        >
+          <button
+            type="button"
+            onClick={closeImagePreview}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+            title="Kapat"
+          >
+            <XCircle size={22} />
+          </button>
+          <div className="flex max-h-[90vh] max-w-[95vw] flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+            {imagePreview.title ? (
+              <div className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-black text-white">{imagePreview.title}</div>
+            ) : null}
+            {imagePreview.loading ? (
+              <div className="flex items-center gap-2 text-white">
+                <Loader2 size={20} className="animate-spin" /> Görsel yükleniyor...
+              </div>
+            ) : imagePreview.error ? (
+              <div className="rounded-xl bg-rose-500/90 px-4 py-3 text-sm font-black text-white">{imagePreview.error}</div>
+            ) : imagePreview.url ? (
+              <img
+                src={imagePreview.url}
+                alt={imagePreview.title || 'Görsel'}
+                className="max-h-[82vh] max-w-[95vw] rounded-2xl object-contain shadow-2xl"
+              />
+            ) : null}
+          </div>
+        </div>
+      ) : null}
     </AdminLayout>
   );
 }

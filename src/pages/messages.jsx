@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
+import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
 
@@ -201,7 +201,10 @@ export default function MessagesPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className={`font-bold text-sm ${isActive ? 'text-violet-700' : 'text-gray-800'}`}>{conv.username}</span>
+                      <span className={`font-bold text-sm inline-flex items-center gap-1 ${isActive ? 'text-violet-700' : 'text-gray-800'}`}>
+                        {conv.username}
+                        {Number(conv.is_verified_store) === 1 ? <BadgeCheck size={13} className="fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
+                      </span>
                       <span className="text-[11px] text-gray-400 flex-shrink-0 ml-1">{formatTime(conv.last_message_time)}</span>
                     </div>
                     <p className={`text-xs truncate ${conv.unread_count > 0 ? 'text-gray-700 font-semibold' : 'text-gray-400'}`}>
@@ -415,10 +418,11 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
           {canOpenProfile ? (
             <Link
               to={`/p/${displayName}`}
-              className="block truncate font-extrabold text-gray-900 text-sm transition-colors hover:text-violet-600"
+              className="inline-flex items-center gap-1 truncate font-extrabold text-gray-900 text-sm transition-colors hover:text-violet-600"
               title={`${displayName} profiline git`}
             >
-              {displayName}
+              <span className="truncate">{displayName}</span>
+              {Number(activeConversation?.is_verified_store) === 1 ? <BadgeCheck size={14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
             </Link>
           ) : (
             <div className="font-extrabold text-gray-900 text-sm truncate">{displayName}</div>

@@ -218,7 +218,12 @@ export default function SellerPage() {
 
           <div className="mb-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-extrabold text-gray-900">{seller.username}</h1>
+              <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-1.5">
+                {seller.username}
+                {Number(seller.is_verified_store) === 1 ? (
+                  <BadgeCheck size={20} className="fill-emerald-500 text-white" aria-label="Onaylı Satıcı" />
+                ) : null}
+              </h1>
               <span className="text-sm text-gray-400 font-medium">@{seller.username}</span>
             </div>
             {seller.bio && <p className="text-gray-500 text-sm mt-1 leading-relaxed">{seller.bio}</p>}

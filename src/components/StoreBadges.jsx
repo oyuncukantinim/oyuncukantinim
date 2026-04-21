@@ -69,7 +69,7 @@ export function VerifiedAchievementCard({ isVerified = false }) {
 
       <h3 className={`mt-3 line-clamp-1 text-sm font-black ${unlocked ? 'text-slate-900' : 'text-slate-500'}`}>Onaylı Satıcı</h3>
       <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${unlocked ? 'text-slate-500' : 'text-slate-400'}`}>
-        Admin tarafından doğrulanmış güvenilir satıcı rozeti.
+        Bilgileri doğrulanmış satıcı.
       </p>
       <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-emerald-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
         Mağaza Onayı

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Image as ImageIcon, Star, Zap } from 'lucide-react';
+import { Image as ImageIcon, Star, Zap, BadgeCheck } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
@@ -16,6 +16,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
   const listingUrl = listingSlug(listing.title, listing.id);
+  const sellerVerified = Number(listing.seller_is_verified_store) === 1;
 
   const ringClass = activeTypes.includes('vitrine')
     ? DOPING_META.vitrine.ring
@@ -75,9 +76,10 @@ export default function ListingCard({ listing, compact = false, dense = false, f
               </div>
               <Link
                 to={`/p/${listing.seller}`}
-                className="truncate text-xs font-bold text-gray-600 transition-colors hover:text-neon-purple"
+                className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-bold text-gray-600 transition-colors hover:text-neon-purple"
               >
-                {listing.seller || 'Satıcı'}
+                <span className="truncate">{listing.seller || 'Satıcı'}</span>
+                {sellerVerified ? <BadgeCheck size={12} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
               </Link>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -164,9 +166,10 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         </div>
         <Link
           to={`/p/${listing.seller}`}
-          className={`${sellerNameCls} min-w-0 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
+          className={`${sellerNameCls} inline-flex min-w-0 items-center gap-1 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
         >
-          {listing.seller || 'Satıcı'}
+          <span className="truncate">{listing.seller || 'Satıcı'}</span>
+          {sellerVerified ? <BadgeCheck size={dense ? 11 : 13} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
         </Link>
       </div>
 
