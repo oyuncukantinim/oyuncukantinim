@@ -13,6 +13,8 @@ import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
 
+const LISTING_GRID_CLASS = 'grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6';
+
 function HomeCardSkeleton({ className = '' }) {
   return (
     <div className={`overflow-hidden rounded-2xl border border-gray-100 bg-white/80 shadow-sm ${className}`}>
@@ -277,13 +279,13 @@ export default function Home() {
 
           <div className="min-h-[260px]">
             {vitrineListings.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
+              <div className={LISTING_GRID_CLASS}>
                 {vitrineListings.slice(0, 16).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} dense fallbackImage={defaultListingImage} />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
+              <div className={LISTING_GRID_CLASS}>
                 {Array.from({ length: 7 }).map((_, index) => (
                   <HomeCardSkeleton key={`vitrine-skeleton-${index}`} className="h-[260px]" />
                 ))}
@@ -325,13 +327,13 @@ export default function Home() {
 
           <div className="min-h-[260px]">
             {recentListings.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
+              <div className={LISTING_GRID_CLASS}>
                 {recentListings.slice(0, 16).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} dense fallbackImage={defaultListingImage} />
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
+              <div className={LISTING_GRID_CLASS}>
                 {Array.from({ length: 7 }).map((_, index) => (
                   <HomeCardSkeleton key={`recent-skeleton-${index}`} className="h-[260px]" />
                 ))}
