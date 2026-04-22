@@ -601,7 +601,7 @@ export default function ProfilePage() {
     setEmailVerificationCode('');
     setPendingEmailVerification('');
     setEmailVerificationExpiresAt('');
-    setBannerImage(user.banner_image ?? defaultProfileBanner ?? '');
+    setBannerImage(user.banner_image || '');
     setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
       full_name: user.full_name || '',
@@ -643,8 +643,9 @@ export default function ProfilePage() {
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
   const normalizedBannerImage = bannerImage.trim();
-  const savedBannerImage = user?.banner_image ?? defaultProfileBanner ?? '';
-  const profileHeaderBanner = user?.banner_image ?? defaultProfileBanner ?? '';
+  const savedBannerImage = (user?.banner_image || '').trim();
+  const profileHeaderBanner = savedBannerImage || defaultProfileBanner || '';
+  const profileEditorBanner = normalizedBannerImage || defaultProfileBanner || '';
   const canUploadProfileAvatar = Number(user?.is_verified_store) === 1;
   const emailChanged = normalizedEmail !== (user?.email || '');
   const emailVerified = Boolean(user?.email_verified_at) && !emailChanged;
@@ -696,7 +697,7 @@ export default function ProfilePage() {
       updateUser(res.data);
       setEditUsername(res.data.username || '');
       setEditEmail(res.data.email || '');
-      setBannerImage(res.data.banner_image ?? defaultProfileBanner ?? '');
+      setBannerImage(res.data.banner_image || '');
       setSelectedAvatar(res.data.avatar || defaultAvatar);
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
@@ -1627,8 +1628,8 @@ export default function ProfilePage() {
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
-                        {normalizedBannerImage ? (
-                          <img src={normalizedBannerImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        {profileEditorBanner ? (
+                          <img src={profileEditorBanner} alt="" className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
                           <>
                             <div className="absolute inset-0 bg-white/25" />
