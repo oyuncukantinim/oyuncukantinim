@@ -9,13 +9,11 @@ import {
   CreditCard,
   Flame,
   LifeBuoy,
-  Package,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
   Star,
   Store,
-  Trophy,
   Users,
   Wallet,
   Zap,
@@ -221,6 +219,7 @@ export default function AdminDashboard() {
 
   const orderSeries = useMemo(() => series(stats?.chart_orders, 'count'), [stats?.chart_orders]);
   const revenueSeries = useMemo(() => series(stats?.chart_orders, 'revenue'), [stats?.chart_orders]);
+  const commissionSeries = useMemo(() => series(stats?.chart_orders, 'commission'), [stats?.chart_orders]);
   const userSeries = useMemo(() => series(stats?.chart_users, 'count'), [stats?.chart_users]);
 
   const derived = useMemo(() => {
@@ -300,10 +299,10 @@ export default function AdminDashboard() {
               </p>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <HeroMini title="Bekleyen İş" value={count(derived.operationsQueue)} text="Aksiyon bekleyen toplam kayıt" />
-                <HeroMini title="Haftalık Hacim" value={compactMoney(derived.weeklyRevenue)} text={`${count(derived.weeklyOrders)} siparişten oluştu`} />
-                <HeroMini title="Pazar Sağlığı" value={percent(derived.activeListingRate)} text="İlanların aktif kalma oranı" />
-                <HeroMini title="Mağaza Gücü" value={count(stats?.verified_stores)} text="Onaylı mağaza hesabı" />
+                <HeroMini title="Platform Geliri" value={compactMoney(stats?.platform_revenue_week)} text="Komisyon, doping ve çekim masrafı / 7 gün" />
+                <HeroMini title="Satış Hacmi" value={compactMoney(derived.weeklyRevenue)} text={`${count(derived.weeklyOrders)} tamamlanan sipariş`} />
+                <HeroMini title="Satıcıya Aktarılan" value={compactMoney(stats?.seller_earnings_paid_week)} text="Bu hafta satıcı bakiyesine geçen kazanç" />
+                <HeroMini title="Operasyon Kuyruğu" value={count(derived.operationsQueue)} text="Aksiyon bekleyen toplam kayıt" />
               </div>
             </div>
 
@@ -348,12 +347,12 @@ export default function AdminDashboard() {
         </section>
 
         <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
-          <Stat title="Toplam Kullanıcı" value={count(stats?.total_users)} helper={`${count(stats?.new_users_week)} yeni kayıt / 7 gün`} icon={Users} to="/admin/users" tone="from-sky-500 to-blue-500" />
-          <Stat title="Aktif İlan" value={count(stats?.active_listings)} helper={`${count(stats?.active_vitrine_listings)} vitrin, ${count(stats?.active_featured_listings)} öne çıkarma`} icon={ShoppingBag} to="/admin/listings" tone="from-emerald-500 to-cyan-500" />
-          <Stat title="Toplam Sipariş" value={count(stats?.total_orders)} helper={`${count(stats?.orders_today)} sipariş bugün oluştu`} icon={Package} to="/admin/orders" tone="from-lime-500 to-green-500" />
-          <Stat title="Toplam Ciro" value={money(stats?.revenue_total)} helper={`${money(stats?.revenue_today)} bugünkü tamamlanan ciro`} icon={BadgeDollarSign} tone="from-orange-500 to-amber-500" />
-          <Stat title="Toplam Komisyon" value={money(stats?.commission_total)} helper={`${money(stats?.commission_week)} haftalık komisyon`} icon={Banknote} to="/admin/finance" tone="from-amber-500 to-yellow-500" />
-          <Stat title="XP Hareketi" value={count(stats?.xp_events_today)} helper={`${count(stats?.xp_awarded_week)} XP bu hafta dağıtıldı`} icon={Sparkles} to="/admin/xp-management" tone="from-violet-500 to-purple-500" />
+          <Stat title="Satış Hacmi" value={money(stats?.revenue_total)} helper={`${money(stats?.revenue_week)} son 7 gün tamamlanan sipariş hacmi.`} icon={BadgeDollarSign} to="/admin/orders" tone="from-orange-500 to-amber-500" />
+          <Stat title="Platform Komisyonu" value={money(stats?.commission_total)} helper={`${money(stats?.commission_week)} son 7 gün satış komisyonu.`} icon={Banknote} to="/admin/finance" tone="from-amber-500 to-yellow-500" />
+          <Stat title="Doping Geliri" value={money(stats?.doping_revenue_total)} helper={`${money(stats?.doping_revenue_week)} son 7 gün ilan vitrin/öne çıkarma geliri.`} icon={Zap} to="/admin/doping" tone="from-fuchsia-500 to-pink-500" />
+          <Stat title="Çekim Masrafı" value={money(stats?.withdrawal_fee_total)} helper={`${money(stats?.withdrawal_fee_week)} son 7 gün para çekim işlem masrafı.`} icon={Wallet} to="/admin/payment-management" tone="from-emerald-500 to-teal-500" />
+          <Stat title="Bakiye Yükleme" value={money(stats?.balance_topup_total)} helper={`${money(stats?.balance_topup_week)} son 7 gün kullanıcı bakiye yüklemesi.`} icon={CreditCard} to="/admin/finance" tone="from-sky-500 to-blue-500" />
+          <Stat title="Satıcı Kazancı" value={money(stats?.seller_earnings_paid_total)} helper={`${money(stats?.pending_payout)} satıcıya aktarılmayı bekliyor.`} icon={Users} to="/admin/finance" tone="from-lime-500 to-green-500" />
         </section>
 
         <section className="grid grid-cols-1 gap-3 xl:grid-cols-[1.15fr_0.85fr]">
@@ -361,8 +360,8 @@ export default function AdminDashboard() {
             <Panel title="Sipariş Ritmi" subtitle="Son 7 günün sipariş yoğunluğu. Ani düşüş veya yoğunluk burada hızlı görünür.">
               <Bars items={orderSeries} />
             </Panel>
-            <Panel title="Ciro Akışı" subtitle={`${money(derived.weeklyRevenue)} haftalık hacim ve ${money(derived.avgTicket)} ortalama sepet.`}>
-              <Bars items={revenueSeries} formatter={compactMoney} tone="from-emerald-400 to-cyan-500" />
+            <Panel title="Komisyon Akışı" subtitle={`${money(stats?.commission_week)} haftalık satış komisyonu ve ${money(derived.avgTicket)} ortalama sepet.`}>
+              <Bars items={commissionSeries} formatter={compactMoney} tone="from-emerald-400 to-cyan-500" />
             </Panel>
           </div>
 
@@ -438,10 +437,10 @@ export default function AdminDashboard() {
         </section>
 
         <section className="grid grid-cols-1 gap-3 md:grid-cols-4">
-          <Stat title="Onaylı Mağaza" value={count(stats?.verified_stores)} helper="Profil ve mağaza avantajı açık kullanıcılar." icon={ShieldCheck} to="/admin/store-management" tone="from-emerald-500 to-green-500" />
-          <Stat title="Aktif Rozet" value={count(stats?.active_store_badges)} helper="Profil başarım alanında kullanılabilen rozetler." icon={Trophy} to="/admin/store-management" tone="from-yellow-500 to-orange-500" />
-          <Stat title="Haftalık Kayıt" value={count(derived.weeklyUsers)} helper="Son 7 günde üye kazanımı." icon={Users} to="/admin/users" tone="from-cyan-500 to-blue-500" />
-          <Stat title="Toplam Yorum" value={count(stats?.total_reviews)} helper="Satıcı güven sinyali ve değerlendirme havuzu." icon={Star} to="/admin/reviews" tone="from-amber-500 to-yellow-500" />
+          <Stat title="Toplam Kullanıcı" value={count(stats?.total_users)} helper={`${count(derived.weeklyUsers)} yeni kayıt son 7 günde geldi.`} icon={Users} to="/admin/users" tone="from-cyan-500 to-blue-500" />
+          <Stat title="Banlı Kullanıcı" value={count(stats?.banned_users)} helper="Moderasyon tarafından tamamen kısıtlanan hesaplar." icon={ShieldCheck} to="/admin/users" tone="from-rose-500 to-red-500" />
+          <Stat title="XP Hareketi" value={count(stats?.xp_events_today)} helper={`${count(stats?.xp_awarded_week)} XP son 7 günde kullanıcılara dağıtıldı.`} icon={Sparkles} to="/admin/xp-management" tone="from-violet-500 to-purple-500" />
+          <Stat title="Toplam Yorum" value={count(stats?.total_reviews)} helper={`${count(stats?.total_messages)} mesaj kaydıyla birlikte topluluk aktivitesi.`} icon={Star} to="/admin/reviews" tone="from-amber-500 to-yellow-500" />
         </section>
       </div>
     </AdminLayout>
