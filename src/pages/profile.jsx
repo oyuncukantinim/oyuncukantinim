@@ -982,7 +982,6 @@ export default function ProfilePage() {
     { id: 'achievements',  label: 'Başarımlar',        icon: Trophy },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
     ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
-    { id: 'store_application', label: 'Onaylı Mağaza', icon: ShieldCheck },
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
@@ -991,10 +990,6 @@ export default function ProfilePage() {
   const isSoldManualListing = (listing) => listing.status === 'sold' && listing.delivery_type !== 'stock';
   const isPassiveListing = (listing) => ['passive', 'inactive'].includes(listing.status) || isSoldManualListing(listing);
   const handleTabClick = (tabId) => {
-    if (tabId === 'store_application') {
-      navigate('/magaza-basvuru');
-      return;
-    }
     setActiveTab(tabId);
   };
 
@@ -1100,7 +1095,7 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
-            {tabs.filter(t => ['favorites','achievements','reviews','store_application'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['favorites','achievements','reviews'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'

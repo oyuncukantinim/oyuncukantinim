@@ -227,6 +227,9 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             <Link to="/support" className="text-slate-300 transition-colors hover:text-white">
               Destek Merkezi
             </Link>
+            <Link to="/magaza-basvuru" className="text-slate-300 transition-colors hover:text-white">
+              Onaylı Mağaza
+            </Link>
             {!user ? (
               <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
                 Giriş Yap / Kayıt Ol
