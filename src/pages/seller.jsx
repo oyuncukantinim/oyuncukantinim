@@ -240,10 +240,6 @@ export default function SellerPage() {
             </p>
           </div>
 
-          <p className="text-xs text-gray-400 mt-2 mb-4">
-            <span className="font-bold text-gray-700">{seller.follower_count ?? 0}</span> takipçi
-          </p>
-
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {stats.map((stat, i) => (
               <div key={i} className="bg-surface-50 border border-gray-100 rounded-xl p-3 text-center">
