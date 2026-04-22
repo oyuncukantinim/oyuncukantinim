@@ -1415,7 +1415,7 @@ export default function ProfilePage() {
           {/* BAŞARIMLARIM */}
           {activeTab === 'achievements' && (
             <div className="space-y-5">
-              <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-5 text-white shadow-xl shadow-violet-100">
+              <div className="seller-achievements-hero relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-5 text-white shadow-xl">
                 <div className="absolute -right-12 -top-12 h-36 w-36 rounded-full bg-cyan-400/20 blur-3xl" />
                 <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>

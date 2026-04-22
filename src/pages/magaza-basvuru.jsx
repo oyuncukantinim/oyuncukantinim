@@ -170,7 +170,7 @@ export default function StoreApplicationPage() {
 
   return (
     <div className="mx-auto max-w-screen-2xl space-y-8">
-      <section className="relative overflow-hidden rounded-[2rem] border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-2xl shadow-violet-200 sm:p-8">
+      <section className="seller-achievements-hero relative overflow-hidden rounded-[2rem] border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-2xl sm:p-8">
         <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="absolute -bottom-16 left-8 h-40 w-40 rounded-full bg-violet-400/20 blur-3xl" />
         <div className="relative grid gap-8 xl:grid-cols-[1.55fr_0.45fr] xl:items-center">
@@ -261,7 +261,7 @@ export default function StoreApplicationPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 py-3 text-sm font-black text-white shadow-lg shadow-violet-200 transition-all hover:scale-[1.01] disabled:opacity-50"
+              className="theme-soft-action rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 py-3 text-sm font-black text-white shadow-lg transition-all hover:scale-[1.01] disabled:opacity-50"
             >
               {submitting ? 'Başvuru gönderiliyor...' : 'Başvuruyu Gönder'}
             </button>

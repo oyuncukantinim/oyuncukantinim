@@ -30,12 +30,17 @@ async function adminRequest(action, { method = 'GET', body = null, query = {} } 
   return json;
 }
 
-async function adminUploadRequest(action, file) {
+async function adminUploadRequest(action, file, fields = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
 
   const formData = new FormData();
   formData.append('image', file);
+  Object.entries(fields).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      formData.append(key, value);
+    }
+  });
 
   const res = await fetch(url.toString(), {
     method: 'POST',
@@ -72,6 +77,8 @@ export const adminUpdateUser = (body) =>
   adminRequest('admin_update_user', { method: 'POST', body });
 export const adminDeleteUserMedia = (user_id, type) =>
   adminRequest('admin_delete_user_media', { method: 'POST', body: { user_id, type } });
+export const adminUploadUserMedia = (user_id, type, file) =>
+  adminUploadRequest('admin_upload_user_media', file, { user_id, type }).then((json) => json.data?.url || '');
 
 // Support
 export const adminGetSupportTickets = (params = {}) =>

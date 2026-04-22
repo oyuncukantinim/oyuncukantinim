@@ -21,10 +21,11 @@ import {
   Monitor,
   CreditCard,
   Trash2,
+  Upload,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUserMedia } from '../../lib/adminApi';
+import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUserMedia, adminUploadUserMedia } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
 import useSiteBrand from '../../hooks/useSiteBrand';
@@ -421,6 +422,21 @@ export default function AdminUsers() {
       await refreshDetail(detailUser.id);
       await load();
       showToast(type === 'avatar' ? 'Profil resmi silindi.' : 'Profil bannerı silindi.');
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setDrawerSaving('');
+    }
+  };
+
+  const handleUploadUserMedia = async (type, file) => {
+    if (!detailUser?.id || !file) return;
+    setDrawerSaving(type === 'avatar' ? 'upload-avatar' : 'upload-banner');
+    try {
+      await adminUploadUserMedia(detailUser.id, type, file);
+      await refreshDetail(detailUser.id);
+      await load();
+      showToast(type === 'avatar' ? 'Profil resmi yüklendi.' : 'Profil bannerı yüklendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -883,10 +899,10 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                <SummaryCard icon={Wallet} label="Bakiye" value={fmtMoney(detailUser.balance)} tone="border-emerald-100 bg-emerald-50/70" />
-                <SummaryCard icon={FileText} label="İlan" value={detailUser.listings?.length || 0} tone="border-violet-100 bg-violet-50/70" />
-                <SummaryCard icon={Clock} label="Sipariş" value={detailUser.orders?.length || 0} tone="border-cyan-100 bg-cyan-50/70" />
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <SummaryCard compact icon={Wallet} label="Bakiye" value={fmtMoney(detailUser.balance)} tone="border-emerald-100 bg-emerald-50/70" />
+                <SummaryCard compact icon={FileText} label="İlan" value={detailUser.listings?.length || 0} tone="border-violet-100 bg-violet-50/70" />
+                <SummaryCard compact icon={Clock} label="Sipariş" value={detailUser.orders?.length || 0} tone="border-cyan-100 bg-cyan-50/70" />
               </div>
             </div>
             
@@ -941,14 +957,28 @@ export default function AdminUsers() {
                       placeholder="Emoji veya görsel URL"
                       className={inputClass}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteUserMedia('avatar')}
-                      disabled={drawerSaving === 'delete-avatar'}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
-                    >
-                      <Trash2 size={13} /> Profil Resmini Sil
-                    </button>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 ${drawerSaving === 'upload-avatar' ? 'pointer-events-none opacity-50' : ''}`}>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/bmp"
+                          className="hidden"
+                          onChange={(e) => {
+                            handleUploadUserMedia('avatar', e.target.files?.[0]);
+                            e.target.value = '';
+                          }}
+                        />
+                        <Upload size={13} /> {drawerSaving === 'upload-avatar' ? 'Yükleniyor...' : 'Dosya Yükle'}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUserMedia('avatar')}
+                        disabled={drawerSaving === 'delete-avatar'}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
+                      >
+                        <Trash2 size={13} /> Profil Resmini Sil
+                      </button>
+                    </div>
                   </FormField>
                   <FormField label="Profil Bannerı">
                     <input
@@ -957,14 +987,28 @@ export default function AdminUsers() {
                       placeholder="Dosya URL veya boş"
                       className={inputClass}
                     />
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteUserMedia('banner')}
-                      disabled={drawerSaving === 'delete-banner'}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
-                    >
-                      <Trash2 size={13} /> Bannerı Sil
-                    </button>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 ${drawerSaving === 'upload-banner' ? 'pointer-events-none opacity-50' : ''}`}>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/bmp"
+                          className="hidden"
+                          onChange={(e) => {
+                            handleUploadUserMedia('banner', e.target.files?.[0]);
+                            e.target.value = '';
+                          }}
+                        />
+                        <Upload size={13} /> {drawerSaving === 'upload-banner' ? 'Yükleniyor...' : 'Dosya Yükle'}
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUserMedia('banner')}
+                        disabled={drawerSaving === 'delete-banner'}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
+                      >
+                        <Trash2 size={13} /> Bannerı Sil
+                      </button>
+                    </div>
                   </FormField>
                   <FormField label="Ad Soyad">
                     <input
