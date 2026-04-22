@@ -19,7 +19,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getStoreApplicationOverview, submitStoreApplication } from '../lib/api';
-import { AchievementCard, VerifiedStoreBadge } from '../components/StoreBadges';
+import { AchievementCard, VerifiedAchievementCard, VerifiedStoreBadge } from '../components/StoreBadges';
 
 const statusMeta = {
   pending: { label: 'İncelemede', className: 'border-amber-200 bg-amber-50 text-amber-700', icon: Clock },
@@ -351,6 +351,7 @@ export default function StoreApplicationPage() {
           </Link>
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <VerifiedAchievementCard isVerified={Boolean(overview.is_verified_store)} />
           {(overview.badges || []).map((badge) => (
             <AchievementCard key={badge.id} badge={badge} />
           ))}
