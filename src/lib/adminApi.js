@@ -70,6 +70,8 @@ export const adminGetUser = (id) =>
   adminRequest('admin_get_user', { query: { id } });
 export const adminUpdateUser = (body) =>
   adminRequest('admin_update_user', { method: 'POST', body });
+export const adminDeleteUserMedia = (user_id, type) =>
+  adminRequest('admin_delete_user_media', { method: 'POST', body: { user_id, type } });
 
 // Support
 export const adminGetSupportTickets = (params = {}) =>

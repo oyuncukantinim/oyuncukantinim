@@ -105,6 +105,45 @@ export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
 }
 
+async function uploadProfileMedia(file, type) {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const token = getToken();
+  const response = await fetch(`${API_URL}?action=${type === 'avatar' ? 'upload_profile_avatar' : 'upload_profile_banner'}`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({
+    status: 'error',
+    message: 'Sunucudan gecerli JSON donmedi.',
+  }));
+
+  if (!response.ok || data.status !== 'success') {
+    throw new Error(data.message || 'Profil gorseli yuklenemedi.');
+  }
+
+  return data.data?.url || '';
+}
+
+export function uploadProfileAvatar(file) {
+  return uploadProfileMedia(file, 'avatar');
+}
+
+export function uploadProfileBanner(file) {
+  return uploadProfileMedia(file, 'banner');
+}
+
+export function deleteProfileMedia(url, type) {
+  return request('delete_profile_media', {
+    method: 'POST',
+    body: { url, type },
+    auth: true,
+  });
+}
+
 export function sendProfileEmailVerification(payload) {
   return request('send_profile_email_verification', { method: 'POST', body: payload, auth: true });
 }

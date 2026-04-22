@@ -23,10 +23,11 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions } from '../../lib/adminApi';
+import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUserMedia } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
 import useSiteBrand from '../../hooks/useSiteBrand';
+import UserAvatar from '../../components/UserAvatar';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -259,6 +260,7 @@ export default function AdminUsers() {
     username: '',
     email: '',
     avatar: '',
+    banner_image: '',
     full_name: '',
     country: '',
     city: '',
@@ -301,6 +303,7 @@ export default function AdminUsers() {
       username: detailUser.username || '',
       email: detailUser.email || '',
       avatar: detailUser.avatar || '',
+      banner_image: detailUser.banner_image || '',
       full_name: detailUser.full_name || '',
       country: detailUser.country || '',
       city: detailUser.city || '',
@@ -392,6 +395,7 @@ export default function AdminUsers() {
         username,
         email,
         avatar: generalForm.avatar.trim(),
+        banner_image: generalForm.banner_image.trim(),
         full_name: generalForm.full_name.trim(),
         country: generalForm.country.trim(),
         city: generalForm.city.trim(),
@@ -401,6 +405,21 @@ export default function AdminUsers() {
       await refreshDetail(detailUser.id);
       await load();
       showToast('Genel bilgiler güncellendi.');
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setDrawerSaving('');
+    }
+  };
+
+  const handleDeleteUserMedia = async (type) => {
+    if (!detailUser?.id) return;
+    setDrawerSaving(type === 'avatar' ? 'delete-avatar' : 'delete-banner');
+    try {
+      await adminDeleteUserMedia(detailUser.id, type);
+      await refreshDetail(detailUser.id);
+      await load();
+      showToast(type === 'avatar' ? 'Profil resmi silindi.' : 'Profil bannerı silindi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -716,7 +735,7 @@ export default function AdminUsers() {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <span className="text-xl">{u.avatar || '👤'}</span>
+                          <UserAvatar value={u.avatar} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-xl" iconSize={20} />
                           <div>
                             <div className="flex items-center gap-1.5 font-bold text-gray-800">
                               <span>{u.username}</span>
@@ -837,9 +856,7 @@ export default function AdminUsers() {
           <div className="space-y-5">
             <div className="rounded-3xl border border-slate-100 bg-gradient-to-br from-slate-50 via-white to-violet-50 p-5">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-100">
-                  {detailUser.avatar || '👤'}
-                </div>
+                <UserAvatar value={detailUser.avatar} className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-100" iconSize={28} />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="truncate text-xl font-black text-slate-900">{detailUser.username}</h3>
@@ -923,6 +940,30 @@ export default function AdminUsers() {
                       placeholder="Emoji veya görsel URL"
                       className={inputClass}
                     />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteUserMedia('avatar')}
+                      disabled={drawerSaving === 'delete-avatar'}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
+                    >
+                      <Trash2 size={13} /> Profil Resmini Sil
+                    </button>
+                  </FormField>
+                  <FormField label="Profil Bannerı">
+                    <input
+                      value={generalForm.banner_image}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, banner_image: e.target.value }))}
+                      placeholder="Dosya URL veya boş"
+                      className={inputClass}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteUserMedia('banner')}
+                      disabled={drawerSaving === 'delete-banner'}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
+                    >
+                      <Trash2 size={13} /> Bannerı Sil
+                    </button>
                   </FormField>
                   <FormField label="Ad Soyad">
                     <input

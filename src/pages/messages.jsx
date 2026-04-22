@@ -3,6 +3,7 @@ import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag, BadgeCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
+import UserAvatar from '../components/UserAvatar';
 
 const AVATAR_COLORS = [
   'from-violet-400 to-purple-500',
@@ -190,9 +191,7 @@ export default function MessagesPage() {
                   className={`w-full text-left flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 transition-colors ${isActive ? 'bg-violet-50' : ''}`}
                 >
                   <div className="relative flex-shrink-0">
-                    <div className={`w-11 h-11 bg-gradient-to-br ${avatarColor(conv.username)} rounded-xl flex items-center justify-center text-white font-extrabold text-base`}>
-                      {initial}
-                    </div>
+                    <UserAvatar value={conv.avatar || initial} className={`w-11 h-11 bg-gradient-to-br ${avatarColor(conv.username)} rounded-xl flex items-center justify-center text-white font-extrabold text-base`} />
                     {conv.unread_count > 0 && (
                       <span className="absolute -top-1 -right-1 bg-violet-600 text-white text-[9px] font-extrabold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
                         {conv.unread_count > 9 ? '9+' : conv.unread_count}
@@ -411,9 +410,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
         <button onClick={onBack} className="p-1.5 rounded-xl hover:bg-gray-100 text-gray-500 lg:hidden">
           <ArrowLeft size={18} />
         </button>
-        <div className={`w-9 h-9 bg-gradient-to-br ${avatarColor(displayName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`}>
-          {otherInitial}
-        </div>
+        <UserAvatar value={activeConversation?.avatar || otherInitial} className={`w-9 h-9 bg-gradient-to-br ${avatarColor(displayName)} rounded-xl flex items-center justify-center text-white font-extrabold text-base flex-shrink-0`} />
         <div className="flex-1 min-w-0">
           {canOpenProfile ? (
             <Link
@@ -475,9 +472,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
           return (
             <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'} mb-1.5`}>
               {!isMine && (
-                <div className={`w-7 h-7 bg-gradient-to-br ${avatarColor(displayName)} rounded-full flex items-center justify-center text-white text-xs font-extrabold mr-2 flex-shrink-0 self-end mb-5`}>
-                  {otherInitial}
-                </div>
+                <UserAvatar value={activeConversation?.avatar || otherInitial} className={`w-7 h-7 bg-gradient-to-br ${avatarColor(displayName)} rounded-full flex items-center justify-center text-white text-xs font-extrabold mr-2 flex-shrink-0 self-end mb-5`} />
               )}
               <div className={`max-w-[70%] flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                 <div className={`min-w-0 max-w-full px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-all [overflow-wrap:anywhere] ${

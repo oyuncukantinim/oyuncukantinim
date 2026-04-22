@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from './SiteBrand';
+import UserAvatar from './UserAvatar';
 import ThemeToggle from './ThemeToggle';
 
 const navItems = [
@@ -99,7 +100,7 @@ function AdminSidebar({
       <div className="border-t border-white/10 px-4 py-4">
         <div className="mb-3 flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-600 text-base">
-            {adminUser.avatar || defaultAvatar}
+            <UserAvatar value={adminUser.avatar} fallback={defaultAvatar} className="flex h-full w-full items-center justify-center" iconSize={18} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold">{adminUser.username || 'Admin'}</div>

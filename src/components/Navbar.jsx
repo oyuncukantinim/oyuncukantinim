@@ -20,6 +20,7 @@ import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
 import ThemeToggle from './ThemeToggle';
+import UserAvatar from './UserAvatar';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
@@ -491,9 +492,12 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 to="/profile"
                 className="inline-flex items-center gap-3 rounded-2xl border border-violet-100 bg-violet-50/70 px-3 py-2.5 transition-colors hover:bg-violet-100/80"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white bg-white text-base shadow-sm">
-                  {user.avatar || defaultAvatar}
-                </div>
+                <UserAvatar
+                  value={user.avatar}
+                  fallback={defaultAvatar}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white bg-white text-base shadow-sm"
+                  iconSize={18}
+                />
                 <div className="text-left">
                   <div className="max-w-[120px] truncate text-xs font-semibold text-slate-500">{user.username}</div>
                   <div className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</div>

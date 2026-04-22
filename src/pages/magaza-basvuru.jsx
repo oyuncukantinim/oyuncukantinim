@@ -8,6 +8,7 @@ import {
   Crown,
   Gamepad2,
   Headphones,
+  Image,
   Lock,
   MessageCircle,
   ShieldCheck,
@@ -47,6 +48,11 @@ const benefits = [
     icon: Sparkles,
     title: 'Özel Rozetler',
     text: 'Admin tarafından oluşturulan şirin oyuncu temalı rozetler mağaza kimliğini güçlendirir.',
+  },
+  {
+    icon: Image,
+    title: 'Dosya Profil Resmi',
+    text: 'Onaylı mağazalar emoji yerine dosya olarak özel profil resmi yükleyebilir.',
   },
   {
     icon: Headphones,

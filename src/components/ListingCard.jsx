@@ -3,6 +3,7 @@ import { Image as ImageIcon, Star, Zap, BadgeCheck } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
+import UserAvatar from './UserAvatar';
 
 const DOPING_META = {
   vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'ring-amber-500/60' },
@@ -71,9 +72,11 @@ export default function ListingCard({ listing, compact = false, dense = false, f
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-gray-100 bg-white text-sm shadow-sm">
-                {listing.avatar || '👤'}
-              </div>
+              <UserAvatar
+                value={listing.avatar}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-gray-100 bg-white text-sm shadow-sm"
+                iconSize={14}
+              />
               <Link
                 to={`/p/${listing.seller}`}
                 className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-bold text-gray-600 transition-colors hover:text-neon-purple"
@@ -162,9 +165,11 @@ export default function ListingCard({ listing, compact = false, dense = false, f
       </Link>
 
       <div className={`${sellerBox} flex min-w-0 items-center bg-surface-100`}>
-        <div className={`${avatarCls} flex shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white shadow-sm`}>
-          {listing.avatar || '👤'}
-        </div>
+        <UserAvatar
+          value={listing.avatar}
+          className={`${avatarCls} flex shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white shadow-sm`}
+          iconSize={dense ? 14 : 18}
+        />
         <Link
           to={`/p/${listing.seller}`}
           className={`${sellerNameCls} inline-flex min-w-0 items-center gap-1 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}

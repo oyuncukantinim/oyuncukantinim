@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
+import UserAvatar from '../components/UserAvatar';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -242,13 +243,11 @@ export default function ListingDetailPage() {
             <div className="absolute inset-x-0 top-9 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
             <div className="relative p-4 pt-5">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
-                  {typeof listing.avatar === 'string' && (listing.avatar.startsWith('http') || listing.avatar.startsWith('/')) ? (
-                    <img src={listing.avatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    listing.avatar || <User size={24} className="text-slate-400" />
-                  )}
-                </div>
+                <UserAvatar
+                  value={listing.avatar}
+                  className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0"
+                  iconSize={24}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <Link

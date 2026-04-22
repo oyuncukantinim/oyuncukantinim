@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   List, Package, Settings, LogOut, Plus, ShieldCheck,
@@ -11,15 +11,16 @@ import {
 
 const FinanceIcon = TrendingUp;
 const PROFILE_PAGE_SIZE = 20;
-import { isValidImageUrl, ALLOWED_DOMAINS_LABEL } from '../lib/imageUrl';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
 import { AchievementCard, VerifiedAchievementCard } from '../components/StoreBadges';
+import UserAvatar from '../components/UserAvatar';
+import { isImageAvatar } from '../lib/avatar';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -563,6 +564,10 @@ export default function ProfilePage() {
   const [verificationNow, setVerificationNow] = useState(Date.now());
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [bannerImage, setBannerImage] = useState('');
+  const [profileAvatarUploading, setProfileAvatarUploading] = useState(false);
+  const [profileBannerUploading, setProfileBannerUploading] = useState(false);
+  const profileAvatarInputRef = useRef(null);
+  const profileBannerInputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
@@ -640,6 +645,7 @@ export default function ProfilePage() {
   const normalizedBannerImage = bannerImage.trim();
   const savedBannerImage = user?.banner_image ?? defaultProfileBanner ?? '';
   const profileHeaderBanner = user?.banner_image ?? defaultProfileBanner ?? '';
+  const canUploadProfileAvatar = Number(user?.is_verified_store) === 1;
   const emailChanged = normalizedEmail !== (user?.email || '');
   const emailVerified = Boolean(user?.email_verified_at) && !emailChanged;
   const emailVerificationPending = pendingEmailVerification !== '' && pendingEmailVerification === normalizedEmail;
@@ -683,11 +689,6 @@ export default function ProfilePage() {
     setSaving(true);
     try {
       const payload = {};
-      if (!isValidImageUrl(normalizedBannerImage)) {
-        showToast(`Banner görseli geçersiz. İzinli alanlar: ${ALLOWED_DOMAINS_LABEL}`);
-        setSaving(false);
-        return;
-      }
       if (selectedAvatar !== user.avatar) payload.avatar = selectedAvatar;
       if (normalizedBannerImage !== savedBannerImage) payload.banner_image = normalizedBannerImage;
       if (Object.keys(payload).length === 0) { showToast('Değişiklik yok.'); setSaving(false); return; }
@@ -700,6 +701,58 @@ export default function ProfilePage() {
       showToast('Profil güncellendi!');
     } catch (err) { showToast(err.message); }
     finally { setSaving(false); }
+  };
+
+  const handleProfileAvatarUpload = async (file) => {
+    if (!file) return;
+    if (!canUploadProfileAvatar) {
+      showToast('Dosya profil resmi sadece onaylı mağazalar tarafından kullanılabilir.');
+      return;
+    }
+    setProfileAvatarUploading(true);
+    try {
+      if (isImageAvatar(selectedAvatar) && selectedAvatar !== user?.avatar) {
+        await deleteProfileMedia(selectedAvatar, 'avatar').catch(() => {});
+      }
+      const url = await uploadProfileAvatar(file);
+      setSelectedAvatar(url);
+      showToast('Profil resmi yüklendi. Kaydetmeyi unutma.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setProfileAvatarUploading(false);
+    }
+  };
+
+  const handleProfileBannerUpload = async (file) => {
+    if (!file) return;
+    setProfileBannerUploading(true);
+    try {
+      if (isImageAvatar(normalizedBannerImage) && normalizedBannerImage !== savedBannerImage) {
+        await deleteProfileMedia(normalizedBannerImage, 'banner').catch(() => {});
+      }
+      const url = await uploadProfileBanner(file);
+      setBannerImage(url);
+      showToast('Profil bannerı yüklendi. Kaydetmeyi unutma.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setProfileBannerUploading(false);
+    }
+  };
+
+  const clearProfileAvatar = async () => {
+    if (isImageAvatar(selectedAvatar) && selectedAvatar !== user?.avatar) {
+      await deleteProfileMedia(selectedAvatar, 'avatar').catch(() => {});
+    }
+    setSelectedAvatar(defaultAvatar);
+  };
+
+  const clearProfileBanner = async () => {
+    if (isImageAvatar(normalizedBannerImage) && normalizedBannerImage !== savedBannerImage) {
+      await deleteProfileMedia(normalizedBannerImage, 'banner').catch(() => {});
+    }
+    setBannerImage('');
   };
 
   const handleAddBalance = async () => {
@@ -990,9 +1043,12 @@ export default function ProfilePage() {
         <div className="px-6 sm:px-8 pb-6 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-12 mb-4">
             <div className="relative group">
-              <div className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl ring-2 ring-violet-200/50 transition-all group-hover:ring-violet-400/50">
-                {user.avatar || defaultAvatar}
-              </div>
+              <UserAvatar
+                value={user.avatar}
+                fallback={defaultAvatar}
+                className="w-24 h-24 bg-white border-4 border-white rounded-2xl flex items-center justify-center text-5xl shadow-xl ring-2 ring-violet-200/50 transition-all group-hover:ring-violet-400/50"
+                iconSize={44}
+              />
               <div className="absolute -bottom-2 -right-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border-2 border-white shadow-md animate-pulse">
                 Lv.{user.level || 1}
               </div>
@@ -1488,8 +1544,18 @@ export default function ProfilePage() {
 
               <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
                 <div className="space-y-5">
-                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-                    <label className="block text-sm font-bold text-gray-600 mb-3">Avatar Seçimi</label>
+                  <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-600">Avatar Seçimi</label>
+                        <p className="mt-1 text-xs text-gray-400">Onaylı değilsen avatar listesinden seçim yapabilirsin.</p>
+                      </div>
+                      {canUploadProfileAvatar ? (
+                        <span className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">Dosya hakkı açık</span>
+                      ) : (
+                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-black text-slate-400">Onaylı mağaza gerekli</span>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {AVATARS.map(av => (
                         <button key={av} onClick={() => setSelectedAvatar(av)}
@@ -1497,6 +1563,32 @@ export default function ProfilePage() {
                           {av}
                         </button>
                       ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <input
+                        ref={profileAvatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/bmp"
+                        className="hidden"
+                        disabled={!canUploadProfileAvatar || profileAvatarUploading}
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) handleProfileAvatarUpload(e.target.files[0]);
+                          e.target.value = '';
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => profileAvatarInputRef.current?.click()}
+                        disabled={!canUploadProfileAvatar || profileAvatarUploading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white disabled:opacity-40"
+                      >
+                        <Upload size={13} /> {profileAvatarUploading ? 'Yükleniyor...' : 'Dosya Yükle'}
+                      </button>
+                      {isImageAvatar(selectedAvatar) ? (
+                        <button type="button" onClick={clearProfileAvatar} className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600">
+                          <Trash2 size={13} /> Varsayılana Dön
+                        </button>
+                      ) : null}
                     </div>
                   </div>
 
@@ -1510,14 +1602,33 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <input
-                      type="url"
-                      value={bannerImage}
-                      onChange={e => setBannerImage(e.target.value)}
-                      placeholder="https://..."
-                      className="input-field"
+                      ref={profileBannerInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/bmp"
+                      className="hidden"
+                      disabled={profileBannerUploading}
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) handleProfileBannerUpload(e.target.files[0]);
+                        e.target.value = '';
+                      }}
                     />
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => profileBannerInputRef.current?.click()}
+                        disabled={profileBannerUploading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white disabled:opacity-40"
+                      >
+                        <Upload size={13} /> {profileBannerUploading ? 'Yükleniyor...' : 'Banner Yükle'}
+                      </button>
+                      {normalizedBannerImage ? (
+                        <button type="button" onClick={clearProfileBanner} className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600">
+                          <Trash2 size={13} /> Bannerı Kaldır
+                        </button>
+                      ) : null}
+                    </div>
                     <p className="text-xs text-gray-400">
-                      Tam oturma için 1500x300px ya da aynı 5:1 oranını kullan. Boş bırakırsan banner kaldırılır. İzinli alanlar: {ALLOWED_DOMAINS_LABEL}
+                      JPG, PNG, WebP veya BMP yükleyebilirsin. Görsel WebP'ye dönüştürülür ve 1500x300px oranda kırpılır.
                     </p>
                     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
                       <div className="aspect-[5/1] relative bg-gradient-to-r from-violet-500/15 via-cyan-500/10 to-pink-500/15">
@@ -1551,9 +1662,12 @@ export default function ProfilePage() {
 
                 <div className="bg-gradient-to-br from-violet-50 via-white to-cyan-50 border border-violet-100 rounded-2xl p-5 flex flex-col">
                   <div className="flex items-center gap-3">
-                    <div className="w-16 h-16 rounded-2xl bg-white border border-violet-100 shadow-sm flex items-center justify-center text-3xl">
-                      {selectedAvatar || '👤'}
-                    </div>
+                    <UserAvatar
+                      value={selectedAvatar}
+                      fallback={defaultAvatar}
+                      className="w-16 h-16 rounded-2xl bg-white border border-violet-100 shadow-sm flex items-center justify-center text-3xl"
+                      iconSize={28}
+                    />
                     <div>
                       <div className="text-sm text-gray-500">Profil önizleme</div>
                       <div className="text-lg font-extrabold text-gray-800">{normalizedUsername || 'Kullanıcı adı'}</div>
@@ -1563,7 +1677,7 @@ export default function ProfilePage() {
 
                   <div className="mt-5 space-y-3 text-sm text-gray-500">
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      Avatar ve banner değişiklikleri anında profil kartına yansır.
+                      Profil resmi dosyası sadece onaylı mağaza üyelerine açıktır.
                     </div>
                     <div className="bg-white/80 rounded-xl border border-white p-3">
                       Kullanıcı adı kayıt sonrası değiştirilemez.
