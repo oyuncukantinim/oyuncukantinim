@@ -149,6 +149,29 @@ export default function ListingDetailPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* LEFT — Gallery + Content */}
         <div className="lg:col-span-8 space-y-5">
+          {/* Title block */}
+          <div className="ld-fade-up rounded-3xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Link
+                to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
+                className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-black text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
+              >
+                <Tag size={10} /> {listing.category_name || listing.category}
+              </Link>
+              {listing.delivery_type !== 'stock' && listing.delivery_hours ? (
+                <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11px] font-black text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300">
+                  <Clock size={10} /> {deliveryLabel} içinde
+                </span>
+              ) : null}
+              <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-black text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                <Eye size={10} /> {listingViewCount}
+              </span>
+            </div>
+            <h1 className="break-words text-2xl font-black leading-tight text-slate-900 dark:text-white sm:text-3xl">
+              {listing.title}
+            </h1>
+          </div>
+
           {/* Gallery card */}
           <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-lg shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
             <div className="flex flex-col gap-3 p-3 sm:flex-row">
@@ -251,28 +274,6 @@ export default function ListingDetailPage() {
               </div>
             ) : null}
 
-            {/* Title block */}
-            <div className="border-t border-slate-100 p-5 dark:border-slate-800 sm:p-6">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <Link
-                  to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
-                  className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-black text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
-                >
-                  <Tag size={10} /> {listing.category_name || listing.category}
-                </Link>
-                {listing.delivery_type !== 'stock' && listing.delivery_hours ? (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11px] font-black text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300">
-                    <Clock size={10} /> {deliveryLabel} içinde
-                  </span>
-                ) : null}
-                <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-black text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                  <Eye size={10} /> {listingViewCount}
-                </span>
-              </div>
-              <h1 className="break-words text-2xl font-black leading-tight text-slate-900 dark:text-white sm:text-3xl">
-                {listing.title}
-              </h1>
-            </div>
           </div>
 
           {/* Tabs */}
