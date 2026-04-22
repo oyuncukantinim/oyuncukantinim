@@ -421,8 +421,6 @@ export default function ListingDetailPage() {
                         <ListingReviewCard
                           key={review.id}
                           review={review}
-                          defaultListingImage={defaultListingImage}
-                          hideListingInfo={reviewScope === 'listing'}
                         />
                       ))}
                     </div>
@@ -690,7 +688,7 @@ function getReviewRating(review) {
   return Math.round(parts.reduce((sum, item) => sum + item, 0) / parts.length);
 }
 
-function ListingReviewCard({ review, defaultListingImage, hideListingInfo }) {
+function ListingReviewCard({ review }) {
   const rating = getReviewRating(review);
   const metrics = [
     ['Güvenilirlik', review.reliability],
@@ -729,20 +727,6 @@ function ListingReviewCard({ review, defaultListingImage, hideListingInfo }) {
               <span className="ml-1">{rating || '-'}</span>
             </div>
           </div>
-
-          {!hideListingInfo && (review.item_title || review.item_image) ? (
-            <div className="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-2 dark:bg-slate-900">
-              <img
-                src={review.item_image || defaultListingImage}
-                alt=""
-                className="h-12 w-16 shrink-0 rounded-xl object-contain bg-white dark:bg-slate-950"
-              />
-              <div className="min-w-0">
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Değerlendirilen ilan</div>
-                <div className="mt-0.5 line-clamp-2 text-xs font-black text-slate-700 dark:text-slate-200">{review.item_title || 'İlan bilgisi yok'}</div>
-              </div>
-            </div>
-          ) : null}
 
           {metrics.length ? (
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
