@@ -330,60 +330,6 @@ export default function ListingDetailPage() {
         {/* RIGHT — Sticky sidebar */}
         <div className="lg:col-span-4">
           <div className="space-y-4 lg:sticky lg:top-4">
-            {/* Price + buy */}
-            <div className="ld-fade-up relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 shadow-2xl shadow-violet-500/30">
-              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl ld-float" />
-              <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-cyan-400/20 blur-3xl ld-float" style={{ animationDelay: '2s' }} />
-              <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
-              <div className="relative">
-                <div className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-violet-200">
-                  <Sparkles size={12} /> İlan Fiyatı
-                </div>
-                <div className="flex items-end gap-2">
-                  <div className="text-5xl font-black leading-none text-white">{Number(listing.price).toFixed(2)}</div>
-                  <div className="pb-1 text-xl font-black text-violet-200">₺</div>
-                </div>
-                <div className="mt-5">
-                  {isSeller ? (
-                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-violet-100 backdrop-blur">
-                      <Shield size={14} className="mr-1.5 inline" /> Kendi İlanın
-                    </div>
-                  ) : isUnavailable ? (
-                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-white/70 backdrop-blur">
-                      {listing.status === 'sold' ? 'Satıldı' : 'Müsait Değil'}
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleBuy}
-                        className="group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white py-4 text-base font-black text-violet-700 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
-                      >
-                        <ShoppingCart size={18} strokeWidth={2.4} />
-                        Sepete Ekle
-                      </button>
-                      <button
-                        onClick={handleToggleFavorite}
-                        disabled={favLoading}
-                        title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                        className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 ${
-                          favorited ? 'bg-rose-500 text-white hover:bg-rose-400' : 'bg-white/15 text-white backdrop-blur hover:bg-white/25'
-                        }`}
-                      >
-                        <Heart size={20} className={favorited ? 'fill-current' : ''} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Trust mini-row */}
-                <div className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-white/10 px-3 py-2 text-[10px] font-black text-violet-100 backdrop-blur">
-                  <span className="inline-flex items-center gap-1"><Check size={11} /> Güvenli</span>
-                  <span className="inline-flex items-center gap-1"><Zap size={11} /> Hızlı</span>
-                  <span className="inline-flex items-center gap-1"><Shield size={11} /> Korumalı</span>
-                </div>
-              </div>
-            </div>
-
             {/* Seller card */}
             <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
               <div className="relative h-16 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
@@ -459,6 +405,60 @@ export default function ListingDetailPage() {
                       <Shield size={13} /> Sen
                     </span>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* Price + buy */}
+            <div className="ld-fade-up relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 shadow-2xl shadow-violet-500/30">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl ld-float" />
+              <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-cyan-400/20 blur-3xl ld-float" style={{ animationDelay: '2s' }} />
+              <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+              <div className="relative">
+                <div className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-violet-200">
+                  <Sparkles size={12} /> İlan Fiyatı
+                </div>
+                <div className="flex items-end gap-2">
+                  <div className="text-5xl font-black leading-none text-white">{Number(listing.price).toFixed(2)}</div>
+                  <div className="pb-1 text-xl font-black text-violet-200">₺</div>
+                </div>
+                <div className="mt-5">
+                  {isSeller ? (
+                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-violet-100 backdrop-blur">
+                      <Shield size={14} className="mr-1.5 inline" /> Kendi İlanın
+                    </div>
+                  ) : isUnavailable ? (
+                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-white/70 backdrop-blur">
+                      {listing.status === 'sold' ? 'Satıldı' : 'Müsait Değil'}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleBuy}
+                        className="group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white py-4 text-base font-black text-violet-700 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
+                      >
+                        <ShoppingCart size={18} strokeWidth={2.4} />
+                        Sepete Ekle
+                      </button>
+                      <button
+                        onClick={handleToggleFavorite}
+                        disabled={favLoading}
+                        title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                        className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 ${
+                          favorited ? 'bg-rose-500 text-white hover:bg-rose-400' : 'bg-white/15 text-white backdrop-blur hover:bg-white/25'
+                        }`}
+                      >
+                        <Heart size={20} className={favorited ? 'fill-current' : ''} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Trust mini-row */}
+                <div className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-white/10 px-3 py-2 text-[10px] font-black text-violet-100 backdrop-blur">
+                  <span className="inline-flex items-center gap-1"><Check size={11} /> Güvenli</span>
+                  <span className="inline-flex items-center gap-1"><Zap size={11} /> Hızlı</span>
+                  <span className="inline-flex items-center gap-1"><Shield size={11} /> Korumalı</span>
                 </div>
               </div>
             </div>
