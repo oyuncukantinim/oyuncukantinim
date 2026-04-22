@@ -21,7 +21,7 @@ import {
   X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
+import { adminDeleteUploadedImage, adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
 import { formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../../lib/doping';
 
 const SETTINGS_TABS = [
@@ -299,7 +299,21 @@ function getDopingOptionsFromSettings(settings, type) {
   return normalizeDopingOptions(settings[`listing_doping_${type}_options`], type);
 }
 
-function SettingField({ field, value, onChange, onUpload, imageUploading }) {
+function isUploadedSiteImage(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, window.location.origin);
+    return parsed.pathname.startsWith('/uploads/') && (
+      parsed.hostname === window.location.hostname ||
+      parsed.hostname === 'api.oyuncukantinim.com.tr' ||
+      parsed.hostname === ''
+    );
+  } catch {
+    return String(url).startsWith('/uploads/');
+  }
+}
+
+function SettingField({ field, value, onChange, onUpload, onRemove, imageUploading }) {
   const fileInputRef = useRef(null);
 
   if (field.type === 'toggle') {
@@ -369,7 +383,8 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => onChange('')}
+                  onClick={() => onRemove(value)}
+                  disabled={imageUploading}
                   className="flex items-center gap-1.5 rounded-xl border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
                 >
                   <X size={13} /> Kaldır
@@ -433,7 +448,7 @@ function SettingField({ field, value, onChange, onUpload, imageUploading }) {
   );
 }
 
-function SectionCard({ section, settings, set, onUpload, imageUploading }) {
+function SectionCard({ section, settings, set, onUpload, onRemove, imageUploading }) {
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-3.5">
@@ -448,6 +463,7 @@ function SectionCard({ section, settings, set, onUpload, imageUploading }) {
             value={normalizeValue(field, settings[field.key])}
             onChange={(nextValue) => set(field.key, nextValue)}
             onUpload={field.type === 'image' ? (file) => onUpload(field.key, file) : undefined}
+            onRemove={field.type === 'image' ? (url) => onRemove(field.key, url) : undefined}
             imageUploading={imageUploading === field.key}
           />
         ))}
@@ -456,7 +472,7 @@ function SectionCard({ section, settings, set, onUpload, imageUploading }) {
   );
 }
 
-function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUpload }) {
+function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUpload, onOptionImageRemove }) {
   const setOptions = (type, nextOptions) => {
     set(`listing_doping_${type}_options`, JSON.stringify(nextOptions));
   };
@@ -610,7 +626,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
                         {option.image ? (
                           <button
                             type="button"
-                            onClick={() => updateOption(type, index, { image: '' })}
+                            onClick={() => onOptionImageRemove(type, index, option.image)}
                             className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50"
                           >
                             <X size={13} />
@@ -662,6 +678,39 @@ export default function AdminSettings() {
       const url = await adminUploadImage(file, 'branding', { preserveOriginal: key === 'site_favicon' });
       set(key, url);
       showToast('Görsel yüklendi.');
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setImageUploading('');
+    }
+  };
+
+  const handleRemoveImage = async (key, url) => {
+    setImageUploading(key);
+    try {
+      if (isUploadedSiteImage(url)) {
+        await adminDeleteUploadedImage(url);
+      }
+      set(key, '');
+      showToast('Görsel kaldırıldı.');
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setImageUploading('');
+    }
+  };
+
+  const handleDopingOptionImageRemove = async (type, index, url) => {
+    const uploadKey = `listing_doping_${type}_options_${index}`;
+    setImageUploading(uploadKey);
+    try {
+      if (isUploadedSiteImage(url)) {
+        await adminDeleteUploadedImage(url);
+      }
+      const current = getDopingOptionsFromSettings(settings, type);
+      const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, image: '' } : option));
+      set(`listing_doping_${type}_options`, JSON.stringify(next));
+      showToast('Görsel kaldırıldı.');
     } catch (error) {
       showToast(error.message);
     } finally {
@@ -795,6 +844,7 @@ export default function AdminSettings() {
                 settings={settings}
                 set={set}
                 onUpload={handleUpload}
+                onRemove={handleRemoveImage}
                 imageUploading={imageUploading}
               />
             ))}
