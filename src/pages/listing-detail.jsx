@@ -235,9 +235,12 @@ export default function ListingDetailPage() {
         <div className="lg:col-span-2 space-y-4">
 
           {/* Satıcı */}
-          <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
-            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
-            <div className="relative">
+          <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl shadow-sm">
+            <div className="relative z-10 border-b border-violet-100 bg-gradient-to-r from-violet-100 via-cyan-50 to-emerald-50 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.18em] text-violet-700">
+              Satıcı Bilgileri
+            </div>
+            <div className="absolute inset-x-0 top-9 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
+            <div className="relative p-4 pt-3">
               <div className="flex items-start gap-3">
                 <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
                   {typeof listing.avatar === 'string' && (listing.avatar.startsWith('http') || listing.avatar.startsWith('/')) ? (
@@ -263,10 +266,6 @@ export default function ListingDetailPage() {
                     </span>
                   </div>
                 </div>
-              </div>
-
-              <div className="mt-5 flex items-center justify-center rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-cyan-50 px-3 py-2 text-xs font-black text-violet-700 shadow-sm">
-                Satıcı Bilgileri
               </div>
 
               <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
