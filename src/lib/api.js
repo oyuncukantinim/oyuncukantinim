@@ -352,7 +352,7 @@ export function closeSupportTicket(ticketId) {
 
 // --- SELLER PROFILE ---
 export function getSellerProfile(username) {
-  return request('get_seller_profile', { query: { username } });
+  return request('get_seller_profile', { query: { username }, auth: true });
 }
 
 export function getSellerListings(sellerId) {
