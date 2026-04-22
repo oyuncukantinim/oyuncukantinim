@@ -439,7 +439,13 @@ export default function AdminUsers() {
     if (!detailUser?.id || !file) return;
     setDrawerSaving(type === 'avatar' ? 'upload-avatar' : 'upload-banner');
     try {
-      await adminUploadUserMedia(detailUser.id, type, file);
+      const uploadedUrl = await adminUploadUserMedia(detailUser.id, type, file);
+      if (uploadedUrl) {
+        setGeneralForm((prev) => ({
+          ...prev,
+          [type === 'avatar' ? 'avatar' : 'banner_image']: uploadedUrl,
+        }));
+      }
       await refreshDetail(detailUser.id);
       await load();
       showToast(type === 'avatar' ? 'Profil resmi yüklendi.' : 'Profil bannerı yüklendi.');

@@ -1,5 +1,5 @@
 import { User } from 'lucide-react';
-import { isImageAvatar } from '../lib/avatar';
+import { isImageAvatar, normalizeAvatarSrc } from '../lib/avatar';
 
 export default function UserAvatar({ value, fallback = '👤', className = '', imageClassName = '', iconSize = 18 }) {
   const avatar = String(value || fallback || '').trim();
@@ -7,7 +7,7 @@ export default function UserAvatar({ value, fallback = '👤', className = '', i
   return (
     <div className={`overflow-hidden ${className}`}>
       {isImageAvatar(avatar) ? (
-        <img src={avatar} alt="" className={`h-full w-full object-cover ${imageClassName}`} />
+        <img src={normalizeAvatarSrc(avatar)} alt="" className={`h-full w-full object-cover ${imageClassName}`} />
       ) : avatar ? (
         <span className="leading-none">{avatar}</span>
       ) : (
