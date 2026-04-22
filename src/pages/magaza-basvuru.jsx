@@ -540,7 +540,7 @@ export default function StoreApplicationPage() {
             <ChevronRight size={14} />
           </Link>
         </div>
-        <div className="mb-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="mb-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           <VerifiedAchievementCard isVerified={isVerified} forceUnlocked />
           {(overview.badges || []).map((badge) => (
             <AchievementCard key={badge.id} badge={badge} forceUnlocked />
