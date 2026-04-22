@@ -81,7 +81,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     };
 
     fetchCounts();
-    const interval = setInterval(fetchCounts, 5000);
+    const interval = setInterval(fetchCounts, 15000);
     const handler = () => setUnreadNotif(0);
     const handleFocus = () => fetchCounts();
     const handleVisibilityChange = () => {

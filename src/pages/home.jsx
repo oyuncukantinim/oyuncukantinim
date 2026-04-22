@@ -140,7 +140,7 @@ export default function Home() {
   const [popularGamesLoaded, setPopularGamesLoaded] = useState(false);
 
   useEffect(() => {
-    getListings()
+    getListings({ limit: 32, status: 'active' })
       .then((r) => setListings(r.data || []))
       .catch(() => {})
       .finally(() => setListingsLoaded(true));
