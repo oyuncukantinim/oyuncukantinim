@@ -5,7 +5,7 @@ import {
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
   User, X, Eye, Check, Sparkles, TrendingUp, Maximize2,
 } from 'lucide-react';
-import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews } from '../lib/api';
+import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews, getSellerListings, listingSlug } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -35,6 +35,7 @@ export default function ListingDetailPage() {
   const [reviewsTotal, setReviewsTotal] = useState(0);
   const [reviewsHasMore, setReviewsHasMore] = useState(false);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [sellerListings, setSellerListings] = useState([]);
 
   useEffect(() => {
     getListing(id)
@@ -69,6 +70,16 @@ export default function ListingDetailPage() {
     loadReviews(0, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, reviewScope, listing?.seller_id, listing?.id]);
+
+  useEffect(() => {
+    if (!listing?.seller_id) return;
+    getSellerListings(listing.seller_id)
+      .then((response) => {
+        const items = (response.data || []).filter((item) => Number(item.id) !== Number(listing.id));
+        setSellerListings(items.slice(0, 10));
+      })
+      .catch(() => setSellerListings([]));
+  }, [listing?.seller_id, listing?.id]);
 
   const loadReviews = async (offset = 0, replace = false) => {
     if (!listing?.seller_id || reviewsLoading) return;
@@ -612,6 +623,43 @@ export default function ListingDetailPage() {
           </div>
         </div>
       </div>
+
+      {sellerListings.length > 0 ? (
+        <section className="ld-fade-up mt-6 rounded-3xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-black text-slate-900 dark:text-white">Satıcının Benzer İlanları</h2>
+              <p className="mt-0.5 text-xs font-semibold text-slate-400">Bu satıcıya ait diğer aktif ilanlar</p>
+            </div>
+            <Link
+              to={`/p/${listing.seller}`}
+              className="hidden rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 sm:inline-flex"
+            >
+              Tümünü Gör
+            </Link>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-1">
+            {sellerListings.map((item) => {
+              const image = getListingCoverImage(item, defaultListingImage);
+              return (
+                <Link
+                  key={item.id}
+                  to={`/listing/${listingSlug(item)}`}
+                  className="group flex min-w-[190px] max-w-[210px] flex-1 items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-2.5 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-800 dark:hover:bg-slate-900"
+                >
+                  <div className="h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
+                    <img src={image} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="line-clamp-1 text-xs font-black text-slate-800 dark:text-slate-100">{item.title}</div>
+                    <div className="mt-1 text-sm font-black text-orange-500">{Number(item.price || 0).toFixed(2)} TL</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
 
       {/* Lightbox */}
       {lightboxOpen && images.length > 0 ? (
