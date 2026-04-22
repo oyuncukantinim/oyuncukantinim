@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminStats } from '../../lib/adminApi';
+import UserAvatar from '../../components/UserAvatar';
 
 const ORDER_STATUS_STYLES = {
   completed: 'bg-emerald-50 text-emerald-700',
@@ -953,9 +954,11 @@ export default function AdminDashboard() {
               <div className="divide-y divide-slate-100">
                 {stats.recent_users.map((user) => (
                   <div key={user.id} className="flex items-center gap-3 py-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-base">
-                      {user.avatar || 'ğŸ‘¤'}
-                    </div>
+                    <UserAvatar
+                      value={user.avatar}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-base"
+                      iconSize={16}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[13px] font-bold text-slate-900">{user.username}</div>
                       <div className="truncate text-[12px] text-slate-500">{user.email}</div>

@@ -235,12 +235,12 @@ export default function StoreApplicationPage() {
               </span>
               <Gamepad2 size={14} /> Mağaza güçlendirme merkezi
             </div>
-            <h1 className="mb-fade-up max-w-5xl bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text text-3xl font-black leading-tight text-transparent sm:text-5xl" style={{ animationDelay: '.05s' }}>
+            <h1 className="mb-fade-up max-w-5xl bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text pb-1 text-3xl font-black leading-[1.15] text-transparent sm:text-5xl" style={{ animationDelay: '.05s' }}>
               Onaylı Mağaza ol,{' '}
-              <span className="mb-gradient-x bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300 bg-clip-text text-transparent">
-                oyunculara profesyonel
-              </span>{' '}
-              görün.
+              <span className="mb-gradient-x inline-block bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300 bg-clip-text pb-1 text-transparent">
+                profesyonel görün
+              </span>
+              .
             </h1>
             <p className="mb-fade-up mt-4 max-w-3xl text-sm font-semibold leading-7 text-white/70 sm:text-base" style={{ animationDelay: '.1s' }}>
               Yeşil verify rozeti, satış rütbeleri, özel rozetler ve mağaza odaklı avantajlarla satıcı profilini güçlü bir vitrine dönüştür.
