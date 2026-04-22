@@ -333,10 +333,10 @@ export default function ListingDetailPage() {
           <div className="space-y-4 lg:sticky lg:top-4">
             {/* Seller card */}
             <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="relative h-20 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
+              <div className="relative h-10 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
                 <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '16px 16px' }} />
               </div>
-              <div className="relative -mt-10 px-5 pb-5">
+              <div className="relative -mt-6 px-5 pb-5">
                 <div className="flex items-center gap-4">
                   <UserAvatar
                     value={listing.avatar}
