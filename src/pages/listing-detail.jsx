@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
-  User, X, Eye, CalendarDays,
+  User, X, Eye,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -13,36 +13,6 @@ import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
-
-function parseDate(value) {
-  if (!value) return null;
-  const date = new Date(String(value).replace(' ', 'T'));
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function formatMemberSince(value) {
-  const date = parseDate(value);
-  return date ? `${date.getFullYear()}'den beri` : 'Bilgi yok';
-}
-
-function formatLastSeen(value) {
-  const date = parseDate(value);
-  if (!date) return 'Bilgi yok';
-
-  const diffMs = Date.now() - date.getTime();
-  const diffMinutes = Math.max(0, Math.floor(diffMs / 60000));
-  if (diffMinutes < 5) return 'Az önce';
-  if (diffMinutes < 60) return `${diffMinutes} dk önce`;
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `${diffHours} saat önce`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Dün';
-  if (diffDays < 30) return `${diffDays} gün önce`;
-
-  return date.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
 
 export default function ListingDetailPage() {
   const { slug } = useParams();
@@ -126,8 +96,6 @@ export default function ListingDetailPage() {
   const sellerReviewCount = Number(listing.seller_review_count || 0);
   const sellerSalesCount = Number(listing.seller_total_sales || 0);
   const sellerLevel = Number(listing.seller_level || 1);
-  const sellerLastSeen = formatLastSeen(listing.seller_last_seen);
-  const sellerMemberSince = formatMemberSince(listing.seller_created_at);
   const listingViewCount = Number(listing.view_count || 0);
   const sellerBadges = (listing.seller_store_badges?.length ? listing.seller_store_badges : [listing.seller_highest_store_badge]).filter(Boolean).slice(0, 5);
 
@@ -297,21 +265,6 @@ export default function ListingDetailPage() {
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black text-slate-500">
                     <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">Satıcı Profili</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-400">
-                    <Clock size={11} /> Son giriş
-                  </div>
-                  <div className="mt-1 truncate text-xs font-black text-slate-700">{sellerLastSeen}</div>
-                </div>
-                <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-400">
-                    <CalendarDays size={11} /> Kayıt
-                  </div>
-                  <div className="mt-1 truncate text-xs font-black text-slate-700">{sellerMemberSince}</div>
                 </div>
               </div>
 
