@@ -20,6 +20,7 @@ import {
   MapPin,
   Monitor,
   CreditCard,
+  Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
