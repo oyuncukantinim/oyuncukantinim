@@ -38,19 +38,29 @@ export default function ListingDetailPage() {
   const [sellerListings, setSellerListings] = useState([]);
 
   useEffect(() => {
-    getListing(id)
-      .then(r => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const listingPromise = getListing(id);
+        // Prefetch attrs as soon as we know the category_id; we still have to await listing first,
+        // but we fire the attrs fetch immediately after the headers return without a microtask gap.
+        const r = await listingPromise;
+        if (cancelled) return;
         setListing(r.data);
         setActiveImg(r.data.cover_index || 0);
         if (r.data.category_id) {
           fetch(`${API_URL}?action=get_category_attributes&category_id=${r.data.category_id}`)
             .then(res => res.json())
-            .then(j => { if (j.status === 'success') setCatAttrs(j.data || []); })
+            .then(j => { if (!cancelled && j.status === 'success') setCatAttrs(j.data || []); })
             .catch(() => {});
         }
-      })
-      .catch(() => navigate('/market'))
-      .finally(() => setLoading(false));
+      } catch {
+        if (!cancelled) navigate('/market');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [id, navigate]);
 
   useEffect(() => {
