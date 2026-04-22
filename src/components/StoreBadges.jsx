@@ -41,7 +41,7 @@ export function StoreBadgeIcon({ badge, size = 'md' }) {
       <span className={`inline-flex ${sizeClass} items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm transition-transform duration-200 group-hover/badge:scale-110`}>
         <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
       </span>
-      <span className="pointer-events-none absolute top-full left-1/2 z-40 mt-2 -translate-x-1/2 -translate-y-1 scale-75 opacity-0 transition-all duration-200 ease-out group-hover/badge:translate-y-0 group-hover/badge:scale-100 group-hover/badge:opacity-100">
+      <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-2 -translate-x-1/2 -translate-y-1 scale-75 opacity-0 transition-all duration-200 ease-out group-hover/badge:translate-y-0 group-hover/badge:scale-100 group-hover/badge:opacity-100">
         <span className="relative flex flex-col items-center gap-1.5 rounded-2xl border border-amber-200 bg-white p-2.5 shadow-xl shadow-amber-100 dark:border-amber-900/40 dark:bg-slate-900 dark:shadow-black/40">
           <span className="block h-20 w-20 overflow-hidden rounded-xl border border-amber-100 bg-white dark:border-amber-900/30 dark:bg-slate-800">
             <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
