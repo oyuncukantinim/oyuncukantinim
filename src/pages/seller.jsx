@@ -18,6 +18,7 @@ import {
   getSellerListings,
   getSellerReviews,
   getSellerFollowers,
+  getSellerFollowing,
   followSeller,
   unfollowSeller,
   listingSlug,
@@ -97,6 +98,7 @@ export default function SellerPage() {
   const [listings, setListings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('listings');
   const [isFollowing, setIsFollowing] = useState(false);
@@ -122,6 +124,8 @@ export default function SellerPage() {
       getSellerReviews(seller.id).then((r) => setReviews(r.data || [])).catch(() => {});
     } else if (activeTab === 'followers') {
       getSellerFollowers(seller.id).then((r) => setFollowers(r.data || [])).catch(() => {});
+    } else if (activeTab === 'following') {
+      getSellerFollowing(seller.id).then((r) => setFollowing(r.data || [])).catch(() => {});
     }
   }, [activeTab, seller]);
 
@@ -173,6 +177,7 @@ export default function SellerPage() {
     { id: 'achievements', label: 'Başarımlar' },
     { id: 'reviews', label: `Değerlendirmeler (${seller.review_count ?? 0})` },
     { id: 'followers', label: `Takipçiler (${seller.follower_count ?? 0})` },
+    { id: 'following', label: `Takip (${seller.following_count ?? 0})` },
   ];
 
   return (
@@ -420,6 +425,33 @@ export default function SellerPage() {
                   <div className="min-w-0">
                     <div className="text-sm font-extrabold text-gray-800 truncate">{follower.username}</div>
                     <div className="text-xs text-gray-400 mt-1">Seviye {follower.level || 1}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'following' && (
+        <div>
+          {following.length === 0 ? (
+            <div className="text-center py-12 text-gray-400">
+              <div className="text-4xl mb-2">👤</div>
+              <p>Henüz takip ettiği kullanıcı yok.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {following.map((followed) => (
+                <Link
+                  key={followed.id}
+                  to={`/p/${followed.username}`}
+                  className="bg-white border border-gray-100 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm hover:border-violet-200 hover:shadow-md transition-all"
+                >
+                  <UserAvatar value={followed.avatar} fallback={defaultAvatar} className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-2xl flex-shrink-0" iconSize={22} />
+                  <div className="min-w-0">
+                    <div className="text-sm font-extrabold text-gray-800 truncate">{followed.username}</div>
+                    <div className="text-xs text-gray-400 mt-1">Seviye {followed.level || 1}</div>
                   </div>
                 </Link>
               ))}

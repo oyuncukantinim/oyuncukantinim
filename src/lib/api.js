@@ -367,6 +367,10 @@ export function getSellerFollowers(sellerId) {
   return request('get_seller_followers', { query: { seller_id: sellerId } });
 }
 
+export function getSellerFollowing(sellerId) {
+  return request('get_seller_following', { query: { seller_id: sellerId } });
+}
+
 export function addReview(payload) {
   return request('add_review', { method: 'POST', body: payload, auth: true });
 }
