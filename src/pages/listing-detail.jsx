@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
-  User, X, Eye,
+  User, X, Eye, Check, Sparkles, TrendingUp, Maximize2,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -29,6 +29,7 @@ export default function ListingDetailPage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [favorited, setFavorited] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
+  const [tab, setTab] = useState('description');
 
   useEffect(() => {
     getListing(id)
@@ -46,7 +47,6 @@ export default function ListingDetailPage() {
       .finally(() => setLoading(false));
   }, [id, navigate]);
 
-  // Favori durumu kontrol
   useEffect(() => {
     if (!user || !id) return;
     checkFavorite(id).then(r => setFavorited(r.data?.favorited ?? false)).catch(() => {});
@@ -63,14 +63,19 @@ export default function ListingDetailPage() {
     } finally { setFavLoading(false); }
   };
 
+  const images = useMemo(() => (listing ? getListingImageSet(listing, defaultListingImage) : []), [listing, defaultListingImage]);
+  const hasAttrs = useMemo(
+    () => catAttrs.length > 0 && listing?.attributes && Object.keys(listing.attributes).length > 0,
+    [catAttrs, listing]
+  );
+
   if (loading) return (
     <div className="flex justify-center py-40">
-      <div className="w-12 h-12 border-4 border-neon-purple border-t-transparent rounded-full animate-spin" />
+      <div className="w-14 h-14 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
     </div>
   );
   if (!listing) return null;
 
-  const images = getListingImageSet(listing, defaultListingImage);
   const isSeller = user && user.id === listing.seller_id;
   const isUnavailable = listing.status === 'sold' || listing.status === 'passive' || listing.status === 'expired' || listing.status === 'inactive';
 
@@ -101,341 +106,441 @@ export default function ListingDetailPage() {
   const sellerBadges = (listing.seller_store_badges?.length ? listing.seller_store_badges : [listing.seller_highest_store_badge]).filter(Boolean).slice(0, 5);
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-5 text-gray-400 hover:text-neon-purple font-bold flex items-center gap-1.5 text-sm transition-colors"
-      >
-        <ChevronLeft size={18} /> Geri Dön
-      </button>
+    <div className="mx-auto max-w-[1400px]">
+      <style>{`
+        @keyframes ld-fade-up { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes ld-float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(18px,-14px); } }
+        @keyframes ld-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        .ld-fade-up { animation: ld-fade-up 0.55s cubic-bezier(.4,0,.2,1) both; }
+        .ld-float { animation: ld-float 12s ease-in-out infinite; }
+        .ld-shimmer::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); animation: ld-shimmer 2.5s ease-in-out infinite; }
+        .ld-stagger > * { opacity: 0; animation: ld-fade-up 0.5s cubic-bezier(.4,0,.2,1) forwards; }
+        .ld-stagger > *:nth-child(1) { animation-delay: .05s; }
+        .ld-stagger > *:nth-child(2) { animation-delay: .1s; }
+        .ld-stagger > *:nth-child(3) { animation-delay: .15s; }
+        .ld-stagger > *:nth-child(4) { animation-delay: .2s; }
+      `}</style>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      {/* Breadcrumb */}
+      <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-slate-100 hover:text-violet-600 dark:hover:bg-slate-800 dark:hover:text-violet-300"
+        >
+          <ChevronLeft size={14} /> Geri
+        </button>
+        <span className="text-slate-300 dark:text-slate-600">/</span>
+        <Link to="/market" className="hover:text-violet-600 dark:hover:text-violet-300">Pazar</Link>
+        {listing.category_name || listing.category ? (
+          <>
+            <span className="text-slate-300 dark:text-slate-600">/</span>
+            <Link
+              to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
+              className="hover:text-violet-600 dark:hover:text-violet-300"
+            >
+              {listing.category_name || listing.category}
+            </Link>
+          </>
+        ) : null}
+        <span className="text-slate-300 dark:text-slate-600">/</span>
+        <span className="truncate text-slate-700 dark:text-slate-300">{listing.title}</span>
+      </div>
 
-        {/* ── SOL: Galeri + Açıklama ── */}
-        <div className="lg:col-span-3 space-y-4">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        {/* LEFT — Gallery + Content */}
+        <div className="lg:col-span-8 space-y-5">
+          {/* Gallery card */}
+          <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-lg shadow-slate-200/40 dark:border-slate-800 dark:bg-slate-900 dark:shadow-black/30">
+            <div className="flex flex-col gap-3 p-3 sm:flex-row">
+              {/* Vertical thumbnails (desktop) */}
+              {images.length > 1 ? (
+                <div className="hidden max-h-[520px] w-20 shrink-0 flex-col gap-2 overflow-y-auto sm:flex">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setActiveImg(idx)}
+                      className={`relative h-16 w-full flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 ${
+                        idx === activeImg
+                          ? 'border-violet-500 shadow-md shadow-violet-200 dark:shadow-violet-900/40'
+                          : 'border-transparent opacity-60 hover:border-slate-300 hover:opacity-100 dark:hover:border-slate-700'
+                      }`}
+                    >
+                      <img src={img} alt="" className="h-full w-full object-contain bg-slate-50 dark:bg-slate-800" />
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
-          {/* Başlık + badge'ler */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              <Link
-                to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
-                className="badge-cyan text-xs hover:opacity-80 transition-opacity"
-              >
-                {listing.category_name || listing.category}
-              </Link>
-              {listing.delivery_type === 'stock'
-                ? <span className="text-xs font-bold text-cyan-700 bg-cyan-50 border border-cyan-200 px-2 py-0.5 rounded-full">⚡ Anında Teslimat</span>
-                : listing.delivery_hours
-                  ? <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">🕐 {deliveryLabel} içinde</span>
-                  : null
-              }
-            </div>
-            <h1 className="text-xl font-extrabold text-gray-900 leading-tight mb-2 break-words">{listing.title}</h1>
-          </div>
-
-          {/* Ana görsel */}
-          <div className="relative w-full aspect-video bg-gray-100 rounded-2xl overflow-hidden shadow-sm">
-            {images.length > 0 ? (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setLightboxOpen(true)}
-                  className="block h-full w-full cursor-zoom-in bg-slate-100"
-                  title="Görseli büyüt"
-                >
-                  <img
-                    src={images[activeImg]}
-                    alt={listing.title}
-                    className="w-full h-full object-contain"
-                  />
-                </button>
-                {images.length > 1 && (
+              {/* Main image */}
+              <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
+                {images.length > 0 ? (
                   <>
                     <button
-                      onClick={prevImg}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
+                      type="button"
+                      onClick={() => setLightboxOpen(true)}
+                      className="group/zoom block h-full w-full cursor-zoom-in"
+                      title="Görseli büyüt"
                     >
-                      <ChevronLeft size={16} className="text-gray-700" />
+                      <img
+                        src={images[activeImg]}
+                        alt={listing.title}
+                        className="h-full w-full object-contain transition-transform duration-500 group-hover/zoom:scale-[1.02]"
+                      />
+                      <span className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 opacity-0 shadow-md backdrop-blur transition-opacity duration-300 group-hover/zoom:opacity-100">
+                        <Maximize2 size={15} />
+                      </span>
                     </button>
-                    <button
-                      onClick={nextImg}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
-                    >
-                      <ChevronRight size={16} className="text-gray-700" />
-                    </button>
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                      {images.map((_, idx) => (
+                    {images.length > 1 ? (
+                      <>
                         <button
-                          key={idx}
-                          onClick={() => setActiveImg(idx)}
-                          className={`h-1.5 rounded-full transition-all ${idx === activeImg ? 'w-5 bg-white' : 'w-1.5 bg-white/50'}`}
-                        />
-                      ))}
-                    </div>
+                          onClick={prevImg}
+                          className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110"
+                        >
+                          <ChevronLeft size={18} />
+                        </button>
+                        <button
+                          onClick={nextImg}
+                          className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow-lg backdrop-blur-sm transition-all hover:bg-white hover:scale-110"
+                        >
+                          <ChevronRight size={18} />
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/40 px-2 py-1.5 backdrop-blur">
+                          {images.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveImg(idx)}
+                              className={`h-1.5 rounded-full transition-all ${idx === activeImg ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    ) : null}
+                    {/* status ribbon */}
+                    {isUnavailable ? (
+                      <div className="absolute left-0 top-4 rounded-r-xl bg-gradient-to-r from-rose-600 to-rose-500 px-4 py-1.5 text-xs font-black uppercase tracking-widest text-white shadow-lg">
+                        {listing.status === 'sold' ? 'Satıldı' : 'Müsait Değil'}
+                      </div>
+                    ) : listing.delivery_type === 'stock' ? (
+                      <div className="absolute left-0 top-4 inline-flex items-center gap-1.5 rounded-r-xl bg-gradient-to-r from-cyan-600 to-sky-500 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-white shadow-lg">
+                        <Zap size={12} className="fill-current" /> Anında Teslimat
+                      </div>
+                    ) : null}
                   </>
+                ) : (
+                  <div className="flex h-full items-center justify-center">
+                    <ImageIcon size={64} className="text-slate-300 dark:text-slate-700" />
+                  </div>
                 )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <ImageIcon size={60} className="text-gray-300" />
               </div>
-            )}
+            </div>
+
+            {/* Mobile thumbnails */}
+            {images.length > 1 ? (
+              <div className="flex gap-2 overflow-x-auto border-t border-slate-100 p-3 dark:border-slate-800 sm:hidden">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImg(idx)}
+                    className={`h-14 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition-all ${
+                      idx === activeImg ? 'border-violet-500' : 'border-transparent opacity-60'
+                    }`}
+                  >
+                    <img src={img} alt="" className="h-full w-full object-contain bg-slate-50 dark:bg-slate-800" />
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {/* Title block */}
+            <div className="border-t border-slate-100 p-5 dark:border-slate-800 sm:p-6">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <Link
+                  to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
+                  className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-black text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
+                >
+                  <Tag size={10} /> {listing.category_name || listing.category}
+                </Link>
+                {listing.delivery_type !== 'stock' && listing.delivery_hours ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[11px] font-black text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300">
+                    <Clock size={10} /> {deliveryLabel} içinde
+                  </span>
+                ) : null}
+                <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-black text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  <Eye size={10} /> {listingViewCount}
+                </span>
+              </div>
+              <h1 className="break-words text-2xl font-black leading-tight text-slate-900 dark:text-white sm:text-3xl">
+                {listing.title}
+              </h1>
+            </div>
           </div>
 
-          {/* Küçük resimler */}
-          {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {images.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImg(idx)}
-                  className={`w-16 h-11 flex-shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                    idx === activeImg ? 'border-neon-purple opacity-100' : 'border-transparent opacity-50 hover:opacity-80'
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-contain bg-gray-100" />
-                </button>
-              ))}
+          {/* Tabs */}
+          <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex border-b border-slate-100 dark:border-slate-800">
+              {[
+                { key: 'description', label: 'Açıklama', icon: ImageIcon },
+                ...(hasAttrs ? [{ key: 'attributes', label: 'Özellikler', icon: Tag }] : []),
+              ].map((t) => {
+                const active = tab === t.key;
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => setTab(t.key)}
+                    className={`group relative inline-flex items-center gap-2 px-5 py-4 text-sm font-black transition-colors ${
+                      active
+                        ? 'text-violet-600 dark:text-violet-300'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                    }`}
+                  >
+                    <t.icon size={14} />
+                    {t.label}
+                    <span className={`absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 transition-transform duration-300 ${active ? 'scale-x-100' : 'scale-x-0'}`} />
+                  </button>
+                );
+              })}
             </div>
-          )}
-
-          {/* Kategoriye özel özellikler */}
-          {catAttrs.length > 0 && listing.attributes && Object.keys(listing.attributes).length > 0 && (
-            <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-              <h3 className="font-extrabold text-gray-800 mb-3 text-sm uppercase tracking-wide flex items-center gap-1.5">
-                <Tag size={13} className="text-violet-500" /> İlan Özellikleri
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {catAttrs.map(attr => {
-                  const val = listing.attributes?.[attr.slug];
-                  if (!val && val !== 0) return null;
-                  const display = Array.isArray(val) ? val.join(', ') : val;
-                  return (
-                    <div key={attr.slug} className="bg-surface-50 rounded-xl px-3 py-2">
-                      <div className="text-[10px] text-gray-400 font-semibold uppercase tracking-wide">{attr.name}</div>
-                      <div className="text-sm font-bold text-gray-700 mt-0.5 truncate">{display}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Açıklama */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-            <h3 className="font-extrabold text-gray-800 mb-3 text-sm uppercase tracking-wide">
-              İlan Açıklaması
-            </h3>
-            <div className="text-gray-500 text-sm leading-relaxed whitespace-pre-wrap">
-              {listing.description || 'Satıcı bu ilan için açıklama girmemiş.'}
+            <div className="p-5 sm:p-6">
+              {tab === 'description' ? (
+                <div className="whitespace-pre-wrap text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                  {listing.description || (
+                    <span className="italic text-slate-400 dark:text-slate-500">Satıcı bu ilan için açıklama girmemiş.</span>
+                  )}
+                </div>
+              ) : null}
+              {tab === 'attributes' && hasAttrs ? (
+                <div className="ld-stagger grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                  {catAttrs.map(attr => {
+                    const val = listing.attributes?.[attr.slug];
+                    if (!val && val !== 0) return null;
+                    const display = Array.isArray(val) ? val.join(', ') : val;
+                    return (
+                      <div key={attr.slug} className="group relative overflow-hidden rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white p-3 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md dark:border-slate-800 dark:from-slate-800 dark:to-slate-900 dark:hover:border-violet-800">
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">{attr.name}</div>
+                        <div className="mt-1 truncate text-sm font-black text-slate-800 dark:text-slate-100">{display}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
 
-        {/* ── SAĞ: Bilgi paneli ── */}
-        <div className="lg:col-span-2 space-y-4">
-
-          {/* Satıcı */}
-          <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl shadow-sm">
-            <div className="relative z-10 border-b border-violet-100 bg-gradient-to-r from-violet-100 via-cyan-50 to-emerald-50 px-4 py-2 text-center text-[11px] font-black uppercase tracking-[0.18em] text-violet-700">
-              Satıcı Bilgileri
-            </div>
-            <div className="absolute inset-x-0 top-9 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
-            <div className="relative p-4 pt-5">
-              <div className="flex items-center gap-3">
-                <UserAvatar
-                  value={listing.avatar}
-                  className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0"
-                  iconSize={24}
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
-                    <Link
-                      to={`/p/${listing.seller}`}
-                      className="font-black text-gray-900 hover:text-neon-purple transition-colors text-base block truncate"
-                    >
-                      {listing.seller}
-                    </Link>
-                    {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
-                    {sellerBadges.map((badge) => (
-                      <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
-                    ))}
-                    <span className="flex-shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">
-                      {sellerLevel}
-                    </span>
-                  </div>
+        {/* RIGHT — Sticky sidebar */}
+        <div className="lg:col-span-4">
+          <div className="space-y-4 lg:sticky lg:top-4">
+            {/* Price + buy */}
+            <div className="ld-fade-up relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 p-6 shadow-2xl shadow-violet-500/30">
+              <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-3xl ld-float" />
+              <div className="pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full bg-cyan-400/20 blur-3xl ld-float" style={{ animationDelay: '2s' }} />
+              <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.08) 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+              <div className="relative">
+                <div className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-violet-200">
+                  <Sparkles size={12} /> İlan Fiyatı
                 </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-[1.35fr_1fr] items-stretch gap-2">
-                <div className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-2 shadow-sm">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
-                    <Zap size={11} className="fill-current" />
-                  </div>
-                  <div className="whitespace-nowrap font-black text-slate-700">
-                    <span className="text-[9px]">Toplam Satış</span> <span className="text-base text-slate-900">{sellerSalesCount}</span>
-                  </div>
+                <div className="flex items-end gap-2">
+                  <div className="text-5xl font-black leading-none text-white">{Number(listing.price).toFixed(2)}</div>
+                  <div className="pb-1 text-xl font-black text-violet-200">₺</div>
                 </div>
-                <div className="flex min-h-12 items-center rounded-2xl border border-amber-100 bg-gradient-to-br from-white via-amber-50 to-violet-50 px-2.5 py-2 shadow-sm">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 font-black text-slate-800">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-2xl bg-amber-100 text-amber-500">
-                        <Star size={14} className="fill-current" />
-                      </span>
-                      <span className="text-lg leading-none">{sellerRating}</span>
+                <div className="mt-5">
+                  {isSeller ? (
+                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-violet-100 backdrop-blur">
+                      <Shield size={14} className="mr-1.5 inline" /> Kendi İlanın
                     </div>
-                    <span className="rounded-full bg-white px-2 py-1 font-black leading-none text-violet-600 shadow-sm">
-                      <span className="text-sm">{sellerReviewCount}</span> <span className="text-[9px]">yorum</span>
-                    </span>
+                  ) : isUnavailable ? (
+                    <div className="block w-full rounded-2xl bg-white/10 py-3.5 text-center text-sm font-black text-white/70 backdrop-blur">
+                      {listing.status === 'sold' ? 'Satıldı' : 'Müsait Değil'}
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleBuy}
+                        className="group relative flex flex-1 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-white py-4 text-base font-black text-violet-700 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0"
+                      >
+                        <ShoppingCart size={18} strokeWidth={2.4} />
+                        Sepete Ekle
+                      </button>
+                      <button
+                        onClick={handleToggleFavorite}
+                        disabled={favLoading}
+                        title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
+                        className={`flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 active:translate-y-0 ${
+                          favorited ? 'bg-rose-500 text-white hover:bg-rose-400' : 'bg-white/15 text-white backdrop-blur hover:bg-white/25'
+                        }`}
+                      >
+                        <Heart size={20} className={favorited ? 'fill-current' : ''} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Trust mini-row */}
+                <div className="mt-4 flex items-center justify-between gap-2 rounded-xl bg-white/10 px-3 py-2 text-[10px] font-black text-violet-100 backdrop-blur">
+                  <span className="inline-flex items-center gap-1"><Check size={11} /> Güvenli</span>
+                  <span className="inline-flex items-center gap-1"><Zap size={11} /> Hızlı</span>
+                  <span className="inline-flex items-center gap-1"><Shield size={11} /> Korumalı</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Seller card */}
+            <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <div className="relative h-16 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
+                <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+                <div className="absolute left-4 top-3 text-[10px] font-black uppercase tracking-widest text-white/90">
+                  Satıcı
+                </div>
+              </div>
+              <div className="relative -mt-8 px-4 pb-4">
+                <div className="flex items-start gap-3">
+                  <UserAvatar
+                    value={listing.avatar}
+                    className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white text-2xl shadow-lg dark:border-slate-900 dark:bg-slate-800"
+                    iconSize={26}
+                  />
+                  <div className="min-w-0 flex-1 pt-9">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Link
+                        to={`/p/${listing.seller}`}
+                        className="truncate text-base font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300"
+                      >
+                        {listing.seller}
+                      </Link>
+                      {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[10px] font-black text-white shadow-sm">
+                        LV {sellerLevel}
+                      </span>
+                    </div>
+                    {sellerBadges.length > 0 ? (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                        {sellerBadges.map((badge) => (
+                          <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
-              </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <Link
-                  to={`/p/${listing.seller}`}
-                  className="flex items-center justify-center gap-1.5 rounded-2xl bg-slate-100 px-3 py-2.5 text-xs font-black text-slate-700 transition-colors hover:bg-slate-200"
-                >
-                  <User size={13} /> Profili Gör
-                </Link>
-                {user && !isSeller ? (
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="relative overflow-hidden rounded-2xl border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-3 dark:border-amber-900/30 dark:from-amber-950/20 dark:to-slate-900">
+                    <div className="flex items-center gap-1.5">
+                      <Star size={12} className="fill-amber-400 text-amber-400" />
+                      <span className="text-lg font-black leading-none text-slate-900 dark:text-white">{sellerRating}</span>
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">{sellerReviewCount} yorum</div>
+                  </div>
+                  <div className="relative overflow-hidden rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-3 dark:border-emerald-900/30 dark:from-emerald-950/20 dark:to-slate-900">
+                    <div className="flex items-center gap-1.5">
+                      <TrendingUp size={12} className="text-emerald-500" />
+                      <span className="text-lg font-black leading-none text-slate-900 dark:text-white">{sellerSalesCount}</span>
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold text-slate-500 dark:text-slate-400">toplam satış</div>
+                  </div>
+                </div>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
                   <Link
-                    to="/messages"
-                    state={{ activeUserId: String(listing.seller_id) }}
-                    className="flex items-center justify-center gap-1.5 rounded-2xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white shadow-sm shadow-violet-500/20 transition-colors hover:bg-violet-500"
+                    to={`/p/${listing.seller}`}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2.5 text-xs font-black text-slate-700 transition-all hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                   >
-                    <MessageCircle size={13} /> Mesaj Gönder
+                    <User size={13} /> Profil
                   </Link>
-                ) : (
-                  <span className="flex items-center justify-center gap-1.5 rounded-2xl bg-violet-50 px-3 py-2.5 text-xs font-black text-violet-700">
-                    <Shield size={13} /> Kendi İlanın
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Fiyat + sepet */}
-          <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-5 shadow-lg shadow-violet-500/20">
-            <div className="text-violet-200 text-xs font-semibold mb-1">Fiyat</div>
-            <div className="text-4xl font-black text-white mb-4">{Number(listing.price).toFixed(2)} ₺</div>
-            {isSeller ? (
-              <span className="w-full block text-center text-violet-200 font-bold text-sm py-3 bg-white/10 rounded-xl">
-                Kendi İlanın
-              </span>
-            ) : isUnavailable ? (
-              <span className="w-full block text-center text-white/60 font-bold text-sm py-3 bg-white/10 rounded-xl">
-                {listing.status === 'sold' ? '✅ Satıldı' : '⏸ Müsait Değil'}
-              </span>
-            ) : (
-              <div className="flex gap-2">
-                <button
-                  onClick={handleBuy}
-                  className="flex-1 flex items-center justify-center gap-2 bg-white text-violet-700 font-extrabold text-base py-3.5 rounded-xl hover:bg-violet-50 active:scale-95 transition-all shadow-md"
-                >
-                  <ShoppingCart size={18} /> Sepete Ekle
-                </button>
-                <button
-                  onClick={handleToggleFavorite}
-                  disabled={favLoading}
-                  title={favorited ? 'Favorilerden çıkar' : 'Favorilere ekle'}
-                  className={`w-14 flex items-center justify-center rounded-xl transition-all active:scale-95 ${
-                    favorited ? 'bg-red-500 text-white hover:bg-red-400' : 'bg-white/20 text-white hover:bg-white/30'
-                  }`}
-                >
-                  <Heart size={20} className={favorited ? 'fill-current' : ''} />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Bilgi grid */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Shield size={15} className="text-emerald-600" />
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-semibold">Güvence</div>
-                <div className="text-xs font-bold text-gray-700">Oyuncu Kantinim Güvenli Alışveriş</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${listing.delivery_type === 'stock' ? 'bg-cyan-50' : 'bg-orange-50'}`}>
-                {listing.delivery_type === 'stock'
-                  ? <Zap size={15} className="text-cyan-600" />
-                  : <Clock size={15} className="text-orange-600" />
-                }
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-semibold">Teslimat</div>
-                <div className="text-xs font-bold text-gray-700">{deliveryLabel}</div>
-              </div>
-            </div>
-            {listing.delivery_type === 'stock' && (
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 bg-violet-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Tag size={15} className="text-violet-600" />
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-400 font-semibold">Stok</div>
-                  <div className="text-xs font-bold text-gray-700">{stockCount} adet</div>
+                  {user && !isSeller ? (
+                    <Link
+                      to="/messages"
+                      state={{ activeUserId: String(listing.seller_id) }}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-3 py-2.5 text-xs font-black text-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+                    >
+                      <MessageCircle size={13} /> Mesaj
+                    </Link>
+                  ) : (
+                    <span className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2.5 text-xs font-black text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
+                      <Shield size={13} /> Sen
+                    </span>
+                  )}
                 </div>
               </div>
-            )}
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-sky-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Eye size={15} className="text-sky-600" />
+            </div>
+
+            {/* Info grid */}
+            <div className="ld-fade-up ld-stagger grid grid-cols-2 gap-2.5">
+              <div className="group rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300">
+                  <Shield size={16} />
+                </div>
+                <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Güvence</div>
+                <div className="text-xs font-black text-slate-700 dark:text-slate-200">Güvenli Alışveriş</div>
               </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-semibold">Görüntülenme</div>
-                <div className="text-xs font-bold text-gray-700">{listingViewCount} kez</div>
+              <div className="group rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+                  listing.delivery_type === 'stock'
+                    ? 'bg-cyan-50 text-cyan-600 dark:bg-cyan-950/40 dark:text-cyan-300'
+                    : 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-300'
+                }`}>
+                  {listing.delivery_type === 'stock' ? <Zap size={16} /> : <Clock size={16} />}
+                </div>
+                <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Teslimat</div>
+                <div className="text-xs font-black text-slate-700 dark:text-slate-200">{deliveryLabel}</div>
+              </div>
+              {listing.delivery_type === 'stock' ? (
+                <div className="group rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300">
+                    <Tag size={16} />
+                  </div>
+                  <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Stok</div>
+                  <div className="text-xs font-black text-slate-700 dark:text-slate-200">{stockCount} adet</div>
+                </div>
+              ) : null}
+              <div className="group rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-300">
+                  <Eye size={16} />
+                </div>
+                <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Görüntülenme</div>
+                <div className="text-xs font-black text-slate-700 dark:text-slate-200">{listingViewCount} kez</div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
-      {lightboxOpen && images.length > 0 && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4">
+
+      {/* Lightbox */}
+      {lightboxOpen && images.length > 0 ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/95 p-4 backdrop-blur">
           <button
             type="button"
             onClick={() => setLightboxOpen(false)}
-            className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+            className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-white transition-all hover:scale-110 hover:bg-white/20"
             title="Kapat"
           >
             <X size={22} />
           </button>
-
-          {images.length > 1 && (
+          {images.length > 1 ? (
             <button
               type="button"
               onClick={prevImg}
-              className="absolute left-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              className="absolute left-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white transition-all hover:scale-110 hover:bg-white/20"
               title="Önceki görsel"
             >
               <ChevronLeft size={24} />
             </button>
-          )}
-
+          ) : null}
           <img
             src={images[activeImg]}
             alt={listing.title}
             className="max-h-[86vh] max-w-[92vw] rounded-3xl object-contain shadow-2xl"
           />
-
-          {images.length > 1 && (
+          {images.length > 1 ? (
             <button
               type="button"
               onClick={nextImg}
-              className="absolute right-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white backdrop-blur transition-colors hover:bg-white/20"
+              className="absolute right-4 top-1/2 z-10 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-2xl bg-white/10 text-white transition-all hover:scale-110 hover:bg-white/20"
               title="Sonraki görsel"
             >
               <ChevronRight size={24} />
             </button>
-          )}
-
-          {images.length > 1 && (
+          ) : null}
+          {images.length > 1 ? (
             <div className="absolute bottom-4 left-1/2 z-10 flex max-w-[88vw] -translate-x-1/2 gap-2 overflow-x-auto rounded-2xl bg-white/10 p-2 backdrop-blur">
               {images.map((img, idx) => (
                 <button
@@ -448,9 +553,9 @@ export default function ListingDetailPage() {
                 </button>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
