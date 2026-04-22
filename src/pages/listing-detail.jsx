@@ -240,8 +240,8 @@ export default function ListingDetailPage() {
               Satıcı Bilgileri
             </div>
             <div className="absolute inset-x-0 top-9 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
-            <div className="relative p-4 pt-3">
-              <div className="flex items-start gap-3">
+            <div className="relative p-4 pt-5">
+              <div className="flex items-center gap-3">
                 <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
                   {typeof listing.avatar === 'string' && (listing.avatar.startsWith('http') || listing.avatar.startsWith('/')) ? (
                     <img src={listing.avatar} alt="" className="w-full h-full object-cover" />
@@ -249,7 +249,7 @@ export default function ListingDetailPage() {
                     listing.avatar || <User size={24} className="text-slate-400" />
                   )}
                 </div>
-                <div className="flex-1 min-w-0 pt-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <Link
                       to={`/p/${listing.seller}`}
@@ -268,8 +268,8 @@ export default function ListingDetailPage() {
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
-                <div className="flex items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-1.5 shadow-sm">
+              <div className="mt-5 grid grid-cols-[1.35fr_1fr] items-stretch gap-2">
+                <div className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-emerald-100 bg-gradient-to-br from-white via-emerald-50 to-cyan-50 px-2.5 py-2 shadow-sm">
                   <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600">
                     <Zap size={11} className="fill-current" />
                   </div>
@@ -277,7 +277,7 @@ export default function ListingDetailPage() {
                     <span className="text-[9px]">Toplam Satış</span> <span className="text-base text-slate-900">{sellerSalesCount}</span>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-amber-100 bg-gradient-to-br from-white via-amber-50 to-violet-50 px-2.5 py-1.5 shadow-sm">
+                <div className="flex min-h-12 items-center rounded-2xl border border-amber-100 bg-gradient-to-br from-white via-amber-50 to-violet-50 px-2.5 py-2 shadow-sm">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 font-black text-slate-800">
                       <span className="flex h-7 w-7 items-center justify-center rounded-2xl bg-amber-100 text-amber-500">
