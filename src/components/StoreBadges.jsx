@@ -1,5 +1,13 @@
 import { CheckCircle2, Gamepad2, Lock, Trophy } from 'lucide-react';
 
+const badgeRequirementLabels = {
+  sales_rank: 'Başarılı Satış',
+  review_count: 'Yorum',
+  follower_count: 'Takipçi',
+  purchase_count: 'Başarılı Satın Alım',
+  doping_count: 'Doping Kullanımı',
+};
+
 export function VerifiedStoreBadge({ compact = false }) {
   return (
     <span
@@ -103,12 +111,13 @@ export function VerifiedAchievementCard({ isVerified = false, forceUnlocked = fa
 
 export function AchievementCard({ badge, forceUnlocked = false }) {
   const unlocked = Boolean(forceUnlocked || badge?.is_unlocked);
-  const requiredSales = Number(badge?.required_sales || 0);
+  const requiredValue = Number(badge?.required_sales || 0);
   const memberLimit = Number(badge?.member_limit || 0);
   const badgeType = badge?.badge_type || 'sales_rank';
+  const metricLabel = badgeRequirementLabels[badgeType] || badge?.metric_label || 'Başarım';
   const requirementText = badgeType === 'founding_member'
     ? `İlk ${memberLimit || 1000} Üye`
-    : requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti';
+    : requiredValue > 0 ? `${requiredValue} ${metricLabel}` : 'Başlangıç rozeti';
 
   return (
     <div

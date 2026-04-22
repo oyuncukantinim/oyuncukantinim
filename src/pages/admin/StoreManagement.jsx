@@ -38,6 +38,17 @@ const emptyBadge = {
   is_active: 1,
 };
 
+const badgeTypeOptions = [
+  { value: 'sales_rank', label: 'Başarılı satış rozeti', thresholdLabel: 'Gerekli Başarılı Satış', helper: 'Tamamlanmış başarılı satış sayısına göre açılır.', listLabel: 'başarılı satış', icon: BadgeCheck, tone: 'text-violet-600' },
+  { value: 'review_count', label: 'Yorum sayısı rozeti', thresholdLabel: 'Gerekli Yorum Sayısı', helper: 'Satıcının aldığı toplam yorum sayısına göre açılır.', listLabel: 'yorum', icon: BadgeCheck, tone: 'text-amber-600' },
+  { value: 'follower_count', label: 'Takipçi sayısı rozeti', thresholdLabel: 'Gerekli Takipçi Sayısı', helper: 'Satıcının takipçi sayısına göre açılır.', listLabel: 'takipçi', icon: Users, tone: 'text-sky-600' },
+  { value: 'purchase_count', label: 'Satın alım sayısı rozeti', thresholdLabel: 'Gerekli Başarılı Satın Alım', helper: 'Kullanıcının tamamlanmış satın alım sayısına göre açılır.', listLabel: 'başarılı satın alım', icon: CheckCircle2, tone: 'text-emerald-600' },
+  { value: 'doping_count', label: 'Doping kullanım rozeti', thresholdLabel: 'Gerekli Doping Kullanımı', helper: 'Kullanıcının ilan doping kullanımı sayısına göre açılır.', listLabel: 'doping kullanımı', icon: ShieldCheck, tone: 'text-fuchsia-600' },
+  { value: 'founding_member', label: 'İlk üye rozeti', thresholdLabel: 'Üye Limiti', helper: 'Kullanıcı ID değeri bu limit içinde olan üyelerde otomatik açılır.', listLabel: 'üye', icon: Users, tone: 'text-emerald-600' },
+];
+
+const getBadgeTypeMeta = (type) => badgeTypeOptions.find((item) => item.value === type) || badgeTypeOptions[0];
+
 const defaultCriteriaSettings = {
   min_account_age_days: 7,
   min_successful_sales: 5,
@@ -237,6 +248,9 @@ export default function AdminStoreManagement() {
   const updateCriteriaField = (field, value) => {
     setCriteriaForm((prev) => ({ ...prev, [field]: value }));
   };
+
+  const badgeTypeMeta = getBadgeTypeMeta(form.badge_type || 'sales_rank');
+  const isFoundingBadge = (form.badge_type || 'sales_rank') === 'founding_member';
 
   const saveCriteriaSettings = async () => {
     setSavingCriteria(true);
@@ -499,8 +513,9 @@ export default function AdminStoreManagement() {
                   onChange={(event) => setForm((prev) => ({ ...prev, badge_type: event.target.value }))}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-black outline-none focus:border-violet-400"
                 >
-                  <option value="sales_rank">Satış rütbesi</option>
-                  <option value="founding_member">İlk üye rozeti</option>
+                  {badgeTypeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </label>
               <input
@@ -519,25 +534,23 @@ export default function AdminStoreManagement() {
               <div className="grid gap-3">
                 <label className="block">
                   <span className="mb-1.5 block text-[11px] font-black uppercase tracking-wide text-slate-500">
-                    {(form.badge_type || 'sales_rank') === 'founding_member' ? 'Üye Limiti' : 'Gerekli Başarılı Satış'}
+                    {badgeTypeMeta.thresholdLabel}
                   </span>
                   <input
                   type="number"
                   min="0"
-                  value={(form.badge_type || 'sales_rank') === 'founding_member' ? form.member_limit : form.required_sales}
+                  value={isFoundingBadge ? form.member_limit : form.required_sales}
                   onChange={(event) => {
                     const value = Number(event.target.value || 0);
                     setForm((prev) => (prev.badge_type || 'sales_rank') === 'founding_member'
                       ? { ...prev, member_limit: value }
                       : { ...prev, required_sales: value });
                   }}
-                  placeholder={(form.badge_type || 'sales_rank') === 'founding_member' ? 'Örn: 1000' : 'Gerekli başarılı satış'}
+                  placeholder={isFoundingBadge ? 'Örn: 1000' : badgeTypeMeta.thresholdLabel}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold outline-none focus:border-violet-400"
                   />
                   <span className="mt-1 block text-[11px] font-semibold text-slate-400">
-                    {(form.badge_type || 'sales_rank') === 'founding_member'
-                      ? 'Kullanıcı ID değeri bu limit içinde olan üyelerde otomatik açılır.'
-                      : 'Bu tamamlanmış başarılı satış sayısına ulaşan kullanıcıda rozet açılır.'}
+                    {badgeTypeMeta.helper}
                   </span>
                 </label>
               </div>
@@ -602,7 +615,14 @@ export default function AdminStoreManagement() {
               ) : null}
             </div>
             <div className="grid gap-3 md:grid-cols-2">
-              {data.badges?.map((badge) => (
+              {data.badges?.map((badge) => {
+                const typeMeta = getBadgeTypeMeta(badge.badge_type || 'sales_rank');
+                const BadgeIcon = typeMeta.icon;
+                const thresholdText = badge.badge_type === 'founding_member'
+                  ? `İlk ${badge.member_limit || 1000} üye`
+                  : `${badge.required_sales || 0} ${typeMeta.listLabel}`;
+
+                return (
                 <div
                   key={badge.id}
                   draggable
@@ -637,12 +657,12 @@ export default function AdminStoreManagement() {
                       <GripVertical size={17} />
                     </div>
                     <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white">
-                      {badge.image_url ? <img src={badge.image_url} alt="" className="h-full w-full object-cover" /> : badge.badge_type === 'founding_member' ? <Users className="text-emerald-400" /> : <BadgeCheck className="text-violet-400" />}
+                      {badge.image_url ? <img src={badge.image_url} alt="" className="h-full w-full object-cover" /> : <BadgeIcon className={typeMeta.tone} />}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="font-black text-slate-900">{badge.title}</div>
-                      <div className={`text-xs font-black ${badge.badge_type === 'founding_member' ? 'text-emerald-600' : 'text-violet-600'}`}>
-                        {badge.badge_type === 'founding_member' ? `İlk ${badge.member_limit || 1000} üye` : `${badge.required_sales} başarılı satış`}
+                      <div className={`text-xs font-black ${typeMeta.tone}`}>
+                        {thresholdText}
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{badge.description}</p>
                     </div>
@@ -656,7 +676,8 @@ export default function AdminStoreManagement() {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
               {(!data.badges || data.badges.length === 0) ? (
                 <div className="rounded-2xl bg-slate-50 p-8 text-center text-sm font-semibold text-slate-400">
                   Henüz rozet eklenmemiş. Örn: 500 başarılı satış rozeti veya ilk 1000 üye rozeti ekleyebilirsiniz.
