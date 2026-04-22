@@ -279,39 +279,24 @@ export default function ListingDetailPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0 pt-1">
-                  <div className="flex items-center gap-2 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                     <Link
                       to={`/p/${listing.seller}`}
                       className="font-black text-gray-900 hover:text-neon-purple transition-colors text-base block truncate"
                     >
                       {listing.seller}
                     </Link>
+                    {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
+                    {sellerBadges.map((badge) => (
+                      <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
+                    ))}
                     <span className="flex-shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">
                       {sellerLevel}
                     </span>
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black text-slate-500">
-                    {Number(listing.seller_is_verified_store) === 1 ? (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Onaylı Mağaza</span>
-                    ) : null}
                     <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">Satıcı Profili</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-2xl border border-violet-100 bg-white/85 p-3 shadow-sm">
-                <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-[11px] font-black uppercase tracking-wide text-slate-400">Satıcı Rozetleri</span>
-                  <span className="text-[10px] font-bold text-slate-400">{sellerBadges.length + (Number(listing.seller_is_verified_store) === 1 ? 1 : 0)} rozet</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon /> : null}
-                  {sellerBadges.map((badge) => (
-                    <StoreBadgeIcon key={badge.id || badge.title} badge={badge} size="lg" />
-                  ))}
-                  {Number(listing.seller_is_verified_store) !== 1 && sellerBadges.length === 0 ? (
-                    <span className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-400">Henüz rozet yok</span>
-                  ) : null}
                 </div>
               </div>
 
