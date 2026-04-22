@@ -160,6 +160,13 @@ html.theme-dark .theme-soft-action {
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.30), 0 0 22px rgba(139, 92, 246, 0.13) !important;
 }
 
+html.theme-dark .admin-verified-store-card {
+  background:
+    linear-gradient(135deg, rgba(6, 95, 70, 0.26), rgba(17, 24, 39, 0.92)) !important;
+  border-color: rgba(52, 211, 153, 0.26) !important;
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.035);
+}
+
 html.theme-dark [class~="shadow-violet-100"],
 html.theme-dark [class~="shadow-violet-200"],
 html.theme-dark [class~="shadow-emerald-100"],

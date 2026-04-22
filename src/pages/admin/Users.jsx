@@ -1471,7 +1471,7 @@ export default function AdminUsers() {
                     </div>
                   </label>
 
-                  <label className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+                  <label className="admin-verified-store-card rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <div className="text-sm font-bold text-slate-900">Onaylı Mağaza</div>
