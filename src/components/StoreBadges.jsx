@@ -93,7 +93,7 @@ export function AchievementCard({ badge, forceUnlocked = false }) {
   const badgeType = badge?.badge_type || 'sales_rank';
   const requirementText = badgeType === 'founding_member'
     ? `İlk ${memberLimit || 1000} Üye`
-    : requiredSales > 0 ? `${requiredSales} Tamamlanmış Satış` : 'Başlangıç rozeti';
+    : requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti';
 
   return (
     <div
