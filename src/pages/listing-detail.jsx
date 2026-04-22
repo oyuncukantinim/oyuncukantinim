@@ -262,10 +262,11 @@ export default function ListingDetailPage() {
                       {sellerLevel}
                     </span>
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black text-slate-500">
-                    <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">Satıcı Profili</span>
-                  </div>
                 </div>
+              </div>
+
+              <div className="mt-5 flex items-center justify-center rounded-2xl border border-violet-100 bg-gradient-to-r from-violet-50 via-white to-cyan-50 px-3 py-2 text-xs font-black text-violet-700 shadow-sm">
+                Satıcı Bilgileri
               </div>
 
               <div className="mt-3 grid grid-cols-[1.35fr_1fr] gap-2">
