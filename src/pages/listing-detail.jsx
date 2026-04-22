@@ -5,7 +5,7 @@ import {
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
   User, X, Eye, Check, Sparkles, TrendingUp, Maximize2,
 } from 'lucide-react';
-import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
+import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -30,6 +30,11 @@ export default function ListingDetailPage() {
   const [favorited, setFavorited] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
   const [tab, setTab] = useState('description');
+  const [reviewScope, setReviewScope] = useState('all');
+  const [reviews, setReviews] = useState([]);
+  const [reviewsTotal, setReviewsTotal] = useState(0);
+  const [reviewsHasMore, setReviewsHasMore] = useState(false);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   useEffect(() => {
     getListing(id)
@@ -51,6 +56,45 @@ export default function ListingDetailPage() {
     if (!user || !id) return;
     checkFavorite(id).then(r => setFavorited(r.data?.favorited ?? false)).catch(() => {});
   }, [user, id]);
+
+  useEffect(() => {
+    if (!listing?.seller_id) return;
+    setReviews([]);
+    setReviewsTotal(0);
+    setReviewsHasMore(false);
+  }, [listing?.seller_id, reviewScope]);
+
+  useEffect(() => {
+    if (tab !== 'reviews' || !listing?.seller_id) return;
+    loadReviews(0, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, reviewScope, listing?.seller_id, listing?.id]);
+
+  const loadReviews = async (offset = 0, replace = false) => {
+    if (!listing?.seller_id || reviewsLoading) return;
+    setReviewsLoading(true);
+    try {
+      const query = {
+        paginated: 1,
+        limit: 10,
+        offset,
+        ...(reviewScope === 'listing' ? { listing_id: listing.id } : {}),
+      };
+      const response = await getSellerReviews(listing.seller_id, query);
+      const nextReviews = response.data?.reviews || [];
+      setReviews(prev => (replace ? nextReviews : [...prev, ...nextReviews]));
+      setReviewsTotal(Number(response.data?.total || 0));
+      setReviewsHasMore(Boolean(response.data?.has_more));
+    } catch {
+      if (replace) {
+        setReviews([]);
+        setReviewsTotal(0);
+        setReviewsHasMore(false);
+      }
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
 
   const handleToggleFavorite = async () => {
     if (!user) { navigate('/login'); return; }
@@ -282,6 +326,7 @@ export default function ListingDetailPage() {
               {[
                 { key: 'description', label: 'Açıklama', icon: ImageIcon },
                 ...(hasAttrs ? [{ key: 'attributes', label: 'Özellikler', icon: Tag }] : []),
+                { key: 'reviews', label: 'Değerlendirme', icon: Star },
               ].map((t) => {
                 const active = tab === t.key;
                 return (
@@ -322,6 +367,77 @@ export default function ListingDetailPage() {
                       </div>
                     );
                   })}
+                </div>
+              ) : null}
+              {tab === 'reviews' ? (
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/50 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div className="text-sm font-black text-slate-900 dark:text-white">Satıcı değerlendirmeleri</div>
+                      <div className="mt-1 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        {reviewScope === 'all'
+                          ? `Son yorumlar gösteriliyor. Toplam ${reviewsTotal} değerlendirme var.`
+                          : `Bu ilana ait ${reviewsTotal} değerlendirme gösteriliyor.`}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 rounded-2xl bg-white p-1 dark:bg-slate-900">
+                      {[
+                        { key: 'all', label: 'Tüm değerlendirmeler' },
+                        { key: 'listing', label: 'İlan Değerlendirmeleri' },
+                      ].map(item => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setReviewScope(item.key)}
+                          className={`rounded-xl px-3 py-2 text-xs font-black transition-all ${
+                            reviewScope === item.key
+                              ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
+                              : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100'
+                          }`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {reviewsLoading && reviews.length === 0 ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div key={index} className="h-28 animate-pulse rounded-2xl bg-slate-100 dark:bg-slate-800" />
+                      ))}
+                    </div>
+                  ) : reviews.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center dark:border-slate-800">
+                      <Star size={28} className="mx-auto text-slate-300 dark:text-slate-600" />
+                      <div className="mt-3 text-sm font-black text-slate-700 dark:text-slate-200">
+                        {reviewScope === 'listing' ? 'Bu ilana ait değerlendirme yok.' : 'Satıcı için henüz değerlendirme yok.'}
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Yorumlar tamamlanan siparişlerden sonra görünür.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {reviews.map(review => (
+                        <ListingReviewCard
+                          key={review.id}
+                          review={review}
+                          defaultListingImage={defaultListingImage}
+                          hideListingInfo={reviewScope === 'listing'}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {reviewsHasMore ? (
+                    <button
+                      type="button"
+                      onClick={() => loadReviews(reviews.length, false)}
+                      disabled={reviewsLoading}
+                      className="w-full rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm font-black text-violet-700 transition-all hover:-translate-y-0.5 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-violet-900/40 dark:bg-violet-950/30 dark:text-violet-300 dark:hover:bg-violet-950/50"
+                    >
+                      {reviewsLoading ? 'Yükleniyor...' : 'Daha fazla göster'}
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
             </div>
@@ -551,6 +667,101 @@ export default function ListingDetailPage() {
           ) : null}
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function formatReviewDate(value) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function getReviewRating(review) {
+  const rating = Number(review.rating || 0);
+  if (rating > 0) return rating;
+  const parts = [review.reliability, review.satisfaction, review.speed, review.service_quality]
+    .map(Number)
+    .filter(Boolean);
+  if (!parts.length) return 0;
+  return Math.round(parts.reduce((sum, item) => sum + item, 0) / parts.length);
+}
+
+function ListingReviewCard({ review, defaultListingImage, hideListingInfo }) {
+  const rating = getReviewRating(review);
+  const metrics = [
+    ['Güvenilirlik', review.reliability],
+    ['Memnuniyet', review.satisfaction],
+    ['Hız', review.speed],
+    ['Hizmet', review.service_quality],
+  ].filter(([, value]) => Number(value || 0) > 0);
+
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="flex gap-3">
+        <UserAvatar
+          value={review.reviewer_avatar}
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-xl dark:bg-slate-900"
+          iconSize={18}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <Link
+                to={`/p/${review.reviewer_username}`}
+                className="text-sm font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300"
+              >
+                {review.reviewer_username || 'Kullanıcı'}
+              </Link>
+              <div className="mt-0.5 text-[11px] font-semibold text-slate-400">{formatReviewDate(review.created_at)}</div>
+            </div>
+            <div className="flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-black text-amber-700 dark:bg-amber-400/10 dark:text-amber-300">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <Star
+                  key={index}
+                  size={12}
+                  className={index < rating ? 'fill-amber-400 text-amber-400' : 'text-amber-200 dark:text-amber-900'}
+                />
+              ))}
+              <span className="ml-1">{rating || '-'}</span>
+            </div>
+          </div>
+
+          {!hideListingInfo && (review.item_title || review.item_image) ? (
+            <div className="mt-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-2 dark:bg-slate-900">
+              <img
+                src={review.item_image || defaultListingImage}
+                alt=""
+                className="h-12 w-16 shrink-0 rounded-xl object-contain bg-white dark:bg-slate-950"
+              />
+              <div className="min-w-0">
+                <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Değerlendirilen ilan</div>
+                <div className="mt-0.5 line-clamp-2 text-xs font-black text-slate-700 dark:text-slate-200">{review.item_title || 'İlan bilgisi yok'}</div>
+              </div>
+            </div>
+          ) : null}
+
+          {metrics.length ? (
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {metrics.map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-slate-50 px-2.5 py-2 dark:bg-slate-900">
+                  <div className="text-[10px] font-black uppercase tracking-wide text-slate-400">{label}</div>
+                  <div className="mt-1 text-sm font-black text-slate-900 dark:text-white">{Number(value || 0)}/5</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {review.comment ? (
+            <p className="mt-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-sm leading-6 text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+              {review.comment}
+            </p>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

@@ -359,8 +359,8 @@ export function getSellerListings(sellerId) {
   return request('get_seller_listings', { query: { seller_id: sellerId } });
 }
 
-export function getSellerReviews(sellerId) {
-  return request('get_seller_reviews', { query: { seller_id: sellerId } });
+export function getSellerReviews(sellerId, params = {}) {
+  return request('get_seller_reviews', { query: { seller_id: sellerId, ...params } });
 }
 
 export function getSellerFollowers(sellerId) {
