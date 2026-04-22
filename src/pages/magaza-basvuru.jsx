@@ -318,6 +318,27 @@ export default function StoreApplicationPage() {
         </section>
       ) : null}
 
+      {overview.is_verified_store ? (
+        <section className="rounded-3xl border border-emerald-100 bg-gradient-to-r from-emerald-50 via-white to-cyan-50 p-5 shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-100">
+                <BadgeCheck size={24} />
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-slate-900">Mağazan zaten onaylı</h2>
+                <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                  Tekrar başvuru göndermene gerek yok. Onaylı Satıcı rozeti ve uygun başarımların profilinde görünür.
+                </p>
+              </div>
+            </div>
+            <Link to={`/p/${user?.username}`} className="rounded-2xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white hover:bg-emerald-500">
+              Profilimi Gör
+            </Link>
+          </div>
+        </section>
+      ) : null}
+
       {exampleOpen ? (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
@@ -351,9 +372,9 @@ export default function StoreApplicationPage() {
           </Link>
         </div>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          <VerifiedAchievementCard isVerified={Boolean(overview.is_verified_store)} />
+          <VerifiedAchievementCard isVerified={Boolean(overview.is_verified_store)} forceUnlocked />
           {(overview.badges || []).map((badge) => (
-            <AchievementCard key={badge.id} badge={badge} />
+            <AchievementCard key={badge.id} badge={badge} forceUnlocked />
           ))}
           {(!overview.badges || overview.badges.length === 0) ? (
             <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-400">

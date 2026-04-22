@@ -923,13 +923,13 @@ export default function ProfilePage() {
     { id: 'listings',      label: 'İlanlarım',        icon: List },
     { id: 'orders',        label: 'Siparişlerim',      icon: Package },
     { id: 'sales',         label: 'Satışlarım',        icon: Store },
+    { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
+    { id: 'withdrawals',   label: 'Para Çek',          icon: TrendingDown },
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
     { id: 'achievements',  label: 'Başarımlar',        icon: Trophy },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
     ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
-    { id: 'withdrawals',   label: 'Para Çek',          icon: TrendingDown },
     { id: 'store_application', label: 'Onaylı Mağaza', icon: ShieldCheck },
-    { id: 'finance',       label: 'Finansal',          icon: FinanceIcon },
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
@@ -959,6 +959,17 @@ export default function ProfilePage() {
   }, [activeTab, balanceAddEnabled]);
 
   if (!user) return null;
+  const totalXp = Number(user.xp || 0);
+  const baseXp = 100;
+  const growth = 1.05;
+  let xpRemainder = totalXp;
+  let nextLevelXp = baseXp;
+  for (let level = 1; xpRemainder >= nextLevelXp && level < 100000; level += 1) {
+    xpRemainder -= nextLevelXp;
+    nextLevelXp = Math.ceil(nextLevelXp * growth);
+  }
+  const remainingToNextLevel = Math.max(0, nextLevelXp - xpRemainder);
+  const xpProgress = nextLevelXp > 0 ? Math.min(100, Math.round((xpRemainder / nextLevelXp) * 100)) : 100;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -1008,10 +1019,10 @@ export default function ProfilePage() {
           <div className="bg-gradient-to-r from-gray-50 to-violet-50/50 rounded-xl p-3 border border-gray-100/80">
             <div className="flex justify-between text-xs font-bold mb-1.5">
               <span className="text-gray-500">Seviye {user.level || 1}</span>
-              <span className="bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">{user.xp || 0} XP</span>
+              <span className="bg-gradient-to-r from-violet-600 to-cyan-500 bg-clip-text text-transparent">{totalXp} XP · Sonraki seviye için {remainingToNextLevel} XP</span>
             </div>
             <div className="w-full bg-gray-200/60 rounded-full h-2 overflow-hidden">
-              <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 h-full rounded-full transition-all shadow-sm shadow-violet-500/20" style={{ width: `${Math.min(user.xp || 0, 100)}%` }} />
+              <div className="bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 h-full rounded-full transition-all shadow-sm shadow-violet-500/20" style={{ width: `${xpProgress}%` }} />
             </div>
           </div>
         </div>
@@ -1022,7 +1033,7 @@ export default function ProfilePage() {
         <div className="w-full md:w-56 flex-shrink-0">
           <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 space-y-0.5 sticky top-4">
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">İşlemler</p>
-            {tabs.filter(t => ['listings','orders','sales'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['listings','orders','sales','finance','withdrawals'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
@@ -1033,7 +1044,7 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
-            {tabs.filter(t => ['favorites','achievements','reviews','finance'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['favorites','achievements','reviews','store_application'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
@@ -1044,7 +1055,7 @@ export default function ProfilePage() {
             ))}
             <div className="border-t border-gray-100 my-2" />
             <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Hesap</p>
-            {tabs.filter(t => ['balance','withdrawals','store_application','profile','personal'].includes(t.id)).map(tab => (
+            {tabs.filter(t => ['balance','profile','personal'].includes(t.id)).map(tab => (
               <button key={tab.id} onClick={() => handleTabClick(tab.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
                   activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'

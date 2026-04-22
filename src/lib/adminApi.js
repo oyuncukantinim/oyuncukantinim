@@ -176,6 +176,14 @@ export const adminGetLogs = (params = {}) =>
   adminRequest('admin_get_logs', { query: params });
 export const adminDeleteLog = (log_id) =>
   adminRequest('admin_delete_log', { method: 'POST', body: { log_id } });
+export const adminDeleteLogs = (log_ids) =>
+  adminRequest('admin_delete_logs', { method: 'POST', body: { log_ids } });
+
+// XP Management
+export const adminGetXpSettings = () =>
+  adminRequest('admin_get_xp_settings');
+export const adminSaveXpSettings = (body) =>
+  adminRequest('admin_save_xp_settings', { method: 'POST', body });
 
 // Store Verification / Badges
 export const adminGetStoreManagement = (params = {}) =>

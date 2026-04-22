@@ -29,23 +29,30 @@ export function VerifiedStoreIcon({ compact = false }) {
   );
 }
 
-export function StoreRankPill({ badge }) {
+export function StoreBadgeIcon({ badge, size = 'md' }) {
   if (!badge?.image_url) return null;
+  const sizeClass = size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
 
   return (
     <span
-      className="inline-flex h-7 w-7 items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm"
-      title={badge.title}
+      className={`inline-flex ${sizeClass} items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm`}
+      title={badge.description || badge.title}
+      aria-label={badge.title || 'Satıcı rozeti'}
     >
       <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
     </span>
   );
 }
 
-export function VerifiedAchievementCard({ isVerified = false }) {
-  const unlocked = Boolean(isVerified);
+export function StoreRankPill({ badge }) {
+  return <StoreBadgeIcon badge={badge} />;
+}
+
+export function VerifiedAchievementCard({ isVerified = false, forceUnlocked = false }) {
+  const unlocked = Boolean(isVerified || forceUnlocked);
   return (
     <div
+      title="Bilgileri doğrulanmış satıcı."
       className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
           ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 shadow-emerald-100'
@@ -79,17 +86,18 @@ export function VerifiedAchievementCard({ isVerified = false }) {
   );
 }
 
-export function AchievementCard({ badge }) {
-  const unlocked = Boolean(badge?.is_unlocked);
+export function AchievementCard({ badge, forceUnlocked = false }) {
+  const unlocked = Boolean(forceUnlocked || badge?.is_unlocked);
   const requiredSales = Number(badge?.required_sales || 0);
   const memberLimit = Number(badge?.member_limit || 0);
   const badgeType = badge?.badge_type || 'sales_rank';
   const requirementText = badgeType === 'founding_member'
     ? `İlk ${memberLimit || 1000} Üye`
-    : requiredSales > 0 ? `${requiredSales} Başarılı Satış` : 'Başlangıç rozeti';
+    : requiredSales > 0 ? `${requiredSales} Tamamlanmış Satış` : 'Başlangıç rozeti';
 
   return (
     <div
+      title={badge.description || badge.title || 'Satış başarım rozeti.'}
       className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
           ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-amber-100'

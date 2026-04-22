@@ -45,6 +45,7 @@ const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagemen
 const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
 const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
 const AdminStoreManagement = lazy(() => import('./pages/admin/StoreManagement'));
+const AdminXpManagement = lazy(() => import('./pages/admin/XpManagement'));
 
 function PageLoader() {
   return (
@@ -301,6 +302,7 @@ export default function App() {
               <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
               <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
               <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
+              <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />
               <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
               <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
               <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />

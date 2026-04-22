@@ -14,6 +14,7 @@ import {
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminDeleteLog,
+  adminDeleteLogs,
   adminGetLogs,
   adminGetSuspicious,
   adminGetIpBlacklist,
@@ -138,6 +139,7 @@ function LogsTab() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -147,6 +149,7 @@ function LogsTab() {
     try {
       const r = await adminGetLogs({ page });
       setLogs(r.data.logs || []);
+      setSelectedIds([]);
       setTotal(r.data.total || 0);
       setPages(r.data.pages || 1);
     } catch {
@@ -178,14 +181,36 @@ function LogsTab() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!window.confirm(`${selectedIds.length} işlem logu silinsin mi?`)) return;
+    setDeletingId('bulk');
+    try {
+      await adminDeleteLogs(selectedIds);
+      showToast('Seçili işlem logları silindi.');
+      load();
+    } catch (e) {
+      showToast(e.message || 'Seçili loglar silinemedi.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {toast && <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-700">{toast}</div>}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-500">Toplam {total} işlem kaydı · Sayfa başına 20 kayıt</p>
-        <button onClick={load} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
-          <RefreshCw size={13} /> Yenile
-        </button>
+        <div className="flex flex-wrap gap-2">
+          {selectedIds.length > 0 ? (
+            <button onClick={handleBulkDelete} disabled={deletingId === 'bulk'} className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3 py-1.5 text-sm font-bold text-white hover:bg-rose-500 disabled:opacity-50">
+              <Trash2 size={13} /> Seçili Logları Sil ({selectedIds.length})
+            </button>
+          ) : null}
+          <button onClick={load} className="flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+            <RefreshCw size={13} /> Yenile
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -197,6 +222,13 @@ function LogsTab() {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 text-xs font-bold uppercase text-gray-500">
               <tr>
+                <th className="px-4 py-3 text-left">
+                  <input
+                    type="checkbox"
+                    checked={logs.length > 0 && selectedIds.length === logs.length}
+                    onChange={(event) => setSelectedIds(event.target.checked ? logs.map((log) => log.id) : [])}
+                  />
+                </th>
                 <th className="px-4 py-3 text-left">Admin</th>
                 <th className="px-4 py-3 text-left">İşlem</th>
                 <th className="px-4 py-3 text-left hidden lg:table-cell">Kayıt</th>
@@ -209,6 +241,13 @@ function LogsTab() {
             <tbody className="divide-y divide-gray-50">
               {logs.map((log) => (
                 <tr key={log.id} className="hover:bg-gray-50/50">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(log.id)}
+                      onChange={(event) => setSelectedIds((prev) => event.target.checked ? [...prev, log.id] : prev.filter((id) => id !== log.id))}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-semibold text-gray-800">{log.admin_username}</td>
                   <td className="px-4 py-3">
                     <span className="font-bold text-gray-800">{formatAction(log.action)}</span>

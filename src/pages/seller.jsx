@@ -225,6 +225,9 @@ export default function SellerPage() {
                 ) : null}
               </h1>
               <span className="text-sm text-gray-400 font-medium">@{seller.username}</span>
+              <span className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-black text-violet-700">
+                Seviye {seller.level || 1}
+              </span>
             </div>
             {seller.bio && <p className="text-gray-500 text-sm mt-1 leading-relaxed">{seller.bio}</p>}
             <p className="text-xs text-gray-400 mt-1.5 flex items-center gap-1">

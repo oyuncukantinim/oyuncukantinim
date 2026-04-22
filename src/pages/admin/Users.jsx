@@ -9,6 +9,7 @@ import {
   ChevronRight,
   X,
   Eye,
+  Star,
   TrendingUp,
   TrendingDown,
   Clock,
@@ -149,7 +150,7 @@ function Drawer({ open, title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-slate-950/35" onClick={onClose} />
-      <div className="absolute inset-y-0 right-0 w-full max-w-2xl overflow-y-auto border-l border-slate-200 bg-white shadow-2xl">
+      <div className="absolute inset-y-0 right-0 w-full max-w-5xl overflow-y-auto border-l border-slate-200 bg-white shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur">
           <h2 className="text-lg font-extrabold text-slate-900">{title}</h2>
           <button onClick={onClose} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
@@ -231,6 +232,7 @@ export default function AdminUsers() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [filterBanned, setFilterBanned] = useState('');
+  const [filterVerified, setFilterVerified] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
 
@@ -253,7 +255,8 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState(false);
 
   const [drawerSaving, setDrawerSaving] = useState('');
-  const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '', level: '0', xp: '0' });
+  const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '' });
+  const [levelForm, setLevelForm] = useState({ level: '0', xp: '0' });
   const [personalForm, setPersonalForm] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '', restrictions: {} });
   const [financeForm, setFinanceForm] = useState({ amount: '', action: 'balance_add' });
@@ -268,7 +271,7 @@ export default function AdminUsers() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await adminGetUsers({ page, search, is_banned: filterBanned });
+      const r = await adminGetUsers({ page, search, is_banned: filterBanned, is_verified_store: filterVerified });
       setUsers(r.data.users || []);
       setTotal(r.data.total || 0);
       setPages(r.data.pages || 1);
@@ -277,7 +280,7 @@ export default function AdminUsers() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filterBanned]);
+  }, [page, search, filterBanned, filterVerified]);
 
   useEffect(() => {
     load();
@@ -290,6 +293,8 @@ export default function AdminUsers() {
       username: detailUser.username || '',
       email: detailUser.email || '',
       avatar: detailUser.avatar || '',
+    });
+    setLevelForm({
       level: String(detailUser.level ?? 0),
       xp: String(detailUser.xp ?? 0),
     });
@@ -302,6 +307,7 @@ export default function AdminUsers() {
     });
     setModerationForm({
       is_admin: Number(detailUser.is_admin) === 1,
+      is_verified_store: Number(detailUser.is_verified_store) === 1,
       is_banned: Number(detailUser.is_banned) === 1,
       ban_reason: detailUser.ban_reason || '',
       restrictions: detailUser.restrictions || {},
@@ -364,8 +370,6 @@ export default function AdminUsers() {
   const handleSaveGeneral = async () => {
     const username = generalForm.username.trim();
     const email = generalForm.email.trim();
-    const level = Number(generalForm.level);
-    const xp = Number(generalForm.xp);
 
     if (!username) {
       showToast('Kullanıcı adı gerekli.');
@@ -375,11 +379,6 @@ export default function AdminUsers() {
       showToast('E-posta gerekli.');
       return;
     }
-    if (Number.isNaN(level) || level < 0 || Number.isNaN(xp) || xp < 0) {
-      showToast('Seviye ve XP için geçerli değer girin.');
-      return;
-    }
-
     setDrawerSaving('general');
     try {
       await adminUpdateUser({
@@ -387,12 +386,30 @@ export default function AdminUsers() {
         username,
         email,
         avatar: generalForm.avatar.trim(),
-        level,
-        xp,
       });
       await refreshDetail(detailUser.id);
       await load();
       showToast('Genel bilgiler güncellendi.');
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setDrawerSaving('');
+    }
+  };
+
+  const handleSaveLevel = async () => {
+    const level = Number(levelForm.level);
+    const xp = Number(levelForm.xp);
+    if (Number.isNaN(level) || level < 0 || Number.isNaN(xp) || xp < 0) {
+      showToast('Seviye ve XP için geçerli değer girin.');
+      return;
+    }
+    setDrawerSaving('level');
+    try {
+      await adminUpdateUser({ user_id: detailUser.id, level, xp });
+      await refreshDetail(detailUser.id);
+      await load();
+      showToast('Seviye bilgileri güncellendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -452,6 +469,7 @@ export default function AdminUsers() {
       const payload = {
         user_id: detailUser.id,
         is_admin: moderationForm.is_admin ? 1 : 0,
+        is_verified_store: moderationForm.is_verified_store ? 1 : 0,
         is_banned: moderationForm.is_banned ? 1 : 0,
         ban_reason: moderationForm.is_banned ? moderationForm.ban_reason.trim() : '',
         restrictions_json: JSON.stringify(moderationForm.restrictions || {}),
@@ -647,6 +665,18 @@ export default function AdminUsers() {
               <option value="0">Aktif</option>
               <option value="1">Banlı</option>
             </select>
+            <select
+              value={filterVerified}
+              onChange={(e) => {
+                setFilterVerified(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+            >
+              <option value="">Mağaza Durumu</option>
+              <option value="1">Onaylı Kullanıcılar</option>
+              <option value="0">Onaysız Kullanıcılar</option>
+            </select>
           </div>
         </div>
 
@@ -703,6 +733,11 @@ export default function AdminUsers() {
                               {Number(u.is_admin) === 1 && (
                                 <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-600">
                                   Admin
+                                </span>
+                              )}
+                              {Number(u.is_verified_store) === 1 && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
+                                  <CheckCircle2 size={11} /> Onaylı
                                 </span>
                               )}
                             </div>
@@ -821,6 +856,11 @@ export default function AdminUsers() {
                     {Number(detailUser.is_admin) === 1 && (
                       <span className="rounded-full bg-violet-100 px-2 py-1 text-[11px] font-bold text-violet-700">Admin</span>
                     )}
+                    {Number(detailUser.is_verified_store) === 1 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
+                        <CheckCircle2 size={13} /> Onaylı Mağaza
+                      </span>
+                    )}
                     {Number(detailUser.is_banned) === 1 && (
                       <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-bold text-red-700">Banlı</span>
                     )}
@@ -843,9 +883,10 @@ export default function AdminUsers() {
             </div>
             
               <div className="rounded-2xl bg-slate-100 p-1">
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 lg:grid-cols-6">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-7">
                 {[
                   { id: 'general', label: 'Genel' },
+                  { id: 'level', label: 'Level' },
                   { id: 'personal', label: 'Kişisel' },
                   { id: 'listings', label: 'İlanlar' },
                   { id: 'bank_accounts', label: 'Bankalar' },
@@ -891,24 +932,6 @@ export default function AdminUsers() {
                       value={generalForm.avatar}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, avatar: e.target.value }))}
                       placeholder="Emoji veya görsel URL"
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="Seviye">
-                    <input
-                      type="number"
-                      min="0"
-                      value={generalForm.level}
-                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, level: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="XP">
-                    <input
-                      type="number"
-                      min="0"
-                      value={generalForm.xp}
-                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, xp: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
@@ -969,6 +992,73 @@ export default function AdminUsers() {
                     className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-violet-500 disabled:opacity-50"
                   >
                     {drawerSaving === 'general' ? 'Kaydediliyor...' : 'Genel Bilgileri Kaydet'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {detailTab === 'level' && (
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <SummaryCard icon={TrendingUp} label="Mevcut Seviye" value={detailUser.level || 1} tone="border-violet-100 bg-violet-50/70" />
+                  <SummaryCard icon={Star} label="Toplam XP" value={detailUser.xp || 0} tone="border-amber-100 bg-amber-50/70" />
+                  <SummaryCard icon={Clock} label="Sonraki Seviyeye" value={`${detailUser.xp_level_info?.remaining_to_next ?? 0} XP`} tone="border-cyan-100 bg-cyan-50/70" />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <FormField label="Seviye">
+                    <input
+                      type="number"
+                      min="0"
+                      value={levelForm.level}
+                      onChange={(e) => setLevelForm((prev) => ({ ...prev, level: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="XP">
+                    <input
+                      type="number"
+                      min="0"
+                      value={levelForm.xp}
+                      onChange={(e) => setLevelForm((prev) => ({ ...prev, xp: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <h4 className="mb-3 text-sm font-black text-slate-900">Level / XP Logları</h4>
+                  {!detailUser.xp_logs || detailUser.xp_logs.length === 0 ? (
+                    <div className="rounded-xl bg-slate-50 px-3 py-6 text-center text-sm text-slate-400">Henüz XP log kaydı yok.</div>
+                  ) : (
+                    <div className="max-h-[420px] space-y-2 overflow-y-auto">
+                      {detailUser.xp_logs.map((log) => (
+                        <div key={log.id} className="rounded-xl bg-slate-50 px-3 py-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-bold text-slate-800">{log.title}</div>
+                              <div className="mt-1 text-xs font-semibold text-slate-400">{log.note || log.action_key} · {fmtDateTime(log.created_at)}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-sm font-black ${Number(log.xp_amount) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                {Number(log.xp_amount) >= 0 ? '+' : ''}{log.xp_amount} XP
+                              </div>
+                              <div className="text-[11px] font-bold text-slate-400">Lv {log.level_before} → {log.level_after}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveLevel}
+                    disabled={drawerSaving === 'level'}
+                    className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-violet-500 disabled:opacity-50"
+                  >
+                    {drawerSaving === 'level' ? 'Kaydediliyor...' : 'Level Bilgilerini Kaydet'}
                   </button>
                 </div>
               </div>
@@ -1261,6 +1351,21 @@ export default function AdminUsers() {
                         checked={moderationForm.is_admin}
                         onChange={(e) => setModerationForm((prev) => ({ ...prev, is_admin: e.target.checked }))}
                         className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-bold text-slate-900">Onaylı Mağaza</div>
+                        <div className="mt-1 text-xs text-slate-500">Kullanıcının profil onayını verir veya kaldırır.</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(moderationForm.is_verified_store)}
+                        onChange={(e) => setModerationForm((prev) => ({ ...prev, is_verified_store: e.target.checked }))}
+                        className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                       />
                     </div>
                   </label>
