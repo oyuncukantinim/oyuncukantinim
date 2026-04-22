@@ -337,13 +337,13 @@ export default function ListingDetailPage() {
                 <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '16px 16px' }} />
               </div>
               <div className="relative -mt-10 px-5 pb-5">
-                <div className="flex items-end gap-4">
+                <div className="flex items-center gap-4">
                   <UserAvatar
                     value={listing.avatar}
                     className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border-4 border-white bg-white text-4xl shadow-xl dark:border-slate-900 dark:bg-slate-800"
                     iconSize={40}
                   />
-                  <div className="min-w-0 flex-1 pb-1">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         to={`/p/${listing.seller}`}
