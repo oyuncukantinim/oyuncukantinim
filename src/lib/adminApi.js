@@ -236,6 +236,12 @@ export const adminGetPopularGames = () =>
   adminRequest('admin_get_popular_games');
 export const adminSavePopularGames = (games) =>
   adminRequest('admin_save_popular_games', { method: 'POST', body: { games } });
+
+// Hero Slider
+export const adminGetHeroSlides = () =>
+  adminRequest('admin_get_hero_slides');
+export const adminSaveHeroSlides = (slides) =>
+  adminRequest('admin_save_hero_slides', { method: 'POST', body: { slides } });
 export const adminDeleteUploadedImage = (url) =>
   adminRequest('admin_delete_uploaded_image', { method: 'POST', body: { url } });
 

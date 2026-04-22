@@ -3,13 +3,13 @@ import { Link } from 'react-router-dom';
 import {
   ChevronRight,
   Flame,
-  Gamepad2,
   ShieldCheck,
   Sparkles,
   Trophy,
 } from 'lucide-react';
 import { getListings } from '../lib/api';
 import ListingCard from '../components/ListingCard';
+import HeroSlider from '../components/HeroSlider';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
 
@@ -163,43 +163,7 @@ export default function Home() {
 
   return (
     <div className="space-y-16">
-      <section className="relative left-1/2 -mt-8 flex w-screen -translate-x-1/2 flex-col items-center justify-center overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500 px-6 py-20 text-center">
-        <div className="absolute left-0 top-0 h-[400px] w-[400px] rounded-full bg-white/10 blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-cyan-400/20 blur-[80px] pointer-events-none" />
-        <div className="absolute right-10 top-10 opacity-10 pointer-events-none">
-          <Gamepad2 size={200} className="text-white" />
-        </div>
-
-        <div className="animate-float relative z-10 mb-6">
-          <div className="inline-block rounded-2xl border border-white/20 bg-white/20 p-4 backdrop-blur-sm">
-            <Gamepad2 className="text-white" size={48} />
-          </div>
-        </div>
-
-        <h1 className="relative z-10 mb-6 text-5xl font-black tracking-tight text-white md:text-7xl">
-          Oyun Dünyasının <br />
-          <span className="text-cyan-200">Yeni Kantini</span>
-        </h1>
-
-        <p className="relative z-10 mb-10 max-w-2xl text-lg text-purple-100 md:text-xl">
-          Güvenilir oyuncu pazarı, onaylı satıcılar ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.
-        </p>
-
-        <div className="relative z-10 flex flex-col gap-4 sm:flex-row">
-          <Link
-            to="/market"
-            className="rounded-xl bg-white px-8 py-4 text-lg font-bold text-purple-700 shadow-lg transition-all hover:scale-105 hover:bg-purple-50 active:scale-95"
-          >
-            Oyuncu Pazarı
-          </Link>
-          <Link
-            to="/categories"
-            className="rounded-xl border border-white/25 bg-white/15 px-8 py-4 text-lg font-bold text-white backdrop-blur-sm transition-all hover:scale-105 hover:bg-white/25 active:scale-95"
-          >
-            Kategorileri Keşfet
-          </Link>
-        </div>
-      </section>
+      <HeroSlider />
 
       {/* ============  POPÜLER KATEGORİLER  ============ */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (

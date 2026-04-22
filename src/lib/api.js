@@ -100,6 +100,10 @@ export function getSiteSettings() {
   return request('get_site_settings');
 }
 
+export function getHeroSlides() {
+  return request('get_hero_slides');
+}
+
 // --- PROFILE ---
 export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });

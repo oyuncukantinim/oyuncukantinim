@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Gamepad2,
+  Images,
   LayoutDashboard,
   LifeBuoy,
   LogOut,
@@ -56,6 +57,7 @@ const navGroups = [
       { path: '/admin/categories', label: 'Kategoriler', icon: Tag, accent: 'from-fuchsia-500 to-pink-500' },
       { path: '/admin/doping', label: 'Doping', icon: Zap, accent: 'from-yellow-400 to-orange-500' },
       { path: '/admin/popular-games', label: 'Popüler Kategoriler', icon: Gamepad2, accent: 'from-indigo-500 to-violet-500' },
+      { path: '/admin/hero-slides', label: 'Ana Sayfa Slider', icon: Images, accent: 'from-violet-500 via-fuchsia-500 to-cyan-500' },
     ],
   },
   {
