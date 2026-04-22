@@ -53,7 +53,7 @@ export function VerifiedAchievementCard({ isVerified = false, forceUnlocked = fa
   return (
     <div
       title="Bilgileri doğrulanmış satıcı."
-      className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
+      className={`achievement-card relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
           ? 'border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 shadow-emerald-100'
           : 'border-slate-200 bg-slate-50 grayscale'
@@ -98,7 +98,7 @@ export function AchievementCard({ badge, forceUnlocked = false }) {
   return (
     <div
       title={badge.description || badge.title || 'Satış başarım rozeti.'}
-      className={`relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
+      className={`achievement-card relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
           ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-amber-100'
           : 'border-slate-200 bg-slate-50 grayscale'
