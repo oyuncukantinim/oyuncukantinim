@@ -190,9 +190,9 @@ export default function ListingDetailPage() {
         <span className="truncate text-slate-700 dark:text-slate-300">{listing.title}</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[700px_minmax(0,1fr)]">
         {/* LEFT — Gallery + Content */}
-        <div className="lg:col-span-8 space-y-5 lg:max-w-[700px]">
+        <div className="space-y-5 min-w-0">
           {/* Title block */}
           <div className="ld-fade-up rounded-3xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
             <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -443,7 +443,7 @@ export default function ListingDetailPage() {
         </div>
 
         {/* RIGHT — Sticky sidebar */}
-        <div className="lg:col-span-4">
+        <div className="min-w-0">
           <div className="space-y-4 lg:sticky lg:top-4">
             {/* Seller card */}
             <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
