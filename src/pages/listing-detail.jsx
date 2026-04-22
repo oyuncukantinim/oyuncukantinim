@@ -221,7 +221,7 @@ export default function ListingDetailPage() {
             <div className="flex flex-col gap-3 p-3 sm:flex-row">
               {/* Vertical thumbnails (desktop) */}
               {images.length > 1 ? (
-                <div className="hidden max-h-[640px] w-20 shrink-0 flex-col gap-2 overflow-y-auto sm:flex">
+                <div className="hidden max-h-[460px] w-20 shrink-0 flex-col gap-2 overflow-y-auto sm:flex">
                   {images.map((img, idx) => (
                     <button
                       key={idx}
@@ -239,7 +239,7 @@ export default function ListingDetailPage() {
               ) : null}
 
               {/* Main image */}
-              <div className="relative aspect-[1536/1024] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
+              <div className="relative mx-auto aspect-[1536/1024] w-full max-w-[700px] overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
                 {images.length > 0 ? (
                   <>
                     <button
