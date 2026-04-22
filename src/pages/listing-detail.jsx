@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ChevronLeft, ChevronRight, Star, ShoppingCart,
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
-  User, X, Eye,
+  User, X, Eye, CalendarDays,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite } from '../lib/api';
 import { useCart } from '../context/CartContext';
@@ -129,6 +129,7 @@ export default function ListingDetailPage() {
   const sellerLastSeen = formatLastSeen(listing.seller_last_seen);
   const sellerMemberSince = formatMemberSince(listing.seller_created_at);
   const listingViewCount = Number(listing.view_count || 0);
+  const sellerBadges = (listing.seller_store_badges?.length ? listing.seller_store_badges : [listing.seller_highest_store_badge]).filter(Boolean).slice(0, 5);
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -267,10 +268,10 @@ export default function ListingDetailPage() {
 
           {/* Satıcı */}
           <div className="relative overflow-hidden bg-white border border-violet-100 rounded-3xl p-4 shadow-sm">
-            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-violet-600/10 via-cyan-500/10 to-emerald-500/10" />
             <div className="relative">
               <div className="flex items-start gap-3">
-                <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
+                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center text-2xl border border-white shadow-sm ring-4 ring-white/70 flex-shrink-0 overflow-hidden">
                   {typeof listing.avatar === 'string' && (listing.avatar.startsWith('http') || listing.avatar.startsWith('/')) ? (
                     <img src={listing.avatar} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -289,16 +290,43 @@ export default function ListingDetailPage() {
                       {sellerLevel}
                     </span>
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                    {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
-                    {(listing.seller_store_badges?.length ? listing.seller_store_badges : [listing.seller_highest_store_badge]).filter(Boolean).slice(0, 5).map((badge) => (
-                      <StoreBadgeIcon key={badge.id || badge.title} badge={badge} size="sm" />
-                    ))}
+                  <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] font-black text-slate-500">
+                    {Number(listing.seller_is_verified_store) === 1 ? (
+                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">Onaylı Mağaza</span>
+                    ) : null}
+                    <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">Satıcı Profili</span>
                   </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-bold text-slate-500">
-                    <span className="flex items-center gap-1"><Clock size={11} /> {sellerLastSeen}</span>
-                    <span>{sellerMemberSince}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-violet-100 bg-white/85 p-3 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="text-[11px] font-black uppercase tracking-wide text-slate-400">Satıcı Rozetleri</span>
+                  <span className="text-[10px] font-bold text-slate-400">{sellerBadges.length + (Number(listing.seller_is_verified_store) === 1 ? 1 : 0)} rozet</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon /> : null}
+                  {sellerBadges.map((badge) => (
+                    <StoreBadgeIcon key={badge.id || badge.title} badge={badge} size="lg" />
+                  ))}
+                  {Number(listing.seller_is_verified_store) !== 1 && sellerBadges.length === 0 ? (
+                    <span className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-bold text-slate-400">Henüz rozet yok</span>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-400">
+                    <Clock size={11} /> Son giriş
                   </div>
+                  <div className="mt-1 truncate text-xs font-black text-slate-700">{sellerLastSeen}</div>
+                </div>
+                <div className="rounded-2xl border border-slate-100 bg-slate-50/80 px-3 py-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wide text-slate-400">
+                    <CalendarDays size={11} /> Kayıt
+                  </div>
+                  <div className="mt-1 truncate text-xs font-black text-slate-700">{sellerMemberSince}</div>
                 </div>
               </div>
 

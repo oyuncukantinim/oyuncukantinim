@@ -31,7 +31,7 @@ export function VerifiedStoreIcon({ compact = false }) {
 
 export function StoreBadgeIcon({ badge, size = 'md' }) {
   if (!badge?.image_url) return null;
-  const sizeClass = size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
+  const sizeClass = size === 'lg' ? 'h-10 w-10' : size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
 
   return (
     <span
