@@ -150,7 +150,7 @@ export default function ListingDetailPage() {
   const sellerBadges = (listing.seller_store_badges?.length ? listing.seller_store_badges : [listing.seller_highest_store_badge]).filter(Boolean).slice(0, 5);
 
   return (
-    <div className="mx-auto max-w-[1200px]">
+    <div className="mx-auto max-w-[1144px]">
       <style>{`
         @keyframes ld-fade-up { 0% { opacity: 0; transform: translateY(14px); } 100% { opacity: 1; transform: translateY(0); } }
         @keyframes ld-float { 0%,100% { transform: translate(0,0); } 50% { transform: translate(18px,-14px); } }
