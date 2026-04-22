@@ -35,11 +35,26 @@ export function StoreBadgeIcon({ badge, size = 'md' }) {
 
   return (
     <span
-      className={`inline-flex ${sizeClass} items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm`}
-      title={badge.description || badge.title}
+      className={`group/badge relative inline-flex ${sizeClass} items-center justify-center overflow-visible rounded-full`}
       aria-label={badge.title || 'Satıcı rozeti'}
     >
-      <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
+      <span className={`inline-flex ${sizeClass} items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm transition-transform duration-200 group-hover/badge:scale-110`}>
+        <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
+      </span>
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-40 mb-2 -translate-x-1/2 translate-y-1 scale-75 opacity-0 transition-all duration-200 ease-out group-hover/badge:translate-y-0 group-hover/badge:scale-100 group-hover/badge:opacity-100">
+        <span className="relative flex flex-col items-center gap-1.5 rounded-2xl border border-amber-200 bg-white p-2.5 shadow-xl shadow-amber-100 dark:border-amber-900/40 dark:bg-slate-900 dark:shadow-black/40">
+          <span className="block h-20 w-20 overflow-hidden rounded-xl border border-amber-100 bg-white dark:border-amber-900/30 dark:bg-slate-800">
+            <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
+          </span>
+          {badge.title ? (
+            <span className="max-w-[160px] truncate text-[11px] font-black text-slate-800 dark:text-white">{badge.title}</span>
+          ) : null}
+          {badge.description ? (
+            <span className="max-w-[180px] text-center text-[10px] font-semibold leading-4 text-slate-500 dark:text-slate-400">{badge.description}</span>
+          ) : null}
+          <span className="absolute left-1/2 top-full h-2.5 w-2.5 -translate-x-1/2 -translate-y-1.5 rotate-45 border-b border-r border-amber-200 bg-white dark:border-amber-900/40 dark:bg-slate-900" />
+        </span>
+      </span>
     </span>
   );
 }
