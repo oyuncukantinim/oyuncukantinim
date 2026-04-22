@@ -95,23 +95,24 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   }
 
   const cardPad = dense ? 'p-2.5' : 'p-4';
-  const imgMb = dense ? 'mb-2.5' : 'mb-4';
+  const imgMb = dense ? 'mb-2' : 'mb-4';
   const badgeMb = dense ? 'mb-2' : 'mb-3';
   const titleCls = dense
-    ? 'mb-2 text-[12px] leading-snug'
+    ? 'mb-2.5 text-[13px] leading-snug'
     : 'mb-3 text-[15px] leading-snug';
-  const sellerBox = dense ? 'mb-2.5 gap-1.5 rounded-lg p-1.5' : 'mb-4 gap-2 rounded-xl p-2.5';
-  const avatarCls = dense ? 'h-5 w-5 text-[11px]' : 'h-7 w-7 text-base';
-  const sellerNameCls = dense ? 'text-[10px]' : 'text-[11px]';
+  const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2 rounded-xl p-2.5';
+  const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-7 w-7 text-base';
+  const sellerNameCls = dense ? 'text-[11px]' : 'text-[11px]';
   const priceCls = dense ? 'text-sm' : 'text-xl';
   const footerTopCls = dense ? 'pt-2' : 'pt-3';
   const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
   const imageFallbackSize = dense ? 26 : 40;
+  const imageAspectCls = dense ? 'aspect-[16/10]' : 'aspect-[4/3]';
 
   return (
     <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
       <Link to={listingUrl} className="block">
-        <div className={`relative ${imgMb} aspect-[4/3] w-full overflow-hidden rounded-xl bg-surface-100`}>
+        <div className={`relative ${imgMb} ${imageAspectCls} w-full overflow-hidden rounded-xl bg-surface-100`}>
           {coverImg ? (
             <img
               src={coverImg}
