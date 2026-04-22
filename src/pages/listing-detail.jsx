@@ -333,39 +333,32 @@ export default function ListingDetailPage() {
           <div className="space-y-4 lg:sticky lg:top-4">
             {/* Seller card */}
             <div className="ld-fade-up overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-              <div className="relative h-16 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
+              <div className="relative h-20 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500">
                 <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)', backgroundSize: '16px 16px' }} />
-                <div className="absolute left-4 top-3 text-[10px] font-black uppercase tracking-widest text-white/90">
-                  Satıcı
-                </div>
               </div>
-              <div className="relative -mt-8 px-4 pb-4">
-                <div className="flex items-start gap-3">
+              <div className="relative -mt-10 px-5 pb-5">
+                <div className="flex items-end gap-4">
                   <UserAvatar
                     value={listing.avatar}
-                    className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border-4 border-white bg-white text-2xl shadow-lg dark:border-slate-900 dark:bg-slate-800"
-                    iconSize={26}
+                    className="flex h-24 w-24 shrink-0 items-center justify-center rounded-3xl border-4 border-white bg-white text-4xl shadow-xl dark:border-slate-900 dark:bg-slate-800"
+                    iconSize={40}
                   />
-                  <div className="min-w-0 flex-1 pt-9">
-                    <div className="flex flex-wrap items-center gap-1.5">
+                  <div className="min-w-0 flex-1 pb-1">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         to={`/p/${listing.seller}`}
-                        className="truncate text-base font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300"
+                        className="truncate text-xl font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-2xl"
                       >
                         {listing.seller}
                       </Link>
                       {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[10px] font-black text-white shadow-sm">
+                      {sellerBadges.map((badge) => (
+                        <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
+                      ))}
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-xs font-black text-white shadow-sm">
                         LV {sellerLevel}
                       </span>
                     </div>
-                    {sellerBadges.length > 0 ? (
-                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                        {sellerBadges.map((badge) => (
-                          <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
-                        ))}
-                      </div>
-                    ) : null}
                   </div>
                 </div>
 
