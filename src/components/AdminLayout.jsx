@@ -277,7 +277,11 @@ export default function AdminLayout({ children }) {
   const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
 
   useEffect(() => {
-    try { localStorage.setItem('admin_sidebar_collapsed', collapsed ? '1' : '0'); } catch {}
+    try {
+      localStorage.setItem('admin_sidebar_collapsed', collapsed ? '1' : '0');
+    } catch {
+      // localStorage can be blocked in strict browser privacy modes.
+    }
   }, [collapsed]);
 
   const handleLogout = () => {
