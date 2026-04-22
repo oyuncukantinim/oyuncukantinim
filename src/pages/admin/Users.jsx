@@ -255,9 +255,17 @@ export default function AdminUsers() {
   const [saving, setSaving] = useState(false);
 
   const [drawerSaving, setDrawerSaving] = useState('');
-  const [generalForm, setGeneralForm] = useState({ username: '', email: '', avatar: '' });
+  const [generalForm, setGeneralForm] = useState({
+    username: '',
+    email: '',
+    avatar: '',
+    full_name: '',
+    country: '',
+    city: '',
+    district: '',
+    address: '',
+  });
   const [levelForm, setLevelForm] = useState({ level: '0', xp: '0' });
-  const [personalForm, setPersonalForm] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
   const [moderationForm, setModerationForm] = useState({ is_admin: false, is_banned: false, ban_reason: '', new_password: '', restrictions: {} });
   const [financeForm, setFinanceForm] = useState({ amount: '', action: 'balance_add' });
   const [financeSearch, setFinanceSearch] = useState('');
@@ -293,17 +301,15 @@ export default function AdminUsers() {
       username: detailUser.username || '',
       email: detailUser.email || '',
       avatar: detailUser.avatar || '',
-    });
-    setLevelForm({
-      level: String(detailUser.level ?? 0),
-      xp: String(detailUser.xp ?? 0),
-    });
-    setPersonalForm({
       full_name: detailUser.full_name || '',
       country: detailUser.country || '',
       city: detailUser.city || '',
       district: detailUser.district || '',
       address: detailUser.address || '',
+    });
+    setLevelForm({
+      level: String(detailUser.level ?? 0),
+      xp: String(detailUser.xp ?? 0),
     });
     setModerationForm({
       is_admin: Number(detailUser.is_admin) === 1,
@@ -386,6 +392,11 @@ export default function AdminUsers() {
         username,
         email,
         avatar: generalForm.avatar.trim(),
+        full_name: generalForm.full_name.trim(),
+        country: generalForm.country.trim(),
+        city: generalForm.city.trim(),
+        district: generalForm.district.trim(),
+        address: generalForm.address.trim(),
       });
       await refreshDetail(detailUser.id);
       await load();
@@ -410,27 +421,6 @@ export default function AdminUsers() {
       await refreshDetail(detailUser.id);
       await load();
       showToast('Seviye bilgileri güncellendi.');
-    } catch (e) {
-      showToast(e.message);
-    } finally {
-      setDrawerSaving('');
-    }
-  };
-
-  const handleSavePersonal = async () => {
-    setDrawerSaving('personal');
-    try {
-      await adminUpdateUser({
-        user_id: detailUser.id,
-        full_name: personalForm.full_name.trim(),
-        country: personalForm.country.trim(),
-        city: personalForm.city.trim(),
-        district: personalForm.district.trim(),
-        address: personalForm.address.trim(),
-      });
-      await refreshDetail(detailUser.id);
-      await load();
-      showToast('Kişisel bilgiler güncellendi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -887,7 +877,6 @@ export default function AdminUsers() {
                 {[
                   { id: 'general', label: 'Genel' },
                   { id: 'level', label: 'Level' },
-                  { id: 'personal', label: 'Kişisel' },
                   { id: 'listings', label: 'İlanlar' },
                   { id: 'bank_accounts', label: 'Bankalar' },
                   { id: 'finance', label: 'Finans' },
@@ -932,6 +921,42 @@ export default function AdminUsers() {
                       value={generalForm.avatar}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, avatar: e.target.value }))}
                       placeholder="Emoji veya görsel URL"
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Ad Soyad">
+                    <input
+                      value={generalForm.full_name}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, full_name: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Ülke">
+                    <input
+                      value={generalForm.country}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, country: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Şehir">
+                    <input
+                      value={generalForm.city}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, city: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="İlçe">
+                    <input
+                      value={generalForm.district}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, district: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Adres" span="sm:col-span-2">
+                    <textarea
+                      rows={4}
+                      value={generalForm.address}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, address: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
@@ -1059,59 +1084,6 @@ export default function AdminUsers() {
                     className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-violet-500 disabled:opacity-50"
                   >
                     {drawerSaving === 'level' ? 'Kaydediliyor...' : 'Level Bilgilerini Kaydet'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {detailTab === 'personal' && (
-              <div className="space-y-4">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <FormField label="Ad Soyad" span="sm:col-span-2">
-                    <input
-                      value={personalForm.full_name}
-                      onChange={(e) => setPersonalForm((prev) => ({ ...prev, full_name: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="Ülke">
-                    <input
-                      value={personalForm.country}
-                      onChange={(e) => setPersonalForm((prev) => ({ ...prev, country: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="Şehir">
-                    <input
-                      value={personalForm.city}
-                      onChange={(e) => setPersonalForm((prev) => ({ ...prev, city: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="İlçe" span="sm:col-span-2">
-                    <input
-                      value={personalForm.district}
-                      onChange={(e) => setPersonalForm((prev) => ({ ...prev, district: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                  <FormField label="Adres" span="sm:col-span-2">
-                    <textarea
-                      rows={4}
-                      value={personalForm.address}
-                      onChange={(e) => setPersonalForm((prev) => ({ ...prev, address: e.target.value }))}
-                      className={inputClass}
-                    />
-                  </FormField>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSavePersonal}
-                    disabled={drawerSaving === 'personal'}
-                    className="rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-all hover:bg-violet-500 disabled:opacity-50"
-                  >
-                    {drawerSaving === 'personal' ? 'Kaydediliyor...' : 'Kişisel Bilgileri Kaydet'}
                   </button>
                 </div>
               </div>
