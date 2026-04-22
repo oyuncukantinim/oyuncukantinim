@@ -100,9 +100,9 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const titleCls = dense
     ? 'mb-2.5 text-[13px] leading-snug'
     : 'mb-3 text-[15px] leading-snug';
-  const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2 rounded-xl p-2.5';
-  const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-7 w-7 text-base';
-  const sellerNameCls = dense ? 'text-[11px]' : 'text-[11px]';
+  const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2.5 rounded-xl p-2.5';
+  const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-8 w-8 text-lg';
+  const sellerNameCls = dense ? 'text-[11px]' : 'text-xs';
   const priceCls = dense ? 'text-sm' : 'text-xl';
   const footerTopCls = dense ? 'pt-2' : 'pt-3';
   const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
@@ -170,7 +170,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
           className={`${sellerNameCls} inline-flex min-w-0 items-center gap-1 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
         >
           <span className="truncate">{listing.seller || 'Satıcı'}</span>
-          {sellerVerified ? <BadgeCheck size={dense ? 11 : 13} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
+          {sellerVerified ? <BadgeCheck size={dense ? 11 : 14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
         </Link>
       </div>
 
