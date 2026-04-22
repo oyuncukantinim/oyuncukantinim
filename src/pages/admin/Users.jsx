@@ -30,6 +30,8 @@ import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
 import useSiteBrand from '../../hooks/useSiteBrand';
 import UserAvatar from '../../components/UserAvatar';
+import { AVATARS } from '../../data/catalog';
+import { isImageAvatar } from '../../lib/avatar';
 
 function Modal({ title, onClose, children }) {
   return (
@@ -228,7 +230,7 @@ const FINANCE_ACTIONS = [
 ];
 
 export default function AdminUsers() {
-  const { defaultListingImage } = useSiteBrand();
+  const { defaultAvatar, defaultListingImage } = useSiteBrand();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(1);
@@ -274,6 +276,7 @@ export default function AdminUsers() {
   const [financeForm, setFinanceForm] = useState({ amount: '', action: 'balance_add' });
   const [financeSearch, setFinanceSearch] = useState('');
   const [financeTypeFilter, setFinanceTypeFilter] = useState('all');
+  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -327,6 +330,7 @@ export default function AdminUsers() {
     setFinanceForm({ amount: '', action: 'balance_add' });
     setFinanceSearch('');
     setFinanceTypeFilter('all');
+    setAvatarPickerOpen(false);
   }, [detailUser]);
 
   const openDetail = async (user) => {
@@ -334,6 +338,7 @@ export default function AdminUsers() {
     setDrawerOpen(true);
     setDetailTab('general');
     setListingStatusFilter('all');
+    setAvatarPickerOpen(false);
     setUserTxns(null);
     setDetailUser(null);
     setDetailLoading(true);
@@ -353,6 +358,7 @@ export default function AdminUsers() {
     setUserTxns(null);
     setDetailTab('general');
     setListingStatusFilter('all');
+    setAvatarPickerOpen(false);
     setDetailLoading(false);
     setTxLoading(false);
   };
@@ -950,13 +956,25 @@ export default function AdminUsers() {
                       className={inputClass}
                     />
                   </FormField>
-                  <FormField label="Avatar / Emoji">
-                    <input
-                      value={generalForm.avatar}
-                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, avatar: e.target.value }))}
-                      placeholder="Emoji veya görsel URL"
-                      className={inputClass}
-                    />
+                  <FormField label="Profil Resmi">
+                    <div className="flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+                      <UserAvatar
+                        value={generalForm.avatar}
+                        fallback={defaultAvatar}
+                        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white text-3xl shadow-sm ring-1 ring-slate-100"
+                        iconSize={28}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-black text-slate-900">
+                          {isImageAvatar(generalForm.avatar) ? 'Dosya profil resmi' : 'Varsayılan avatar'}
+                        </div>
+                        <div className="mt-1 truncate text-xs font-semibold text-slate-400">
+                          {isImageAvatar(generalForm.avatar)
+                            ? 'Yüklenen görsel aktif görünüyor.'
+                            : `${generalForm.avatar || defaultAvatar} seçili avatar önizleniyor.`}
+                        </div>
+                      </div>
+                    </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <label className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 ${drawerSaving === 'upload-avatar' ? 'pointer-events-none opacity-50' : ''}`}>
                         <input
@@ -972,6 +990,13 @@ export default function AdminUsers() {
                       </label>
                       <button
                         type="button"
+                        onClick={() => setAvatarPickerOpen((prev) => !prev)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-2 text-xs font-black text-slate-600 hover:bg-slate-200"
+                      >
+                        Avatar Seç
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteUserMedia('avatar')}
                         disabled={drawerSaving === 'delete-avatar'}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 disabled:opacity-50"
@@ -979,6 +1004,33 @@ export default function AdminUsers() {
                         <Trash2 size={13} /> Profil Resmini Sil
                       </button>
                     </div>
+                    {avatarPickerOpen ? (
+                      <div className="mt-3 grid grid-cols-7 gap-2 rounded-2xl border border-slate-100 bg-white p-3">
+                        {AVATARS.map((avatar) => (
+                          <button
+                            key={avatar}
+                            type="button"
+                            onClick={() => {
+                              setGeneralForm((prev) => ({ ...prev, avatar }));
+                              setAvatarPickerOpen(false);
+                            }}
+                            className={`flex h-10 w-10 items-center justify-center rounded-xl text-xl transition-all ${
+                              generalForm.avatar === avatar
+                                ? 'bg-violet-600 text-white shadow-sm shadow-violet-200'
+                                : 'bg-slate-50 hover:bg-violet-50'
+                            }`}
+                            title="Avatar seç"
+                          >
+                            {avatar}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                    {isImageAvatar(detailUser.avatar) && !isImageAvatar(generalForm.avatar) ? (
+                      <p className="mt-2 text-[11px] font-semibold text-amber-600">
+                        Bu avatarı kaydedersen mevcut dosya profil resmi sunucudan silinir.
+                      </p>
+                    ) : null}
                   </FormField>
                   <FormField label="Profil Bannerı">
                     <input
