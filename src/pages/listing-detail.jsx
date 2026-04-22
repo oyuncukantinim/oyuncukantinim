@@ -644,7 +644,7 @@ export default function ListingDetailPage() {
               return (
                 <Link
                   key={item.id}
-                  to={`/listing/${listingSlug(item)}`}
+                  to={`/listing/${listingSlug(item.title, item.id)}`}
                   className="group flex min-w-[190px] max-w-[210px] flex-1 items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-2.5 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-white hover:shadow-md dark:border-slate-800 dark:bg-slate-950 dark:hover:border-violet-800 dark:hover:bg-slate-900"
                 >
                   <div className="h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-slate-200 dark:bg-slate-800">
