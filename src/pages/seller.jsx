@@ -169,8 +169,11 @@ export default function SellerPage() {
     { icon: Package, label: 'Toplam Satış', value: seller.total_sales ?? 0, color: 'text-neon-purple' },
     { icon: ThumbsUp, label: 'Başarı Oranı', value: `%${seller.success_rate ?? 100}`, color: 'text-neon-green' },
     { icon: Star, label: 'Ortalama Puan', value: Number(seller.avg_rating ?? 5).toFixed(1), color: 'text-yellow-500' },
-    { icon: Clock, label: 'Üyelik', value: seller.created_at ? new Date(seller.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : '-', color: 'text-neon-cyan' },
   ];
+
+  const registeredAt = seller.created_at
+    ? new Date(seller.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '-';
 
   const tabs = [
     { id: 'listings', label: `İlanlar (${seller.listing_count ?? 0})` },
@@ -194,6 +197,9 @@ export default function SellerPage() {
               </div>
             </>
           )}
+          <div className="absolute bottom-3 right-3 z-10 rounded-full border border-white/35 bg-white/75 px-3 py-1.5 text-[11px] font-black text-gray-700 shadow-lg backdrop-blur-md dark:border-white/10 dark:bg-slate-950/55 dark:text-gray-100">
+            Kayıt: {registeredAt}
+          </div>
         </div>
 
         <div className="px-6 sm:px-8 pb-6">
