@@ -462,7 +462,7 @@ export default function ListingDetailPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         to={`/p/${listing.seller}`}
-                        className="truncate text-xl font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-2xl"
+                        className="max-w-full truncate text-base font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-lg"
                       >
                         {listing.seller}
                       </Link>
@@ -470,7 +470,7 @@ export default function ListingDetailPage() {
                       {sellerBadges.map((badge) => (
                         <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
                       ))}
-                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-1 text-xs font-black text-white shadow-sm">
+                      <span className="inline-flex items-center rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2 py-0.5 text-[10px] font-black text-white shadow-sm">
                         LV {sellerLevel}
                       </span>
                     </div>
