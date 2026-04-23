@@ -23,11 +23,13 @@ import {
   adminUploadImage,
 } from '../../lib/adminApi';
 
-const RECOMMENDED_WIDTH = 1600;
-const RECOMMENDED_HEIGHT = 1000;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.6 (16:10)
+const RECOMMENDED_WIDTH = 1920;
+const RECOMMENDED_HEIGHT = 1080;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.78 (16:9)
+const RECOMMENDED_RATIO_LABEL = '16:9';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
-const RATIO_TOLERANCE = 0.12; // ±12% → both 16:9 (1.78) and 3:2 (1.5) comfortably pass
+const MIN_RECOMMENDED_WIDTH = 1280; // absolute floor — below this the background gets soft
+const RATIO_TOLERANCE = 0.18; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -285,14 +287,14 @@ export default function AdminHeroSlides() {
                   {RECOMMENDED_WIDTH} × {RECOMMENDED_HEIGHT} px
                 </span>
                 <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                  16:10
+                  {RECOMMENDED_RATIO_LABEL}
                 </span>
               </div>
               <p className="mt-1 text-[11px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                Görsel hem geniş arka plan hem de sağdaki portre panel için kırpılır.
-                Ana konuyu ortaya konumlandır, min. {Math.round(RECOMMENDED_WIDTH * 0.75)} px genişlik kullan.
-                İdeal dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB altı
-                (WebP/JPEG, otomatik optimize edilir).
+                Görsel tek bir geniş arka plan olarak kullanılır (sağdaki HUD panel artık görsel kullanmıyor).
+                Ana konuyu merkez-soldaki güvenli alana yerleştir; alt kısmın yazıların arkasına denk geldiğini unutma.
+                Min. {MIN_RECOMMENDED_WIDTH} px genişlik, ideal dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB
+                altı (WebP/JPEG, otomatik optimize edilir).
               </p>
             </div>
           </div>
@@ -387,7 +389,7 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Arka Plan Görseli
                       </label>
-                      <div className={`relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
                           <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
                         ) : (
@@ -398,8 +400,16 @@ export default function AdminHeroSlides() {
                             </span>
                           </div>
                         )}
-                        {/* Safe zone overlay helps the user visualize the portrait crop */}
-                        <div className="pointer-events-none absolute inset-y-2 left-1/2 aspect-[4/5] -translate-x-1/2 rounded-xl border border-dashed border-white/40" />
+                        {/* Text overlay zone — left half is where the slide headline/body sits */}
+                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[48%] rounded-lg border border-dashed border-white/60 bg-gradient-to-r from-black/25 to-transparent" />
+                        <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                          Yazı Alanı
+                        </div>
+                        {/* HUD panel placeholder — right side (image ignored here) */}
+                        <div className="pointer-events-none absolute inset-y-5 right-4 aspect-[4/5] rounded-lg border border-white/40 bg-white/10 backdrop-blur-[1px]" />
+                        <div className="pointer-events-none absolute bottom-5 right-5 rounded-md bg-black/50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                          HUD Panel
+                        </div>
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
                             <Loader2 className="animate-spin" size={22} />
@@ -560,7 +570,7 @@ function ImageSizeHint({ meta, hasImage }) {
     return (
       <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
         <Info size={11} className="mt-0.5 shrink-0" />
-        Kesikli çerçeve, görselin ana sayfada portre panelde kırpılacak güvenli alanını gösterir.
+        Sol yarı yazı alanı, sağ yarı HUD panelin arkasına denk gelir. Ana konuyu soldan merkeze konumlandır.
       </p>
     );
   }
@@ -575,7 +585,7 @@ function ImageSizeHint({ meta, hasImage }) {
 
   const ratio = meta.width / meta.height;
   const ratioOk = Math.abs(ratio - RECOMMENDED_RATIO) / RECOMMENDED_RATIO <= RATIO_TOLERANCE;
-  const widthOk = meta.width >= RECOMMENDED_WIDTH * 0.75;
+  const widthOk = meta.width >= MIN_RECOMMENDED_WIDTH;
   const sizeOk = meta.bytes == null || meta.bytes <= MAX_RECOMMENDED_BYTES;
   const allOk = ratioOk && widthOk && sizeOk;
 
@@ -597,8 +607,8 @@ function ImageSizeHint({ meta, hasImage }) {
       </div>
       {!allOk ? (
         <ul className="mt-1 space-y-0.5 normal-case tracking-normal">
-          {!ratioOk ? <li>· Oran 16:10'a yakın olmalı (önerilen {RECOMMENDED_WIDTH}:{RECOMMENDED_HEIGHT}).</li> : null}
-          {!widthOk ? <li>· En az {Math.round(RECOMMENDED_WIDTH * 0.75)} px genişlik önerilir.</li> : null}
+          {!ratioOk ? <li>· Oran {RECOMMENDED_RATIO_LABEL}'a yakın olmalı (önerilen {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT}).</li> : null}
+          {!widthOk ? <li>· En az {MIN_RECOMMENDED_WIDTH} px genişlik önerilir, aksi halde arka plan yumuşar.</li> : null}
           {!sizeOk ? <li>· Dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB altına düşerse daha hızlı yüklenir.</li> : null}
         </ul>
       ) : (

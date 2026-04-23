@@ -7,6 +7,7 @@ import {
   Pause,
   Play,
   Sparkles,
+  Trophy,
   Zap,
 } from 'lucide-react';
 import { getHeroSlides } from '../lib/api';
@@ -108,6 +109,11 @@ export default function HeroSlider() {
         @keyframes hs-pulse-ring { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(1.8); opacity: 0; } }
         @keyframes hs-blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
         @keyframes hs-progress { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes hs-orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes hs-ring-pulse { 0% { transform: scale(0.85); opacity: 0.55; } 100% { transform: scale(1.35); opacity: 0; } }
+        @keyframes hs-hover-a { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-6px) rotate(-0.5deg); } }
+        @keyframes hs-hover-b { 0%,100% { transform: translateY(0) rotate(2deg); } 50% { transform: translateY(-8px) rotate(3deg); } }
+        @keyframes hs-xp { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.25); } }
         .hero-slider { font-family: inherit; }
         .hero-stage { animation: hs-fade-in .55s ease-out both; }
         .hero-stage[data-dir="1"] .hs-stage-text { animation: hs-slide-in-right .6s cubic-bezier(.2,.7,.2,1) both; }
@@ -369,40 +375,141 @@ function GlitchTitle({ text }) {
 }
 
 function VisualPanel({ slide }) {
+  // Purely decorative HUD dashboard — does NOT use the slide image.
+  // The single uploaded image is reserved for the wide hero background.
+  const accent = slide.accent_color || 'from-violet-600 via-purple-600 to-cyan-500';
+
   return (
     <div className="relative mx-auto aspect-[4/5] w-full max-w-[360px]">
-      {/* Glow ring */}
-      <div className="absolute -inset-3 rounded-[32px] bg-gradient-to-br from-white/30 via-white/5 to-transparent blur-xl" />
+      {/* Outer glow */}
+      <div className={`absolute -inset-4 rounded-[36px] bg-gradient-to-br ${accent} opacity-40 blur-2xl`} />
 
-      <div className="relative h-full w-full overflow-hidden rounded-[28px] border border-white/15 bg-slate-900/50 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+      {/* Main HUD panel */}
+      <div className="relative h-full w-full overflow-hidden rounded-[28px] border border-white/15 bg-slate-950/60 shadow-[0_20px_80px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl">
         {/* Corner brackets */}
         <CornerBracket className="left-3 top-3" />
         <CornerBracket className="right-3 top-3 rotate-90" />
         <CornerBracket className="left-3 bottom-3 -rotate-90" />
         <CornerBracket className="right-3 bottom-3 rotate-180" />
 
-        {/* Inner image */}
-        {slide.image_url ? (
-          <img
-            src={slide.image_url}
-            alt={slide.title || ''}
-            className="absolute inset-0 h-full w-full object-cover opacity-90"
-          />
-        ) : (
-          <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent_color || 'from-violet-600 via-purple-600 to-cyan-500'}`}>
-            <div className="flex h-full w-full items-center justify-center">
-              <Gamepad2 size={120} className="text-white/25" strokeWidth={1.4} />
+        {/* Accent radial glow */}
+        <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accent} opacity-[0.22]`} />
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: 'radial-gradient(circle at 50% 40%, rgba(255,255,255,0.22) 0%, transparent 55%)',
+          }}
+        />
+
+        {/* Grid overlay inside panel */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-30"
+          style={{
+            backgroundImage:
+              'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
+          }}
+        />
+
+        {/* Top HUD tag */}
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1 backdrop-blur-md">
+          <Sparkles size={11} className="text-cyan-300" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Featured</span>
+        </div>
+
+        {/* Top-right LV chip */}
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-lg border border-white/15 bg-black/40 px-2 py-1 font-mono text-[10px] font-black tracking-wider text-white/90 backdrop-blur-md">
+          <span className="text-white/50">LV</span>
+          <span className="text-white">99</span>
+        </div>
+
+        {/* Center emblem — hexagonal controller badge with orbiting rings */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative flex h-40 w-40 items-center justify-center">
+            {/* Orbit rings */}
+            <span
+              className="absolute inset-0 rounded-full border border-white/20"
+              style={{ animation: 'hs-orbit 18s linear infinite' }}
+            />
+            <span
+              className="absolute inset-2 rounded-full border border-dashed border-white/15"
+              style={{ animation: 'hs-orbit 24s linear infinite reverse' }}
+            />
+            <span
+              className="absolute -inset-3 rounded-full border border-white/10"
+              style={{ animation: 'hs-orbit 32s linear infinite' }}
+            />
+            {/* Pulse rings */}
+            <span
+              className="absolute inset-4 rounded-full border-2 border-white/40"
+              style={{ animation: 'hs-ring-pulse 2.4s ease-out infinite' }}
+            />
+            <span
+              className="absolute inset-4 rounded-full border-2 border-white/30"
+              style={{ animation: 'hs-ring-pulse 2.4s ease-out 0.8s infinite' }}
+            />
+
+            {/* Hexagon core */}
+            <div className="relative">
+              <div
+                className={`flex h-24 w-24 items-center justify-center bg-gradient-to-br ${accent} text-white shadow-[0_12px_40px_-10px_rgba(0,0,0,0.6)]`}
+                style={{ clipPath: 'polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%)' }}
+              >
+                <Gamepad2 size={42} strokeWidth={2.2} />
+              </div>
+              {/* Satellite dot */}
+              <div className="absolute -right-2 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[9px] font-black text-slate-900 shadow-lg">
+                <Zap size={11} strokeWidth={3} />
+              </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Scanline in panel */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.12)_50%)] bg-[length:100%_4px] opacity-40" />
+        {/* Left floating stat card */}
+        <div
+          className="absolute left-3 top-1/2 -translate-y-1/2 rounded-xl border border-white/15 bg-slate-900/70 px-2.5 py-1.5 backdrop-blur-md"
+          style={{ animation: 'hs-hover-a 5s ease-in-out infinite' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Ping</span>
+          </div>
+          <div className="mt-0.5 font-mono text-sm font-black text-white">12<span className="text-[10px] text-white/50">ms</span></div>
+        </div>
 
-        {/* Bottom HUD tag */}
-        <div className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-xl border border-white/15 bg-black/40 px-3 py-2 backdrop-blur-md">
+        {/* Right floating badge tally */}
+        <div
+          className="absolute right-3 top-[42%] rotate-2 rounded-xl border border-white/15 bg-slate-900/70 px-2.5 py-1.5 backdrop-blur-md"
+          style={{ animation: 'hs-hover-b 6s ease-in-out infinite' }}
+        >
+          <div className="flex items-center gap-1.5">
+            <Trophy size={11} className="text-amber-400" />
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">Rank</span>
+          </div>
+          <div className="mt-0.5 text-sm font-black text-white">S+</div>
+        </div>
+
+        {/* XP / progress ribbon */}
+        <div className="absolute inset-x-3 bottom-16 rounded-xl border border-white/10 bg-black/40 p-2.5 backdrop-blur-md">
+          <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-[0.18em] text-white/70">
+            <span>XP Progress</span>
+            <span className="font-mono text-white">72%</span>
+          </div>
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div
+              className={`h-full bg-gradient-to-r ${accent}`}
+              style={{ width: '72%', animation: 'hs-xp 3.2s ease-in-out infinite' }}
+            />
+          </div>
+        </div>
+
+        {/* Bottom HUD bar */}
+        <div className="absolute inset-x-3 bottom-3 flex items-center justify-between rounded-xl border border-white/15 bg-black/50 px-3 py-2 backdrop-blur-md">
           <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" style={{ animation: 'hs-blink 1.2s ease-in-out infinite' }} />
+            <span
+              className="flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+              style={{ animation: 'hs-blink 1.2s ease-in-out infinite' }}
+            />
             <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white">Live</span>
           </div>
           <span className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-white/70">
@@ -410,18 +517,31 @@ function VisualPanel({ slide }) {
           </span>
         </div>
 
-        {/* Top HUD tag */}
-        <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-lg border border-white/15 bg-black/40 px-2.5 py-1 backdrop-blur-md">
-          <Sparkles size={11} className="text-cyan-300" />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Featured</span>
-        </div>
+        {/* Scanline */}
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_50%,rgba(0,0,0,0.12)_50%)] bg-[length:100%_4px] opacity-30" />
       </div>
 
-      {/* Floating stat pill */}
+      {/* External floating stat pill — driven by admin stat_value/stat_label */}
       {slide.stat_value && slide.stat_label ? (
-        <div className="absolute -right-3 top-10 rotate-3 rounded-2xl border border-white/20 bg-slate-900/80 px-3 py-2 shadow-xl backdrop-blur-md">
-          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/60">{slide.stat_label}</div>
+        <div
+          className="absolute -right-3 top-6 rotate-3 rounded-2xl border border-white/20 bg-slate-900/85 px-3 py-2 shadow-xl backdrop-blur-md"
+          style={{ animation: 'hs-hover-a 5.5s ease-in-out infinite' }}
+        >
+          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/60">
+            {slide.stat_label}
+          </div>
           <div className="text-lg font-black text-white">{slide.stat_value}</div>
+        </div>
+      ) : null}
+
+      {/* Badge chip (admin-driven) */}
+      {slide.badge_text ? (
+        <div
+          className="absolute -left-2 bottom-10 -rotate-2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-900 shadow-[0_8px_24px_-6px_rgba(251,191,36,0.55)]"
+          style={{ animation: 'hs-hover-b 6.5s ease-in-out infinite' }}
+        >
+          <Zap size={11} strokeWidth={3} />
+          {slide.badge_text}
         </div>
       ) : null}
     </div>
