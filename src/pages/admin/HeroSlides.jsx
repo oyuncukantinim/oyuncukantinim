@@ -25,13 +25,22 @@ import {
   adminUploadImage,
 } from '../../lib/adminApi';
 
-const RECOMMENDED_WIDTH = 1920;
-const RECOMMENDED_HEIGHT = 1080;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.78 (16:9)
-const RECOMMENDED_RATIO_LABEL = '16:9';
-const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
-const MIN_RECOMMENDED_WIDTH = 1280; // absolute floor — below this the background gets soft
-const RATIO_TOLERANCE = 0.18; // accepts 16:10 / 3:2 / 21:9 gracefully
+// Slide hero art sits on the right ~58% of a max-w-5xl (1024px) card that is
+// 360–440px tall. Recommend a portrait-friendly 3:2 source so the subject
+// survives the left-fade mask and looks crisp on retina.
+const RECOMMENDED_WIDTH = 1200;
+const RECOMMENDED_HEIGHT = 800;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.5 (3:2)
+const RECOMMENDED_RATIO_LABEL = '3:2';
+const MAX_RECOMMENDED_BYTES = 400 * 1024; // 400 KB
+const MIN_RECOMMENDED_WIDTH = 900; // absolute floor for the card art
+const RATIO_TOLERANCE = 0.3; // accepts 16:9 / 4:3 / 5:4 gracefully
+
+// Background pool is rendered full-bleed behind the card with heavy dimming,
+// so wide 16:9 landscape hero screenshots work best.
+const BG_RECOMMENDED_WIDTH = 1920;
+const BG_RECOMMENDED_HEIGHT = 1080;
+const BG_RECOMMENDED_RATIO_LABEL = '16:9';
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -354,29 +363,6 @@ export default function AdminHeroSlides() {
             </div>
           </div>
 
-          {/* Recommended size info */}
-          <div className="relative mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-violet-200/70 bg-white/70 px-4 py-3 text-xs font-semibold text-slate-600 backdrop-blur-sm dark:border-violet-800/40 dark:bg-slate-900/60 dark:text-slate-300">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
-              <Ruler size={15} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200">
-                Önerilen Görsel Boyutu
-                <span className="rounded-md bg-violet-600 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white">
-                  {RECOMMENDED_WIDTH} × {RECOMMENDED_HEIGHT} px
-                </span>
-                <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                  {RECOMMENDED_RATIO_LABEL}
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                Görsel tam genişlikte arka plan olarak kullanılır. Ana konuyu merkez-sağa konumlandır;
-                sol tarafın metin okunabilirliği için karartılacağını unutma.
-                Min. {MIN_RECOMMENDED_WIDTH} px genişlik, ideal dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB
-                altı (WebP/JPEG, otomatik optimize edilir).
-              </p>
-            </div>
-          </div>
         </div>
 
         {/* ============== Background pool manager ============== */}
@@ -387,9 +373,18 @@ export default function AdminHeroSlides() {
                 <ImageIcon size={16} />
               </div>
               <div>
-                <div className="text-sm font-black text-slate-800 dark:text-white">Arka Plan Havuzu</div>
+                <div className="flex flex-wrap items-center gap-1.5 text-sm font-black text-slate-800 dark:text-white">
+                  Arka Plan Havuzu
+                  <span className="rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white dark:bg-slate-700">
+                    {BG_RECOMMENDED_WIDTH} × {BG_RECOMMENDED_HEIGHT}
+                  </span>
+                  <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    {BG_RECOMMENDED_RATIO_LABEL}
+                  </span>
+                </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                  Sayfa her yenilendiğinde bu havuzdan rastgele bir görsel arkada gösterilir. Slayt değişirken değişmez.
+                  Sayfa her yenilendiğinde bu havuzdan rastgele bir görsel arkada gösterilir (slayt değişirken değişmez).
+                  Ağır karartma uygulandığı için geniş manzaralı oyun görselleri çalışır.
                 </div>
               </div>
             </div>
@@ -433,7 +428,7 @@ export default function AdminHeroSlides() {
               <ImageIcon size={24} className="text-slate-300 dark:text-slate-600" />
               <div className="font-semibold">Henüz arka plan yok.</div>
               <div className="text-[11px]">
-                Önerilen: 1920×1080 px veya daha geniş · birden fazla ekleyebilirsin.
+                Önerilen: {BG_RECOMMENDED_WIDTH}×{BG_RECOMMENDED_HEIGHT} px · {BG_RECOMMENDED_RATIO_LABEL} · birden fazla ekleyebilirsin (rastgele seçilir).
               </div>
             </div>
           ) : (
@@ -554,9 +549,9 @@ export default function AdminHeroSlides() {
                     {/* Image uploader */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Arka Plan Görseli
+                        Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL})</span>
                       </label>
-                      <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[3/2] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
                           <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
                         ) : (
@@ -568,14 +563,14 @@ export default function AdminHeroSlides() {
                           </div>
                         )}
                         {/* Dark legibility gradient preview (left side → dark, right → clear) */}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
-                        {/* Text safe zone — headline + CTAs sit here */}
-                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[55%] rounded-lg border border-dashed border-white/60" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
+                        {/* Text safe zone — headline + CTAs sit on the left third */}
+                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[58%] rounded-lg border border-dashed border-white/60" />
                         <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
                           Yazı Alanı
                         </div>
                         <div className="pointer-events-none absolute bottom-4 right-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                          Ana Görsel
+                          Ana Konu (sağda fade)
                         </div>
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
@@ -735,7 +730,7 @@ export default function AdminHeroSlides() {
 
         <p className="px-1 text-[11px] text-slate-400 dark:text-slate-500">
           Slide'ları yukarı/aşağı okları ile sırala. Gizli slide'lar ana sayfada görünmez.
-          En iyi sonuç için 1920 × 1080 px, 16:9 oranında ve 500 KB altı görsel kullan.
+          Kart görseli için {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL}), arka plan havuzu için {BG_RECOMMENDED_WIDTH}×{BG_RECOMMENDED_HEIGHT} ({BG_RECOMMENDED_RATIO_LABEL}) önerilir.
         </p>
       </div>
     </AdminLayout>
@@ -747,7 +742,8 @@ function ImageSizeHint({ meta, hasImage }) {
     return (
       <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
         <Info size={11} className="mt-0.5 shrink-0" />
-        Sol taraf okunabilirlik için karartılır; ana konuyu sağ-merkeze yerleştir.
+        Görsel kartın sağ ~%58'inde, sola doğru kaybolan fade mask ile görünür.
+        Ana karakteri/ürünü sağ-merkeze konumlandır. Önerilen: {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} px ({RECOMMENDED_RATIO_LABEL}).
       </p>
     );
   }
