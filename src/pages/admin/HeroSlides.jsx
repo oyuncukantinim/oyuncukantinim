@@ -29,19 +29,19 @@ import {
 // ~420px tall. At 2x retina the image area spans ~1630×840 CSS pixels, so
 // a 16:9 source at ≥1600px width gives a crisp result with the left-fade
 // mask still hiding any background cruft.
-const RECOMMENDED_WIDTH = 1920;
-const RECOMMENDED_HEIGHT = 640;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 3.0
-const RECOMMENDED_RATIO_LABEL = '3:1';
+const RECOMMENDED_WIDTH = 1350;
+const RECOMMENDED_HEIGHT = 440;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 3.07
+const RECOMMENDED_RATIO_LABEL = '1350:440';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
-const MIN_RECOMMENDED_WIDTH = 1600; // below this the hero canvas softens on desktop
+const MIN_RECOMMENDED_WIDTH = 1200; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 // Background pool is rendered full-bleed behind the card with heavy dimming,
 // so wide 16:9 landscape hero screenshots work best.
-const BG_RECOMMENDED_WIDTH = 2400;
-const BG_RECOMMENDED_HEIGHT = 720;
-const BG_RECOMMENDED_RATIO_LABEL = '10:3';
+const BG_RECOMMENDED_WIDTH = 1910;
+const BG_RECOMMENDED_HEIGHT = 460;
+const BG_RECOMMENDED_RATIO_LABEL = '1910:460';
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -438,7 +438,7 @@ export default function AdminHeroSlides() {
                 <div
                   key={bg._key}
                   className="group/bg relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
-                  style={{ aspectRatio: '10 / 3' }}
+                  style={{ aspectRatio: `${BG_RECOMMENDED_WIDTH} / ${BG_RECOMMENDED_HEIGHT}` }}
                 >
                   <img src={bg.image_url} alt="" className="h-full w-full object-contain bg-slate-950/80 p-1" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover/bg:opacity-100" />
@@ -552,9 +552,12 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL})</span>
                       </label>
-                      <div className={`relative flex aspect-[3/1] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div
+                        className={`relative flex items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}
+                        style={{ aspectRatio: `${RECOMMENDED_WIDTH} / ${RECOMMENDED_HEIGHT}` }}
+                      >
                         {slide.image_url ? (
-                          <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
+                          <img src={slide.image_url} alt="" className="h-full w-full object-contain" />
                         ) : (
                           <div className="flex flex-col items-center gap-1 text-white/90">
                             <ImageIcon size={26} />

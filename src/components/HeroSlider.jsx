@@ -59,6 +59,7 @@ const DEFAULT_SLIDES = [
 ];
 
 const AUTO_INTERVAL = 9500;
+const HERO_BG_RATIO = 1910 / 460;
 
 export default function HeroSlider() {
   const [slides, setSlides] = useState([]);
@@ -186,15 +187,17 @@ export default function HeroSlider() {
                 backgroundPosition: 'center',
               }}
             />
-            <div
-              className="hs-bg absolute inset-0 hidden sm:block"
-              style={{
-                backgroundImage: `url("${backgroundUrl}")`,
-                backgroundSize: '100% auto',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center top',
-              }}
-            />
+            <div className="absolute inset-0 hidden sm:flex items-center justify-center overflow-hidden">
+              <img
+                src={backgroundUrl}
+                alt=""
+                className="hs-bg h-full w-full object-contain"
+                style={{
+                  aspectRatio: `${HERO_BG_RATIO}`,
+                }}
+                loading="eager"
+              />
+            </div>
           </>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
@@ -237,13 +240,14 @@ export default function HeroSlider() {
               <div
                 key={`art-mobile-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-0 md:hidden"
-                style={{
-                  backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  opacity: 0.52,
-                }}
-              />
+              >
+                <img
+                  src={current.image_url}
+                  alt=""
+                  className="h-full w-full object-contain opacity-60"
+                  loading="eager"
+                />
+              </div>
             ) : null}
 
             {/* Slide hero art (right side) */}
@@ -252,27 +256,33 @@ export default function HeroSlider() {
                 key={`art-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] md:block"
                 style={{
-                  backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center right',
                   maskImage:
                     'linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
                   WebkitMaskImage:
                     'linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
                 }}
-              />
+              >
+                <img
+                  src={current.image_url}
+                  alt=""
+                  className="h-full w-full object-contain object-right"
+                  loading="eager"
+                />
+              </div>
             ) : null}
 
             {current.image_url && !hasTitle ? (
               <div
                 key={`art-full-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-0"
-                style={{
-                  backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
+              >
+                <img
+                  src={current.image_url}
+                  alt=""
+                  className="h-full w-full object-contain"
+                  loading="eager"
+                />
+              </div>
             ) : null}
 
             {/* Left→right darkening for legibility */}
