@@ -219,7 +219,7 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex min-h-[340px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:min-h-[380px] md:min-h-[420px]`}
+            className={`relative flex h-[340px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:h-[380px] md:h-[420px]`}
           >
             {/* Dark plate so the text stays readable over bright gradients */}
             <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
@@ -257,7 +257,7 @@ export default function HeroSlider() {
             {/* Text block */}
             <div
               key={`text-${current.id || index}`}
-              className="hs-text relative z-10 flex w-full max-w-[640px] flex-col justify-center gap-4 px-8 py-10 sm:px-12 sm:py-14 md:px-14 md:py-16"
+              className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-4 overflow-hidden px-8 py-10 sm:px-12 sm:py-14 md:px-14 md:py-16"
             >
               {current.eyebrow ? (
                 <div>
@@ -272,12 +272,12 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className="text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className="line-clamp-2 text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl lg:text-6xl">
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="max-w-lg text-sm font-semibold leading-relaxed text-white/85 sm:text-base md:text-lg">
+                <p className="line-clamp-3 max-w-lg text-sm font-semibold leading-relaxed text-white/85 sm:text-base md:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
