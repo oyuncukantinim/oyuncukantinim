@@ -177,14 +177,25 @@ export default function HeroSlider() {
         onMouseLeave={() => setPaused(false)}
       >
         {backgroundUrl ? (
-          <div
-            className="hs-bg absolute inset-0"
-            style={{
-              backgroundImage: `url("${backgroundUrl}")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
+          <>
+            <div
+              className="hs-bg absolute inset-0 sm:hidden"
+              style={{
+                backgroundImage: `url("${backgroundUrl}")`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            <div
+              className="hs-bg absolute inset-0 hidden sm:block"
+              style={{
+                backgroundImage: `url("${backgroundUrl}")`,
+                backgroundSize: '100% auto',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'center top',
+              }}
+            />
+          </>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         )}
