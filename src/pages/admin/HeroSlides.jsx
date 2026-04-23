@@ -5,8 +5,10 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
+  Info,
   Loader2,
   Plus,
+  Ruler,
   Save,
   Sparkles,
   Trash2,
@@ -20,6 +22,12 @@ import {
   adminSaveHeroSlides,
   adminUploadImage,
 } from '../../lib/adminApi';
+
+const RECOMMENDED_WIDTH = 1600;
+const RECOMMENDED_HEIGHT = 1000;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.6 (16:10)
+const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
+const RATIO_TOLERANCE = 0.12; // ±12% → both 16:9 (1.78) and 3:2 (1.5) comfortably pass
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -57,6 +65,7 @@ export default function AdminHeroSlides() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [busyKey, setBusyKey] = useState(null);
+  const [imageMeta, setImageMeta] = useState({}); // key -> { width, height, bytes }
   const toastTimer = useRef(null);
 
   const showToast = (msg) => {
@@ -69,13 +78,24 @@ export default function AdminHeroSlides() {
     adminGetHeroSlides()
       .then((response) => {
         const data = Array.isArray(response.data) ? response.data : [];
-        setSlides(
-          data.map((slide, i) => ({
-            _key: `s-${slide.id || i}-${Math.random()}`,
-            ...slide,
-            is_active: Number(slide.is_active ?? 1) ? 1 : 0,
-          })),
-        );
+        const mapped = data.map((slide, i) => ({
+          _key: `s-${slide.id || i}-${Math.random()}`,
+          ...slide,
+          is_active: Number(slide.is_active ?? 1) ? 1 : 0,
+        }));
+        setSlides(mapped);
+        // Probe remote image dimensions once so we can show size hints on load.
+        mapped.forEach((s) => {
+          if (!s.image_url) return;
+          const img = new Image();
+          img.onload = () => {
+            setImageMeta((prev) => ({
+              ...prev,
+              [s._key]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
+            }));
+          };
+          img.src = s.image_url;
+        });
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -92,10 +112,19 @@ export default function AdminHeroSlides() {
   const removeSlide = async (slide) => {
     if (slide.image_url) {
       setBusyKey(slide._key);
-      try { await adminDeleteUploadedImage(slide.image_url); } catch { /* ignore */ }
+      try {
+        await adminDeleteUploadedImage(slide.image_url);
+      } catch {
+        showToast('Slide kaldırıldı (dosya silinemedi).');
+      }
       setBusyKey(null);
     }
     setSlides((prev) => prev.filter((s) => s._key !== slide._key));
+    setImageMeta((prev) => {
+      const next = { ...prev };
+      delete next[slide._key];
+      return next;
+    });
   };
 
   const move = (index, delta) => {
@@ -108,13 +137,42 @@ export default function AdminHeroSlides() {
     });
   };
 
+  const readLocalDimensions = (file) =>
+    new Promise((resolve) => {
+      try {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.naturalWidth, height: img.naturalHeight });
+          URL.revokeObjectURL(url);
+        };
+        img.onerror = () => {
+          resolve(null);
+          URL.revokeObjectURL(url);
+        };
+        img.src = url;
+      } catch {
+        resolve(null);
+      }
+    });
+
   const handleImageUpload = async (slide, file) => {
     if (!file) return;
     setBusyKey(slide._key);
     try {
+      // Capture local dimensions + size before upload for instant feedback.
+      const dims = await readLocalDimensions(file);
       const prevUrl = slide.image_url || '';
       const url = await adminUploadImage(file, 'branding', { preserveOriginal: true });
       updateSlide(slide._key, { image_url: url });
+      setImageMeta((prev) => ({
+        ...prev,
+        [slide._key]: {
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+          bytes: file.size,
+        },
+      }));
       if (prevUrl && prevUrl !== url) {
         try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
       }
@@ -129,8 +187,18 @@ export default function AdminHeroSlides() {
   const clearImage = async (slide) => {
     if (!slide.image_url) return;
     setBusyKey(slide._key);
-    try { await adminDeleteUploadedImage(slide.image_url); } catch { /* ignore */ }
+    try {
+      await adminDeleteUploadedImage(slide.image_url);
+      showToast('Görsel dosyadan silindi.');
+    } catch {
+      showToast('Görsel kaldırıldı (dosya silinemedi).');
+    }
     updateSlide(slide._key, { image_url: '' });
+    setImageMeta((prev) => {
+      const next = { ...prev };
+      delete next[slide._key];
+      return next;
+    });
     setBusyKey(null);
   };
 
@@ -202,6 +270,30 @@ export default function AdminHeroSlides() {
                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                 {saving ? 'Kaydediliyor…' : 'Kaydet'}
               </button>
+            </div>
+          </div>
+
+          {/* Recommended size info */}
+          <div className="relative mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-violet-200/70 bg-white/70 px-4 py-3 text-xs font-semibold text-slate-600 backdrop-blur-sm dark:border-violet-800/40 dark:bg-slate-900/60 dark:text-slate-300">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white">
+              <Ruler size={15} />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-200">
+                Önerilen Görsel Boyutu
+                <span className="rounded-md bg-violet-600 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white">
+                  {RECOMMENDED_WIDTH} × {RECOMMENDED_HEIGHT} px
+                </span>
+                <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-slate-700 dark:bg-slate-700 dark:text-slate-200">
+                  16:10
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
+                Görsel hem geniş arka plan hem de sağdaki portre panel için kırpılır.
+                Ana konuyu ortaya konumlandır, min. {Math.round(RECOMMENDED_WIDTH * 0.75)} px genişlik kullan.
+                İdeal dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB altı
+                (WebP/JPEG, otomatik optimize edilir).
+              </p>
             </div>
           </div>
         </div>
@@ -295,12 +387,19 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Arka Plan Görseli
                       </label>
-                      <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
                           <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <ImageIcon size={28} className="text-white/80" />
+                          <div className="flex flex-col items-center gap-1 text-white/90">
+                            <ImageIcon size={26} />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-white/80">
+                              {RECOMMENDED_WIDTH} × {RECOMMENDED_HEIGHT}
+                            </span>
+                          </div>
                         )}
+                        {/* Safe zone overlay helps the user visualize the portrait crop */}
+                        <div className="pointer-events-none absolute inset-y-2 left-1/2 aspect-[4/5] -translate-x-1/2 rounded-xl border border-dashed border-white/40" />
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
                             <Loader2 className="animate-spin" size={22} />
@@ -336,6 +435,7 @@ export default function AdminHeroSlides() {
                           </button>
                         ) : null}
                       </div>
+                      <ImageSizeHint meta={imageMeta[slide._key]} hasImage={!!slide.image_url} />
                     </div>
 
                     {/* Text fields */}
@@ -452,6 +552,59 @@ export default function AdminHeroSlides() {
         </p>
       </div>
     </AdminLayout>
+  );
+}
+
+function ImageSizeHint({ meta, hasImage }) {
+  if (!hasImage) {
+    return (
+      <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
+        <Info size={11} className="mt-0.5 shrink-0" />
+        Kesikli çerçeve, görselin ana sayfada portre panelde kırpılacak güvenli alanını gösterir.
+      </p>
+    );
+  }
+
+  if (!meta || !meta.width) {
+    return (
+      <p className="mt-2 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+        Görsel analiz ediliyor…
+      </p>
+    );
+  }
+
+  const ratio = meta.width / meta.height;
+  const ratioOk = Math.abs(ratio - RECOMMENDED_RATIO) / RECOMMENDED_RATIO <= RATIO_TOLERANCE;
+  const widthOk = meta.width >= RECOMMENDED_WIDTH * 0.75;
+  const sizeOk = meta.bytes == null || meta.bytes <= MAX_RECOMMENDED_BYTES;
+  const allOk = ratioOk && widthOk && sizeOk;
+
+  const ratioLabel = ratio >= 1 ? `${ratio.toFixed(2)}:1` : `1:${(1 / ratio).toFixed(2)}`;
+
+  return (
+    <div className={`mt-2 rounded-xl border px-2.5 py-2 text-[10px] font-semibold leading-snug ${
+      allOk
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-300'
+        : 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200'
+    }`}>
+      <div className="flex flex-wrap items-center gap-1.5 font-black uppercase tracking-wider">
+        <Ruler size={11} />
+        <span>{meta.width} × {meta.height}</span>
+        <span className="opacity-70">· {ratioLabel}</span>
+        {meta.bytes != null ? (
+          <span className="opacity-70">· {(meta.bytes / 1024).toFixed(0)} KB</span>
+        ) : null}
+      </div>
+      {!allOk ? (
+        <ul className="mt-1 space-y-0.5 normal-case tracking-normal">
+          {!ratioOk ? <li>· Oran 16:10'a yakın olmalı (önerilen {RECOMMENDED_WIDTH}:{RECOMMENDED_HEIGHT}).</li> : null}
+          {!widthOk ? <li>· En az {Math.round(RECOMMENDED_WIDTH * 0.75)} px genişlik önerilir.</li> : null}
+          {!sizeOk ? <li>· Dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB altına düşerse daha hızlı yüklenir.</li> : null}
+        </ul>
+      ) : (
+        <div className="mt-0.5 normal-case tracking-normal opacity-80">Önerilen boyuta uygun.</div>
+      )}
+    </div>
   );
 }
 
