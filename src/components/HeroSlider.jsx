@@ -328,11 +328,11 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[56px] w-[calc(100%-1rem)] sm:-mt-[68px] sm:w-[calc(100%-1.25rem)] lg:-mt-[68px] lg:w-[calc(100%-1.5rem)]"
+            className="relative z-20 mx-auto -mt-[56px] w-full sm:-mt-[68px] lg:-mt-[68px]"
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto p-0.5 sm:gap-1">
+            <div className="flex items-stretch justify-between overflow-x-auto">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -345,7 +345,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center rounded-[13px] px-2 py-2 transition-all duration-300 sm:min-w-[72px] sm:py-2.5 ${
+                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-2 transition-all duration-300 sm:min-w-[72px] sm:py-2.5 ${
                       active
                         ? 'shadow-lg'
                         : 'bg-white/68 text-slate-700 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:hover:bg-white/[0.06]'
