@@ -7,6 +7,7 @@ import {
   Image as ImageIcon,
   Loader2,
   Plus,
+  Ruler,
   Save,
   Sparkles,
   Trash2,
