@@ -230,6 +230,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             <Link to="/magaza-basvuru" className="text-slate-300 transition-colors hover:text-white">
               Onaylı Mağaza Ol
             </Link>
+            <ThemeToggle className="rounded-xl border-slate-700 bg-white/5 p-1.5 text-slate-300 hover:border-slate-500 hover:bg-white/10 hover:text-white" />
             {!user ? (
               <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
                 Giriş Yap / Kayıt Ol
@@ -392,8 +393,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
           </div>
 
           <div className="ml-auto hidden items-center gap-2 md:flex">
-            <ThemeToggle />
-
             <Link
               to="/create"
               className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-3 text-sm font-bold text-white shadow-[0_12px_25px_rgba(124,58,237,0.24)] transition-transform hover:-translate-y-0.5"
