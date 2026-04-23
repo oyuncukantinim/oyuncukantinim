@@ -6,7 +6,7 @@ const THEME_META = {
   dark: { label: 'Koyu tema', icon: Moon },
 };
 
-export default function ThemeToggle({ className = '', showLabel = false }) {
+export default function ThemeToggle({ className = '', showLabel = false, iconSize = 19 }) {
   const { isDark, setMode } = useTheme();
   const nextMode = isDark ? 'light' : 'dark';
   const meta = isDark ? THEME_META.dark : THEME_META.light;
@@ -21,7 +21,7 @@ export default function ThemeToggle({ className = '', showLabel = false }) {
       aria-label={title}
       className={`theme-toggle inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600 ${className}`}
     >
-      <Icon size={19} />
+      <Icon size={iconSize} />
       {showLabel ? (
         <span className="text-sm font-bold">
           {isDark ? 'Koyu Tema' : 'Açık Tema'}

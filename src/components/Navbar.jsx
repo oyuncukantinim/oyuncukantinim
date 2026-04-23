@@ -230,7 +230,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             <Link to="/magaza-basvuru" className="text-slate-300 transition-colors hover:text-white">
               Onaylı Mağaza Ol
             </Link>
-            <ThemeToggle className="rounded-xl border-slate-700 bg-white/5 p-1.5 text-slate-300 hover:border-slate-500 hover:bg-white/10 hover:text-white" />
+            <ThemeToggle iconSize={14} className="rounded-md border-slate-700/70 bg-transparent p-1 text-slate-300 hover:border-slate-500 hover:bg-white/10 hover:text-white" />
             {!user ? (
               <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
                 Giriş Yap / Kayıt Ol
