@@ -710,7 +710,7 @@ export default function AdminHeroSlides() {
                         </Field>
                       </div>
 
-                      <Field label="Renk Teması" hint="Sol accent çizgisi, CTA butonu ve aktif sekme parlamasında kullanılır">
+                      <Field label="Renk Teması" hint="Sol accent çizgisi, CTA butonu, aktif sekme zemini ve sekme parlamasında kullanılır">
                         <select
                           value={slide.accent_color || ACCENT_PRESETS[0].value}
                           onChange={(e) => updateSlide(slide._key, { accent_color: e.target.value })}

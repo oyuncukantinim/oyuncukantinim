@@ -33,6 +33,16 @@ function extractAccentHex(accentClass) {
   return ACCENT_HEX[m[1]] || ACCENT_HEX.violet;
 }
 
+function hexToRgba(hex, alpha) {
+  const normalized = String(hex || '').replace('#', '');
+  if (normalized.length !== 6) return `rgba(139, 92, 246, ${alpha})`;
+  const value = Number.parseInt(normalized, 16);
+  const r = (value >> 16) & 255;
+  const g = (value >> 8) & 255;
+  const b = value & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 const DEFAULT_SLIDES = [
   {
     id: 'fallback-1',
@@ -81,6 +91,12 @@ export default function HeroSlider() {
   const total = slides.length;
   const current = slides[index] || slides[0];
   const accentHex = extractAccentHex(current?.accent_color);
+  const titleLength = String(current?.title || '').trim().length;
+  const titleSizeClass = titleLength > 72
+    ? 'text-[2rem] sm:text-[2.45rem] md:text-[3rem] lg:text-[3.4rem]'
+    : titleLength > 48
+      ? 'text-[2.3rem] sm:text-[2.85rem] md:text-[3.35rem] lg:text-[4rem]'
+      : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
 
   // Pick a stable background once per mount. Prefer the dedicated backgrounds
   // pool; fall back to slide images if the admin hasn't uploaded any yet.
@@ -112,8 +128,8 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[620px] w-screen -translate-x-1/2 overflow-visible sm:h-[680px] lg:h-[740px]">
-        <div className="absolute inset-x-0 top-0 h-[360px] overflow-hidden bg-slate-950 sm:h-[400px] lg:h-[440px]">
+      <section className="relative left-1/2 -mt-10 h-[650px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
+        <div className="absolute inset-x-0 top-0 h-[380px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -123,7 +139,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[620px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[680px] lg:h-[740px]"
+      className="hero-slider group/hero relative left-1/2 -mt-10 h-[650px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -159,7 +175,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[360px] overflow-hidden sm:h-[400px] lg:h-[440px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[380px] overflow-hidden sm:h-[420px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -219,7 +235,7 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[340px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:h-[380px] md:h-[420px]`}
+            className={`relative flex h-[350px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:h-[395px] md:h-[440px]`}
           >
             {/* Dark plate so the text stays readable over bright gradients */}
             <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
@@ -272,7 +288,7 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className="line-clamp-2 text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl lg:text-6xl">
+              <h1 className={`${titleSizeClass} text-balance font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
@@ -323,7 +339,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl sm:gap-2">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/45 bg-white/72 p-1.5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/58 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-2">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -338,10 +354,14 @@ export default function HeroSlider() {
                     onClick={() => setIndex(i)}
                     className={`group/tab relative flex min-w-[74px] flex-1 items-center justify-center rounded-xl px-3 py-3 transition-all duration-300 sm:min-w-[92px] sm:py-4 ${
                       active
-                        ? 'bg-white/[0.08]'
-                        : 'opacity-55 hover:bg-white/[0.05] hover:opacity-100'
+                        ? 'shadow-lg'
+                        : 'opacity-70 hover:bg-black/[0.04] hover:opacity-100 dark:hover:bg-white/[0.06]'
                     }`}
                     title={title}
+                    style={active ? {
+                      background: `linear-gradient(135deg, ${hexToRgba(tabHex, 0.28)} 0%, ${hexToRgba(tabHex, 0.14)} 100%)`,
+                      boxShadow: `0 10px 26px -18px ${hexToRgba(tabHex, 0.9)}, inset 0 1px 0 ${hexToRgba('#ffffff', 0.3)}`,
+                    } : undefined}
                   >
                     {/* Icon — acts as the tab header itself */}
                     <span
@@ -350,7 +370,7 @@ export default function HeroSlider() {
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
-                      } : { filter: 'grayscale(0.5)' }}
+                      } : { filter: 'grayscale(0.35)' }}
                     >
                       {slide.icon_url ? (
                         <img
@@ -381,15 +401,15 @@ export default function HeroSlider() {
 
             {/* Pause/play + counter */}
             <div className="mt-3 flex items-center justify-between px-1">
-              <span className="font-mono text-[11px] font-black uppercase tracking-[0.25em] text-white/50">
-                <span className="text-white">{String(index + 1).padStart(2, '0')}</span>
-                <span className="mx-1 text-white/30">/</span>
+              <span className="font-mono text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-white/50">
+                <span className="text-slate-900 dark:text-white">{String(index + 1).padStart(2, '0')}</span>
+                <span className="mx-1 text-slate-400 dark:text-white/30">/</span>
                 <span>{String(total).padStart(2, '0')}</span>
               </span>
               <button
                 type="button"
                 onClick={() => setPaused((p) => !p)}
-                className="flex h-7 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 text-[10px] font-black uppercase tracking-wider text-white/80 transition hover:border-white/35 hover:bg-white/15 hover:text-white"
+                className="flex h-7 items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/75 px-2.5 text-[10px] font-black uppercase tracking-wider text-slate-700 transition hover:border-slate-400 hover:bg-white hover:text-slate-900 dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-white/35 dark:hover:bg-white/15 dark:hover:text-white"
                 aria-label={paused ? 'Oynat' : 'Durdur'}
               >
                 {paused ? <Play size={11} /> : <Pause size={11} />}
