@@ -48,15 +48,12 @@ function createEmptySlide() {
     title: '',
     subtitle: '',
     eyebrow: '',
-    badge_text: '',
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     secondary_label: 'Kategorileri Keşfet',
     secondary_url: '/categories',
     image_url: '',
     accent_color: ACCENT_PRESETS[0].value,
-    stat_label: '',
-    stat_value: '',
     is_active: 1,
   };
 }
@@ -211,15 +208,15 @@ export default function AdminHeroSlides() {
         title: s.title,
         subtitle: s.subtitle,
         eyebrow: s.eyebrow,
-        badge_text: s.badge_text,
+        badge_text: '',
         cta_label: s.cta_label,
         cta_url: s.cta_url,
         secondary_label: s.secondary_label,
         secondary_url: s.secondary_url,
         image_url: s.image_url,
         accent_color: s.accent_color,
-        stat_label: s.stat_label,
-        stat_value: s.stat_value,
+        stat_label: '',
+        stat_value: '',
         is_active: s.is_active ? 1 : 0,
       }));
       await adminSaveHeroSlides(payload);
@@ -291,8 +288,8 @@ export default function AdminHeroSlides() {
                 </span>
               </div>
               <p className="mt-1 text-[11px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                Görsel tek bir geniş arka plan olarak kullanılır (sağdaki HUD panel artık görsel kullanmıyor).
-                Ana konuyu merkez-soldaki güvenli alana yerleştir; alt kısmın yazıların arkasına denk geldiğini unutma.
+                Görsel tam genişlikte arka plan olarak kullanılır. Ana konuyu merkez-sağa konumlandır;
+                sol tarafın metin okunabilirliği için karartılacağını unutma.
                 Min. {MIN_RECOMMENDED_WIDTH} px genişlik, ideal dosya boyutu {(MAX_RECOMMENDED_BYTES / 1024).toFixed(0)} KB
                 altı (WebP/JPEG, otomatik optimize edilir).
               </p>
@@ -400,15 +397,15 @@ export default function AdminHeroSlides() {
                             </span>
                           </div>
                         )}
-                        {/* Text overlay zone — left half is where the slide headline/body sits */}
-                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[48%] rounded-lg border border-dashed border-white/60 bg-gradient-to-r from-black/25 to-transparent" />
-                        <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                        {/* Dark legibility gradient preview (left side → dark, right → clear) */}
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
+                        {/* Text safe zone — headline + CTAs sit here */}
+                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[55%] rounded-lg border border-dashed border-white/60" />
+                        <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
                           Yazı Alanı
                         </div>
-                        {/* HUD panel placeholder — right side (image ignored here) */}
-                        <div className="pointer-events-none absolute inset-y-5 right-4 aspect-[4/5] rounded-lg border border-white/40 bg-white/10 backdrop-blur-[1px]" />
-                        <div className="pointer-events-none absolute bottom-5 right-5 rounded-md bg-black/50 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                          HUD Panel
+                        <div className="pointer-events-none absolute bottom-4 right-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                          Ana Görsel
                         </div>
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
@@ -450,22 +447,13 @@ export default function AdminHeroSlides() {
 
                     {/* Text fields */}
                     <div className="space-y-3">
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="Üst Etiket (Eyebrow)" hint="ör: YENİ SEZON">
-                          <input
-                            value={slide.eyebrow || ''}
-                            onChange={(e) => updateSlide(slide._key, { eyebrow: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                        <Field label="Rozet (Badge)" hint="ör: LV 99 · PRO">
-                          <input
-                            value={slide.badge_text || ''}
-                            onChange={(e) => updateSlide(slide._key, { badge_text: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                      </div>
+                      <Field label="Üst Etiket (Eyebrow)" hint="ör: YENİ SEZON — başlığın üstünde küçük etiket olarak çıkar">
+                        <input
+                          value={slide.eyebrow || ''}
+                          onChange={(e) => updateSlide(slide._key, { eyebrow: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        />
+                      </Field>
 
                       <Field label="Başlık" required>
                         <input
@@ -521,33 +509,17 @@ export default function AdminHeroSlides() {
                         </Field>
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-3">
-                        <Field label="İstatistik Değeri" hint="ör: 50.000+">
-                          <input
-                            value={slide.stat_value || ''}
-                            onChange={(e) => updateSlide(slide._key, { stat_value: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-black focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                        <Field label="İstatistik Etiketi" hint="ör: Oyuncu">
-                          <input
-                            value={slide.stat_label || ''}
-                            onChange={(e) => updateSlide(slide._key, { stat_label: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                        <Field label="Renk Teması">
-                          <select
-                            value={slide.accent_color || ACCENT_PRESETS[0].value}
-                            onChange={(e) => updateSlide(slide._key, { accent_color: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          >
-                            {ACCENT_PRESETS.map((p) => (
-                              <option key={p.value} value={p.value}>{p.label}</option>
-                            ))}
-                          </select>
-                        </Field>
-                      </div>
+                      <Field label="Renk Teması" hint="Eyebrow etiketi ve görsel yoksa arka plan için kullanılır">
+                        <select
+                          value={slide.accent_color || ACCENT_PRESETS[0].value}
+                          onChange={(e) => updateSlide(slide._key, { accent_color: e.target.value })}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                        >
+                          {ACCENT_PRESETS.map((p) => (
+                            <option key={p.value} value={p.value}>{p.label}</option>
+                          ))}
+                        </select>
+                      </Field>
                     </div>
                   </div>
                 </div>
@@ -558,7 +530,7 @@ export default function AdminHeroSlides() {
 
         <p className="px-1 text-[11px] text-slate-400 dark:text-slate-500">
           Slide'ları yukarı/aşağı okları ile sırala. Gizli slide'lar ana sayfada görünmez.
-          Rozet ve istatistik alanları isteğe bağlıdır; boş bırakılırsa gösterilmez.
+          En iyi sonuç için 1920 × 1080 px, 16:9 oranında ve 500 KB altı görsel kullan.
         </p>
       </div>
     </AdminLayout>
@@ -570,7 +542,7 @@ function ImageSizeHint({ meta, hasImage }) {
     return (
       <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
         <Info size={11} className="mt-0.5 shrink-0" />
-        Sol yarı yazı alanı, sağ yarı HUD panelin arkasına denk gelir. Ana konuyu soldan merkeze konumlandır.
+        Sol taraf okunabilirlik için karartılır; ana konuyu sağ-merkeze yerleştir.
       </p>
     );
   }
