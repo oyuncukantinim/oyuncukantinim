@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -163,6 +163,7 @@ function AnnouncementBanner({ text }) {
 }
 
 function SiteLayout() {
+  const location = useLocation();
   const [siteState, setSiteState] = useState({
     checked: false,
     maintenance: false,
@@ -240,13 +241,15 @@ function SiteLayout() {
     );
   }
 
+  const isHomeRoute = location.pathname === '/';
+
   return (
     <div className="min-h-screen overflow-x-clip bg-surface-50 font-sans">
       {siteState.announcement.active && siteState.announcement.text ? (
         <AnnouncementBanner text={siteState.announcement.text} />
       ) : null}
       <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
-      <main className="mx-auto max-w-screen-2xl overflow-x-clip px-4 py-8 sm:px-6 lg:px-8">
+      <main className={`mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8 ${isHomeRoute ? 'overflow-x-visible' : 'overflow-x-clip'}`}>
         <Suspense fallback={<SitePageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
