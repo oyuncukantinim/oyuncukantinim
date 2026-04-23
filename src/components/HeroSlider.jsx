@@ -213,7 +213,7 @@ export default function HeroSlider() {
             className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/10 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
             {current.image_url && hasTitle ? (
@@ -221,7 +221,7 @@ export default function HeroSlider() {
                 key={`art-mobile-${current.id || index}`}
                 src={current.image_url}
                 alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full scale-[1.06] object-cover object-center opacity-100 md:hidden"
+                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center opacity-100 md:hidden"
                 loading="eager"
               />
             ) : null}
@@ -257,7 +257,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/45 via-slate-950/14 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/28 via-slate-950/10 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
