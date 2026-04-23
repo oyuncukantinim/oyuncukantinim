@@ -186,7 +186,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-52 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-56 sm:px-10 sm:pb-6 lg:bottom-60 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-44 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -328,11 +328,11 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-16 w-[calc(100%-1rem)] sm:-mt-20 sm:w-[calc(100%-1.25rem)] lg:-mt-24 lg:w-[calc(100%-1.5rem)]"
+            className="relative z-20 mx-auto -mt-6 w-[calc(100%-1rem)] sm:-mt-8 sm:w-[calc(100%-1.25rem)] lg:-mt-10 lg:w-[calc(100%-1.5rem)]"
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl bg-slate-100/88 p-0.5 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-xl dark:bg-slate-950/72 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto p-0.5 sm:gap-1">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
