@@ -339,7 +339,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] bg-slate-100/88 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-xl dark:bg-slate-950/72 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl bg-slate-100/88 p-0.5 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-xl dark:bg-slate-950/72 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -352,7 +352,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[64px] flex-1 items-center justify-center rounded-[14px] px-2.5 py-2.5 transition-all duration-300 sm:min-w-[80px] sm:py-3 ${
+                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center rounded-[13px] px-2 py-2 transition-all duration-300 sm:min-w-[72px] sm:py-2.5 ${
                       active
                         ? 'shadow-lg'
                         : 'bg-white/68 text-slate-700 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:hover:bg-white/[0.06]'
@@ -366,7 +366,7 @@ export default function HeroSlider() {
                     {/* Icon — acts as the tab header itself */}
                     <span
                       className={`flex items-center justify-center transition-transform duration-300 ${
-                        active ? 'h-11 w-11 scale-110 sm:h-14 sm:w-14' : 'h-9 w-9 sm:h-11 sm:w-11 group-hover/tab:scale-105'
+                        active ? 'h-9 w-9 scale-105 sm:h-11 sm:w-11' : 'h-7 w-7 sm:h-9 sm:w-9 group-hover/tab:scale-105'
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
@@ -380,7 +380,7 @@ export default function HeroSlider() {
                           loading="lazy"
                         />
                       ) : (
-                        <Gamepad2 size={active ? 36 : 30} className="text-white/85" />
+                        <Gamepad2 size={active ? 30 : 24} className="text-white/85" />
                       )}
                     </span>
 
