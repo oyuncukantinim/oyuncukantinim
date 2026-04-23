@@ -346,7 +346,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-16 w-[calc(100%-1rem)] sm:-mt-20 sm:w-[calc(100%-1.25rem)] lg:-mt-24 lg:w-[calc(100%-1.5rem)]"
+            className="relative z-20 mx-auto -mt-5 w-[calc(100%-1rem)] sm:-mt-6 sm:w-[calc(100%-1.25rem)] lg:-mt-7 lg:w-[calc(100%-1.5rem)]"
             role="tablist"
             aria-label="Slayt seçici"
           >
