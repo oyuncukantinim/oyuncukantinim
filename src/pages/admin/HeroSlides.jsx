@@ -48,11 +48,13 @@ function createEmptySlide() {
     title: '',
     subtitle: '',
     eyebrow: '',
+    tab_label: '',
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     secondary_label: 'Kategorileri Keşfet',
     secondary_url: '/categories',
     image_url: '',
+    icon_url: '',
     accent_color: ACCENT_PRESETS[0].value,
     is_active: 1,
   };
@@ -109,13 +111,14 @@ export default function AdminHeroSlides() {
   const addSlide = () => setSlides((prev) => [...prev, createEmptySlide()]);
 
   const removeSlide = async (slide) => {
-    if (slide.image_url) {
+    if (slide.image_url || slide.icon_url) {
       setBusyKey(slide._key);
       try {
-        await adminDeleteUploadedImage(slide.image_url);
-      } catch {
-        showToast('Slide kaldırıldı (dosya silinemedi).');
-      }
+        if (slide.image_url) await adminDeleteUploadedImage(slide.image_url);
+      } catch { /* ignore */ }
+      try {
+        if (slide.icon_url) await adminDeleteUploadedImage(slide.icon_url);
+      } catch { /* ignore */ }
       setBusyKey(null);
     }
     setSlides((prev) => prev.filter((s) => s._key !== slide._key));
@@ -162,7 +165,7 @@ export default function AdminHeroSlides() {
       // Capture local dimensions + size before upload for instant feedback.
       const dims = await readLocalDimensions(file);
       const prevUrl = slide.image_url || '';
-      const url = await adminUploadImage(file, 'branding', { preserveOriginal: true });
+      const url = await adminUploadImage(file, 'hero-slider', { preserveOriginal: true });
       updateSlide(slide._key, { image_url: url });
       setImageMeta((prev) => ({
         ...prev,
@@ -181,6 +184,37 @@ export default function AdminHeroSlides() {
     } finally {
       setBusyKey(null);
     }
+  };
+
+  const handleIconUpload = async (slide, file) => {
+    if (!file) return;
+    setBusyKey(slide._key);
+    try {
+      const prevUrl = slide.icon_url || '';
+      const url = await adminUploadImage(file, 'hero-slider-icons', { preserveOriginal: true });
+      updateSlide(slide._key, { icon_url: url });
+      if (prevUrl && prevUrl !== url) {
+        try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
+      }
+      showToast('İkon yüklendi.');
+    } catch (err) {
+      showToast(err.message || 'İkon yüklenemedi.');
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
+  const clearIcon = async (slide) => {
+    if (!slide.icon_url) return;
+    setBusyKey(slide._key);
+    try {
+      await adminDeleteUploadedImage(slide.icon_url);
+      showToast('İkon dosyadan silindi.');
+    } catch {
+      showToast('İkon kaldırıldı (dosya silinemedi).');
+    }
+    updateSlide(slide._key, { icon_url: '' });
+    setBusyKey(null);
   };
 
   const clearImage = async (slide) => {
@@ -208,12 +242,14 @@ export default function AdminHeroSlides() {
         title: s.title,
         subtitle: s.subtitle,
         eyebrow: s.eyebrow,
+        tab_label: s.tab_label,
         badge_text: '',
         cta_label: s.cta_label,
         cta_url: s.cta_url,
         secondary_label: s.secondary_label,
         secondary_url: s.secondary_url,
         image_url: s.image_url,
+        icon_url: s.icon_url,
         accent_color: s.accent_color,
         stat_label: '',
         stat_value: '',
@@ -330,14 +366,26 @@ export default function AdminHeroSlides() {
                     ) : null}
                     <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.18) 1px, transparent 0)', backgroundSize: '18px 18px' }} />
                     <div className="relative z-10 flex h-full items-center justify-between px-5">
-                      <div className="min-w-0">
-                        {slide.eyebrow ? (
-                          <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/80">
-                            {slide.eyebrow}
+                      <div className="flex min-w-0 items-center gap-3">
+                        {slide.icon_url ? (
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white/15 p-2 backdrop-blur">
+                            <img src={slide.icon_url} alt="" className="h-full w-full object-contain" />
                           </div>
                         ) : null}
-                        <div className="mt-0.5 truncate text-lg font-black text-white drop-shadow">
-                          {slide.title || <span className="italic text-white/60">Başlıksız slide</span>}
+                        <div className="min-w-0">
+                          {slide.eyebrow ? (
+                            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/80">
+                              {slide.eyebrow}
+                            </div>
+                          ) : null}
+                          <div className="mt-0.5 truncate text-lg font-black text-white drop-shadow">
+                            {slide.title || <span className="italic text-white/60">Başlıksız slide</span>}
+                          </div>
+                          {slide.tab_label ? (
+                            <div className="mt-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/70">
+                              Sekme: {slide.tab_label}
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -447,6 +495,69 @@ export default function AdminHeroSlides() {
 
                     {/* Text fields */}
                     <div className="space-y-3">
+                      {/* Tab icon + label */}
+                      <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-3 dark:border-violet-900/40 dark:bg-violet-950/20">
+                        <div className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                          <ImageIcon size={12} /> Sekme (Alt Tab) Ayarı
+                        </div>
+                        <div className="flex items-start gap-3">
+                          {/* Icon uploader */}
+                          <div className="shrink-0">
+                            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
+                              {slide.icon_url ? (
+                                <img src={slide.icon_url} alt="" className="h-full w-full object-contain" />
+                              ) : (
+                                <ImageIcon size={20} className="text-slate-300" />
+                              )}
+                            </div>
+                            <div className="mt-1.5 flex items-center gap-1">
+                              <input
+                                id={`hero-slide-icon-${slide._key}`}
+                                type="file"
+                                accept="image/png,image/webp,image/svg+xml,image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  handleIconUpload(slide, f);
+                                  e.target.value = '';
+                                }}
+                              />
+                              <label
+                                htmlFor={`hero-slide-icon-${slide._key}`}
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-violet-600 px-2 py-1 text-[10px] font-black text-white hover:bg-violet-500"
+                              >
+                                <Upload size={10} />
+                                {slide.icon_url ? 'Değiştir' : 'Yükle'}
+                              </label>
+                              {slide.icon_url ? (
+                                <button
+                                  type="button"
+                                  onClick={() => clearIcon(slide)}
+                                  className="inline-flex items-center justify-center rounded-md bg-rose-50 px-1.5 py-1 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
+                                  title="İkonu sil"
+                                >
+                                  <X size={10} />
+                                </button>
+                              ) : null}
+                            </div>
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <Field label="Sekme Etiketi" hint="Alt sekmede görünür · ör: CS2, VALORANT">
+                              <input
+                                value={slide.tab_label || ''}
+                                onChange={(e) => updateSlide(slide._key, { tab_label: e.target.value })}
+                                placeholder="CS2"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-black uppercase tracking-wider focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                              />
+                            </Field>
+                            <p className="text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
+                              Şeffaf arka planlı PNG / SVG öner. 96×96 px ideal. Aktif sekmede ikon,
+                              slayt renginde parlama efekti alır.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
                       <Field label="Üst Etiket (Eyebrow)" hint="ör: YENİ SEZON — başlığın üstünde küçük etiket olarak çıkar">
                         <input
                           value={slide.eyebrow || ''}

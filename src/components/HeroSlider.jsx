@@ -1,12 +1,43 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ChevronRight, Gamepad2, Pause, Play } from 'lucide-react';
 import { getHeroSlides } from '../lib/api';
+
+// Map Tailwind "from-color-NNN via-... to-..." accent strings to a single
+// solid hex used for left border glow + bottom tab underline glow.
+// Falls back to violet if the first token is not recognized.
+const ACCENT_HEX = {
+  violet: '#8b5cf6',
+  purple: '#a855f7',
+  fuchsia: '#d946ef',
+  pink: '#ec4899',
+  rose: '#f43f5e',
+  red: '#ef4444',
+  orange: '#f97316',
+  amber: '#f59e0b',
+  yellow: '#eab308',
+  lime: '#84cc16',
+  green: '#22c55e',
+  emerald: '#10b981',
+  teal: '#14b8a6',
+  cyan: '#06b6d4',
+  sky: '#0ea5e9',
+  blue: '#3b82f6',
+  indigo: '#6366f1',
+};
+
+function extractAccentHex(accentClass) {
+  if (!accentClass) return ACCENT_HEX.violet;
+  const m = String(accentClass).match(/from-([a-z]+)-\d{2,3}/);
+  if (!m) return ACCENT_HEX.violet;
+  return ACCENT_HEX[m[1]] || ACCENT_HEX.violet;
+}
 
 const DEFAULT_SLIDES = [
   {
     id: 'fallback-1',
     eyebrow: 'Hoşgeldin Oyuncu',
+    tab_label: 'Pazar',
     title: 'Oyun Dünyasının Yeni Kantini',
     subtitle:
       'Güvenilir oyuncu pazarı, onaylı satıcılar ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.',
@@ -15,6 +46,7 @@ const DEFAULT_SLIDES = [
     secondary_label: 'Kategorileri Keşfet',
     secondary_url: '/categories',
     image_url: '',
+    icon_url: '',
     accent_color: 'from-violet-600 via-purple-600 to-cyan-500',
   },
 ];
@@ -27,6 +59,9 @@ export default function HeroSlider() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
+  // Pick a random seed once per mount — used to select the static background.
+  // Does NOT update when the user switches slides, only on page refresh.
+  const [bgSeed] = useState(() => Math.random());
 
   useEffect(() => {
     getHeroSlides()
@@ -42,17 +77,15 @@ export default function HeroSlider() {
 
   const total = slides.length;
   const current = slides[index] || slides[0];
+  const accentHex = extractAccentHex(current?.accent_color);
 
-  const go = useCallback(
-    (next) => {
-      if (!total) return;
-      setIndex(((next % total) + total) % total);
-    },
-    [total],
-  );
-
-  const next = useCallback(() => go(index + 1), [go, index]);
-  const prev = useCallback(() => go(index - 1), [go, index]);
+  // Build the pool of background image URLs, then pick one via the stable seed.
+  const backgroundUrl = useMemo(() => {
+    const pool = slides.map((s) => s.image_url).filter(Boolean);
+    if (!pool.length) return '';
+    const idx = Math.floor(bgSeed * pool.length) % pool.length;
+    return pool[idx];
+  }, [slides, bgSeed]);
 
   useEffect(() => {
     if (!total || paused || total < 2) return;
@@ -64,217 +97,313 @@ export default function HeroSlider() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'ArrowRight') next();
-      else if (e.key === 'ArrowLeft') prev();
+      if (e.key === 'ArrowRight') setIndex((i) => (i + 1) % (total || 1));
+      else if (e.key === 'ArrowLeft') setIndex((i) => (i - 1 + (total || 1)) % (total || 1));
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [next, prev]);
+  }, [total]);
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[460px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950">
+      <section className="relative left-1/2 -mt-8 h-[520px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950">
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
       </section>
     );
   }
-
   if (!current) return null;
 
   return (
     <section
       className="hero-slider group/hero relative left-1/2 -mt-8 w-screen -translate-x-1/2 overflow-hidden bg-slate-950 text-white"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
       aria-label="Ana sayfa slider"
+      style={{ '--accent': accentHex }}
     >
       <style>{`
         @keyframes hs-kenburns {
-          0%   { transform: scale(1.05) translateX(0); }
-          100% { transform: scale(1.14) translateX(-1.5%); }
+          0%   { transform: scale(1.04) translateX(0); }
+          100% { transform: scale(1.10) translateX(-1.2%); }
         }
         @keyframes hs-text-in {
-          0%   { opacity: 0; transform: translateY(18px); filter: blur(6px); }
-          100% { opacity: 1; transform: translateY(0);   filter: blur(0); }
+          0%   { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+          100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
+        }
+        @keyframes hs-pulse-glow {
+          0%, 100% { opacity: .9; }
+          50%      { opacity: 1; }
         }
         @keyframes hs-progress { 0% { width: 0%; } 100% { width: 100%; } }
 
-        .hs-slide-layer {
-          animation: hs-kenburns ${AUTO_INTERVAL + 800}ms ease-out both;
-        }
-        .hs-text > * { opacity: 0; animation: hs-text-in .7s cubic-bezier(.2,.7,.2,1) forwards; }
+        .hs-bg { animation: hs-kenburns 22s ease-in-out infinite alternate; }
+        .hs-text > * { opacity: 0; animation: hs-text-in .6s cubic-bezier(.2,.7,.2,1) forwards; }
         .hs-text > *:nth-child(1) { animation-delay: .05s; }
-        .hs-text > *:nth-child(2) { animation-delay: .18s; }
-        .hs-text > *:nth-child(3) { animation-delay: .30s; }
-        .hs-text > *:nth-child(4) { animation-delay: .42s; }
+        .hs-text > *:nth-child(2) { animation-delay: .16s; }
+        .hs-text > *:nth-child(3) { animation-delay: .27s; }
+        .hs-text > *:nth-child(4) { animation-delay: .38s; }
+
+        .hs-card-art { animation: hs-text-in .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: .25s; }
 
         .hs-progress { animation: hs-progress ${AUTO_INTERVAL}ms linear; }
         .hs-progress.paused { animation-play-state: paused; }
+
+        .hs-tab-glow { animation: hs-pulse-glow 2.4s ease-in-out infinite; }
       `}</style>
 
-      {/* Slides stack */}
-      <div className="relative h-[480px] min-h-[420px] w-full sm:h-[520px] md:h-[560px]">
-        {slides.map((slide, i) => (
+      {/* ============== BACKGROUND (static per page load) ============== */}
+      <div
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {backgroundUrl ? (
           <div
-            key={slide.id || i}
-            className={`absolute inset-0 transition-opacity duration-[900ms] ease-out ${
-              i === index ? 'opacity-100' : 'pointer-events-none opacity-0'
-            }`}
-            aria-hidden={i !== index}
-          >
-            {/* Image layer (Ken Burns zoom when active) */}
-            <div className="absolute inset-0 overflow-hidden">
-              {slide.image_url ? (
-                <div
-                  className={i === index ? 'hs-slide-layer absolute inset-0' : 'absolute inset-0'}
-                  style={{
-                    backgroundImage: `url("${slide.image_url}")`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                />
-              ) : (
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${slide.accent_color || 'from-violet-600 via-purple-600 to-cyan-500'}`}
-                />
-              )}
-            </div>
-
-            {/* Legibility gradient (dark left → clear right) */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-slate-950/10" />
-            {/* Bottom fade for controls area */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-950 to-transparent" />
-          </div>
-        ))}
-      </div>
-
-      {/* Content overlay */}
-      <div className="pointer-events-none absolute inset-0">
-        <div className="relative mx-auto flex h-full max-w-7xl items-center px-6">
-          <div
-            key={`text-${current.id || index}`}
-            className="hs-text pointer-events-auto max-w-xl"
-          >
-            {current.eyebrow ? (
-              <div>
-                <span
-                  className={`inline-block rounded-full bg-gradient-to-r ${current.accent_color || 'from-violet-600 via-purple-600 to-cyan-500'} px-3 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-lg`}
-                >
-                  {current.eyebrow}
-                </span>
-              </div>
-            ) : <div />}
-
-            <h1 className="mt-5 text-4xl font-black leading-[1.08] tracking-tight text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.35)] sm:text-5xl md:text-6xl">
-              {current.title || 'Başlığınızı buraya ekleyin'}
-            </h1>
-
-            {current.subtitle ? (
-              <p className="mt-5 max-w-xl text-base font-semibold leading-relaxed text-white/85 sm:text-lg">
-                {current.subtitle}
-              </p>
-            ) : <div />}
-
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              {current.cta_label ? (
-                <Link
-                  to={current.cta_url || '/market'}
-                  className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-xl bg-white px-6 py-3.5 text-sm font-black uppercase tracking-wider text-slate-900 shadow-xl transition hover:-translate-y-0.5"
-                >
-                  <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-slate-200 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
-                  <span className="relative">{current.cta_label}</span>
-                  <ChevronRight size={16} className="relative transition-transform group-hover/btn:translate-x-0.5" />
-                </Link>
-              ) : null}
-              {current.secondary_label ? (
-                <Link
-                  to={current.secondary_url || '/categories'}
-                  className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-white/5 px-6 py-3.5 text-sm font-black uppercase tracking-wider text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/15"
-                >
-                  <span>{current.secondary_label}</span>
-                  <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Side arrows */}
-      {total > 1 ? (
-        <>
-          <button
-            type="button"
-            onClick={prev}
-            className="absolute left-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 opacity-0 backdrop-blur-md transition hover:border-white/40 hover:bg-black/50 hover:text-white group-hover/hero:opacity-100 md:flex"
-            aria-label="Önceki slayt"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            type="button"
-            onClick={next}
-            className="absolute right-3 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 opacity-0 backdrop-blur-md transition hover:border-white/40 hover:bg-black/50 hover:text-white group-hover/hero:opacity-100 md:flex"
-            aria-label="Sonraki slayt"
-          >
-            <ChevronRight size={18} />
-          </button>
-        </>
-      ) : null}
-
-      {/* Bottom controls */}
-      <div className="absolute inset-x-0 bottom-0">
-        {/* Progress bar */}
-        <div className="h-0.5 w-full bg-white/10">
-          <div
-            key={`pg-${index}-${paused ? 'p' : 'r'}-${total}`}
-            className={`hs-progress h-full bg-white ${paused || total < 2 ? 'paused' : ''}`}
-            style={total < 2 ? { width: 0 } : undefined}
+            className="hs-bg absolute inset-0"
+            style={{
+              backgroundImage: `url("${backgroundUrl}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
           />
-        </div>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
+        )}
+        {/* Heavy darkening so the center card pops */}
+        <div className="absolute inset-0 bg-slate-950/70" />
+        {/* Center vignette so the card area feels spotlit */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(2,6,23,0) 0%, rgba(2,6,23,0.55) 60%, rgba(2,6,23,0.9) 100%)',
+          }}
+        />
+        {/* Subtle dot grid for texture */}
+        <div
+          className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
+            backgroundSize: '20px 20px',
+          }}
+        />
+      </div>
 
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
-          {/* Dots */}
-          {total > 1 ? (
-            <div className="flex items-center gap-2">
-              {slides.map((s, i) => (
-                <button
-                  key={s.id || i}
-                  type="button"
-                  onClick={() => go(i)}
-                  aria-label={`Slayt ${i + 1}`}
-                  className="group/dot flex h-2 items-center overflow-hidden rounded-full"
-                >
-                  <span
-                    className={`block h-1.5 rounded-full transition-all duration-500 ease-out ${
-                      i === index ? 'w-10 bg-white' : 'w-2 bg-white/30 group-hover/dot:bg-white/60'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-          ) : <div />}
+      {/* ============== CONTENT LAYOUT ============== */}
+      <div
+        className="relative mx-auto flex min-h-[560px] max-w-7xl flex-col justify-center px-4 pb-6 pt-10 sm:min-h-[600px] sm:px-6 sm:pt-14"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+      >
+        {/* ----- Card ----- */}
+        <div
+          key={`card-${current.id || index}`}
+          className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+        >
+          {/* Left accent bar (matches active slide color) */}
+          <div
+            className="absolute left-0 top-0 z-20 h-full w-[5px]"
+            style={{
+              background: `linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, transparent) 100%)`,
+              boxShadow: `0 0 22px var(--accent), 0 0 44px color-mix(in srgb, var(--accent) 45%, transparent)`,
+            }}
+          />
 
-          <div className="flex items-center gap-3">
-            {total > 1 ? (
-              <>
-                <span className="hidden font-mono text-xs font-black uppercase tracking-[0.2em] text-white/60 sm:inline">
-                  <span className="text-white">{String(index + 1).padStart(2, '0')}</span>
-                  <span className="mx-1 text-white/30">/</span>
-                  <span>{String(total).padStart(2, '0')}</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPaused((p) => !p)}
-                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition hover:border-white/35 hover:bg-white/15 hover:text-white"
-                  aria-label={paused ? 'Oynat' : 'Durdur'}
-                >
-                  {paused ? <Play size={13} /> : <Pause size={13} />}
-                </button>
-              </>
+          {/* Card background: accent gradient tinted by slide, with image art overlay */}
+          <div
+            className={`relative flex min-h-[300px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:min-h-[360px]`}
+          >
+            {/* Dark plate so the text stays readable over bright gradients */}
+            <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
+
+            {/* Slide hero art (right side) */}
+            {current.image_url ? (
+              <div
+                key={`art-${current.id || index}`}
+                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] md:block"
+                style={{
+                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center right',
+                  maskImage:
+                    'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                  WebkitMaskImage:
+                    'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                }}
+              />
             ) : null}
+
+            {/* Left→right darkening for legibility */}
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-transparent" />
+
+            {/* Subtle dot texture inside card */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
+                backgroundSize: '16px 16px',
+              }}
+            />
+
+            {/* Text block */}
+            <div
+              key={`text-${current.id || index}`}
+              className="hs-text relative z-10 flex w-full max-w-xl flex-col justify-center gap-4 px-7 py-10 sm:px-10 sm:py-14"
+            >
+              {current.eyebrow ? (
+                <div>
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-md"
+                    style={{
+                      background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
+                    }}
+                  >
+                    {current.eyebrow}
+                  </span>
+                </div>
+              ) : <div />}
+
+              <h1 className="text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl">
+                {current.title || 'Başlığınızı buraya ekleyin'}
+              </h1>
+
+              {current.subtitle ? (
+                <p className="max-w-md text-sm font-semibold leading-relaxed text-white/85 sm:text-base">
+                  {current.subtitle}
+                </p>
+              ) : <div />}
+
+              <div className="mt-2 flex flex-wrap items-center gap-2.5">
+                {current.cta_label ? (
+                  <Link
+                    to={current.cta_url || '/market'}
+                    className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-0.5"
+                    style={{
+                      background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
+                      boxShadow: `0 10px 28px -8px var(--accent)`,
+                    }}
+                  >
+                    <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover/btn:translate-x-full" />
+                    <span className="relative">{current.cta_label}</span>
+                    <ChevronRight size={15} className="relative transition-transform group-hover/btn:translate-x-0.5" />
+                  </Link>
+                ) : null}
+                {current.secondary_label ? (
+                  <Link
+                    to={current.secondary_url || '/categories'}
+                    className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-5 py-3 text-sm font-black uppercase tracking-wider text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/15"
+                  >
+                    <span>{current.secondary_label}</span>
+                    <ChevronRight size={15} />
+                  </Link>
+                ) : null}
+              </div>
+            </div>
           </div>
+
+          {/* Progress bar along the bottom of the card */}
+          {total > 1 ? (
+            <div className="absolute bottom-0 left-0 z-20 h-0.5 w-full bg-black/30">
+              <div
+                key={`pg-${index}-${paused ? 'p' : 'r'}-${total}`}
+                className={`hs-progress h-full ${paused ? 'paused' : ''}`}
+                style={{
+                  background: `linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, white) 100%)`,
+                  boxShadow: `0 0 12px var(--accent)`,
+                }}
+              />
+            </div>
+          ) : null}
         </div>
+
+        {/* ----- Tabs ----- */}
+        {total > 1 ? (
+          <div
+            className="relative mx-auto mt-5 w-full max-w-5xl"
+            role="tablist"
+            aria-label="Slayt seçici"
+          >
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-xl border border-white/5 bg-black/40 p-1 backdrop-blur-md sm:gap-2">
+              {slides.map((slide, i) => {
+                const active = i === index;
+                const tabHex = extractAccentHex(slide.accent_color);
+                const label = slide.tab_label || slide.eyebrow || slide.title || `Slayt ${i + 1}`;
+                return (
+                  <button
+                    key={slide.id || i}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setIndex(i)}
+                    className={`group/tab relative flex min-w-[86px] flex-1 flex-col items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 transition-all duration-300 sm:min-w-[100px] sm:py-3 ${
+                      active
+                        ? 'bg-white/[0.06]'
+                        : 'opacity-60 hover:bg-white/[0.04] hover:opacity-100'
+                    }`}
+                    title={label}
+                  >
+                    {/* Icon */}
+                    <span
+                      className="flex h-8 w-8 items-center justify-center sm:h-9 sm:w-9"
+                      style={active ? {
+                        filter: `drop-shadow(0 0 6px ${tabHex}) drop-shadow(0 0 14px color-mix(in srgb, ${tabHex} 60%, transparent))`,
+                      } : { filter: 'grayscale(0.4)' }}
+                    >
+                      {slide.icon_url ? (
+                        <img
+                          src={slide.icon_url}
+                          alt=""
+                          className="h-full w-full object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <Gamepad2 size={22} className="text-white/80" />
+                      )}
+                    </span>
+
+                    {/* Label */}
+                    <span
+                      className={`max-w-[100px] truncate text-[10px] font-black uppercase tracking-wider transition-colors sm:text-[11px] ${
+                        active ? 'text-white' : 'text-white/70'
+                      }`}
+                    >
+                      {label}
+                    </span>
+
+                    {/* Active underline glow */}
+                    {active ? (
+                      <span
+                        className="hs-tab-glow absolute -bottom-[1px] left-3 right-3 h-[3px] rounded-full"
+                        style={{
+                          background: `linear-gradient(90deg, transparent, ${tabHex}, transparent)`,
+                          boxShadow: `0 0 10px ${tabHex}, 0 0 20px color-mix(in srgb, ${tabHex} 60%, transparent)`,
+                        }}
+                      />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Pause/play + counter */}
+            <div className="mt-3 flex items-center justify-between px-1">
+              <span className="font-mono text-[11px] font-black uppercase tracking-[0.25em] text-white/50">
+                <span className="text-white">{String(index + 1).padStart(2, '0')}</span>
+                <span className="mx-1 text-white/30">/</span>
+                <span>{String(total).padStart(2, '0')}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPaused((p) => !p)}
+                className="flex h-7 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 text-[10px] font-black uppercase tracking-wider text-white/80 transition hover:border-white/35 hover:bg-white/15 hover:text-white"
+                aria-label={paused ? 'Oynat' : 'Durdur'}
+              >
+                {paused ? <Play size={11} /> : <Pause size={11} />}
+                {paused ? 'Oynat' : 'Durdur'}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
   );
