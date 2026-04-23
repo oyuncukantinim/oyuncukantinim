@@ -167,7 +167,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-screen -translate-x-1/2 overflow-hidden border-2 border-cyan-400/95 shadow-[0_0_24px_rgba(34,211,238,0.9)] sm:h-[420px] lg:h-[460px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -193,7 +193,7 @@ export default function HeroSlider() {
         {/* ----- Card ----- */}
         <div
           key={`card-${current.id || index}`}
-          className="relative mx-auto w-full overflow-hidden rounded-[22px] border-2 border-sky-400/95 shadow-[0_0_24px_rgba(56,189,248,0.82),0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+          className="relative mx-auto w-full overflow-hidden rounded-[22px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
         >
           {/* Left accent bar (matches active slide color) */}
           {hasTitle ? (
