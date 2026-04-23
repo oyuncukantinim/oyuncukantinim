@@ -167,7 +167,7 @@ export default function Home() {
 
       {/* ============  POPÜLER KATEGORİLER  ============ */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (
-        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
+        <section className="relative z-10 -mt-56 sm:-mt-64 lg:-mt-72">
           {/* Ambient background accent */}
           <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />
