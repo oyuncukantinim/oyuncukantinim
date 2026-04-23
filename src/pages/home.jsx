@@ -162,7 +162,7 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-10 sm:space-y-12">
+    <div>
       <HeroSlider />
 
       {/* ============  POPÜLER KATEGORİLER  ============ */}
@@ -206,7 +206,7 @@ export default function Home() {
 
       {/* ============  VİTRİN İLANLAR (Premium)  ============ */}
       {(vitrineListings.length > 0 || !listingsLoaded) && (
-        <section className="relative">
+        <section className="relative mt-10 sm:mt-12">
           {/* Premium spotlight bg */}
           <div className="pointer-events-none absolute -inset-x-4 -inset-y-6 -z-10 overflow-hidden rounded-[32px]">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-50/60 via-orange-50/40 to-rose-50/60" />
@@ -261,7 +261,7 @@ export default function Home() {
 
       {/* ============  SON İLANLAR (Fresh)  ============ */}
       {(recentListings.length > 0 || !listingsLoaded) && (
-        <section className="relative">
+        <section className="relative mt-10 sm:mt-12">
           {/* Fresh ambient */}
           <div className="pointer-events-none absolute left-0 -top-4 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl" />
