@@ -130,8 +130,8 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[650px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
-        <div className="absolute inset-x-0 top-0 h-[380px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
+      <section className="relative left-1/2 -mt-8 h-[470px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
+        <div className="absolute inset-x-0 top-0 h-[220px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -141,7 +141,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[650px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[470px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -167,7 +167,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] lg:h-[460px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[220px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -186,7 +186,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-44 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-6 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-2 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -209,7 +209,7 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[215px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
               <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
@@ -278,7 +278,7 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-3 overflow-hidden px-6 py-8 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-2 overflow-hidden px-4 py-5 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
@@ -328,7 +328,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[48px] w-full sm:-mt-[56px] lg:-mt-[56px]"
+            className="relative z-20 mx-auto -mt-[34px] w-full sm:-mt-[56px] lg:-mt-[56px]"
             role="tablist"
             aria-label="Slayt seçici"
           >
