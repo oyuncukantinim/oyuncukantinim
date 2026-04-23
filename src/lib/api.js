@@ -44,7 +44,7 @@ export function logout() {
 }
 
 async function request(action, options = {}) {
-  const { method = 'GET', query = {}, body, auth = false } = options;
+  const { method = 'GET', query = {}, body, auth = false, cache = 'default' } = options;
   const search = new URLSearchParams({ action, ...query });
 
   const headers = { 'Content-Type': 'application/json' };
@@ -55,6 +55,7 @@ async function request(action, options = {}) {
 
   const response = await fetch(`${API_URL}?${search.toString()}`, {
     method,
+    cache,
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -101,11 +102,11 @@ export function getSiteSettings() {
 }
 
 export function getHeroSlides() {
-  return request('get_hero_slides');
+  return request('get_hero_slides', { query: { _t: Date.now() }, cache: 'no-store' });
 }
 
 export function getHeroBackgrounds() {
-  return request('get_hero_backgrounds');
+  return request('get_hero_backgrounds', { query: { _t: Date.now() }, cache: 'no-store' });
 }
 
 // --- PROFILE ---

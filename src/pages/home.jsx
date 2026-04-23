@@ -162,7 +162,7 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-10 sm:space-y-12">
       <HeroSlider />
 
       {/* ============  POPÜLER KATEGORİLER  ============ */}
@@ -273,20 +273,7 @@ export default function Home() {
             accent="from-emerald-400 via-teal-500 to-cyan-500"
             count={recentListings.length || null}
             countLabel="İlan"
-            action={
-              <div className="flex items-center gap-2">
-                <span className="hidden items-center gap-1.5 rounded-full border border-emerald-300/60 bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700 sm:inline-flex">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  </span>
-                  Canlı
-                </span>
-                <PillLink to="/market" accent="from-emerald-500 to-cyan-500">
-                  Tümünü Gör
-                </PillLink>
-              </div>
-            }
+            action={<PillLink to="/market" accent="from-emerald-500 to-cyan-500">Tümünü Gör</PillLink>}
           />
 
           <div className="min-h-[260px]">

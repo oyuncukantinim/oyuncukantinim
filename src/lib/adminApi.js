@@ -4,13 +4,14 @@ function getAdminToken() {
   return localStorage.getItem('admin_token');
 }
 
-async function adminRequest(action, { method = 'GET', body = null, query = {} } = {}) {
+async function adminRequest(action, { method = 'GET', body = null, query = {}, cache = 'default' } = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
   Object.entries(query).forEach(([k, v]) => v !== undefined && v !== '' && url.searchParams.set(k, v));
 
   const options = {
     method,
+    cache,
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${getAdminToken()}`,
@@ -239,11 +240,11 @@ export const adminSavePopularGames = (games) =>
 
 // Hero Slider
 export const adminGetHeroSlides = () =>
-  adminRequest('admin_get_hero_slides');
+  adminRequest('admin_get_hero_slides', { query: { _t: Date.now() }, cache: 'no-store' });
 export const adminSaveHeroSlides = (slides) =>
   adminRequest('admin_save_hero_slides', { method: 'POST', body: { slides } });
 export const adminGetHeroBackgrounds = () =>
-  adminRequest('admin_get_hero_backgrounds');
+  adminRequest('admin_get_hero_backgrounds', { query: { _t: Date.now() }, cache: 'no-store' });
 export const adminSaveHeroBackgrounds = (backgrounds) =>
   adminRequest('admin_save_hero_backgrounds', { method: 'POST', body: { backgrounds } });
 export const adminDeleteUploadedImage = (url) =>

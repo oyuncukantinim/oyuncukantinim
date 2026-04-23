@@ -185,7 +185,7 @@ export default function AdminHeroSlides() {
       // Capture local dimensions + size before upload for instant feedback.
       const dims = await readLocalDimensions(file);
       const prevUrl = slide.image_url || '';
-      const url = await adminUploadImage(file, 'hero-slider', { preserveOriginal: true });
+      const url = await adminUploadImage(file, 'hero-slider');
       updateSlide(slide._key, { image_url: url });
       setImageMeta((prev) => ({
         ...prev,
@@ -211,7 +211,7 @@ export default function AdminHeroSlides() {
     setBusyKey(slide._key);
     try {
       const prevUrl = slide.icon_url || '';
-      const url = await adminUploadImage(file, 'hero-slider-icons', { preserveOriginal: true });
+      const url = await adminUploadImage(file, 'hero-slider-icons');
       updateSlide(slide._key, { icon_url: url });
       if (prevUrl && prevUrl !== url) {
         try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
@@ -289,7 +289,7 @@ export default function AdminHeroSlides() {
     if (!file) return;
     setBgBusy(true);
     try {
-      const url = await adminUploadImage(file, 'hero-slider-bg', { preserveOriginal: true });
+      const url = await adminUploadImage(file, 'hero-slider-bg');
       setBackgrounds((prev) => [...prev, { _key: `bg-new-${Date.now()}-${Math.random()}`, image_url: url }]);
       showToast('Arka plan yüklendi (kaydetmeyi unutma).');
     } catch (err) {
@@ -385,7 +385,7 @@ export default function AdminHeroSlides() {
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                   Sayfa her yenilendiğinde bu havuzdan rastgele bir görsel arkada gösterilir (slayt değişirken değişmez).
-                  Ağır karartma uygulandığı için geniş manzaralı oyun görselleri çalışır.
+                  Çok koyu olmayan, yatay kadrajlı arka planlar en temiz sonucu verir.
                 </div>
               </div>
             </div>
@@ -438,9 +438,9 @@ export default function AdminHeroSlides() {
                 <div
                   key={bg._key}
                   className="group/bg relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
-                  style={{ aspectRatio: '16 / 9' }}
+                  style={{ aspectRatio: '10 / 3' }}
                 >
-                  <img src={bg.image_url} alt="" className="h-full w-full object-cover" />
+                  <img src={bg.image_url} alt="" className="h-full w-full object-contain bg-slate-950/80 p-1" />
                   <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover/bg:opacity-100" />
                   <button
                     type="button"

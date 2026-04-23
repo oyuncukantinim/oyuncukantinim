@@ -58,7 +58,7 @@ function PageLoader() {
 
 function SitePageLoader() {
   return (
-    <div className="space-y-16">
+    <div className="space-y-16 overflow-x-clip">
       <div className="relative left-1/2 -mt-8 h-[420px] w-screen -translate-x-1/2 overflow-hidden bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-500">
         <div className="mx-auto flex h-full max-w-4xl animate-pulse flex-col items-center justify-center px-6 text-center">
           <div className="mb-6 h-20 w-20 rounded-2xl border border-white/20 bg-white/20" />
@@ -241,12 +241,12 @@ function SiteLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 font-sans">
+    <div className="min-h-screen overflow-x-clip bg-surface-50 font-sans">
       {siteState.announcement.active && siteState.announcement.text ? (
         <AnnouncementBanner text={siteState.announcement.text} />
       ) : null}
       <Navbar siteName={siteState.siteName} siteLogo={siteState.siteLogo} siteLogoText={siteState.siteLogoText} />
-      <main className="mx-auto max-w-screen-2xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-screen-2xl overflow-x-clip px-4 py-8 sm:px-6 lg:px-8">
         <Suspense fallback={<SitePageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />

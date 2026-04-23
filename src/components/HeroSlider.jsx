@@ -91,7 +91,9 @@ export default function HeroSlider() {
   const total = slides.length;
   const current = slides[index] || slides[0];
   const accentHex = extractAccentHex(current?.accent_color);
-  const titleLength = String(current?.title || '').trim().length;
+  const currentTitle = String(current?.title || '').trim();
+  const hasTitle = currentTitle.length > 0;
+  const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
     ? 'text-[1.65rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
     : titleLength > 48
@@ -128,8 +130,8 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[650px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
-        <div className="absolute inset-x-0 top-0 h-[380px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
+      <section className="relative left-1/2 -mt-8 h-[430px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible sm:h-[580px] lg:h-[770px]">
+        <div className="absolute inset-x-0 top-0 h-[230px] overflow-hidden bg-slate-950 sm:h-[320px] lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -139,7 +141,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[650px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[430px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible text-white sm:h-[580px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -170,7 +172,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[380px] overflow-hidden sm:h-[420px] lg:h-[460px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[230px] overflow-hidden sm:h-[320px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -187,29 +189,11 @@ export default function HeroSlider() {
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         )}
         {/* Light darkening — just enough so the card pops, background stays visible */}
-        <div className="absolute inset-0 bg-slate-950/35" />
-        {/* Soft side vignettes so the card area feels centered without hiding the art */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(90deg, rgba(2,6,23,0.55) 0%, rgba(2,6,23,0) 18%, rgba(2,6,23,0) 82%, rgba(2,6,23,0.55) 100%)',
-          }}
-        />
-        {/* Subtle dot grid for texture */}
-        <div
-          className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
-          style={{
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
-            backgroundSize: '20px 20px',
-          }}
-        />
       </div>
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-12 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-14 sm:px-10 sm:pb-6 lg:bottom-16 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-16 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-20 sm:px-10 sm:pb-6 lg:bottom-24 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -219,24 +203,40 @@ export default function HeroSlider() {
           className="relative mx-auto w-full overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
         >
           {/* Left accent bar (matches active slide color) */}
-          <div
-            className="absolute left-0 top-0 z-20 h-full w-[5px]"
-            style={{
-              background: `linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, transparent) 100%)`,
-              boxShadow: `0 0 22px var(--accent), 0 0 44px color-mix(in srgb, var(--accent) 45%, transparent)`,
-            }}
-          />
+          {hasTitle ? (
+            <div
+              className="absolute left-0 top-0 z-20 h-full w-[5px]"
+              style={{
+                background: `linear-gradient(180deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 55%, transparent) 100%)`,
+                boxShadow: `0 0 22px var(--accent), 0 0 44px color-mix(in srgb, var(--accent) 45%, transparent)`,
+              }}
+            />
+          ) : null}
 
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[350px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:h-[395px] md:h-[440px]`}
+            className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
-            {/* Dark plate so the text stays readable over bright gradients */}
-            <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
+            {hasTitle ? (
+              <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
+            ) : null}
+
+            {current.image_url && hasTitle ? (
+              <div
+                key={`art-mobile-${current.id || index}`}
+                className="hs-card-art pointer-events-none absolute inset-0 md:hidden"
+                style={{
+                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  opacity: 0.52,
+                }}
+              />
+            ) : null}
 
             {/* Slide hero art (right side) */}
-            {current.image_url ? (
+            {current.image_url && hasTitle ? (
               <div
                 key={`art-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] md:block"
@@ -252,24 +252,41 @@ export default function HeroSlider() {
               />
             ) : null}
 
+            {current.image_url && !hasTitle ? (
+              <div
+                key={`art-full-${current.id || index}`}
+                className="hs-card-art pointer-events-none absolute inset-0"
+                style={{
+                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+            ) : null}
+
             {/* Left→right darkening for legibility */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-transparent" />
+            {hasTitle ? (
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-transparent" />
+            ) : null}
 
             {/* Subtle dot texture inside card */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
-                backgroundSize: '16px 16px',
-              }}
-            />
+            {hasTitle ? (
+              <div
+                className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
+                style={{
+                  backgroundImage:
+                    'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
+                  backgroundSize: '16px 16px',
+                }}
+              />
+            ) : null}
 
             {/* Text block */}
-            <div
-              key={`text-${current.id || index}`}
-              className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-4 overflow-hidden px-8 py-10 sm:px-12 sm:py-14 md:px-14 md:py-16"
-            >
+            {hasTitle ? (
+              <div
+                key={`text-${current.id || index}`}
+                className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-3 overflow-hidden px-6 py-8 sm:px-10 sm:py-12 md:px-14 md:py-16"
+              >
               {current.eyebrow ? (
                 <div>
                   <span
@@ -309,7 +326,8 @@ export default function HeroSlider() {
                   </Link>
                 ) : null}
               </div>
-            </div>
+              </div>
+            ) : null}
           </div>
 
         </div>
@@ -317,11 +335,11 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative mx-auto mt-3 w-full"
+            className="relative z-20 mx-auto -mt-5 w-[calc(100%-0.5rem)] sm:-mt-7 sm:w-[calc(100%-1rem)] lg:-mt-8 lg:w-[calc(100%-1.5rem)]"
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] bg-slate-100/92 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-xl dark:bg-slate-950/60 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] bg-slate-100/88 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.14),inset_0_1px_0_rgba(255,255,255,0.98)] backdrop-blur-xl dark:bg-slate-950/72 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -337,7 +355,7 @@ export default function HeroSlider() {
                     className={`group/tab relative flex min-w-[64px] flex-1 items-center justify-center rounded-[14px] px-2.5 py-2.5 transition-all duration-300 sm:min-w-[80px] sm:py-3 ${
                       active
                         ? 'shadow-lg'
-                        : 'bg-white/68 text-slate-700 ring-1 ring-slate-200/70 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:ring-white/5 dark:hover:bg-white/[0.06]'
+                        : 'bg-white/68 text-slate-700 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:hover:bg-white/[0.06]'
                     }`}
                     title={title}
                     style={active ? {

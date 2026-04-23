@@ -5,9 +5,9 @@ const STORAGE_KEY = 'ok_theme_mode';
 const THEME_MODES = ['light', 'dark', 'system'];
 
 function getStoredMode() {
-  if (typeof window === 'undefined') return 'system';
+  if (typeof window === 'undefined') return 'dark';
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  return THEME_MODES.includes(stored) ? stored : 'system';
+  return THEME_MODES.includes(stored) ? stored : 'dark';
 }
 
 function getSystemDark() {
