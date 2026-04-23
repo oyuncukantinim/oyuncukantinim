@@ -29,19 +29,19 @@ import {
 // ~420px tall. At 2x retina the image area spans ~1630×840 CSS pixels, so
 // a 16:9 source at ≥1600px width gives a crisp result with the left-fade
 // mask still hiding any background cruft.
-const RECOMMENDED_WIDTH = 1600;
-const RECOMMENDED_HEIGHT = 900;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.78 (16:9)
-const RECOMMENDED_RATIO_LABEL = '16:9';
+const RECOMMENDED_WIDTH = 1920;
+const RECOMMENDED_HEIGHT = 640;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 3.0
+const RECOMMENDED_RATIO_LABEL = '3:1';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
-const MIN_RECOMMENDED_WIDTH = 1280; // absolute floor — below this the right-side art goes soft on wide screens
+const MIN_RECOMMENDED_WIDTH = 1600; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 // Background pool is rendered full-bleed behind the card with heavy dimming,
 // so wide 16:9 landscape hero screenshots work best.
-const BG_RECOMMENDED_WIDTH = 1920;
-const BG_RECOMMENDED_HEIGHT = 1080;
-const BG_RECOMMENDED_RATIO_LABEL = '16:9';
+const BG_RECOMMENDED_WIDTH = 2400;
+const BG_RECOMMENDED_HEIGHT = 720;
+const BG_RECOMMENDED_RATIO_LABEL = '10:3';
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -552,7 +552,7 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL})</span>
                       </label>
-                      <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[3/1] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
                           <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
                         ) : (
@@ -659,7 +659,7 @@ export default function AdminHeroSlides() {
                               ) : null}
                             </div>
                             <p className="text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                              Şeffaf arka planlı PNG / SVG öner · 96×96 px ideal. Bu ikon slider'ın
+                              Şeffaf arka planlı PNG / SVG öner · 128×128 px ideal. Bu ikon slider'ın
                               alt sekmesinde başlık yerine geçer, aktifken slayt renginde parlar.
                             </p>
                           </div>
