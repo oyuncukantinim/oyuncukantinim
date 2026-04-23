@@ -175,7 +175,7 @@ export default function HeroSlider() {
           <img
             src={backgroundUrl}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-fill sm:object-cover"
             loading="eager"
           />
         ) : (
