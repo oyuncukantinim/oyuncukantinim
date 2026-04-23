@@ -112,7 +112,7 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[520px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950">
+      <section className="relative left-1/2 -mt-8 h-[560px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950 sm:h-[640px] lg:h-[700px]">
         <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
       </section>
     );
@@ -121,7 +121,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 w-screen -translate-x-1/2 overflow-hidden bg-slate-950 text-white"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[560px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950 text-white sm:h-[640px] lg:h-[700px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -196,7 +196,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-end px-4 pb-8 pt-12 sm:min-h-[680px] sm:px-10 sm:pb-10 sm:pt-16 lg:px-16 lg:pt-20"
+        className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-8 sm:px-10 sm:pb-10 lg:px-16 lg:pb-12"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -317,7 +317,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative mx-auto mt-4 w-full"
+            className="relative mx-auto mt-3 w-full"
             role="tablist"
             aria-label="Slayt seçici"
           >
