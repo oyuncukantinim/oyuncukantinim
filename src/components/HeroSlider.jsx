@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Gamepad2, Pause, Play } from 'lucide-react';
+import { ChevronRight, Gamepad2 } from 'lucide-react';
 import { getHeroBackgrounds, getHeroSlides } from '../lib/api';
 
 // Map Tailwind "from-color-NNN via-... to-..." accent strings to a single
@@ -58,7 +58,7 @@ const DEFAULT_SLIDES = [
   },
 ];
 
-const AUTO_INTERVAL = 6500;
+const AUTO_INTERVAL = 9500;
 
 export default function HeroSlider() {
   const [slides, setSlides] = useState([]);
@@ -156,8 +156,6 @@ export default function HeroSlider() {
           0%, 100% { opacity: .9; }
           50%      { opacity: 1; }
         }
-        @keyframes hs-progress { 0% { width: 0%; } 100% { width: 100%; } }
-
         .hs-bg { animation: hs-kenburns 22s ease-in-out infinite alternate; }
         .hs-text > * { opacity: 0; animation: hs-text-in .6s cubic-bezier(.2,.7,.2,1) forwards; }
         .hs-text > *:nth-child(1) { animation-delay: .05s; }
@@ -166,9 +164,6 @@ export default function HeroSlider() {
         .hs-text > *:nth-child(4) { animation-delay: .38s; }
 
         .hs-card-art { animation: hs-text-in .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: .25s; }
-
-        .hs-progress { animation: hs-progress ${AUTO_INTERVAL}ms linear; }
-        .hs-progress.paused { animation-play-state: paused; }
 
         .hs-tab-glow { animation: hs-pulse-glow 2.4s ease-in-out infinite; }
       `}</style>
@@ -288,7 +283,7 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className={`${titleSizeClass} text-balance font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
+              <h1 className={`${titleSizeClass} font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
@@ -317,19 +312,6 @@ export default function HeroSlider() {
             </div>
           </div>
 
-          {/* Progress bar along the bottom of the card */}
-          {total > 1 ? (
-            <div className="absolute bottom-0 left-0 z-20 h-0.5 w-full bg-black/30">
-              <div
-                key={`pg-${index}-${paused ? 'p' : 'r'}-${total}`}
-                className={`hs-progress h-full ${paused ? 'paused' : ''}`}
-                style={{
-                  background: `linear-gradient(90deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, white) 100%)`,
-                  boxShadow: `0 0 12px var(--accent)`,
-                }}
-              />
-            </div>
-          ) : null}
         </div>
 
         {/* ----- Tabs ----- */}
@@ -339,7 +321,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/45 bg-white/72 p-1.5 shadow-[0_18px_40px_-28px_rgba(15,23,42,0.35),inset_0_1px_0_rgba(255,255,255,0.7)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-950/58 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-2">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] border border-slate-200/90 bg-slate-100/92 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -352,7 +334,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[74px] flex-1 items-center justify-center rounded-xl px-3 py-3 transition-all duration-300 sm:min-w-[92px] sm:py-4 ${
+                    className={`group/tab relative flex min-w-[64px] flex-1 items-center justify-center rounded-[14px] px-2.5 py-2.5 transition-all duration-300 sm:min-w-[80px] sm:py-3 ${
                       active
                         ? 'shadow-lg'
                         : 'opacity-70 hover:bg-black/[0.04] hover:opacity-100 dark:hover:bg-white/[0.06]'
@@ -366,7 +348,7 @@ export default function HeroSlider() {
                     {/* Icon — acts as the tab header itself */}
                     <span
                       className={`flex items-center justify-center transition-transform duration-300 ${
-                        active ? 'h-12 w-12 scale-110 sm:h-14 sm:w-14' : 'h-10 w-10 sm:h-12 sm:w-12 group-hover/tab:scale-105'
+                        active ? 'h-10 w-10 scale-110 sm:h-12 sm:w-12' : 'h-8 w-8 sm:h-10 sm:w-10 group-hover/tab:scale-105'
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
@@ -399,23 +381,6 @@ export default function HeroSlider() {
               })}
             </div>
 
-            {/* Pause/play + counter */}
-            <div className="mt-3 flex items-center justify-between px-1">
-              <span className="font-mono text-[11px] font-black uppercase tracking-[0.25em] text-slate-500 dark:text-white/50">
-                <span className="text-slate-900 dark:text-white">{String(index + 1).padStart(2, '0')}</span>
-                <span className="mx-1 text-slate-400 dark:text-white/30">/</span>
-                <span>{String(total).padStart(2, '0')}</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setPaused((p) => !p)}
-                className="flex h-7 items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/75 px-2.5 text-[10px] font-black uppercase tracking-wider text-slate-700 transition hover:border-slate-400 hover:bg-white hover:text-slate-900 dark:border-white/15 dark:bg-white/5 dark:text-white/80 dark:hover:border-white/35 dark:hover:bg-white/15 dark:hover:text-white"
-                aria-label={paused ? 'Oynat' : 'Durdur'}
-              >
-                {paused ? <Play size={11} /> : <Pause size={11} />}
-                {paused ? 'Oynat' : 'Durdur'}
-              </button>
-            </div>
           </div>
         ) : null}
       </div>
