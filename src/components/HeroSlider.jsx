@@ -93,6 +93,7 @@ export default function HeroSlider() {
   const accentHex = extractAccentHex(current?.accent_color);
   const currentTitle = String(current?.title || '').trim();
   const hasTitle = currentTitle.length > 0;
+  const hasImage = Boolean(current?.image_url);
   const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
     ? 'text-[1.65rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
@@ -212,20 +213,16 @@ export default function HeroSlider() {
             className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
-              <div className="pointer-events-none absolute inset-0 bg-slate-950/30 md:bg-slate-950/55" />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/10 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
             {current.image_url && hasTitle ? (
-              <div
+              <img
                 key={`art-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-0 scale-[1.08] md:hidden"
-                style={{
-                  backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  opacity: 0.82,
-                }}
+                src={current.image_url}
+                alt=""
+                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full scale-[1.06] object-cover object-center opacity-100 md:hidden"
+                loading="eager"
               />
             ) : null}
 
@@ -260,13 +257,13 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent" />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/45 via-slate-950/14 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
             {hasTitle ? (
               <div
-                className="pointer-events-none absolute inset-0 opacity-[0.08] mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 hidden opacity-[0.08] mix-blend-overlay md:block"
                 style={{
                   backgroundImage:
                     'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
