@@ -25,16 +25,17 @@ import {
   adminUploadImage,
 } from '../../lib/adminApi';
 
-// Slide hero art sits on the right ~58% of a max-w-5xl (1024px) card that is
-// 360–440px tall. Recommend a portrait-friendly 3:2 source so the subject
-// survives the left-fade mask and looks crisp on retina.
-const RECOMMENDED_WIDTH = 1200;
-const RECOMMENDED_HEIGHT = 800;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.5 (3:2)
-const RECOMMENDED_RATIO_LABEL = '3:2';
-const MAX_RECOMMENDED_BYTES = 400 * 1024; // 400 KB
-const MIN_RECOMMENDED_WIDTH = 900; // absolute floor for the card art
-const RATIO_TOLERANCE = 0.3; // accepts 16:9 / 4:3 / 5:4 gracefully
+// Slide hero art sits on the right ~55% of a max-w-[1480px] card that is
+// ~420px tall. At 2x retina the image area spans ~1630×840 CSS pixels, so
+// a 16:9 source at ≥1600px width gives a crisp result with the left-fade
+// mask still hiding any background cruft.
+const RECOMMENDED_WIDTH = 1600;
+const RECOMMENDED_HEIGHT = 900;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 1.78 (16:9)
+const RECOMMENDED_RATIO_LABEL = '16:9';
+const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
+const MIN_RECOMMENDED_WIDTH = 1280; // absolute floor — below this the right-side art goes soft on wide screens
+const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 // Background pool is rendered full-bleed behind the card with heavy dimming,
 // so wide 16:9 landscape hero screenshots work best.
@@ -551,7 +552,7 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL})</span>
                       </label>
-                      <div className={`relative flex aspect-[3/2] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[16/9] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
                           <img src={slide.image_url} alt="" className="h-full w-full object-cover" />
                         ) : (
@@ -563,14 +564,14 @@ export default function AdminHeroSlides() {
                           </div>
                         )}
                         {/* Dark legibility gradient preview (left side → dark, right → clear) */}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/70 via-black/30 to-transparent" />
-                        {/* Text safe zone — headline + CTAs sit on the left third */}
-                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[58%] rounded-lg border border-dashed border-white/60" />
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+                        {/* Text safe zone — headline + CTAs sit on the left ~40% */}
+                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[55%] rounded-lg border border-dashed border-white/60" />
                         <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
                           Yazı Alanı
                         </div>
                         <div className="pointer-events-none absolute bottom-4 right-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                          Ana Konu (sağda fade)
+                          Ana Konu (sağ %55)
                         </div>
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
@@ -742,7 +743,7 @@ function ImageSizeHint({ meta, hasImage }) {
     return (
       <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
         <Info size={11} className="mt-0.5 shrink-0" />
-        Görsel kartın sağ ~%58'inde, sola doğru kaybolan fade mask ile görünür.
+        Görsel kartın sağ ~%55'inde, sola doğru kaybolan fade mask ile görünür.
         Ana karakteri/ürünü sağ-merkeze konumlandır. Önerilen: {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} px ({RECOMMENDED_RATIO_LABEL}).
       </p>
     );

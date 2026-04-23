@@ -196,14 +196,14 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="relative mx-auto flex min-h-[560px] max-w-7xl flex-col justify-center px-4 pb-6 pt-10 sm:min-h-[600px] sm:px-6 sm:pt-14"
+        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-center px-4 pb-6 pt-10 sm:min-h-[680px] sm:px-10 sm:pt-14 lg:px-16"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
         {/* ----- Card ----- */}
         <div
           key={`card-${current.id || index}`}
-          className="relative mx-auto w-full max-w-5xl overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+          className="relative mx-auto w-full overflow-hidden rounded-[22px] border border-white/10 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
         >
           {/* Left accent bar (matches active slide color) */}
           <div
@@ -214,9 +214,10 @@ export default function HeroSlider() {
             }}
           />
 
-          {/* Card background: accent gradient tinted by slide, with image art overlay */}
+          {/* Card background: accent gradient tinted by slide, with image art overlay.
+              Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex min-h-[300px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:min-h-[360px]`}
+            className={`relative flex min-h-[340px] overflow-hidden bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'} sm:min-h-[380px] md:min-h-[420px]`}
           >
             {/* Dark plate so the text stays readable over bright gradients */}
             <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
@@ -225,15 +226,15 @@ export default function HeroSlider() {
             {current.image_url ? (
               <div
                 key={`art-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[58%] md:block"
+                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] md:block"
                 style={{
                   backgroundImage: `url("${current.image_url}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center right',
                   maskImage:
-                    'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                    'linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
                   WebkitMaskImage:
-                    'linear-gradient(to left, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
+                    'linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
                 }}
               />
             ) : null}
@@ -254,7 +255,7 @@ export default function HeroSlider() {
             {/* Text block */}
             <div
               key={`text-${current.id || index}`}
-              className="hs-text relative z-10 flex w-full max-w-xl flex-col justify-center gap-4 px-7 py-10 sm:px-10 sm:py-14"
+              className="hs-text relative z-10 flex w-full max-w-[640px] flex-col justify-center gap-4 px-8 py-10 sm:px-12 sm:py-14 md:px-14 md:py-16"
             >
               {current.eyebrow ? (
                 <div>
@@ -269,12 +270,12 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className="text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl">
+              <h1 className="text-3xl font-black leading-[1.05] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-4xl md:text-5xl lg:text-6xl">
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="max-w-md text-sm font-semibold leading-relaxed text-white/85 sm:text-base">
+                <p className="max-w-lg text-sm font-semibold leading-relaxed text-white/85 sm:text-base md:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
@@ -316,7 +317,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative mx-auto mt-5 w-full max-w-5xl"
+            className="relative mx-auto mt-5 w-full"
             role="tablist"
             aria-label="Slayt seçici"
           >
