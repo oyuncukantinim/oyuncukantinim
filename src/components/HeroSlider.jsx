@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Gamepad2, Pause, Play } from 'lucide-react';
-import { getHeroSlides } from '../lib/api';
+import { getHeroBackgrounds, getHeroSlides } from '../lib/api';
 
 // Map Tailwind "from-color-NNN via-... to-..." accent strings to a single
 // solid hex used for left border glow + bottom tab underline glow.
@@ -37,14 +37,11 @@ const DEFAULT_SLIDES = [
   {
     id: 'fallback-1',
     eyebrow: 'Hoşgeldin Oyuncu',
-    tab_label: 'Pazar',
     title: 'Oyun Dünyasının Yeni Kantini',
     subtitle:
       'Güvenilir oyuncu pazarı, onaylı satıcılar ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.',
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
-    secondary_label: 'Kategorileri Keşfet',
-    secondary_url: '/categories',
     image_url: '',
     icon_url: '',
     accent_color: 'from-violet-600 via-purple-600 to-cyan-500',
@@ -55,6 +52,7 @@ const AUTO_INTERVAL = 6500;
 
 export default function HeroSlider() {
   const [slides, setSlides] = useState([]);
+  const [backgrounds, setBackgrounds] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -64,14 +62,19 @@ export default function HeroSlider() {
   const [bgSeed] = useState(() => Math.random());
 
   useEffect(() => {
-    getHeroSlides()
-      .then((r) => {
-        const list = Array.isArray(r.data)
-          ? r.data.filter((s) => s.title || s.subtitle || s.image_url)
+    Promise.allSettled([getHeroSlides(), getHeroBackgrounds()])
+      .then(([slidesRes, bgRes]) => {
+        const slidesData = slidesRes.status === 'fulfilled' ? slidesRes.value : null;
+        const bgData = bgRes.status === 'fulfilled' ? bgRes.value : null;
+        const list = slidesData && Array.isArray(slidesData.data)
+          ? slidesData.data.filter((s) => s.title || s.subtitle || s.image_url)
           : [];
         setSlides(list.length ? list : DEFAULT_SLIDES);
+        const bgList = bgData && Array.isArray(bgData.data)
+          ? bgData.data.map((b) => b.image_url).filter(Boolean)
+          : [];
+        setBackgrounds(bgList);
       })
-      .catch(() => setSlides(DEFAULT_SLIDES))
       .finally(() => setLoaded(true));
   }, []);
 
@@ -79,13 +82,16 @@ export default function HeroSlider() {
   const current = slides[index] || slides[0];
   const accentHex = extractAccentHex(current?.accent_color);
 
-  // Build the pool of background image URLs, then pick one via the stable seed.
+  // Pick a stable background once per mount. Prefer the dedicated backgrounds
+  // pool; fall back to slide images if the admin hasn't uploaded any yet.
   const backgroundUrl = useMemo(() => {
-    const pool = slides.map((s) => s.image_url).filter(Boolean);
+    const pool = backgrounds.length
+      ? backgrounds
+      : slides.map((s) => s.image_url).filter(Boolean);
     if (!pool.length) return '';
     const idx = Math.floor(bgSeed * pool.length) % pool.length;
     return pool[idx];
-  }, [slides, bgSeed]);
+  }, [backgrounds, slides, bgSeed]);
 
   useEffect(() => {
     if (!total || paused || total < 2) return;
@@ -288,15 +294,6 @@ export default function HeroSlider() {
                     <ChevronRight size={15} className="relative transition-transform group-hover/btn:translate-x-0.5" />
                   </Link>
                 ) : null}
-                {current.secondary_label ? (
-                  <Link
-                    to={current.secondary_url || '/categories'}
-                    className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/5 px-5 py-3 text-sm font-black uppercase tracking-wider text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/55 hover:bg-white/15"
-                  >
-                    <span>{current.secondary_label}</span>
-                    <ChevronRight size={15} />
-                  </Link>
-                ) : null}
               </div>
             </div>
           </div>
@@ -323,60 +320,54 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-xl border border-white/5 bg-black/40 p-1 backdrop-blur-md sm:gap-2">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl sm:gap-2">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
-                const label = slide.tab_label || slide.eyebrow || slide.title || `Slayt ${i + 1}`;
+                const title = slide.tab_label || slide.eyebrow || slide.title || `Slayt ${i + 1}`;
                 return (
                   <button
                     key={slide.id || i}
                     type="button"
                     role="tab"
                     aria-selected={active}
+                    aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[86px] flex-1 flex-col items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 transition-all duration-300 sm:min-w-[100px] sm:py-3 ${
+                    className={`group/tab relative flex min-w-[74px] flex-1 items-center justify-center rounded-xl px-3 py-3 transition-all duration-300 sm:min-w-[92px] sm:py-4 ${
                       active
-                        ? 'bg-white/[0.06]'
-                        : 'opacity-60 hover:bg-white/[0.04] hover:opacity-100'
+                        ? 'bg-white/[0.08]'
+                        : 'opacity-55 hover:bg-white/[0.05] hover:opacity-100'
                     }`}
-                    title={label}
+                    title={title}
                   >
-                    {/* Icon */}
+                    {/* Icon — acts as the tab header itself */}
                     <span
-                      className="flex h-8 w-8 items-center justify-center sm:h-9 sm:w-9"
+                      className={`flex items-center justify-center transition-transform duration-300 ${
+                        active ? 'h-12 w-12 scale-110 sm:h-14 sm:w-14' : 'h-10 w-10 sm:h-12 sm:w-12 group-hover/tab:scale-105'
+                      }`}
                       style={active ? {
-                        filter: `drop-shadow(0 0 6px ${tabHex}) drop-shadow(0 0 14px color-mix(in srgb, ${tabHex} 60%, transparent))`,
-                      } : { filter: 'grayscale(0.4)' }}
+                        filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
+                      } : { filter: 'grayscale(0.5)' }}
                     >
                       {slide.icon_url ? (
                         <img
                           src={slide.icon_url}
-                          alt=""
+                          alt={title}
                           className="h-full w-full object-contain"
                           loading="lazy"
                         />
                       ) : (
-                        <Gamepad2 size={22} className="text-white/80" />
+                        <Gamepad2 size={active ? 32 : 28} className="text-white/85" />
                       )}
-                    </span>
-
-                    {/* Label */}
-                    <span
-                      className={`max-w-[100px] truncate text-[10px] font-black uppercase tracking-wider transition-colors sm:text-[11px] ${
-                        active ? 'text-white' : 'text-white/70'
-                      }`}
-                    >
-                      {label}
                     </span>
 
                     {/* Active underline glow */}
                     {active ? (
                       <span
-                        className="hs-tab-glow absolute -bottom-[1px] left-3 right-3 h-[3px] rounded-full"
+                        className="hs-tab-glow absolute -bottom-[2px] left-4 right-4 h-[3px] rounded-full"
                         style={{
                           background: `linear-gradient(90deg, transparent, ${tabHex}, transparent)`,
-                          boxShadow: `0 0 10px ${tabHex}, 0 0 20px color-mix(in srgb, ${tabHex} 60%, transparent)`,
+                          boxShadow: `0 0 10px ${tabHex}, 0 0 22px color-mix(in srgb, ${tabHex} 65%, transparent)`,
                         }}
                       />
                     ) : null}

@@ -104,6 +104,10 @@ export function getHeroSlides() {
   return request('get_hero_slides');
 }
 
+export function getHeroBackgrounds() {
+  return request('get_hero_backgrounds');
+}
+
 // --- PROFILE ---
 export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });

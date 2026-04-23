@@ -18,7 +18,9 @@ import {
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminDeleteUploadedImage,
+  adminGetHeroBackgrounds,
   adminGetHeroSlides,
+  adminSaveHeroBackgrounds,
   adminSaveHeroSlides,
   adminUploadImage,
 } from '../../lib/adminApi';
@@ -48,11 +50,8 @@ function createEmptySlide() {
     title: '',
     subtitle: '',
     eyebrow: '',
-    tab_label: '',
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
-    secondary_label: 'Kategorileri Keşfet',
-    secondary_url: '/categories',
     image_url: '',
     icon_url: '',
     accent_color: ACCENT_PRESETS[0].value,
@@ -62,6 +61,9 @@ function createEmptySlide() {
 
 export default function AdminHeroSlides() {
   const [slides, setSlides] = useState([]);
+  const [backgrounds, setBackgrounds] = useState([]); // [{ _key, image_url }]
+  const [bgBusy, setBgBusy] = useState(false);
+  const [bgSaving, setBgSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -76,29 +78,37 @@ export default function AdminHeroSlides() {
   };
 
   useEffect(() => {
-    adminGetHeroSlides()
-      .then((response) => {
-        const data = Array.isArray(response.data) ? response.data : [];
-        const mapped = data.map((slide, i) => ({
-          _key: `s-${slide.id || i}-${Math.random()}`,
-          ...slide,
-          is_active: Number(slide.is_active ?? 1) ? 1 : 0,
-        }));
-        setSlides(mapped);
-        // Probe remote image dimensions once so we can show size hints on load.
-        mapped.forEach((s) => {
-          if (!s.image_url) return;
-          const img = new Image();
-          img.onload = () => {
-            setImageMeta((prev) => ({
-              ...prev,
-              [s._key]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
-            }));
-          };
-          img.src = s.image_url;
-        });
+    Promise.allSettled([adminGetHeroSlides(), adminGetHeroBackgrounds()])
+      .then(([slidesRes, bgRes]) => {
+        if (slidesRes.status === 'fulfilled') {
+          const data = Array.isArray(slidesRes.value.data) ? slidesRes.value.data : [];
+          const mapped = data.map((slide, i) => ({
+            _key: `s-${slide.id || i}-${Math.random()}`,
+            ...slide,
+            is_active: Number(slide.is_active ?? 1) ? 1 : 0,
+          }));
+          setSlides(mapped);
+          // Probe remote image dimensions once so we can show size hints on load.
+          mapped.forEach((s) => {
+            if (!s.image_url) return;
+            const img = new Image();
+            img.onload = () => {
+              setImageMeta((prev) => ({
+                ...prev,
+                [s._key]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
+              }));
+            };
+            img.src = s.image_url;
+          });
+        }
+        if (bgRes.status === 'fulfilled') {
+          const bgData = Array.isArray(bgRes.value.data) ? bgRes.value.data : [];
+          setBackgrounds(bgData.map((b, i) => ({
+            _key: `bg-${b.id || i}-${Math.random()}`,
+            image_url: b.image_url || '',
+          })));
+        }
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
     return () => {
       if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -242,12 +252,12 @@ export default function AdminHeroSlides() {
         title: s.title,
         subtitle: s.subtitle,
         eyebrow: s.eyebrow,
-        tab_label: s.tab_label,
+        tab_label: '',
         badge_text: '',
         cta_label: s.cta_label,
         cta_url: s.cta_url,
-        secondary_label: s.secondary_label,
-        secondary_url: s.secondary_url,
+        secondary_label: '',
+        secondary_url: '',
         image_url: s.image_url,
         icon_url: s.icon_url,
         accent_color: s.accent_color,
@@ -261,6 +271,42 @@ export default function AdminHeroSlides() {
       showToast(err.message || 'Kaydedilemedi.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // -------- Background pool handlers --------
+  const addBackgroundFile = async (file) => {
+    if (!file) return;
+    setBgBusy(true);
+    try {
+      const url = await adminUploadImage(file, 'hero-slider-bg', { preserveOriginal: true });
+      setBackgrounds((prev) => [...prev, { _key: `bg-new-${Date.now()}-${Math.random()}`, image_url: url }]);
+      showToast('Arka plan yüklendi (kaydetmeyi unutma).');
+    } catch (err) {
+      showToast(err.message || 'Arka plan yüklenemedi.');
+    } finally {
+      setBgBusy(false);
+    }
+  };
+
+  const removeBackground = async (bg) => {
+    setBgBusy(true);
+    try {
+      if (bg.image_url) await adminDeleteUploadedImage(bg.image_url);
+    } catch { /* ignore */ }
+    setBackgrounds((prev) => prev.filter((b) => b._key !== bg._key));
+    setBgBusy(false);
+  };
+
+  const saveBackgrounds = async () => {
+    setBgSaving(true);
+    try {
+      await adminSaveHeroBackgrounds(backgrounds.map((b) => ({ image_url: b.image_url })));
+      showToast('Arka plan havuzu kaydedildi.');
+    } catch (err) {
+      showToast(err.message || 'Kaydedilemedi.');
+    } finally {
+      setBgSaving(false);
     }
   };
 
@@ -333,6 +379,87 @@ export default function AdminHeroSlides() {
           </div>
         </div>
 
+        {/* ============== Background pool manager ============== */}
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 text-white">
+                <ImageIcon size={16} />
+              </div>
+              <div>
+                <div className="text-sm font-black text-slate-800 dark:text-white">Arka Plan Havuzu</div>
+                <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  Sayfa her yenilendiğinde bu havuzdan rastgele bir görsel arkada gösterilir. Slayt değişirken değişmez.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="hero-bg-upload"
+                type="file"
+                accept="image/*,.webp"
+                multiple
+                className="hidden"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  for (const f of files) {
+                    // eslint-disable-next-line no-await-in-loop
+                    await addBackgroundFile(f);
+                  }
+                  e.target.value = '';
+                }}
+              />
+              <label
+                htmlFor="hero-bg-upload"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-slate-700"
+              >
+                {bgBusy ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
+                Görsel Yükle
+              </label>
+              <button
+                type="button"
+                onClick={saveBackgrounds}
+                disabled={bgSaving}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-2 text-xs font-black text-white shadow-md transition hover:-translate-y-0.5 disabled:opacity-60 dark:from-slate-700 dark:to-slate-800"
+              >
+                {bgSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                Kaydet
+              </button>
+            </div>
+          </div>
+
+          {backgrounds.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-2 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+              <ImageIcon size={24} className="text-slate-300 dark:text-slate-600" />
+              <div className="font-semibold">Henüz arka plan yok.</div>
+              <div className="text-[11px]">
+                Önerilen: 1920×1080 px veya daha geniş · birden fazla ekleyebilirsin.
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {backgrounds.map((bg) => (
+                <div
+                  key={bg._key}
+                  className="group/bg relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
+                  style={{ aspectRatio: '16 / 9' }}
+                >
+                  <img src={bg.image_url} alt="" className="h-full w-full object-cover" />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover/bg:opacity-100" />
+                  <button
+                    type="button"
+                    onClick={() => removeBackground(bg)}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600/90 text-white opacity-0 shadow-lg transition-opacity hover:bg-rose-500 group-hover/bg:opacity-100"
+                    title="Kaldır"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {loading ? (
           <div className="flex h-40 items-center justify-center text-slate-400">
             <Loader2 size={22} className="animate-spin" />
@@ -381,11 +508,6 @@ export default function AdminHeroSlides() {
                           <div className="mt-0.5 truncate text-lg font-black text-white drop-shadow">
                             {slide.title || <span className="italic text-white/60">Başlıksız slide</span>}
                           </div>
-                          {slide.tab_label ? (
-                            <div className="mt-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/70">
-                              Sekme: {slide.tab_label}
-                            </div>
-                          ) : null}
                         </div>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -495,22 +617,23 @@ export default function AdminHeroSlides() {
 
                     {/* Text fields */}
                     <div className="space-y-3">
-                      {/* Tab icon + label */}
+                      {/* Tab icon — this IS the tab header on the front-end */}
                       <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-3 dark:border-violet-900/40 dark:bg-violet-950/20">
                         <div className="mb-2 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-violet-700 dark:text-violet-300">
-                          <ImageIcon size={12} /> Sekme (Alt Tab) Ayarı
+                          <ImageIcon size={12} /> Alt Sekme İkonu
                         </div>
-                        <div className="flex items-start gap-3">
-                          {/* Icon uploader */}
+                        <div className="flex items-center gap-3">
                           <div className="shrink-0">
-                            <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
+                            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
                               {slide.icon_url ? (
-                                <img src={slide.icon_url} alt="" className="h-full w-full object-contain" />
+                                <img src={slide.icon_url} alt="" className="h-full w-full object-contain p-2" />
                               ) : (
-                                <ImageIcon size={20} className="text-slate-300" />
+                                <ImageIcon size={24} className="text-slate-300" />
                               )}
                             </div>
-                            <div className="mt-1.5 flex items-center gap-1">
+                          </div>
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-1.5">
                               <input
                                 id={`hero-slide-icon-${slide._key}`}
                                 type="file"
@@ -524,35 +647,24 @@ export default function AdminHeroSlides() {
                               />
                               <label
                                 htmlFor={`hero-slide-icon-${slide._key}`}
-                                className="inline-flex cursor-pointer items-center gap-1 rounded-md bg-violet-600 px-2 py-1 text-[10px] font-black text-white hover:bg-violet-500"
+                                className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-black text-white hover:bg-violet-500"
                               >
-                                <Upload size={10} />
-                                {slide.icon_url ? 'Değiştir' : 'Yükle'}
+                                <Upload size={11} />
+                                {slide.icon_url ? 'Değiştir' : 'İkon Yükle'}
                               </label>
                               {slide.icon_url ? (
                                 <button
                                   type="button"
                                   onClick={() => clearIcon(slide)}
-                                  className="inline-flex items-center justify-center rounded-md bg-rose-50 px-1.5 py-1 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
-                                  title="İkonu sil"
+                                  className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2 py-1.5 text-[11px] font-black text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
                                 >
-                                  <X size={10} />
+                                  <X size={11} /> Kaldır
                                 </button>
                               ) : null}
                             </div>
-                          </div>
-                          <div className="flex-1 space-y-2">
-                            <Field label="Sekme Etiketi" hint="Alt sekmede görünür · ör: CS2, VALORANT">
-                              <input
-                                value={slide.tab_label || ''}
-                                onChange={(e) => updateSlide(slide._key, { tab_label: e.target.value })}
-                                placeholder="CS2"
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-black uppercase tracking-wider focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                              />
-                            </Field>
                             <p className="text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                              Şeffaf arka planlı PNG / SVG öner. 96×96 px ideal. Aktif sekmede ikon,
-                              slayt renginde parlama efekti alır.
+                              Şeffaf arka planlı PNG / SVG öner · 96×96 px ideal. Bu ikon slider'ın
+                              alt sekmesinde başlık yerine geçer, aktifken slayt renginde parlar.
                             </p>
                           </div>
                         </div>
@@ -602,25 +714,7 @@ export default function AdminHeroSlides() {
                         </Field>
                       </div>
 
-                      <div className="grid gap-3 sm:grid-cols-2">
-                        <Field label="İkincil Buton">
-                          <input
-                            value={slide.secondary_label || ''}
-                            onChange={(e) => updateSlide(slide._key, { secondary_label: e.target.value })}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                        <Field label="İkincil Buton Link">
-                          <input
-                            value={slide.secondary_url || ''}
-                            onChange={(e) => updateSlide(slide._key, { secondary_url: e.target.value })}
-                            placeholder="/categories"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                          />
-                        </Field>
-                      </div>
-
-                      <Field label="Renk Teması" hint="Eyebrow etiketi ve görsel yoksa arka plan için kullanılır">
+                      <Field label="Renk Teması" hint="Sol accent çizgisi, CTA butonu ve aktif sekme parlamasında kullanılır">
                         <select
                           value={slide.accent_color || ACCENT_PRESETS[0].value}
                           onChange={(e) => updateSlide(slide._key, { accent_color: e.target.value })}

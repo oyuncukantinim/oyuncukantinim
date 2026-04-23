@@ -242,6 +242,10 @@ export const adminGetHeroSlides = () =>
   adminRequest('admin_get_hero_slides');
 export const adminSaveHeroSlides = (slides) =>
   adminRequest('admin_save_hero_slides', { method: 'POST', body: { slides } });
+export const adminGetHeroBackgrounds = () =>
+  adminRequest('admin_get_hero_backgrounds');
+export const adminSaveHeroBackgrounds = (backgrounds) =>
+  adminRequest('admin_save_hero_backgrounds', { method: 'POST', body: { backgrounds } });
 export const adminDeleteUploadedImage = (url) =>
   adminRequest('admin_delete_uploaded_image', { method: 'POST', body: { url } });
 
