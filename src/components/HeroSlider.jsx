@@ -173,19 +173,19 @@ export default function HeroSlider() {
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         )}
-        {/* Heavy darkening so the center card pops */}
-        <div className="absolute inset-0 bg-slate-950/70" />
-        {/* Center vignette so the card area feels spotlit */}
+        {/* Light darkening — just enough so the card pops, background stays visible */}
+        <div className="absolute inset-0 bg-slate-950/35" />
+        {/* Soft side vignettes so the card area feels centered without hiding the art */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 65% 55% at 50% 45%, rgba(2,6,23,0) 0%, rgba(2,6,23,0.55) 60%, rgba(2,6,23,0.9) 100%)',
+              'linear-gradient(90deg, rgba(2,6,23,0.55) 0%, rgba(2,6,23,0) 18%, rgba(2,6,23,0) 82%, rgba(2,6,23,0.55) 100%)',
           }}
         />
         {/* Subtle dot grid for texture */}
         <div
-          className="absolute inset-0 opacity-[0.06] mix-blend-overlay"
+          className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
           style={{
             backgroundImage:
               'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.9) 1px, transparent 0)',
@@ -196,7 +196,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-center px-4 pb-6 pt-10 sm:min-h-[680px] sm:px-10 sm:pt-14 lg:px-16"
+        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-center px-4 pb-10 pt-10 sm:min-h-[680px] sm:px-10 sm:pb-12 sm:pt-14 lg:px-16"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -317,11 +317,11 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative mx-auto mt-5 w-full"
+            className="relative mx-auto mt-3 w-full translate-y-3 sm:mt-2 sm:translate-y-4"
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-2xl sm:gap-2">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-2xl border border-white/16 bg-white/[0.09] p-1.5 shadow-[0_22px_50px_-30px_rgba(15,23,42,0.9),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-3xl sm:gap-2">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
