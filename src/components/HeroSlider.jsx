@@ -216,15 +216,12 @@ export default function HeroSlider() {
             ) : null}
 
             {current.image_url && hasTitle ? (
-              <div
+              <img
                 key={`art-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-0 md:hidden"
-                style={{
-                  backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  opacity: 0.52,
-                }}
+                src={current.image_url}
+                alt=""
+                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-55 md:hidden"
+                loading="eager"
               />
             ) : null}
 
