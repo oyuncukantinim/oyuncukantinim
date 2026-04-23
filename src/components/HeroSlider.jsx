@@ -77,7 +77,7 @@ export default function HeroSlider() {
         const slidesData = slidesRes.status === 'fulfilled' ? slidesRes.value : null;
         const bgData = bgRes.status === 'fulfilled' ? bgRes.value : null;
         const list = slidesData && Array.isArray(slidesData.data)
-          ? slidesData.data.filter((s) => s.title || s.subtitle || s.image_url)
+          ? slidesData.data.filter((s) => s.title || s.subtitle || s.image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url)
           : [];
         setSlides(list.length ? list : DEFAULT_SLIDES);
         const bgList = bgData && Array.isArray(bgData.data)

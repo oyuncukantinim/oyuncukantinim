@@ -5,10 +5,8 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
-  Info,
   Loader2,
   Plus,
-  Ruler,
   Save,
   Sparkles,
   Trash2,
@@ -25,23 +23,23 @@ import {
   adminUploadImage,
 } from '../../lib/adminApi';
 
-// Slide hero art sits on the right ~55% of a max-w-[1480px] card that is
-// ~420px tall. At 2x retina the image area spans ~1630×840 CSS pixels, so
-// a 16:9 source at ≥1600px width gives a crisp result with the left-fade
-// mask still hiding any background cruft.
-const RECOMMENDED_WIDTH = 1920;
-const RECOMMENDED_HEIGHT = 640;
-const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // 3.0
+// Slide hero art sits on the right ~55% of the card. At 2x retina that area
+// spans roughly 1350×440 CSS pixels, so a ~3:1 source at this native size
+// gives a crisp result with the left-fade mask still hiding any seam.
+const RECOMMENDED_WIDTH = 1350;
+const RECOMMENDED_HEIGHT = 440;
+const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // ~3.07
 const RECOMMENDED_RATIO_LABEL = '3:1';
+const RECOMMENDED_SIZE_LABEL = '1350x440px';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
-const MIN_RECOMMENDED_WIDTH = 1600; // below this the hero canvas softens on desktop
+const MIN_RECOMMENDED_WIDTH = 1200; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 // Background pool is rendered full-bleed behind the card with heavy dimming,
-// so wide 16:9 landscape hero screenshots work best.
-const BG_RECOMMENDED_WIDTH = 2400;
-const BG_RECOMMENDED_HEIGHT = 720;
-const BG_RECOMMENDED_RATIO_LABEL = '10:3';
+// so wide cinematic landscape screenshots work best.
+const BG_RECOMMENDED_WIDTH = 1910;
+const BG_RECOMMENDED_HEIGHT = 460;
+const BG_RECOMMENDED_SIZE_LABEL = '1910x460px';
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -377,10 +375,7 @@ export default function AdminHeroSlides() {
                 <div className="flex flex-wrap items-center gap-1.5 text-sm font-black text-slate-800 dark:text-white">
                   Arka Plan Havuzu
                   <span className="rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white dark:bg-slate-700">
-                    {BG_RECOMMENDED_WIDTH} × {BG_RECOMMENDED_HEIGHT}
-                  </span>
-                  <span className="rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    {BG_RECOMMENDED_RATIO_LABEL}
+                    {BG_RECOMMENDED_SIZE_LABEL}
                   </span>
                 </div>
                 <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
@@ -429,7 +424,7 @@ export default function AdminHeroSlides() {
               <ImageIcon size={24} className="text-slate-300 dark:text-slate-600" />
               <div className="font-semibold">Henüz arka plan yok.</div>
               <div className="text-[11px]">
-                Önerilen: {BG_RECOMMENDED_WIDTH}×{BG_RECOMMENDED_HEIGHT} px · {BG_RECOMMENDED_RATIO_LABEL} · birden fazla ekleyebilirsin (rastgele seçilir).
+                Önerilen: {BG_RECOMMENDED_SIZE_LABEL} · birden fazla ekleyebilirsin (rastgele seçilir).
               </div>
             </div>
           ) : (
@@ -550,7 +545,7 @@ export default function AdminHeroSlides() {
                     {/* Image uploader */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL})</span>
+                        Kart Görseli <span className="font-semibold normal-case tracking-normal text-slate-400">· {RECOMMENDED_SIZE_LABEL}</span>
                       </label>
                       <div className={`relative flex aspect-[3/1] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.image_url ? (
@@ -559,20 +554,10 @@ export default function AdminHeroSlides() {
                           <div className="flex flex-col items-center gap-1 text-white/90">
                             <ImageIcon size={26} />
                             <span className="text-[10px] font-black uppercase tracking-wider text-white/80">
-                              {RECOMMENDED_WIDTH} × {RECOMMENDED_HEIGHT}
+                              {RECOMMENDED_SIZE_LABEL}
                             </span>
                           </div>
                         )}
-                        {/* Dark legibility gradient preview (left side → dark, right → clear) */}
-                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
-                        {/* Text safe zone — headline + CTAs sit on the left ~40% */}
-                        <div className="pointer-events-none absolute inset-y-3 left-3 right-[55%] rounded-lg border border-dashed border-white/60" />
-                        <div className="pointer-events-none absolute left-4 top-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                          Yazı Alanı
-                        </div>
-                        <div className="pointer-events-none absolute bottom-4 right-4 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                          Ana Konu (sağ %55)
-                        </div>
                         {isBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
                             <Loader2 className="animate-spin" size={22} />
@@ -674,7 +659,7 @@ export default function AdminHeroSlides() {
                         />
                       </Field>
 
-                      <Field label="Başlık" required>
+                      <Field label="Başlık">
                         <input
                           value={slide.title || ''}
                           onChange={(e) => updateSlide(slide._key, { title: e.target.value })}
@@ -731,7 +716,7 @@ export default function AdminHeroSlides() {
 
         <p className="px-1 text-[11px] text-slate-400 dark:text-slate-500">
           Slide'ları yukarı/aşağı okları ile sırala. Gizli slide'lar ana sayfada görünmez.
-          Kart görseli için {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} ({RECOMMENDED_RATIO_LABEL}), arka plan havuzu için {BG_RECOMMENDED_WIDTH}×{BG_RECOMMENDED_HEIGHT} ({BG_RECOMMENDED_RATIO_LABEL}) önerilir.
+          Kart görseli için {RECOMMENDED_SIZE_LABEL}, arka plan havuzu için {BG_RECOMMENDED_SIZE_LABEL} önerilir.
         </p>
       </div>
     </AdminLayout>
@@ -741,10 +726,8 @@ export default function AdminHeroSlides() {
 function ImageSizeHint({ meta, hasImage }) {
   if (!hasImage) {
     return (
-      <p className="mt-2 flex items-start gap-1.5 text-[10px] font-semibold leading-snug text-slate-400 dark:text-slate-500">
-        <Info size={11} className="mt-0.5 shrink-0" />
-        Görsel kartın sağ ~%55'inde, sola doğru kaybolan fade mask ile görünür.
-        Ana karakteri/ürünü sağ-merkeze konumlandır. Önerilen: {RECOMMENDED_WIDTH}×{RECOMMENDED_HEIGHT} px ({RECOMMENDED_RATIO_LABEL}).
+      <p className="mt-2 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+        Önerilen görsel boyutu: {RECOMMENDED_SIZE_LABEL}.
       </p>
     );
   }
@@ -804,3 +787,5 @@ function Field({ label, hint, required, children }) {
     </label>
   );
 }
+
+
