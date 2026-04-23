@@ -112,8 +112,10 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[560px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950 sm:h-[640px] lg:h-[700px]">
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
+      <section className="relative left-1/2 -mt-8 h-[620px] w-screen -translate-x-1/2 overflow-visible sm:h-[680px] lg:h-[740px]">
+        <div className="absolute inset-x-0 top-0 h-[360px] overflow-hidden bg-slate-950 sm:h-[400px] lg:h-[440px]">
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
+        </div>
       </section>
     );
   }
@@ -121,7 +123,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[560px] w-screen -translate-x-1/2 overflow-hidden bg-slate-950 text-white sm:h-[640px] lg:h-[700px]"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[620px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[680px] lg:h-[740px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -157,7 +159,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute inset-0 overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[360px] overflow-hidden sm:h-[400px] lg:h-[440px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
