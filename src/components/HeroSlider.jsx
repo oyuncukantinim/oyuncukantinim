@@ -328,7 +328,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[56px] w-full sm:-mt-[68px] lg:-mt-[68px]"
+            className="relative z-20 mx-auto -mt-[48px] w-full sm:-mt-[56px] lg:-mt-[56px]"
             role="tablist"
             aria-label="Slayt seçici"
           >
@@ -345,7 +345,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-2 transition-all duration-300 sm:min-w-[72px] sm:py-2.5 ${
+                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-1 transition-all duration-300 sm:min-w-[72px] ${
                       active
                         ? 'shadow-lg'
                         : 'bg-white/68 text-slate-700 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:hover:bg-white/[0.06]'
@@ -359,7 +359,7 @@ export default function HeroSlider() {
                     {/* Icon — acts as the tab header itself */}
                     <span
                       className={`flex items-center justify-center transition-transform duration-300 ${
-                        active ? 'h-9 w-9 scale-105 sm:h-11 sm:w-11' : 'h-7 w-7 sm:h-9 sm:w-9 group-hover/tab:scale-105'
+                        active ? 'h-10 w-10 scale-105 sm:h-12 sm:w-12' : 'h-8 w-8 sm:h-10 sm:w-10 group-hover/tab:scale-105'
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
@@ -373,7 +373,7 @@ export default function HeroSlider() {
                           loading="lazy"
                         />
                       ) : (
-                        <Gamepad2 size={active ? 30 : 24} className="text-white/85" />
+                        <Gamepad2 size={active ? 34 : 28} className="text-white/85" />
                       )}
                     </span>
 
