@@ -93,9 +93,9 @@ export default function HeroSlider() {
   const accentHex = extractAccentHex(current?.accent_color);
   const titleLength = String(current?.title || '').trim().length;
   const titleSizeClass = titleLength > 72
-    ? 'text-[2rem] sm:text-[2.45rem] md:text-[3rem] lg:text-[3.4rem]'
+    ? 'text-[1.85rem] sm:text-[2.2rem] md:text-[2.75rem] lg:text-[3.15rem]'
     : titleLength > 48
-      ? 'text-[2.3rem] sm:text-[2.85rem] md:text-[3.35rem] lg:text-[4rem]'
+      ? 'text-[2.15rem] sm:text-[2.6rem] md:text-[3.1rem] lg:text-[3.7rem]'
       : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
 
   // Pick a stable background once per mount. Prefer the dedicated backgrounds
@@ -128,7 +128,7 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-10 h-[650px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
+      <section className="relative left-1/2 -mt-12 h-[650px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
         <div className="absolute inset-x-0 top-0 h-[380px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
@@ -139,7 +139,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-10 h-[650px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
+      className="hero-slider group/hero relative left-1/2 -mt-12 h-[650px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -209,7 +209,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-8 sm:px-10 sm:pb-10 lg:px-16 lg:pb-12"
+        className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-6 sm:px-10 sm:pb-8 lg:px-16 lg:pb-10"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -321,7 +321,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] border border-slate-200/90 bg-slate-100/92 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.22),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
+            <div className="flex items-stretch justify-between gap-1 overflow-x-auto rounded-[18px] border border-slate-300/95 bg-slate-200/90 p-1 shadow-[0_14px_30px_-26px_rgba(15,23,42,0.18),inset_0_1px_0_rgba(255,255,255,0.96)] backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/60 dark:shadow-[0_22px_44px_-28px_rgba(2,6,23,0.75),inset_0_1px_0_rgba(255,255,255,0.08)] sm:gap-1.5">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -337,7 +337,7 @@ export default function HeroSlider() {
                     className={`group/tab relative flex min-w-[64px] flex-1 items-center justify-center rounded-[14px] px-2.5 py-2.5 transition-all duration-300 sm:min-w-[80px] sm:py-3 ${
                       active
                         ? 'shadow-lg'
-                        : 'opacity-70 hover:bg-black/[0.04] hover:opacity-100 dark:hover:bg-white/[0.06]'
+                        : 'bg-white/68 text-slate-700 ring-1 ring-slate-200/70 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:ring-white/5 dark:hover:bg-white/[0.06]'
                     }`}
                     title={title}
                     style={active ? {
@@ -352,7 +352,7 @@ export default function HeroSlider() {
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
-                      } : { filter: 'grayscale(0.35)' }}
+                      } : { filter: 'grayscale(0.15)', opacity: 0.92 }}
                     >
                       {slide.icon_url ? (
                         <img
