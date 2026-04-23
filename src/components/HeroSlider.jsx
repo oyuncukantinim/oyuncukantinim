@@ -212,7 +212,7 @@ export default function HeroSlider() {
             className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
-              <div className="pointer-events-none absolute inset-0 bg-slate-950/55" />
+              <div className="pointer-events-none absolute inset-0 bg-slate-950/30 md:bg-slate-950/55" />
             ) : null}
 
             {current.image_url && hasTitle ? (
@@ -220,7 +220,7 @@ export default function HeroSlider() {
                 key={`art-mobile-${current.id || index}`}
                 src={current.image_url}
                 alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-55 md:hidden"
+                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full scale-[1.08] object-cover object-center opacity-85 md:hidden"
                 loading="eager"
               />
             ) : null}
@@ -256,7 +256,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/80 via-slate-950/35 to-transparent" />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent" />
             ) : null}
 
             {/* Subtle dot texture inside card */}
