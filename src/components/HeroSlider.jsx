@@ -93,9 +93,9 @@ export default function HeroSlider() {
   const accentHex = extractAccentHex(current?.accent_color);
   const titleLength = String(current?.title || '').trim().length;
   const titleSizeClass = titleLength > 72
-    ? 'text-[1.85rem] sm:text-[2.2rem] md:text-[2.75rem] lg:text-[3.15rem]'
+    ? 'text-[1.65rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
     : titleLength > 48
-      ? 'text-[2.15rem] sm:text-[2.6rem] md:text-[3.1rem] lg:text-[3.7rem]'
+      ? 'text-[1.95rem] sm:text-[2.35rem] md:text-[2.85rem] lg:text-[3.35rem]'
       : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
 
   // Pick a stable background once per mount. Prefer the dedicated backgrounds
@@ -209,7 +209,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-0 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-6 sm:px-10 sm:pb-8 lg:px-16 lg:pb-10"
+        className="absolute inset-x-0 bottom-3 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-4 sm:px-10 sm:pb-6 lg:bottom-5 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -337,7 +337,7 @@ export default function HeroSlider() {
                     className={`group/tab relative flex min-w-[64px] flex-1 items-center justify-center rounded-[14px] px-2.5 py-2.5 transition-all duration-300 sm:min-w-[80px] sm:py-3 ${
                       active
                         ? 'shadow-lg'
-                        : 'bg-white/68 text-slate-700 ring-1 ring-slate-200/70 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:ring-white/5 dark:hover:bg-white/[0.06]'
+                        : 'bg-slate-800/88 text-white ring-1 ring-slate-700/80 hover:bg-slate-700 dark:bg-white/[0.03] dark:text-white/75 dark:ring-white/5 dark:hover:bg-white/[0.06]'
                     }`}
                     title={title}
                     style={active ? {
