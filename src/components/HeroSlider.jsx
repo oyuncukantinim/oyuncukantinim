@@ -210,19 +210,22 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[250px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[210px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
               <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
             {current.image_url && hasTitle ? (
-              <img
+              <div
                 key={`art-mobile-${current.id || index}`}
-                src={current.image_url}
-                alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center opacity-100 md:hidden"
-                loading="eager"
+                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 z-0 w-[46%] md:hidden"
+                style={{
+                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center right',
+                  backgroundRepeat: 'no-repeat',
+                }}
               />
             ) : null}
 
@@ -257,7 +260,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/28 via-slate-950/10 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
@@ -276,12 +279,12 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[640px] flex-col justify-center gap-3 overflow-hidden px-6 py-8 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-center gap-2 overflow-hidden px-5 py-5 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.22em] text-white shadow-md"
+                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-md sm:px-2.5 sm:text-[11px] sm:tracking-[0.22em]"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                     }}
@@ -291,21 +294,21 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className={`${titleSizeClass} font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
+              <h1 className={`${titleSizeClass} font-black leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="line-clamp-3 max-w-lg text-sm font-semibold leading-relaxed text-white/85 sm:text-base md:text-lg">
+                <p className="line-clamp-2 max-w-[13rem] text-[11px] font-semibold leading-snug text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
 
-              <div className="mt-2 flex flex-wrap items-center gap-2.5">
+              <div className="mt-1 flex flex-wrap items-center gap-2 sm:mt-2 sm:gap-2.5">
                 {current.cta_label ? (
                   <Link
                     to={current.cta_url || '/market'}
-                    className="group/btn relative inline-flex items-center gap-2 overflow-hidden rounded-xl px-5 py-3 text-sm font-black uppercase tracking-wider text-white shadow-lg transition hover:-translate-y-0.5"
+                    className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-xl px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-lg transition hover:-translate-y-0.5 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-wider"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                       boxShadow: `0 10px 28px -8px var(--accent)`,
