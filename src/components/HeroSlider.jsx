@@ -131,7 +131,7 @@ export default function HeroSlider() {
   if (!loaded) {
     return (
       <section className="relative left-1/2 -mt-8 h-[500px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
-        <div className="absolute inset-x-0 top-0 h-[240px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
+        <div className="absolute inset-x-0 top-0 h-[24vw] min-h-[96px] max-h-[118px] overflow-hidden bg-slate-950 sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -167,7 +167,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[240px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] lg:h-[460px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[24vw] min-h-[96px] max-h-[118px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -175,7 +175,7 @@ export default function HeroSlider() {
           <img
             src={backgroundUrl}
             alt=""
-            className="absolute inset-0 h-full w-full object-fill sm:object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
           />
         ) : (
