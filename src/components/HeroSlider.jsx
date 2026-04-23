@@ -196,7 +196,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-center px-4 pb-6 pt-10 sm:min-h-[680px] sm:px-10 sm:pt-14 lg:px-16"
+        className="relative mx-auto flex min-h-[620px] w-full max-w-[1480px] flex-col justify-center px-4 pb-10 pt-10 sm:min-h-[680px] sm:px-10 sm:pb-12 sm:pt-14 lg:px-16"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -317,7 +317,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative mx-auto mt-5 w-full"
+            className="relative mx-auto mt-2 w-full translate-y-4 sm:translate-y-5"
             role="tablist"
             aria-label="Slayt seçici"
           >
