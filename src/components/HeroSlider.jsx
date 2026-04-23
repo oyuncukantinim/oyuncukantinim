@@ -167,30 +167,17 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[380px] overflow-hidden sm:h-[420px] lg:h-[460px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
         {backgroundUrl ? (
-          <>
-            <div
-              className="absolute inset-0 sm:hidden"
-              style={{
-                backgroundImage: `url("${backgroundUrl}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }}
-            />
-            <div
-              className="absolute inset-0 hidden sm:block"
-              style={{
-                backgroundImage: `url("${backgroundUrl}")`,
-                backgroundSize: '100% 100%',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center',
-              }}
-            />
-          </>
+          <img
+            src={backgroundUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="eager"
+          />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
         )}
