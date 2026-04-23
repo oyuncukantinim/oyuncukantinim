@@ -209,7 +209,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-8 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-10 sm:px-10 sm:pb-6 lg:bottom-12 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-12 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-14 sm:px-10 sm:pb-6 lg:bottom-16 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
