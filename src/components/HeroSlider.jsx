@@ -146,10 +146,6 @@ export default function HeroSlider() {
       style={{ '--accent': accentHex }}
     >
       <style>{`
-        @keyframes hs-kenburns {
-          0%   { transform: scale(1.04) translateX(0); }
-          100% { transform: scale(1.10) translateX(-1.2%); }
-        }
         @keyframes hs-text-in {
           0%   { opacity: 0; transform: translateY(14px); filter: blur(6px); }
           100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
@@ -158,7 +154,6 @@ export default function HeroSlider() {
           0%, 100% { opacity: .9; }
           50%      { opacity: 1; }
         }
-        .hs-bg { animation: hs-kenburns 22s ease-in-out infinite alternate; }
         .hs-text > * { opacity: 0; animation: hs-text-in .6s cubic-bezier(.2,.7,.2,1) forwards; }
         .hs-text > *:nth-child(1) { animation-delay: .05s; }
         .hs-text > *:nth-child(2) { animation-delay: .16s; }
@@ -179,7 +174,7 @@ export default function HeroSlider() {
         {backgroundUrl ? (
           <>
             <div
-              className="hs-bg absolute inset-0 sm:hidden"
+              className="absolute inset-0 sm:hidden"
               style={{
                 backgroundImage: `url("${backgroundUrl}")`,
                 backgroundSize: 'cover',
@@ -187,12 +182,12 @@ export default function HeroSlider() {
               }}
             />
             <div
-              className="hs-bg absolute inset-0 hidden sm:block"
+              className="absolute inset-0 hidden sm:block"
               style={{
                 backgroundImage: `url("${backgroundUrl}")`,
-                backgroundSize: '100% auto',
+                backgroundSize: '100% 100%',
                 backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'center top',
+                backgroundPosition: 'center',
               }}
             />
           </>
