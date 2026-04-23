@@ -130,8 +130,8 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[430px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible sm:h-[580px] lg:h-[770px]">
-        <div className="absolute inset-x-0 top-0 h-[230px] overflow-hidden bg-slate-950 sm:h-[320px] lg:h-[460px]">
+      <section className="relative left-1/2 -mt-8 h-[650px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
+        <div className="absolute inset-x-0 top-0 h-[380px] overflow-hidden bg-slate-950 sm:h-[420px] lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -141,7 +141,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[430px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible text-white sm:h-[580px] lg:h-[770px]"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[650px] w-screen max-w-[100vw] -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -172,7 +172,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[230px] overflow-hidden sm:h-[320px] lg:h-[460px]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[380px] overflow-hidden sm:h-[420px] lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -335,7 +335,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-5 w-[calc(100%-0.5rem)] sm:-mt-7 sm:w-[calc(100%-1rem)] lg:-mt-8 lg:w-[calc(100%-1.5rem)]"
+            className="relative z-20 mx-auto -mt-16 w-[calc(100%-1rem)] sm:-mt-20 sm:w-[calc(100%-1.25rem)] lg:-mt-24 lg:w-[calc(100%-1.5rem)]"
             role="tablist"
             aria-label="Slayt seçici"
           >
