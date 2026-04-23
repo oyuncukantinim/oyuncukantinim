@@ -332,7 +332,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between overflow-x-auto">
+            <div className="flex items-stretch justify-between overflow-hidden rounded-b-[22px]">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
