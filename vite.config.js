@@ -1,8 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { beasties } from 'vite-plugin-beasties'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    beasties({
+      options: {
+        preload: 'swap',          // remaining CSS is loaded async, applied once ready
+        inlineFonts: true,        // inline small font-face rules used above the fold
+        pruneSource: true,        // strip inlined rules from the external stylesheet
+        mergeStylesheets: true,   // fewer <style> / <link> tags in the HTML
+        logLevel: 'warn',
+      },
+    }),
+  ],
   build: {
     cssCodeSplit: true,
     modulePreload: { polyfill: false },
