@@ -395,7 +395,6 @@ export default function AdminHeroSlides() {
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
                   for (const f of files) {
-                    // eslint-disable-next-line no-await-in-loop
                     await addBackgroundFile(f);
                   }
                   e.target.value = '';

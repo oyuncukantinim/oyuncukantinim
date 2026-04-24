@@ -700,24 +700,6 @@ export default function AdminSettings() {
     }
   };
 
-  const handleDopingOptionImageRemove = async (type, index, url) => {
-    const uploadKey = `listing_doping_${type}_options_${index}`;
-    setImageUploading(uploadKey);
-    try {
-      if (isUploadedSiteImage(url)) {
-        await adminDeleteUploadedImage(url);
-      }
-      const current = getDopingOptionsFromSettings(settings, type);
-      const next = current.map((option, optionIndex) => (optionIndex === index ? { ...option, image: '' } : option));
-      set(`listing_doping_${type}_options`, JSON.stringify(next));
-      showToast('Görsel kaldırıldı.');
-    } catch (error) {
-      showToast(error.message);
-    } finally {
-      setImageUploading('');
-    }
-  };
-
   const handleSave = async () => {
     setSaving(true);
     try {

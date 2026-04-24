@@ -638,7 +638,7 @@ export default function ProfilePage() {
     else if (activeTab === 'achievements') {
       getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
     }
-  }, [activeTab, user, loadListings, loadOrders, loadSales]);
+  }, [activeTab, user, token, loadListings, loadOrders, loadSales]);
 
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();

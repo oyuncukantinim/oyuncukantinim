@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Clock3,
   LifeBuoy,
@@ -285,7 +285,7 @@ export default function AdminSupportPage() {
   });
   const [replyMessage, setReplyMessage] = useState('');
 
-  const loadTickets = async (preferredId = null) => {
+  const loadTickets = useCallback(async (preferredId = null) => {
     setLoadingList(true);
     try {
       const response = await adminGetSupportTickets(filters);
@@ -303,9 +303,9 @@ export default function AdminSupportPage() {
     } finally {
       setLoadingList(false);
     }
-  };
+  }, [filters, selectedId]);
 
-  const loadDetail = async (ticketId) => {
+  const loadDetail = useCallback(async (ticketId) => {
     if (!ticketId) {
       setDetail(null);
       setSelectedListings([]);
@@ -330,11 +330,11 @@ export default function AdminSupportPage() {
     } finally {
       setLoadingDetail(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadTickets();
-  }, [filters.status, filters.category, filters.assigned_admin_id]);
+  }, [filters.status, filters.category, filters.assigned_admin_id, loadTickets]);
 
   useEffect(() => {
     adminGetSettings()
@@ -349,7 +349,7 @@ export default function AdminSupportPage() {
       loadTickets();
     }, 250);
     return () => clearTimeout(timer);
-  }, [filters.search]);
+  }, [filters.search, loadTickets]);
 
   useEffect(() => {
     if (!selectedId) {
@@ -360,7 +360,7 @@ export default function AdminSupportPage() {
       return;
     }
     loadDetail(selectedId);
-  }, [selectedId]);
+  }, [selectedId, loadDetail]);
 
   const relatedListingRows = useMemo(() => {
     if (selectedListings.length) return selectedListings;

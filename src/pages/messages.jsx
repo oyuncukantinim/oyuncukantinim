@@ -358,7 +358,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
   useEffect(() => {
     if (!initialized) return;
     scrollMessagesToBottom('smooth');
-  }, [messages.length]);
+  }, [initialized, messages.length]);
 
   const handleSend = async (e) => {
     e.preventDefault();
