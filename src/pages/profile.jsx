@@ -5,7 +5,7 @@ import {
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
-  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
+  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList, Search,
   MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload, Trophy
 } from 'lucide-react';
 
@@ -551,6 +551,7 @@ export default function ProfilePage() {
   const [myListings, setMyListings] = useState([]);
   const [listingFilter, setListingFilter] = useState('active');
   const [listingsView, setListingsView] = useState(() => localStorage.getItem('listingsView') || 'list');
+  const [listingSearch, setListingSearch] = useState('');
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
@@ -994,12 +995,62 @@ export default function ProfilePage() {
     setActiveTab(tabId);
   };
 
+  const listingCounts = {
+    active: myListings.filter((item) => item.status === 'active').length,
+    passive: myListings.filter((item) => isPassiveListing(item)).length,
+    expired: myListings.filter((item) => item.status === 'expired').length,
+    all: myListings.length,
+  };
+
   const filteredListings = myListings.filter(l => {
     if (listingFilter === 'active') return l.status === 'active';
     if (listingFilter === 'passive') return isPassiveListing(l);
     if (listingFilter === 'expired') return l.status === 'expired';
     return true;
+  }).filter((listing) => {
+    const q = listingSearch.trim().toLocaleLowerCase('tr-TR');
+    if (!q) return true;
+    const haystack = [
+      listing.id,
+      listing.title,
+      listing.category_name,
+      listing.category,
+      listing.delivery_type === 'stock' ? 'stoklu' : 'manuel',
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLocaleLowerCase('tr-TR');
+    return haystack.includes(q);
   });
+
+  const getManagedListingStatusMeta = (listing) => {
+    if (listing.status === 'active') {
+      return {
+        label: 'Yayında',
+        chip: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        surface: 'from-emerald-500/10 via-white to-white',
+      };
+    }
+    if (isPassiveListing(listing)) {
+      return {
+        label: 'Pasif',
+        chip: 'border-amber-200 bg-amber-50 text-amber-700',
+        surface: 'from-amber-500/10 via-white to-white',
+      };
+    }
+    if (listing.status === 'expired') {
+      return {
+        label: 'Süresi Dolmuş',
+        chip: 'border-rose-200 bg-rose-50 text-rose-700',
+        surface: 'from-rose-500/10 via-white to-white',
+      };
+    }
+    return {
+      label: 'Arşiv',
+      chip: 'border-slate-200 bg-slate-100 text-slate-600',
+      surface: 'from-slate-400/10 via-white to-white',
+    };
+  };
 
   useEffect(() => {
     if (!balanceAddEnabled && activeTab === 'balance') {
@@ -1128,177 +1179,299 @@ export default function ProfilePage() {
           {/* İLANLARIM */}
           {activeTab === 'listings' && (
             <div>
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><List size={20} className="text-violet-500" /> İlanlarım</h2>
-                <div className="flex items-center gap-2">
-                  <div className="flex border border-gray-200 rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => { setListingsView('list'); localStorage.setItem('listingsView', 'list'); }}
-                      className={`p-1.5 transition-colors ${listingsView === 'list' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
-                      title="Liste görünümü"
-                    >
-                      <LayoutList size={14} />
-                    </button>
-                    <button
-                      onClick={() => { setListingsView('grid'); localStorage.setItem('listingsView', 'grid'); }}
-                      className={`p-1.5 transition-colors ${listingsView === 'grid' ? 'bg-violet-600 text-white' : 'text-gray-400 hover:bg-gray-50'}`}
-                      title="Grid görünümü"
-                    >
-                      <LayoutGrid size={14} />
-                    </button>
+              <div className="mb-6 overflow-hidden rounded-[28px] border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-violet-50/60 shadow-sm">
+                <div className="flex flex-col gap-5 px-5 py-5 sm:px-6">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="space-y-2">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-violet-700">
+                        <List size={13} className="text-violet-500" />
+                        İlan Yönetimi
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-black tracking-tight text-slate-900">İlanlarım</h2>
+                        <p className="mt-1 max-w-2xl text-sm font-medium text-slate-500">
+                          Yayındaki, pasif veya süresi dolmuş ilanlarını tek alanda yönet. Düzenle, doping uygula ve durumunu hızla değiştir.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                        <button
+                          onClick={() => { setListingsView('list'); localStorage.setItem('listingsView', 'list'); }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black transition-colors ${listingsView === 'list' ? 'bg-violet-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                          title="Liste görünümü"
+                        >
+                          <LayoutList size={14} /> Liste
+                        </button>
+                        <button
+                          onClick={() => { setListingsView('grid'); localStorage.setItem('listingsView', 'grid'); }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-black transition-colors ${listingsView === 'grid' ? 'bg-violet-600 text-white' : 'text-slate-500 hover:bg-slate-50'}`}
+                          title="Kart görünümü"
+                        >
+                          <LayoutGrid size={14} /> Kart
+                        </button>
+                      </div>
+                      <Link to="/create" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 text-sm font-black text-white shadow-[0_16px_35px_-18px_rgba(124,58,237,0.75)] transition-transform hover:-translate-y-0.5">
+                        <Plus size={15}/> Yeni İlan
+                      </Link>
+                    </div>
                   </div>
-                  <Link to="/create" className="btn-primary py-2 px-4 text-sm flex items-center gap-1.5">
-                    <Plus size={15}/> Yeni İlan
-                  </Link>
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    {[
+                      { key: 'active', label: 'Aktif İlan', value: listingCounts.active, tone: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
+                      { key: 'passive', label: 'Pasif İlan', value: listingCounts.passive, tone: 'border-amber-200 bg-amber-50 text-amber-700' },
+                      { key: 'expired', label: 'Süresi Dolmuş', value: listingCounts.expired, tone: 'border-rose-200 bg-rose-50 text-rose-700' },
+                      { key: 'all', label: 'Toplam İlan', value: listingCounts.all, tone: 'border-violet-200 bg-violet-50 text-violet-700' },
+                    ].map((item) => (
+                      <button
+                        key={item.key}
+                        onClick={() => setListingFilter(item.key)}
+                        className={`rounded-2xl border px-4 py-3 text-left transition-all ${
+                          listingFilter === item.key
+                            ? 'border-violet-500 bg-slate-950 text-white shadow-[0_20px_40px_-24px_rgba(15,23,42,0.8)]'
+                            : 'border-white/70 bg-white/85 hover:border-violet-200 hover:bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div>
+                            <div className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] ${listingFilter === item.key ? 'border-white/20 bg-white/10 text-white/80' : item.tone}`}>
+                              {item.label}
+                            </div>
+                            <div className={`mt-2 text-2xl font-black tracking-tight ${listingFilter === item.key ? 'text-white' : 'text-slate-900'}`}>{item.value}</div>
+                          </div>
+                          <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${listingFilter === item.key ? 'bg-white/10' : 'bg-slate-100'}`}>
+                            <BarChart2 size={16} className={listingFilter === item.key ? 'text-white' : 'text-slate-500'} />
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'active',  label: 'Aktif', count: listingCounts.active },
+                        { key: 'passive', label: 'Pasif', count: listingCounts.passive },
+                        { key: 'expired', label: 'Süresi Dolmuş', count: listingCounts.expired },
+                        { key: 'all',     label: 'Tümü', count: listingCounts.all },
+                      ].map(f => (
+                        <button key={f.key} onClick={() => setListingFilter(f.key)}
+                          className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black transition-all ${listingFilter === f.key ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-500/20' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300 hover:text-violet-700'}`}>
+                          {f.label}
+                          <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${listingFilter === f.key ? 'bg-white/15 text-white' : 'bg-slate-100 text-slate-500'}`}>{f.count}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <label className="relative block min-w-[250px]">
+                        <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          value={listingSearch}
+                          onChange={(event) => setListingSearch(event.target.value)}
+                          placeholder="İlan no, başlık veya kategori ara..."
+                          className="h-11 w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+                        />
+                      </label>
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500">
+                        Görünen: <span className="text-slate-800">{filteredListings.length}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-2 mb-4">
-                {[
-                  { key: 'active',  label: 'Aktif' },
-                  { key: 'passive', label: 'Pasif' },
-                  { key: 'expired', label: 'Süresi Dolmuş' },
-                  { key: 'all',     label: 'Tümü' },
-                ].map(f => (
-                  <button key={f.key} onClick={() => setListingFilter(f.key)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${listingFilter === f.key ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                    {f.label}
-                  </button>
-                ))}
               </div>
               {filteredListings.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-4xl mb-3"></div>
-                  <p className="text-gray-400 font-semibold">Bu durumda ilan yok.</p>
-                  <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
+                <div className="rounded-[28px] border border-dashed border-slate-200 bg-slate-50/80 py-14 text-center">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+                    <List size={22} className="text-violet-500" />
+                  </div>
+                  <p className="text-base font-black text-slate-700">Bu görünümde ilan bulunamadı.</p>
+                  <p className="mt-1 text-sm font-medium text-slate-400">Filtreyi değiştir veya yeni ilan oluşturarak vitrini doldur.</p>
+                  <Link to="/create" className="mt-4 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-md shadow-violet-500/20">
+                    <Plus size={14}/> Hemen ilan ekle
+                  </Link>
                 </div>
               ) : listingsView === 'grid' ? (
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {filteredListings.map(listing => {
                     const gridDopingTypes = getListingActiveDopingTypes(listing);
                     const gridRingClass = gridDopingTypes.includes('vitrine') ? 'ring-2 ring-amber-400/60' : gridDopingTypes.includes('featured') ? 'ring-2 ring-violet-500/60' : '';
+                    const statusMeta = getManagedListingStatusMeta(listing);
+                    const coverImage = getListingCoverImage(listing, defaultListingImage);
                     return (
-                    <div key={listing.id} className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md ${gridRingClass}`}>
-                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
-                        {getListingCoverImage(listing, defaultListingImage)
-                          ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
-                          : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
-                        }
-                        {gridDopingTypes.length > 0 && (
-                          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
-                            {gridDopingTypes.map((type) => {
-                              const m = type === 'vitrine'
-                                ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
-                                : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
-                              return (
-                                <div key={type} className={`flex flex-1 items-center justify-center gap-1 py-1 text-[9px] font-extrabold tracking-wide text-white ${m.bg}`}>
-                                  <m.Icon size={8} strokeWidth={2.5}/>{m.label}
+                      <div key={listing.id} className={`group overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_24px_45px_-28px_rgba(124,58,237,0.45)] ${gridRingClass}`}>
+                        <div className={`flex h-full flex-col bg-gradient-to-br ${statusMeta.surface}`}>
+                          <div className="relative aspect-[16/10] overflow-hidden bg-slate-50">
+                            {coverImage
+                              ? <img src={coverImage} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"/>
+                              : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
+                            }
+                            <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+                              <span className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] backdrop-blur-sm ${statusMeta.chip}`}>
+                                {statusMeta.label}
+                              </span>
+                              <span className="rounded-full bg-slate-950/70 px-2 py-1 text-[10px] font-black text-white shadow-sm">
+                                #{listing.id}
+                              </span>
+                            </div>
+                            {gridDopingTypes.length > 0 && (
+                              <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+                                {gridDopingTypes.map((type) => {
+                                  const m = type === 'vitrine'
+                                    ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
+                                    : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
+                                  return (
+                                    <div key={type} className={`flex flex-1 items-center justify-center gap-1 py-1 text-[9px] font-extrabold tracking-wide text-white ${m.bg}`}>
+                                      <m.Icon size={8} strokeWidth={2.5}/>{m.label}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col gap-3 p-4">
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-400">
+                                <span className="rounded-full bg-white/85 px-2 py-1 shadow-sm">{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                                <span className="rounded-full bg-white/85 px-2 py-1 shadow-sm">{listing.delivery_type === 'stock' ? 'Stoklu teslimat' : 'Manuel teslimat'}</span>
+                              </div>
+                              <Link to={listingSlug(listing.title, listing.id)} className="block line-clamp-2 min-h-[48px] text-base font-black leading-6 text-slate-900 transition-colors hover:text-violet-600">
+                                {listing.title}
+                              </Link>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-slate-500">
+                              <div className="rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">Görüntülenme</div>
+                                <div className="mt-1 text-sm font-black text-slate-800">{Number(listing.view_count || 0)}</div>
+                              </div>
+                              <div className="rounded-2xl border border-white/70 bg-white/80 px-3 py-2 shadow-sm">
+                                <div className="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">{listing.delivery_type === 'stock' ? 'Kalan Stok' : 'Durum'}</div>
+                                <div className="mt-1 text-sm font-black text-slate-800">{listing.delivery_type === 'stock' ? Math.max(0, Number(listing.stock_count || 0)) : statusMeta.label}</div>
+                              </div>
+                            </div>
+                            <div className="mt-auto flex items-end justify-between gap-3 border-t border-white/70 pt-3">
+                              <div>
+                                <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Fiyat</div>
+                                <div className="mt-1 text-xl font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
+                                <div className="mt-1 text-[11px] font-semibold text-slate-400">
+                                  {listing.updated_at || listing.created_at ? formatOrderTimelineDate(listing.updated_at || listing.created_at) : 'Tarih yok'}
                                 </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-                        <div className="space-y-1">
-                          <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-400">
-                            <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
-                          </div>
-                          <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold leading-5 text-slate-800 transition-colors hover:text-violet-600">
-                            {listing.title}
-                          </Link>
-                        </div>
-                        <div className="mt-auto space-y-1.5">
-                          <div className="flex items-end justify-between gap-2">
-                            <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
-                          </div>
-                          <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
-                          {isToggleableListing(listing) && (
-                            <button onClick={(event) => handleToggleListingStatus(event, listing)}
-                              className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
-                              {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
-                            </button>
-                          )}
-                          {isToggleableListing(listing) ? (
-                            <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600" title="Doping">
-                              <Package size={12} />
-                            </button>
-                          ) : null}
-                          <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500"><Edit3 size={12}/></button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"><Trash2 size={12}/></button>
+                              </div>
+                              <div className="flex items-center justify-end gap-1 rounded-2xl border border-white/70 bg-white/85 px-1.5 py-1.5 shadow-sm">
+                                {isToggleableListing(listing) && (
+                                  <button onClick={(event) => handleToggleListingStatus(event, listing)}
+                                    className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
+                                    {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
+                                  </button>
+                                )}
+                                {isToggleableListing(listing) ? (
+                                  <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600" title="Doping">
+                                    <Package size={12} />
+                                  </button>
+                                ) : null}
+                                <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500"><Edit3 size={12}/></button>
+                                <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"><Trash2 size={12}/></button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );})}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="space-y-3">
                   {filteredListings.map(listing => {
                     const listDopingTypes = getListingActiveDopingTypes(listing);
                     const listBorderClass = listDopingTypes.includes('vitrine') ? 'border-l-4 border-l-amber-400' : listDopingTypes.includes('featured') ? 'border-l-4 border-l-violet-500' : '';
+                    const statusMeta = getManagedListingStatusMeta(listing);
+                    const coverImage = getListingCoverImage(listing, defaultListingImage);
                     return (
-                    <div key={listing.id} className={`flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md ${listBorderClass}`}>
-                      <div className="relative h-16 w-[88px] flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
-                        {getListingCoverImage(listing, defaultListingImage) ? (
-                          <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={20}/></div>
-                        )}
-                        {listDopingTypes.length > 0 && (
-                          <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
-                            {listDopingTypes.map((type) => {
-                              const m = type === 'vitrine'
-                                ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
-                                : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
-                              return (
-                                <div key={type} className={`flex flex-1 items-center justify-center gap-0.5 py-0.5 text-[8px] font-extrabold text-white ${m.bg}`}>
-                                  <m.Icon size={7} strokeWidth={2.5}/>{m.label}
-                                </div>
-                              );
-                            })}
+                      <div key={listing.id} className={`overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-sm transition-all hover:border-violet-200 hover:shadow-[0_20px_40px_-28px_rgba(15,23,42,0.35)] ${listBorderClass}`}>
+                        <div className={`flex flex-col gap-4 bg-gradient-to-r ${statusMeta.surface} p-4 lg:flex-row lg:items-center`}>
+                          <div className="relative h-24 w-full flex-shrink-0 overflow-hidden rounded-[22px] border border-white/70 bg-slate-50 shadow-sm lg:w-[148px]">
+                            {coverImage ? (
+                              <img src={coverImage} alt="" className="h-full w-full object-cover"/>
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={20}/></div>
+                            )}
+                            <div className="absolute left-2 top-2 flex items-center gap-2">
+                              <span className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] backdrop-blur-sm ${statusMeta.chip}`}>
+                                {statusMeta.label}
+                              </span>
+                            </div>
+                            {listDopingTypes.length > 0 && (
+                              <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+                                {listDopingTypes.map((type) => {
+                                  const m = type === 'vitrine'
+                                    ? { label: 'Vitrin', bg: 'bg-amber-500', Icon: Star }
+                                    : { label: 'Öne Çıkar', bg: 'bg-violet-600', Icon: Zap };
+                                  return (
+                                    <div key={type} className={`flex flex-1 items-center justify-center gap-0.5 py-0.5 text-[8px] font-extrabold text-white ${m.bg}`}>
+                                      <m.Icon size={7} strokeWidth={2.5}/>{m.label}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                          <div className="mb-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold text-slate-400">
-                            <span>İlan #{listing.id}</span>
-                            <span>{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-500">
+                              <span className="rounded-full bg-white/85 px-2.5 py-1 shadow-sm">İlan #{listing.id}</span>
+                              <span className="rounded-full bg-white/85 px-2.5 py-1 shadow-sm">{(listing.category_name || listing.category || '').replace(/-/g, ' ') || 'Kategori yok'}</span>
+                              <span className="rounded-full bg-white/85 px-2.5 py-1 shadow-sm">{listing.delivery_type === 'stock' ? 'Stoklu teslimat' : 'Manuel teslimat'}</span>
+                            </div>
+                            <Link to={listingSlug(listing.title, listing.id)} className="mt-3 block text-base font-black leading-6 text-slate-900 transition-colors hover:text-violet-600 lg:text-lg">
+                              {listing.title}
+                            </Link>
+                            <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-slate-500">
+                              <span className="rounded-2xl border border-white/70 bg-white/80 px-3 py-1.5 shadow-sm">Görüntülenme: <span className="font-black text-slate-800">{Number(listing.view_count || 0)}</span></span>
+                              <span className="rounded-2xl border border-white/70 bg-white/80 px-3 py-1.5 shadow-sm">
+                                {listing.delivery_type === 'stock' ? 'Kalan stok' : 'Durum'}: <span className="font-black text-slate-800">{listing.delivery_type === 'stock' ? Math.max(0, Number(listing.stock_count || 0)) : statusMeta.label}</span>
+                              </span>
+                              <span className="rounded-2xl border border-white/70 bg-white/80 px-3 py-1.5 shadow-sm">Son güncelleme: <span className="font-black text-slate-800">{listing.updated_at || listing.created_at ? formatOrderTimelineDate(listing.updated_at || listing.created_at) : 'Tarih yok'}</span></span>
+                            </div>
                           </div>
-	                        <Link to={listingSlug(listing.title, listing.id)} className="block truncate text-sm font-extrabold text-slate-800 hover:text-violet-600">{listing.title}</Link>
-                      </div>
-                      <div className="flex-shrink-0 space-y-2 text-right">
-                        <div className="text-base font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
-                        <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
-                          {isToggleableListing(listing) && (
-                            <button
-                              onClick={(event) => handleToggleListingStatus(event, listing)}
-                              disabled={saving}
-                              title={listing.status === 'active' ? 'Pasif yap' : 'Aktifleştir'}
-                              className={`flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold transition-colors disabled:opacity-50 ${
-                                listing.status === 'active'
-                                  ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-                                  : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
-                              }`}
-                            >
-                              {listing.status === 'active' ? <ToggleRight size={13}/> : <ToggleLeft size={13}/>}
-                              {listing.status === 'active' ? 'Pasifleştir' : 'Aktifleştir'}
-                            </button>
-                          )}
-                          {isToggleableListing(listing) ? (
-                            <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-violet-50 hover:text-violet-600" title="Doping">
-                              <Package size={13}/>
-                            </button>
-                          ) : null}
-                          <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-500">
-                            <Edit3 size={13}/>
-                          </button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
-                            <Trash2 size={13}/>
-                          </button>
+                          <div className="flex flex-col gap-3 lg:items-end">
+                            <div className="rounded-[22px] border border-white/70 bg-white/85 px-4 py-3 text-left shadow-sm lg:min-w-[170px] lg:text-right">
+                              <div className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">Fiyat</div>
+                              <div className="mt-1 text-2xl font-black tracking-tight text-emerald-600">{Number(listing.price).toFixed(2)} ₺</div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                              {isToggleableListing(listing) && (
+                                <button
+                                  onClick={(event) => handleToggleListingStatus(event, listing)}
+                                  disabled={saving}
+                                  title={listing.status === 'active' ? 'Pasif yap' : 'Aktifleştir'}
+                                  className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-black transition-colors disabled:opacity-50 ${
+                                    listing.status === 'active'
+                                      ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                                      : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'
+                                  }`}
+                                >
+                                  {listing.status === 'active' ? <ToggleRight size={14}/> : <ToggleLeft size={14}/>}
+                                  {listing.status === 'active' ? 'Pasifleştir' : 'Aktifleştir'}
+                                </button>
+                              )}
+                              {isToggleableListing(listing) ? (
+                                <button onClick={() => setDopingModal(listing)} className="inline-flex items-center gap-1.5 rounded-2xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-600 transition-colors hover:bg-violet-100" title="Doping">
+                                  <Package size={14}/> Doping
+                                </button>
+                              ) : null}
+                              <button onClick={() => setEditModal(listing)} className="inline-flex items-center gap-1.5 rounded-2xl bg-blue-50 px-3 py-2 text-xs font-black text-blue-600 transition-colors hover:bg-blue-100">
+                                <Edit3 size={14}/> Düzenle
+                              </button>
+                              <button onClick={() => handleDeleteListing(listing.id)} className="inline-flex items-center gap-1.5 rounded-2xl bg-red-50 px-3 py-2 text-xs font-black text-red-600 transition-colors hover:bg-red-100">
+                                <Trash2 size={14}/> Sil
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );})}
+                    );
+                  })}
                 </div>
               )}
             </div>
