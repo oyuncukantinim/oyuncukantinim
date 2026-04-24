@@ -5,15 +5,13 @@ import {
   MessageCircle, Image as ImageIcon, Clock, Zap, Shield, Tag, Heart,
   User, X, Eye, Check, Sparkles, TrendingUp, Maximize2,
 } from 'lucide-react';
-import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews, getSellerListings, listingSlug } from '../lib/api';
+import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews, getSellerListings, listingSlug, getCategoryAttributes } from '../lib/api';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
 import UserAvatar from '../components/UserAvatar';
-
-const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
 export default function ListingDetailPage() {
   const { slug } = useParams();
@@ -49,9 +47,8 @@ export default function ListingDetailPage() {
         setListing(r.data);
         setActiveImg(r.data.cover_index || 0);
         if (r.data.category_id) {
-          fetch(`${API_URL}?action=get_category_attributes&category_id=${r.data.category_id}`)
-            .then(res => res.json())
-            .then(j => { if (!cancelled && j.status === 'success') setCatAttrs(j.data || []); })
+          getCategoryAttributes(r.data.category_id)
+            .then((j) => { if (!cancelled) setCatAttrs(j.data || []); })
             .catch(() => {});
         }
       } catch {

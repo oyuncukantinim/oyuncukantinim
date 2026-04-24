@@ -1,4 +1,73 @@
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+const PUBLIC_CACHE_PREFIX = 'api-cache:';
+const memoryCache = new Map();
+const pendingRequests = new Map();
+
+function buildSearch(action, query = {}) {
+  const search = new URLSearchParams();
+  search.set('action', action);
+  Object.entries(query)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([key, value]) => {
+      search.set(key, String(value));
+    });
+  return search;
+}
+
+function readCached(cacheKey, ttl) {
+  if (!ttl || ttl <= 0) return null;
+
+  const now = Date.now();
+  const memoryEntry = memoryCache.get(cacheKey);
+  if (memoryEntry && now - memoryEntry.ts < ttl) return memoryEntry.data;
+
+  try {
+    const raw = sessionStorage.getItem(PUBLIC_CACHE_PREFIX + cacheKey);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || now - Number(parsed.ts || 0) >= ttl) {
+      sessionStorage.removeItem(PUBLIC_CACHE_PREFIX + cacheKey);
+      return null;
+    }
+    memoryCache.set(cacheKey, parsed);
+    return parsed.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCached(cacheKey, data) {
+  const entry = { ts: Date.now(), data };
+  memoryCache.set(cacheKey, entry);
+  try {
+    sessionStorage.setItem(PUBLIC_CACHE_PREFIX + cacheKey, JSON.stringify(entry));
+  } catch {
+    // Ignore storage quota / privacy mode failures.
+  }
+}
+
+function invalidatePublicCache(actions = []) {
+  if (!Array.isArray(actions) || actions.length === 0) return;
+  const prefixes = actions.map((action) => `action=${action}`);
+
+  for (const key of Array.from(memoryCache.keys())) {
+    if (prefixes.some((prefix) => key.includes(prefix))) memoryCache.delete(key);
+  }
+
+  try {
+    for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
+      const storageKey = sessionStorage.key(i);
+      if (!storageKey?.startsWith(PUBLIC_CACHE_PREFIX)) continue;
+      const cacheKey = storageKey.slice(PUBLIC_CACHE_PREFIX.length);
+      if (prefixes.some((prefix) => cacheKey.includes(prefix))) {
+        sessionStorage.removeItem(storageKey);
+      }
+    }
+  } catch {
+    // Ignore storage access failures.
+  }
+}
 
 // /listing/minecraft-hesabi-123 formatında slug üretir
 export function listingSlug(title, id) {
@@ -49,8 +118,25 @@ async function request(action, options = {}) {
   // when the server says so. If the server doesn't send proper headers, the
   // right fix is on the PHP side (send Cache-Control: no-cache or an ETag),
   // not forcing every request to wait for the network.
-  const { method = 'GET', query = {}, body, auth = false, cache = 'default' } = options;
-  const search = new URLSearchParams({ action, ...query });
+  const {
+    method = 'GET',
+    query = {},
+    body,
+    auth = false,
+    cache = 'default',
+    ttl = 0,
+    invalidateActions = [],
+  } = options;
+  const search = buildSearch(action, query);
+  const cacheKey = search.toString();
+  const shouldUsePublicCache = method === 'GET' && !auth && ttl > 0;
+
+  if (shouldUsePublicCache) {
+    const cached = readCached(cacheKey, ttl);
+    if (cached) return cached;
+    const pending = pendingRequests.get(cacheKey);
+    if (pending) return pending;
+  }
 
   const headers = { 'Content-Type': 'application/json' };
   if (auth) {
@@ -58,23 +144,37 @@ async function request(action, options = {}) {
     if (token) headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}?${search.toString()}`, {
-    method,
-    cache,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  const doRequest = async () => {
+    const response = await fetch(`${API_URL}?${search.toString()}`, {
+      method,
+      cache,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
 
-  const data = await response.json().catch(() => ({
-    status: 'error',
-    message: 'Sunucudan gecerli JSON donmedi.',
-  }));
+    const data = await response.json().catch(() => ({
+      status: 'error',
+      message: 'Sunucudan gecerli JSON donmedi.',
+    }));
 
-  if (!response.ok || data.status !== 'success') {
-    throw new Error(data.message || 'API istegi basarisiz oldu.');
+    if (!response.ok || data.status !== 'success') {
+      throw new Error(data.message || 'API istegi basarisiz oldu.');
+    }
+
+    if (shouldUsePublicCache) writeCached(cacheKey, data);
+    if (invalidateActions.length > 0) invalidatePublicCache(invalidateActions);
+    return data;
+  };
+
+  if (!shouldUsePublicCache) {
+    return doRequest();
   }
 
-  return data;
+  const requestPromise = doRequest().finally(() => {
+    pendingRequests.delete(cacheKey);
+  });
+  pendingRequests.set(cacheKey, requestPromise);
+  return requestPromise;
 }
 
 // --- AUTH ---
@@ -103,15 +203,15 @@ export function getMe() {
 }
 
 export function getSiteSettings() {
-  return request('get_site_settings');
+  return request('get_site_settings', { ttl: 2 * 60 * 1000 });
 }
 
 export function getHeroSlides() {
-  return request('get_hero_slides', { query: { _t: Date.now() }, cache: 'no-store' });
+  return request('get_hero_slides', { ttl: 2 * 60 * 1000 });
 }
 
 export function getHeroBackgrounds() {
-  return request('get_hero_backgrounds', { query: { _t: Date.now() }, cache: 'no-store' });
+  return request('get_hero_backgrounds', { ttl: 2 * 60 * 1000 });
 }
 
 // --- PROFILE ---
@@ -197,15 +297,26 @@ export async function submitStoreApplication({ identityImage, selfieImage, userN
 
 // --- LISTINGS ---
 export function getListings(query = {}) {
-  return request('get_listings', { query });
+  return request('get_listings', { query, ttl: 20 * 1000 });
 }
 
 export function getCategories() {
-  return request('get_categories_tree');
+  return request('get_categories_tree', { ttl: 10 * 60 * 1000 });
+}
+
+export function getPopularGames() {
+  return request('get_popular_games', { ttl: 5 * 60 * 1000 });
+}
+
+export function getCategoryAttributes(categoryId) {
+  return request('get_category_attributes', {
+    query: { category_id: categoryId },
+    ttl: 10 * 60 * 1000,
+  });
 }
 
 export function getListing(id) {
-  return request('get_listing', { query: { id } });
+  return request('get_listing', { query: { id }, ttl: 20 * 1000 });
 }
 
 export function getMyListings() {
@@ -213,11 +324,21 @@ export function getMyListings() {
 }
 
 export function addListing(payload) {
-  return request('add_listing', { method: 'POST', body: payload, auth: true });
+  return request('add_listing', {
+    method: 'POST',
+    body: payload,
+    auth: true,
+    invalidateActions: ['get_listings', 'get_listing', 'get_my_listings'],
+  });
 }
 
 export function updateListing(payload) {
-  return request('update_listing', { method: 'POST', body: payload, auth: true });
+  return request('update_listing', {
+    method: 'POST',
+    body: payload,
+    auth: true,
+    invalidateActions: ['get_listings', 'get_listing', 'get_my_listings', 'get_seller_listings'],
+  });
 }
 
 export async function uploadListingImage(file) {
@@ -252,11 +373,21 @@ export function deleteListingImage(url) {
 }
 
 export function deleteListing(payload) {
-  return request('delete_listing', { method: 'POST', body: payload, auth: true });
+  return request('delete_listing', {
+    method: 'POST',
+    body: payload,
+    auth: true,
+    invalidateActions: ['get_listings', 'get_listing', 'get_my_listings', 'get_seller_listings'],
+  });
 }
 
 export function applyListingDoping(payload) {
-  return request('apply_listing_doping', { method: 'POST', body: payload, auth: true });
+  return request('apply_listing_doping', {
+    method: 'POST',
+    body: payload,
+    auth: true,
+    invalidateActions: ['get_listings', 'get_listing', 'get_my_listings'],
+  });
 }
 
 // --- ORDERS ---
@@ -370,19 +501,19 @@ export function getSellerProfile(username) {
 }
 
 export function getSellerListings(sellerId) {
-  return request('get_seller_listings', { query: { seller_id: sellerId } });
+  return request('get_seller_listings', { query: { seller_id: sellerId }, ttl: 20 * 1000 });
 }
 
 export function getSellerReviews(sellerId, params = {}) {
-  return request('get_seller_reviews', { query: { seller_id: sellerId, ...params } });
+  return request('get_seller_reviews', { query: { seller_id: sellerId, ...params }, ttl: 20 * 1000 });
 }
 
 export function getSellerFollowers(sellerId) {
-  return request('get_seller_followers', { query: { seller_id: sellerId } });
+  return request('get_seller_followers', { query: { seller_id: sellerId }, ttl: 20 * 1000 });
 }
 
 export function getSellerFollowing(sellerId) {
-  return request('get_seller_following', { query: { seller_id: sellerId } });
+  return request('get_seller_following', { query: { seller_id: sellerId }, ttl: 20 * 1000 });
 }
 
 export function addReview(payload) {

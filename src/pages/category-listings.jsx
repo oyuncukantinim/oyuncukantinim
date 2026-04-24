@@ -2,19 +2,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronRight, Plus, Search, SlidersHorizontal, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getCategories, getListings, getCategoryAttributes } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
-
-const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
-
-async function fetchPublic(action, params = {}) {
-  const url = new URL(API_URL);
-  url.searchParams.set('action', action);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, String(v)));
-  const res = await fetch(url.toString());
-  const json = await res.json();
-  return json.data;
-}
 
 function idFromCatSlug(slug) {
   const match = slug?.match(/-(\d+)$/);
@@ -69,9 +59,9 @@ export default function CategoryListingsPage() {
     if (!catId) return;
     setLoading(true);
     Promise.all([
-      fetchPublic('get_categories_tree'),
-      fetchPublic('get_listings', { category_id: catId, sort }),
-      fetchPublic('get_category_attributes', { category_id: catId }),
+      getCategories().then((res) => res.data || []),
+      getListings({ category_id: catId, sort }).then((res) => res.data || []),
+      getCategoryAttributes(catId).then((res) => res.data || []),
     ])
       .then(([cats, items, attrs]) => {
         const safeCats = cats || [];

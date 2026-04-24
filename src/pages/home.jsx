@@ -7,7 +7,7 @@ import {
   Sparkles,
   Trophy,
 } from 'lucide-react';
-import { getListings } from '../lib/api';
+import { getListings, getPopularGames } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import HeroSlider from '../components/HeroSlider';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -145,9 +145,8 @@ export default function Home() {
       .catch(() => {})
       .finally(() => setListingsLoaded(true));
 
-    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_popular_games')
-      .then((r) => r.json())
-      .then((j) => setPopularGames(j.data || []))
+    getPopularGames()
+      .then((r) => setPopularGames(r.data || []))
       .catch(() => {})
       .finally(() => setPopularGamesLoaded(true));
   }, []);
