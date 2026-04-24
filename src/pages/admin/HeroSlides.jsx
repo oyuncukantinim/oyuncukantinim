@@ -32,7 +32,7 @@ const RECOMMENDED_HEIGHT = 440;
 const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // ~3.07
 const RECOMMENDED_RATIO_LABEL = '3:1';
 const RECOMMENDED_SIZE_LABEL = '1350x440px';
-const MOBILE_RECOMMENDED_SIZE_LABEL = '900x760px';
+const MOBILE_RECOMMENDED_SIZE_LABEL = '1080x630px';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
 const MIN_RECOMMENDED_WIDTH = 1200; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
@@ -668,7 +668,7 @@ export default function AdminHeroSlides() {
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Mobil Görsel <span className="font-semibold normal-case tracking-normal text-slate-400">· {MOBILE_RECOMMENDED_SIZE_LABEL}</span>
                       </label>
-                      <div className={`relative flex aspect-[9/11] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                      <div className={`relative flex aspect-[12/7] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
                         {slide.mobile_image_url ? (
                           <img src={slide.mobile_image_url} alt="" className="h-full w-full object-cover" />
                         ) : (

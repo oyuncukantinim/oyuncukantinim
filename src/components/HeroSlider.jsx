@@ -159,6 +159,7 @@ export default function HeroSlider() {
   const hasTitle = currentTitle.length > 0;
   const desktopImageUrl = current?.image_url || current?.mobile_image_url || '';
   const mobileImageUrl = current?.mobile_image_url || current?.image_url || '';
+  const hasDedicatedMobileImage = Boolean(current?.mobile_image_url);
   const hasImage = Boolean(desktopImageUrl || mobileImageUrl);
   const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
@@ -278,20 +279,34 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[210px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[210px] overflow-hidden ${
+              hasTitle
+                ? hasDedicatedMobileImage
+                  ? `bg-slate-950 sm:bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}`
+                  : `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}`
+                : 'bg-slate-950'
+            } sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
+              <div
+                className={`pointer-events-none absolute inset-0 ${
+                  hasDedicatedMobileImage
+                    ? 'bg-slate-950/0 md:bg-slate-950/55'
+                    : hasImage
+                      ? 'bg-slate-950/0 md:bg-slate-950/55'
+                      : 'bg-slate-950/30 md:bg-slate-950/55'
+                }`}
+              />
             ) : null}
 
             {mobileImageUrl && hasTitle ? (
               <div
                 key={`art-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 z-0 w-[46%] md:hidden"
+                className="hs-card-art pointer-events-none absolute inset-0 z-0 md:hidden"
                 style={{
                   backgroundImage: `url("${mobileImageUrl}")`,
-                  backgroundSize: 'contain',
-                  backgroundPosition: 'center right',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
                 }}
               />
@@ -314,10 +329,22 @@ export default function HeroSlider() {
               />
             ) : null}
 
+            {mobileImageUrl && !hasTitle ? (
+              <div
+                key={`art-full-mobile-${current.id || index}`}
+                className="hs-card-art pointer-events-none absolute inset-0 md:hidden"
+                style={{
+                  backgroundImage: `url("${mobileImageUrl}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                }}
+              />
+            ) : null}
+
             {desktopImageUrl && !hasTitle ? (
               <div
                 key={`art-full-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-0"
+                className="hs-card-art pointer-events-none absolute inset-0 hidden md:block"
                 style={{
                   backgroundImage: `url("${desktopImageUrl}")`,
                   backgroundSize: 'cover',
@@ -328,7 +355,15 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
+              <div
+                className={`pointer-events-none absolute inset-0 ${
+                  hasDedicatedMobileImage
+                    ? 'bg-gradient-to-r from-slate-950/66 via-slate-950/18 to-slate-950/08 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
+                    : hasImage
+                      ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
+                      : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
+                }`}
+              />
             ) : null}
 
             {/* Subtle dot texture inside card */}
