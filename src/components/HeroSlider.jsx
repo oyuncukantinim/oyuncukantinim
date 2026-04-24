@@ -300,15 +300,13 @@ export default function HeroSlider() {
             ) : null}
 
             {mobileImageUrl && hasTitle ? (
-              <div
+              <img
                 key={`art-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-0 z-0 md:hidden"
-                style={{
-                  backgroundImage: `url("${mobileImageUrl}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                }}
+                src={mobileImageUrl}
+                alt=""
+                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full object-cover md:hidden"
+                loading="eager"
+                decoding="async"
               />
             ) : null}
 
@@ -330,14 +328,13 @@ export default function HeroSlider() {
             ) : null}
 
             {mobileImageUrl && !hasTitle ? (
-              <div
+              <img
                 key={`art-full-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-0 md:hidden"
-                style={{
-                  backgroundImage: `url("${mobileImageUrl}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
+                src={mobileImageUrl}
+                alt=""
+                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover md:hidden"
+                loading="eager"
+                decoding="async"
               />
             ) : null}
 
