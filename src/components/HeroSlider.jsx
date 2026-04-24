@@ -68,7 +68,7 @@ const AUTO_INTERVAL = 9500;
 // missing and block on the fresh fetch like a first visit.
 // NOTE: the cache entries are stored as plain arrays in versions <=v1 (no
 // timestamp). The v2 key format is { data, ts } so old entries are ignored.
-const CACHE_KEY_SLIDES = 'hero_slides_cache_v3';
+const CACHE_KEY_SLIDES = 'hero_slides_cache_v4';
 const CACHE_KEY_BGS = 'hero_backgrounds_cache_v2';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
