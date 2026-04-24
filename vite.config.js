@@ -2,42 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { beasties } from 'vite-plugin-beasties'
 
-// Build-time LCP optimization: fetch the hero backgrounds pool from the API
-// and inject a <link rel="preload" as="image"> for the first one into the
-// generated index.html. Browser discovers the LCP image in the initial
-// document and starts downloading it before React has even mounted. If the
-// API is unreachable at build time, the plugin silently skips injection.
-function heroBgPreload() {
-  const API = 'https://api.oyuncukantinim.com.tr/api.php?action=get_hero_backgrounds'
-  const TIMEOUT_MS = 5000
-  return {
-    name: 'hero-bg-preload',
-    apply: 'build',
-    async transformIndexHtml(html) {
-      try {
-        const ctrl = new AbortController()
-        const t = setTimeout(() => ctrl.abort(), TIMEOUT_MS)
-        const res = await fetch(API, { signal: ctrl.signal })
-        clearTimeout(t)
-        if (!res.ok) return html
-        const json = await res.json()
-        const list = Array.isArray(json?.data) ? json.data : []
-        const first = list[0]?.image_url
-        if (!first) return html
-        const tag = `    <link rel="preload" as="image" fetchpriority="high" href="${first}" />`
-        if (html.includes(first)) return html
-        return html.replace('</head>', `${tag}\n  </head>`)
-      } catch {
-        return html
-      }
-    },
-  }
-}
-
 export default defineConfig({
   plugins: [
     react(),
-    heroBgPreload(),
     beasties({
       options: {
         preload: 'swap',          // remaining CSS is loaded async, applied once ready

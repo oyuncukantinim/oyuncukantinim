@@ -9,7 +9,6 @@ import { useCart } from '../context/CartContext';
 import { addListing, deleteListingImage, uploadListingImage } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
 import useSiteBrand from '../hooks/useSiteBrand';
-import useCategoriesTree from '../hooks/useCategoriesTree';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../lib/doping';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
@@ -78,7 +77,7 @@ export default function CreatePage() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
-  const { categories } = useCategoriesTree();
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [catAttrs, setCatAttrs] = useState([]);
   const [attrValues, setAttrValues] = useState({});
@@ -107,6 +106,7 @@ export default function CreatePage() {
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
+    fetchPublic('get_categories_tree').then(d => setCategories(d || []));
     fetch(`${API_URL}?action=get_site_settings`)
       .then(r => r.json())
       .then(j => {

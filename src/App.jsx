@@ -7,30 +7,7 @@ import Footer from './components/Footer';
 import Toast from './components/Toast';
 import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
-import { readCached, writeCached } from './lib/cache';
 import ErrorBoundary from './components/ErrorBoundary';
-
-const SITE_SETTINGS_CACHE_KEY = 'site_settings_cache_v1';
-const SITE_SETTINGS_TTL_MS = 6 * 60 * 60 * 1000; // 6h
-
-function normalizeSiteData(data) {
-  return {
-    checked: true,
-    maintenance: data.maintenance_mode === 1,
-    announcement: {
-      active: data.announcement_active === 1,
-      text: data.announcement_text || '',
-    },
-    siteName: data.site_name || 'Oyuncu Kantinim',
-    siteLogo: data.site_logo || '',
-    siteLogoText: data.site_logo_text || '',
-    siteFavicon: data.site_favicon || '',
-    maintenanceTitle: data.maintenance_title || 'Bakım Çalışması',
-    maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
-    footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
-    footerCopyright: data.footer_copyright || '© Oyuncu Kantinim. Tüm hakları saklıdır.',
-  };
-}
 
 // Kullanıcı sayfaları — lazy
 const Home                = lazy(() => import('./pages/home'));
@@ -187,39 +164,40 @@ function AnnouncementBanner({ text }) {
 
 function SiteLayout() {
   const location = useLocation();
-  // Seed from cache so Navbar/Footer/announcement render on first paint without
-  // waiting for the site_settings round-trip. If the cache is missing we keep
-  // the old blocking behavior (checked=false) until the network responds.
-  const [siteState, setSiteState] = useState(() => {
-    const cached = readCached(SITE_SETTINGS_CACHE_KEY);
-    if (cached?.data) return normalizeSiteData(cached.data);
-    return {
-      checked: false,
-      maintenance: false,
-      announcement: { active: false, text: '' },
-      siteName: 'Oyuncu Kantinim',
-      siteLogo: '',
-      siteLogoText: '',
-      siteFavicon: '',
-      maintenanceTitle: 'Bakım Çalışması',
-      maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
-      footerTagline: 'Oyuncular için güvenli alım satım platformu.',
-      footerCopyright: '© Oyuncu Kantinim. Tüm hakları saklıdır.',
-    };
+  const [siteState, setSiteState] = useState({
+    checked: false,
+    maintenance: false,
+    announcement: { active: false, text: '' },
+    siteName: 'Oyuncu Kantinim',
+    siteLogo: '',
+    siteLogoText: '',
+    siteFavicon: '',
+    maintenanceTitle: 'Bakım Çalışması',
+    maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
+    footerTagline: 'Oyuncular için güvenli alım satım platformu.',
+    footerCopyright: '© Oyuncu Kantinim. Tüm hakları saklıdır.',
   });
 
   useEffect(() => {
-    // Skip the network call entirely when the cached copy is still fresh —
-    // shell already painted from cache, no need to re-fetch on soft reloads.
-    const cached = readCached(SITE_SETTINGS_CACHE_KEY);
-    const fresh = cached && Date.now() - cached.ts < SITE_SETTINGS_TTL_MS;
-    if (fresh) return;
-
     getSiteSettings()
       .then((response) => {
         const data = response.data || {};
-        writeCached(SITE_SETTINGS_CACHE_KEY, data);
-        setSiteState(normalizeSiteData(data));
+        setSiteState({
+          checked: true,
+          maintenance: data.maintenance_mode === 1,
+          announcement: {
+            active: data.announcement_active === 1,
+            text: data.announcement_text || '',
+          },
+          siteName: data.site_name || 'Oyuncu Kantinim',
+          siteLogo: data.site_logo || '',
+          siteLogoText: data.site_logo_text || '',
+          siteFavicon: data.site_favicon || '',
+          maintenanceTitle: data.maintenance_title || 'Bakım Çalışması',
+          maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
+          footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
+          footerCopyright: data.footer_copyright || '© Oyuncu Kantinim. Tüm hakları saklıdır.',
+        });
       })
       .catch(() => {
         setSiteState((prev) => ({ ...prev, checked: true }));

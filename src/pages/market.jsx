@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Grid2X2, List, Plus, Search, SlidersHorizontal, X, Zap, Clock,
 } from 'lucide-react';
-import { getListings } from '../lib/api';
+import { getListings, getCategories } from '../lib/api';
 import { SORT_OPTIONS } from '../data/catalog';
 import { useAuth } from '../context/AuthContext';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
-import useCategoriesTree from '../hooks/useCategoriesTree';
 
 const PAGE_SIZE = 20;
 
@@ -104,15 +103,19 @@ export default function MarketPage() {
 
   // UI
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
-  const { categories: categoriesTree } = useCategoriesTree();
+  const [categories, setCategories] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Root kategoriler (shared cache'ten sync gelir, tekrar istek atılmaz)
-  const categories = useMemo(() => {
-    const flat = categoriesTree.filter((c) => c.is_active);
-    const parentIds = new Set(flat.map((c) => c.parent_id).filter(Boolean));
-    return flat.filter((c) => !parentIds.has(c.id));
-  }, [categoriesTree]);
+  // Kategorileri yükle
+  useEffect(() => {
+    getCategories()
+      .then((res) => {
+        const flat = (res.data || []).filter((c) => c.is_active);
+        const parentIds = new Set(flat.map((c) => c.parent_id).filter(Boolean));
+        setCategories(flat.filter((c) => !parentIds.has(c.id)));
+      })
+      .catch(() => {});
+  }, []);
 
   // İlanları yükle
   useEffect(() => {
