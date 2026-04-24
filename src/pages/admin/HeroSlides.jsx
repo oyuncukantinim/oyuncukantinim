@@ -32,7 +32,6 @@ const RECOMMENDED_HEIGHT = 440;
 const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // ~3.07
 const RECOMMENDED_RATIO_LABEL = '3:1';
 const RECOMMENDED_SIZE_LABEL = '1350x440px';
-const MOBILE_RECOMMENDED_SIZE_LABEL = '1080x630px';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
 const MIN_RECOMMENDED_WIDTH = 1200; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
@@ -63,15 +62,14 @@ function createEmptySlide() {
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     image_url: '',
-    mobile_image_url: '',
     icon_url: '',
     accent_color: ACCENT_PRESETS[0].value,
     is_active: 1,
   };
 }
 
-function getMetaKey(slideKey, variant = 'desktop') {
-  return `${slideKey}:${variant}`;
+function getMetaKey(slideKey) {
+  return slideKey;
 }
 
 export default function AdminHeroSlides() {
@@ -100,7 +98,6 @@ export default function AdminHeroSlides() {
           const mapped = data.map((slide, i) => ({
             _key: `s-${slide.id || i}-${Math.random()}`,
             ...slide,
-            mobile_image_url: slide.mobile_image_url || '',
             is_active: Number(slide.is_active ?? 1) ? 1 : 0,
           }));
           setSlides(mapped);
@@ -111,21 +108,10 @@ export default function AdminHeroSlides() {
             img.onload = () => {
               setImageMeta((prev) => ({
                 ...prev,
-                [getMetaKey(s._key, 'desktop')]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
+                [s._key]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
               }));
             };
             img.src = s.image_url;
-          });
-          mapped.forEach((s) => {
-            if (!s.mobile_image_url) return;
-            const img = new Image();
-            img.onload = () => {
-              setImageMeta((prev) => ({
-                ...prev,
-                [getMetaKey(s._key, 'mobile')]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
-              }));
-            };
-            img.src = s.mobile_image_url;
           });
         }
         if (bgRes.status === 'fulfilled') {
@@ -148,13 +134,10 @@ export default function AdminHeroSlides() {
   const addSlide = () => setSlides((prev) => [...prev, createEmptySlide()]);
 
   const removeSlide = async (slide) => {
-    if (slide.image_url || slide.mobile_image_url || slide.icon_url) {
+    if (slide.image_url || slide.icon_url) {
       setBusyKey(slide._key);
       try {
         if (slide.image_url) await adminDeleteUploadedImage(slide.image_url);
-      } catch { /* ignore */ }
-      try {
-        if (slide.mobile_image_url) await adminDeleteUploadedImage(slide.mobile_image_url);
       } catch { /* ignore */ }
       try {
         if (slide.icon_url) await adminDeleteUploadedImage(slide.icon_url);
@@ -164,8 +147,7 @@ export default function AdminHeroSlides() {
     setSlides((prev) => prev.filter((s) => s._key !== slide._key));
     setImageMeta((prev) => {
       const next = { ...prev };
-      delete next[getMetaKey(slide._key, 'desktop')];
-      delete next[getMetaKey(slide._key, 'mobile')];
+      delete next[slide._key];
       return next;
     });
   };
@@ -210,7 +192,7 @@ export default function AdminHeroSlides() {
       updateSlide(slide._key, { image_url: url });
       setImageMeta((prev) => ({
         ...prev,
-        [getMetaKey(slide._key, 'desktop')]: {
+        [slide._key]: {
           width: dims?.width ?? null,
           height: dims?.height ?? null,
           bytes: file.size,
@@ -335,7 +317,7 @@ export default function AdminHeroSlides() {
         secondary_label: '',
         secondary_url: '',
         image_url: s.image_url,
-        mobile_image_url: s.mobile_image_url,
+        mobile_image_url: '',
         icon_url: s.icon_url,
         accent_color: s.accent_color,
         stat_label: '',
@@ -609,7 +591,7 @@ export default function AdminHeroSlides() {
                   </div>
 
                   {/* Editor */}
-                  <div className="grid gap-4 p-5 lg:grid-cols-[260px_220px_1fr]">
+                  <div className="grid gap-4 p-5 lg:grid-cols-[260px_1fr]">
                     {/* Image uploader */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -661,10 +643,10 @@ export default function AdminHeroSlides() {
                           </button>
                         ) : null}
                       </div>
-                      <ImageSizeHint meta={imageMeta[getMetaKey(slide._key, 'desktop')]} hasImage={!!slide.image_url} />
+                      <ImageSizeHint meta={imageMeta[getMetaKey(slide._key)]} hasImage={!!slide.image_url} />
                     </div>
 
-                    <div>
+                    {false ? <div>
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                         Mobil Görsel <span className="font-semibold normal-case tracking-normal text-slate-400">· {MOBILE_RECOMMENDED_SIZE_LABEL}</span>
                       </label>
@@ -718,7 +700,7 @@ export default function AdminHeroSlides() {
                         Mobilde bu görsel kullanılır. Boş bırakırsan masaüstü görseli otomatik kullanılır.
                       </p>
                       <ImageSizeHint meta={imageMeta[getMetaKey(slide._key, 'mobile')]} hasImage={!!slide.mobile_image_url} />
-                    </div>
+                    </div> : null}
 
                     {/* Text fields */}
                     <div className="space-y-3">

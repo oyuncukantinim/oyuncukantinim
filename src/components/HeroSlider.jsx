@@ -53,7 +53,6 @@ const DEFAULT_SLIDES = [
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     image_url: '',
-    mobile_image_url: '',
     icon_url: '',
     accent_color: 'from-violet-600 via-purple-600 to-cyan-500',
   },
@@ -68,7 +67,7 @@ const AUTO_INTERVAL = 9500;
 // missing and block on the fresh fetch like a first visit.
 // NOTE: the cache entries are stored as plain arrays in versions <=v1 (no
 // timestamp). The v2 key format is { data, ts } so old entries are ignored.
-const CACHE_KEY_SLIDES = 'hero_slides_cache_v4';
+const CACHE_KEY_SLIDES = 'hero_slides_cache_v5';
 const CACHE_KEY_BGS = 'hero_backgrounds_cache_v2';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -100,7 +99,7 @@ function writeCache(key, data) {
 
 function filterSlides(list) {
   return list.filter(
-    (s) => s.title || s.subtitle || s.image_url || s.mobile_image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url,
+    (s) => s.title || s.subtitle || s.image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url,
   );
 }
 
@@ -157,10 +156,8 @@ export default function HeroSlider() {
   const accentHex = extractAccentHex(current?.accent_color);
   const currentTitle = String(current?.title || '').trim();
   const hasTitle = currentTitle.length > 0;
-  const desktopImageUrl = current?.image_url || current?.mobile_image_url || '';
-  const mobileImageUrl = current?.mobile_image_url || current?.image_url || '';
-  const hasDedicatedMobileImage = Boolean(current?.mobile_image_url);
-  const hasImage = Boolean(desktopImageUrl || mobileImageUrl);
+  const desktopImageUrl = current?.image_url || '';
+  const hasImage = Boolean(desktopImageUrl);
   const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
     ? 'text-[1.18rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
@@ -173,7 +170,7 @@ export default function HeroSlider() {
   const backgroundUrl = useMemo(() => {
     const pool = backgrounds.length
       ? backgrounds
-      : slides.map((s) => s.image_url || s.mobile_image_url).filter(Boolean);
+      : slides.map((s) => s.image_url).filter(Boolean);
     if (!pool.length) return '';
     const idx = Math.floor(bgSeed * pool.length) % pool.length;
     return pool[idx];
@@ -279,30 +276,16 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[210px] overflow-hidden ${
-              hasTitle
-                ? hasDedicatedMobileImage
-                  ? `bg-slate-950 sm:bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}`
-                  : `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}`
-                : 'bg-slate-950'
-            } sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[210px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
-              <div
-                className={`pointer-events-none absolute inset-0 ${
-                  hasDedicatedMobileImage
-                    ? 'bg-slate-950/0 md:bg-slate-950/55'
-                    : hasImage
-                      ? 'bg-slate-950/0 md:bg-slate-950/55'
-                      : 'bg-slate-950/30 md:bg-slate-950/55'
-                }`}
-              />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
-            {mobileImageUrl && hasTitle ? (
+            {desktopImageUrl && hasTitle ? (
               <img
                 key={`art-mobile-${current.id || index}`}
-                src={mobileImageUrl}
+                src={desktopImageUrl}
                 alt=""
                 className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full object-cover md:hidden"
                 loading="eager"
@@ -327,10 +310,10 @@ export default function HeroSlider() {
               />
             ) : null}
 
-            {mobileImageUrl && !hasTitle ? (
+            {desktopImageUrl && !hasTitle ? (
               <img
                 key={`art-full-mobile-${current.id || index}`}
-                src={mobileImageUrl}
+                src={desktopImageUrl}
                 alt=""
                 className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover md:hidden"
                 loading="eager"
@@ -352,15 +335,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div
-                className={`pointer-events-none absolute inset-0 ${
-                  hasDedicatedMobileImage
-                    ? 'bg-gradient-to-r from-slate-950/66 via-slate-950/18 to-slate-950/08 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
-                    : hasImage
-                      ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
-                      : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'
-                }`}
-              />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
