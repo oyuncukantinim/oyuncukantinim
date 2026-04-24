@@ -44,7 +44,12 @@ export function logout() {
 }
 
 async function request(action, options = {}) {
-  const { method = 'GET', query = {}, body, auth = false, cache = 'default' } = options;
+  // Default to 'no-cache' so the browser always revalidates with the PHP API
+  // via If-None-Match / If-Modified-Since. This prevents the common "admin
+  // updated data but site keeps showing old data" issue caused by the browser
+  // HTTP cache honoring aggressive Cache-Control headers from the server.
+  // Callers that want hard-no-cache can still pass cache: 'no-store'.
+  const { method = 'GET', query = {}, body, auth = false, cache = 'no-cache' } = options;
   const search = new URLSearchParams({ action, ...query });
 
   const headers = { 'Content-Type': 'application/json' };

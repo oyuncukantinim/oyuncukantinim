@@ -62,16 +62,26 @@ const AUTO_INTERVAL = 9500;
 
 // localStorage-backed stale-while-revalidate cache for the hero payload.
 // Lets returning visitors render the LCP image synchronously on mount
-// without waiting for the API round-trip.
-const CACHE_KEY_SLIDES = 'hero_slides_cache_v1';
-const CACHE_KEY_BGS = 'hero_backgrounds_cache_v1';
+// without waiting for the API round-trip. A short TTL prevents admin edits
+// from staying invisible for too long — after expiry we treat the cache as
+// missing and block on the fresh fetch like a first visit.
+// NOTE: the cache entries are stored as plain arrays in versions <=v1 (no
+// timestamp). The v2 key format is { data, ts } so old entries are ignored.
+const CACHE_KEY_SLIDES = 'hero_slides_cache_v2';
+const CACHE_KEY_BGS = 'hero_backgrounds_cache_v2';
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 function readCache(key) {
   try {
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : null;
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.data)) return null;
+    if (typeof parsed.ts !== 'number' || Date.now() - parsed.ts > CACHE_TTL_MS) {
+      try { localStorage.removeItem(key); } catch { /* ignore */ }
+      return null;
+    }
+    return parsed.data;
   } catch {
     return null;
   }
@@ -80,7 +90,7 @@ function readCache(key) {
 function writeCache(key, data) {
   try {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(data));
+      localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
     }
   } catch {
     /* quota / private-mode — ignore */
