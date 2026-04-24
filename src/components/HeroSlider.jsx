@@ -60,10 +60,54 @@ const DEFAULT_SLIDES = [
 
 const AUTO_INTERVAL = 9500;
 
+// localStorage-backed stale-while-revalidate cache for the hero payload.
+// Lets returning visitors render the LCP image synchronously on mount
+// without waiting for the API round-trip.
+const CACHE_KEY_SLIDES = 'hero_slides_cache_v1';
+const CACHE_KEY_BGS = 'hero_backgrounds_cache_v1';
+
+function readCache(key) {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(key) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key, data) {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+  } catch {
+    /* quota / private-mode — ignore */
+  }
+}
+
+function filterSlides(list) {
+  return list.filter(
+    (s) => s.title || s.subtitle || s.image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url,
+  );
+}
+
 export default function HeroSlider() {
-  const [slides, setSlides] = useState([]);
-  const [backgrounds, setBackgrounds] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+  // Seed state synchronously from cache so the very first render already
+  // contains the <img> tag — browser can kick off the LCP image download
+  // before the API round-trip even finishes.
+  const [slides, setSlides] = useState(() => {
+    const cached = readCache(CACHE_KEY_SLIDES);
+    return cached && cached.length ? filterSlides(cached) : [];
+  });
+  const [backgrounds, setBackgrounds] = useState(() => readCache(CACHE_KEY_BGS) || []);
+  const [loaded, setLoaded] = useState(() => {
+    // Consider us "loaded" if we have any cached data to render.
+    const cachedSlides = readCache(CACHE_KEY_SLIDES);
+    const cachedBgs = readCache(CACHE_KEY_BGS);
+    return Boolean((cachedSlides && cachedSlides.length) || (cachedBgs && cachedBgs.length));
+  });
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
@@ -76,14 +120,16 @@ export default function HeroSlider() {
       .then(([slidesRes, bgRes]) => {
         const slidesData = slidesRes.status === 'fulfilled' ? slidesRes.value : null;
         const bgData = bgRes.status === 'fulfilled' ? bgRes.value : null;
-        const list = slidesData && Array.isArray(slidesData.data)
-          ? slidesData.data.filter((s) => s.title || s.subtitle || s.image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url)
-          : [];
-        setSlides(list.length ? list : DEFAULT_SLIDES);
-        const bgList = bgData && Array.isArray(bgData.data)
-          ? bgData.data.map((b) => b.image_url).filter(Boolean)
-          : [];
-        setBackgrounds(bgList);
+        if (slidesData && Array.isArray(slidesData.data)) {
+          const filtered = filterSlides(slidesData.data);
+          setSlides(filtered.length ? filtered : DEFAULT_SLIDES);
+          writeCache(CACHE_KEY_SLIDES, slidesData.data);
+        }
+        if (bgData && Array.isArray(bgData.data)) {
+          const bgList = bgData.data.map((b) => b.image_url).filter(Boolean);
+          setBackgrounds(bgList);
+          writeCache(CACHE_KEY_BGS, bgList);
+        }
       })
       .finally(() => setLoaded(true));
   }, []);
@@ -178,6 +224,8 @@ export default function HeroSlider() {
             alt=""
             className="absolute inset-0 h-full w-full object-cover"
             loading="eager"
+            fetchpriority="high"
+            decoding="async"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900" />
