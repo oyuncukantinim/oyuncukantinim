@@ -32,6 +32,7 @@ const RECOMMENDED_HEIGHT = 440;
 const RECOMMENDED_RATIO = RECOMMENDED_WIDTH / RECOMMENDED_HEIGHT; // ~3.07
 const RECOMMENDED_RATIO_LABEL = '3:1';
 const RECOMMENDED_SIZE_LABEL = '1350x440px';
+const MOBILE_RECOMMENDED_SIZE_LABEL = '900x760px';
 const MAX_RECOMMENDED_BYTES = 500 * 1024; // 500 KB
 const MIN_RECOMMENDED_WIDTH = 1200; // below this the hero canvas softens on desktop
 const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
@@ -62,10 +63,15 @@ function createEmptySlide() {
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     image_url: '',
+    mobile_image_url: '',
     icon_url: '',
     accent_color: ACCENT_PRESETS[0].value,
     is_active: 1,
   };
+}
+
+function getMetaKey(slideKey, variant = 'desktop') {
+  return `${slideKey}:${variant}`;
 }
 
 export default function AdminHeroSlides() {
@@ -94,6 +100,7 @@ export default function AdminHeroSlides() {
           const mapped = data.map((slide, i) => ({
             _key: `s-${slide.id || i}-${Math.random()}`,
             ...slide,
+            mobile_image_url: slide.mobile_image_url || '',
             is_active: Number(slide.is_active ?? 1) ? 1 : 0,
           }));
           setSlides(mapped);
@@ -104,10 +111,21 @@ export default function AdminHeroSlides() {
             img.onload = () => {
               setImageMeta((prev) => ({
                 ...prev,
-                [s._key]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
+                [getMetaKey(s._key, 'desktop')]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
               }));
             };
             img.src = s.image_url;
+          });
+          mapped.forEach((s) => {
+            if (!s.mobile_image_url) return;
+            const img = new Image();
+            img.onload = () => {
+              setImageMeta((prev) => ({
+                ...prev,
+                [getMetaKey(s._key, 'mobile')]: { width: img.naturalWidth, height: img.naturalHeight, bytes: null },
+              }));
+            };
+            img.src = s.mobile_image_url;
           });
         }
         if (bgRes.status === 'fulfilled') {
@@ -130,10 +148,13 @@ export default function AdminHeroSlides() {
   const addSlide = () => setSlides((prev) => [...prev, createEmptySlide()]);
 
   const removeSlide = async (slide) => {
-    if (slide.image_url || slide.icon_url) {
+    if (slide.image_url || slide.mobile_image_url || slide.icon_url) {
       setBusyKey(slide._key);
       try {
         if (slide.image_url) await adminDeleteUploadedImage(slide.image_url);
+      } catch { /* ignore */ }
+      try {
+        if (slide.mobile_image_url) await adminDeleteUploadedImage(slide.mobile_image_url);
       } catch { /* ignore */ }
       try {
         if (slide.icon_url) await adminDeleteUploadedImage(slide.icon_url);
@@ -143,7 +164,8 @@ export default function AdminHeroSlides() {
     setSlides((prev) => prev.filter((s) => s._key !== slide._key));
     setImageMeta((prev) => {
       const next = { ...prev };
-      delete next[slide._key];
+      delete next[getMetaKey(slide._key, 'desktop')];
+      delete next[getMetaKey(slide._key, 'mobile')];
       return next;
     });
   };
@@ -188,7 +210,7 @@ export default function AdminHeroSlides() {
       updateSlide(slide._key, { image_url: url });
       setImageMeta((prev) => ({
         ...prev,
-        [slide._key]: {
+        [getMetaKey(slide._key, 'desktop')]: {
           width: dims?.width ?? null,
           height: dims?.height ?? null,
           bytes: file.size,
@@ -200,6 +222,33 @@ export default function AdminHeroSlides() {
       showToast('Görsel yüklendi.');
     } catch (err) {
       showToast(err.message || 'Görsel yüklenemedi.');
+    } finally {
+      setBusyKey(null);
+    }
+  };
+
+  const handleMobileImageUpload = async (slide, file) => {
+    if (!file) return;
+    setBusyKey(slide._key);
+    try {
+      const dims = await readLocalDimensions(file);
+      const prevUrl = slide.mobile_image_url || '';
+      const url = await adminUploadImage(file, 'hero-slider-mobile');
+      updateSlide(slide._key, { mobile_image_url: url });
+      setImageMeta((prev) => ({
+        ...prev,
+        [getMetaKey(slide._key, 'mobile')]: {
+          width: dims?.width ?? null,
+          height: dims?.height ?? null,
+          bytes: file.size,
+        },
+      }));
+      if (prevUrl && prevUrl !== url) {
+        try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
+      }
+      showToast('Mobil görsel yüklendi.');
+    } catch (err) {
+      showToast(err.message || 'Mobil görsel yüklenemedi.');
     } finally {
       setBusyKey(null);
     }
@@ -248,7 +297,25 @@ export default function AdminHeroSlides() {
     updateSlide(slide._key, { image_url: '' });
     setImageMeta((prev) => {
       const next = { ...prev };
-      delete next[slide._key];
+      delete next[getMetaKey(slide._key, 'desktop')];
+      return next;
+    });
+    setBusyKey(null);
+  };
+
+  const clearMobileImage = async (slide) => {
+    if (!slide.mobile_image_url) return;
+    setBusyKey(slide._key);
+    try {
+      await adminDeleteUploadedImage(slide.mobile_image_url);
+      showToast('Mobil görsel dosyadan silindi.');
+    } catch {
+      showToast('Mobil görsel kaldırıldı (dosya silinemedi).');
+    }
+    updateSlide(slide._key, { mobile_image_url: '' });
+    setImageMeta((prev) => {
+      const next = { ...prev };
+      delete next[getMetaKey(slide._key, 'mobile')];
       return next;
     });
     setBusyKey(null);
@@ -268,6 +335,7 @@ export default function AdminHeroSlides() {
         secondary_label: '',
         secondary_url: '',
         image_url: s.image_url,
+        mobile_image_url: s.mobile_image_url,
         icon_url: s.icon_url,
         accent_color: s.accent_color,
         stat_label: '',
@@ -541,7 +609,7 @@ export default function AdminHeroSlides() {
                   </div>
 
                   {/* Editor */}
-                  <div className="grid gap-4 p-5 lg:grid-cols-[260px_1fr]">
+                  <div className="grid gap-4 p-5 lg:grid-cols-[260px_220px_1fr]">
                     {/* Image uploader */}
                     <div>
                       <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
@@ -593,7 +661,63 @@ export default function AdminHeroSlides() {
                           </button>
                         ) : null}
                       </div>
-                      <ImageSizeHint meta={imageMeta[slide._key]} hasImage={!!slide.image_url} />
+                      <ImageSizeHint meta={imageMeta[getMetaKey(slide._key, 'desktop')]} hasImage={!!slide.image_url} />
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        Mobil Görsel <span className="font-semibold normal-case tracking-normal text-slate-400">· {MOBILE_RECOMMENDED_SIZE_LABEL}</span>
+                      </label>
+                      <div className={`relative flex aspect-[9/11] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
+                        {slide.mobile_image_url ? (
+                          <img src={slide.mobile_image_url} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-1 text-white/90">
+                            <ImageIcon size={24} />
+                            <span className="text-[10px] font-black uppercase tracking-wider text-white/80">
+                              {MOBILE_RECOMMENDED_SIZE_LABEL}
+                            </span>
+                          </div>
+                        )}
+                        {isBusy ? (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
+                            <Loader2 className="animate-spin" size={22} />
+                          </div>
+                        ) : null}
+                      </div>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <input
+                          id={`${fileInputId}-mobile`}
+                          type="file"
+                          accept="image/*,.webp"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            handleMobileImageUpload(slide, file);
+                            event.target.value = '';
+                          }}
+                        />
+                        <label
+                          htmlFor={`${fileInputId}-mobile`}
+                          className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-black text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
+                        >
+                          <Upload size={12} />
+                          {slide.mobile_image_url ? 'Değiştir' : 'Yükle'}
+                        </label>
+                        {slide.mobile_image_url ? (
+                          <button
+                            type="button"
+                            onClick={() => clearMobileImage(slide)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2 py-1.5 text-[11px] font-black text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
+                          >
+                            <X size={11} /> Kaldır
+                          </button>
+                        ) : null}
+                      </div>
+                      <p className="mt-2 text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
+                        Mobilde bu görsel kullanılır. Boş bırakırsan masaüstü görseli otomatik kullanılır.
+                      </p>
+                      <ImageSizeHint meta={imageMeta[getMetaKey(slide._key, 'mobile')]} hasImage={!!slide.mobile_image_url} />
                     </div>
 
                     {/* Text fields */}

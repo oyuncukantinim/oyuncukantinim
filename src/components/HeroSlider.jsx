@@ -53,6 +53,7 @@ const DEFAULT_SLIDES = [
     cta_label: 'Oyuncu Pazarı',
     cta_url: '/market',
     image_url: '',
+    mobile_image_url: '',
     icon_url: '',
     accent_color: 'from-violet-600 via-purple-600 to-cyan-500',
   },
@@ -67,7 +68,7 @@ const AUTO_INTERVAL = 9500;
 // missing and block on the fresh fetch like a first visit.
 // NOTE: the cache entries are stored as plain arrays in versions <=v1 (no
 // timestamp). The v2 key format is { data, ts } so old entries are ignored.
-const CACHE_KEY_SLIDES = 'hero_slides_cache_v2';
+const CACHE_KEY_SLIDES = 'hero_slides_cache_v3';
 const CACHE_KEY_BGS = 'hero_backgrounds_cache_v2';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
@@ -99,7 +100,7 @@ function writeCache(key, data) {
 
 function filterSlides(list) {
   return list.filter(
-    (s) => s.title || s.subtitle || s.image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url,
+    (s) => s.title || s.subtitle || s.image_url || s.mobile_image_url || s.icon_url || s.eyebrow || s.cta_label || s.cta_url,
   );
 }
 
@@ -156,7 +157,9 @@ export default function HeroSlider() {
   const accentHex = extractAccentHex(current?.accent_color);
   const currentTitle = String(current?.title || '').trim();
   const hasTitle = currentTitle.length > 0;
-  const hasImage = Boolean(current?.image_url);
+  const desktopImageUrl = current?.image_url || current?.mobile_image_url || '';
+  const mobileImageUrl = current?.mobile_image_url || current?.image_url || '';
+  const hasImage = Boolean(desktopImageUrl || mobileImageUrl);
   const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
     ? 'text-[1.18rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
@@ -169,7 +172,7 @@ export default function HeroSlider() {
   const backgroundUrl = useMemo(() => {
     const pool = backgrounds.length
       ? backgrounds
-      : slides.map((s) => s.image_url).filter(Boolean);
+      : slides.map((s) => s.image_url || s.mobile_image_url).filter(Boolean);
     if (!pool.length) return '';
     const idx = Math.floor(bgSeed * pool.length) % pool.length;
     return pool[idx];
@@ -281,12 +284,12 @@ export default function HeroSlider() {
               <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
-            {current.image_url && hasTitle ? (
+            {mobileImageUrl && hasTitle ? (
               <div
                 key={`art-mobile-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-y-0 right-0 z-0 w-[46%] md:hidden"
                 style={{
-                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundImage: `url("${mobileImageUrl}")`,
                   backgroundSize: 'contain',
                   backgroundPosition: 'center right',
                   backgroundRepeat: 'no-repeat',
@@ -295,12 +298,12 @@ export default function HeroSlider() {
             ) : null}
 
             {/* Slide hero art (right side) */}
-            {current.image_url && hasTitle ? (
+            {desktopImageUrl && hasTitle ? (
               <div
                 key={`art-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] md:block"
                 style={{
-                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundImage: `url("${desktopImageUrl}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center right',
                   maskImage:
@@ -311,12 +314,12 @@ export default function HeroSlider() {
               />
             ) : null}
 
-            {current.image_url && !hasTitle ? (
+            {desktopImageUrl && !hasTitle ? (
               <div
                 key={`art-full-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-0"
                 style={{
-                  backgroundImage: `url("${current.image_url}")`,
+                  backgroundImage: `url("${desktopImageUrl}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
