@@ -5,7 +5,7 @@ import {
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
-  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList,
+  MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList, Search,
   MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload, Trophy
 } from 'lucide-react';
 
@@ -551,6 +551,9 @@ export default function ProfilePage() {
   const [myListings, setMyListings] = useState([]);
   const [listingFilter, setListingFilter] = useState('active');
   const [listingsView, setListingsView] = useState(() => localStorage.getItem('listingsView') || 'list');
+  const [listingSearch, setListingSearch] = useState('');
+  const [listingsLoading, setListingsLoading] = useState(false);
+  const [listingsError, setListingsError] = useState('');
   const [orders, setOrders] = useState([]);
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
@@ -612,8 +615,20 @@ export default function ProfilePage() {
     });
   }, [user, navigate, defaultAvatar, defaultProfileBanner]);
 
-  const loadListings = useCallback(() => {
-    return getMyListings().then(r => setMyListings(r.data || [])).catch(() => {});
+  const loadListings = useCallback(async () => {
+    setListingsLoading(true);
+    setListingsError('');
+    try {
+      const response = await getMyListings();
+      setMyListings(response.data || []);
+      return response;
+    } catch (error) {
+      setListingsError(error?.message || 'İlanlar yüklenirken bir sorun oluştu.');
+      setMyListings([]);
+      throw error;
+    } finally {
+      setListingsLoading(false);
+    }
   }, []);
 
   const loadOrders = useCallback(() => {
@@ -999,6 +1014,20 @@ export default function ProfilePage() {
     if (listingFilter === 'passive') return isPassiveListing(l);
     if (listingFilter === 'expired') return l.status === 'expired';
     return true;
+  }).filter((listing) => {
+    const query = listingSearch.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return true;
+    const haystack = [
+      listing.id,
+      listing.title,
+      listing.category_name,
+      listing.category,
+      listing.delivery_type === 'stock' ? 'stoklu teslimat' : 'manuel teslimat',
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLocaleLowerCase('tr-TR');
+    return haystack.includes(query);
   });
 
   useEffect(() => {
@@ -1165,10 +1194,40 @@ export default function ProfilePage() {
                   </button>
                 ))}
               </div>
-              {filteredListings.length === 0 ? (
+              <div className="mb-4">
+                <label className="relative block max-w-md">
+                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={listingSearch}
+                    onChange={(event) => setListingSearch(event.target.value)}
+                    placeholder="İlan no, başlık veya kategori ara..."
+                    className="h-11 w-full rounded-2xl border border-gray-200 bg-white pl-10 pr-4 text-sm font-semibold text-gray-700 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+                  />
+                </label>
+              </div>
+              {listingsLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="h-7 w-7 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+                </div>
+              ) : listingsError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-center">
+                  <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-red-500 shadow-sm">
+                    <AlertTriangle size={18} />
+                  </div>
+                  <p className="text-sm font-black text-red-700">İlanlar şu an yüklenemedi.</p>
+                  <p className="mt-1 text-xs font-semibold text-red-500">{listingsError}</p>
+                  <button
+                    onClick={() => loadListings().catch(() => {})}
+                    className="mt-3 inline-flex items-center gap-2 rounded-xl bg-red-600 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-red-500"
+                  >
+                    Tekrar Dene
+                  </button>
+                </div>
+              ) : filteredListings.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3"></div>
-                  <p className="text-gray-400 font-semibold">Bu durumda ilan yok.</p>
+                  <p className="text-gray-400 font-semibold">{listingSearch.trim() ? 'Aramana uygun ilan bulunamadı.' : 'Bu durumda ilan yok.'}</p>
                   <Link to="/create" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Hemen ilan ekle</Link>
                 </div>
               ) : listingsView === 'grid' ? (
@@ -1213,18 +1272,18 @@ export default function ProfilePage() {
                           </div>
                           <div className="flex items-center justify-end gap-1 rounded-xl border border-slate-100 bg-slate-50 px-1.5 py-1">
                           {isToggleableListing(listing) && (
-                            <button onClick={(event) => handleToggleListingStatus(event, listing)}
+                            <button onClick={(event) => handleToggleListingStatus(event, listing)} disabled={saving}
                               className={`rounded-lg p-1.5 transition-colors ${listing.status === 'active' ? 'text-emerald-500 hover:bg-orange-50 hover:text-orange-500' : 'text-slate-400 hover:bg-emerald-50 hover:text-emerald-500'}`}>
                               {listing.status === 'active' ? <ToggleRight size={12}/> : <ToggleLeft size={12}/>}
                             </button>
                           )}
                           {isToggleableListing(listing) ? (
-                            <button onClick={() => setDopingModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600" title="Doping">
+                            <button onClick={() => setDopingModal(listing)} disabled={saving} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-violet-50 hover:text-violet-600 disabled:opacity-50" title="Doping">
                               <Package size={12} />
                             </button>
                           ) : null}
-                          <button onClick={() => setEditModal(listing)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500"><Edit3 size={12}/></button>
-                          <button onClick={() => handleDeleteListing(listing.id)} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"><Trash2 size={12}/></button>
+                          <button onClick={() => setEditModal(listing)} disabled={saving} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-500 disabled:opacity-50"><Edit3 size={12}/></button>
+                          <button onClick={() => handleDeleteListing(listing.id)} disabled={saving} className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"><Trash2 size={12}/></button>
                           </div>
                         </div>
                       </div>
