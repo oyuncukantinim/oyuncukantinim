@@ -6,60 +6,11 @@ import { getListingActiveDopingTypes } from '../lib/doping';
 import UserAvatar from './UserAvatar';
 
 const DOPING_META = {
-  vitrine: {
-    label: 'Vitrin',
-    Icon: Star,
-    ring: 'ring-amber-400/55',
-    badgeClass:
-      'border border-amber-200/70 bg-gradient-to-r from-amber-50/95 via-white/92 to-amber-100/95 text-amber-800 shadow-[0_10px_26px_-16px_rgba(245,158,11,0.95)] backdrop-blur-md',
-    iconClass:
-      'bg-gradient-to-br from-amber-400 via-amber-500 to-orange-500 text-white shadow-[0_6px_14px_-10px_rgba(245,158,11,0.95)]',
-  },
-  featured: {
-    label: 'Öne Çıkan',
-    Icon: Zap,
-    ring: 'ring-violet-500/55',
-    badgeClass:
-      'border border-violet-200/55 bg-gradient-to-r from-violet-600/94 via-fuchsia-600/92 to-cyan-500/90 text-white shadow-[0_12px_28px_-16px_rgba(139,92,246,0.95)] backdrop-blur-md',
-    iconClass:
-      'bg-white/20 text-white shadow-[0_6px_14px_-10px_rgba(15,23,42,0.9)]',
-  },
+  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'ring-amber-500/60' },
+  featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
-const CATEGORY_CHIP_BASE =
-  'inline-flex items-center rounded-full border border-neon-cyan/20 bg-neon-cyan/10 font-bold text-cyan-700';
-
-function ListingDopingBadges({ activeTypes, dense = false }) {
-  if (!activeTypes.length) return null;
-
-  return (
-    <div
-      className={`absolute left-2 top-2 z-10 flex max-w-[calc(100%-1rem)] flex-wrap gap-1.5 ${
-        dense ? 'sm:left-2.5 sm:top-2.5' : 'sm:left-3 sm:top-3'
-      }`}
-    >
-      {activeTypes.map((type) => {
-        const meta = DOPING_META[type];
-        if (!meta) return null;
-        return (
-          <span
-            key={type}
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 ${
-              dense ? 'text-[10px]' : 'text-[11px]'
-            } font-black tracking-[0.02em] ${meta.badgeClass}`}
-          >
-            <span
-              className={`inline-flex ${dense ? 'h-4 w-4' : 'h-5 w-5'} items-center justify-center rounded-full ${meta.iconClass}`}
-            >
-              <meta.Icon size={dense ? 10 : 11} strokeWidth={2.6} />
-            </span>
-            <span className="truncate">{meta.label}</span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
+const CATEGORY_CHIP_BASE = 'inline-flex items-center rounded-full border border-neon-cyan/20 bg-neon-cyan/10 font-bold text-cyan-700';
 
 export default function ListingCard({ listing, compact = false, dense = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
@@ -77,6 +28,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   if (compact) {
     return (
       <article className={`card group flex flex-row overflow-hidden p-0 ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
+        {/* Sol: Fotoğraf */}
         <Link to={listingUrl} className="relative w-36 shrink-0 self-stretch overflow-hidden rounded-l-2xl bg-surface-100 sm:w-40">
           {coverImg ? (
             <img
@@ -89,14 +41,25 @@ export default function ListingCard({ listing, compact = false, dense = false, f
               <ImageIcon size={32} />
             </div>
           )}
-          <ListingDopingBadges activeTypes={activeTypes} dense />
+          {hasDoping && (
+            <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+              {activeTypes.map((type) => {
+                const meta = DOPING_META[type];
+                return (
+                  <div key={type} className={`flex flex-1 items-center justify-center gap-0.5 py-0.5 text-[8px] font-extrabold tracking-wide text-white ${meta.strip}`}>
+                    <meta.Icon size={7} strokeWidth={2.5} />
+                    {meta.label}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </Link>
 
+        {/* Sağ: Detaylar */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-3">
           <div className="min-w-0">
-            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>
-              {listing.category_name || listing.category || listing.type}
-            </span>
+            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{listing.category_name || listing.category || listing.type}</span>
             <Link to={listingUrl}>
               <h3
                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -108,7 +71,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-1.5">
+            <div className="flex items-center gap-1.5 min-w-0">
               <UserAvatar
                 value={listing.avatar}
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-gray-100 bg-white text-sm shadow-sm"
@@ -119,9 +82,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
                 className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-bold text-gray-600 transition-colors hover:text-neon-purple"
               >
                 <span className="truncate">{listing.seller || 'Satıcı'}</span>
-                {sellerVerified ? (
-                  <BadgeCheck size={12} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" />
-                ) : null}
+                {sellerVerified ? <BadgeCheck size={12} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
               </Link>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -139,13 +100,15 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const cardPad = dense ? 'p-2.5' : 'p-4';
   const imgMb = dense ? 'mb-2' : 'mb-4';
   const badgeMb = dense ? 'mb-2' : 'mb-3';
-  const titleCls = dense ? 'mb-2.5 text-[13px] leading-snug' : 'mb-3 text-[15px] leading-snug';
+  const titleCls = dense
+    ? 'mb-2.5 text-[13px] leading-snug'
+    : 'mb-3 text-[15px] leading-snug';
   const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2.5 rounded-xl p-2.5';
   const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-8 w-8 text-lg';
   const sellerNameCls = dense ? 'text-[11px]' : 'text-xs';
   const priceCls = dense ? 'text-sm' : 'text-xl';
   const footerTopCls = dense ? 'pt-2' : 'pt-3';
-  const detailBtnCls = dense ? 'min-h-[24px] px-2 py-0.5 text-[10px]' : 'min-h-[36px] text-xs';
+  const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
   const imageFallbackSize = dense ? 26 : 40;
   const imageAspectCls = dense ? 'aspect-[16/10]' : 'aspect-[4/3]';
 
@@ -165,7 +128,22 @@ export default function ListingCard({ listing, compact = false, dense = false, f
             </div>
           )}
 
-          <ListingDopingBadges activeTypes={activeTypes} dense={dense} />
+          {hasDoping ? (
+            <div className="absolute inset-x-0 bottom-0 flex divide-x divide-white/20">
+              {activeTypes.map((type) => {
+                const meta = DOPING_META[type];
+                return (
+                  <div
+                    key={type}
+                    className={`flex flex-1 items-center justify-center gap-1 ${dense ? 'py-0.5 text-[9px]' : 'py-1 text-[10px]'} font-extrabold tracking-wide text-white ${meta.strip}`}
+                  >
+                    <meta.Icon size={dense ? 8 : 9} strokeWidth={2.5} />
+                    {meta.label}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
 
         <div className={badgeMb}>
@@ -197,9 +175,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
           className={`${sellerNameCls} inline-flex min-w-0 items-center gap-1 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
         >
           <span className="truncate">{listing.seller || 'Satıcı'}</span>
-          {sellerVerified ? (
-            <BadgeCheck size={dense ? 11 : 14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" />
-          ) : null}
+          {sellerVerified ? <BadgeCheck size={dense ? 11 : 14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
         </Link>
       </div>
 
