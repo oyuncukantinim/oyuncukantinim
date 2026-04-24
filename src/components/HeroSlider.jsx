@@ -398,7 +398,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between overflow-hidden rounded-b-[22px]">
+            <div className="flex items-stretch justify-between overflow-hidden rounded-b-[22px] bg-slate-950/30 backdrop-blur-md ring-1 ring-black/10 dark:bg-slate-950/45">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -414,7 +414,7 @@ export default function HeroSlider() {
                     className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-1 transition-all duration-300 sm:min-w-[72px] ${
                       active
                         ? 'shadow-lg'
-                        : 'bg-white/68 text-slate-700 hover:bg-white/92 dark:bg-white/[0.03] dark:text-white/75 dark:hover:bg-white/[0.06]'
+                        : 'bg-slate-950/34 text-white/82 hover:bg-slate-950/48 dark:bg-slate-950/42 dark:text-white/80 dark:hover:bg-slate-950/56'
                     }`}
                     title={title}
                     style={active ? {
