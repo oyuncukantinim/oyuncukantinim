@@ -159,10 +159,10 @@ export default function HeroSlider() {
   const hasImage = Boolean(current?.image_url);
   const titleLength = currentTitle.length;
   const titleSizeClass = titleLength > 72
-    ? 'text-[1.65rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
+    ? 'text-[1.18rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
     : titleLength > 48
-      ? 'text-[1.95rem] sm:text-[2.35rem] md:text-[2.85rem] lg:text-[3.35rem]'
-      : 'text-3xl sm:text-4xl md:text-5xl lg:text-6xl';
+      ? 'text-[1.34rem] sm:text-[2.35rem] md:text-[2.85rem] lg:text-[3.35rem]'
+      : 'text-[1.56rem] sm:text-4xl md:text-5xl lg:text-6xl';
 
   // Pick a stable background once per mount. Prefer the dedicated backgrounds
   // pool; fall back to slide images if the admin hasn't uploaded any yet.
@@ -344,12 +344,12 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-center gap-2 overflow-hidden px-5 py-5 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-center gap-1.5 overflow-hidden px-4 py-4 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-md sm:px-2.5 sm:text-[11px] sm:tracking-[0.22em]"
+                    className="inline-flex max-w-full items-center gap-1.5 break-words rounded-md px-2 py-1 text-[9px] font-black uppercase leading-tight tracking-[0.08em] text-white shadow-md sm:px-2.5 sm:text-[11px] sm:tracking-[0.22em]"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                     }}
@@ -359,12 +359,12 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className={`${titleSizeClass} font-black leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
+              <h1 className={`${titleSizeClass} max-w-[11.5rem] break-words font-black leading-[0.92] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:max-w-none sm:leading-[0.98]`}>
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="line-clamp-2 max-w-[13rem] text-[11px] font-semibold leading-snug text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
+                <p className="line-clamp-2 max-w-[11.5rem] break-words text-[10px] font-semibold leading-[1.3] text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
@@ -373,7 +373,7 @@ export default function HeroSlider() {
                 {current.cta_label ? (
                   <Link
                     to={current.cta_url || '/market'}
-                    className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-xl px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-lg transition hover:-translate-y-0.5 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-wider"
+                    className="group/btn relative inline-flex max-w-full items-center gap-1 overflow-hidden rounded-xl px-3 py-2 text-[10px] font-black uppercase leading-none tracking-[0.08em] text-white shadow-lg transition hover:-translate-y-0.5 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-wider"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                       boxShadow: `0 10px 28px -8px var(--accent)`,
