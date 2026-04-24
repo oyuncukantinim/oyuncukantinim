@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import ThemeContext from './themeContext';
 
 const STORAGE_KEY = 'ok_theme_mode';
-const THEME_MODES = ['light', 'dark', 'system'];
+const THEME_MODES = ['light', 'dark'];
 
 function getStoredMode() {
   if (typeof window === 'undefined') return 'dark';
@@ -10,47 +10,30 @@ function getStoredMode() {
   return THEME_MODES.includes(stored) ? stored : 'dark';
 }
 
-function getSystemDark() {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+function applyTheme(resolvedTheme) {
+  const root = document.documentElement;
+  const isDark = resolvedTheme === 'dark';
+  root.classList.toggle('theme-dark', isDark);
+  root.classList.toggle('dark', isDark);
+  root.dataset.theme = resolvedTheme;
+  root.style.colorScheme = isDark ? 'dark' : 'light';
 }
 
 export function ThemeProvider({ children }) {
   const [mode, setMode] = useState(getStoredMode);
-  const [systemDark, setSystemDark] = useState(getSystemDark);
-
-  const resolvedTheme = mode === 'system' ? (systemDark ? 'dark' : 'light') : mode;
+  const resolvedTheme = mode;
   const isDark = resolvedTheme === 'dark';
 
-  useLayoutEffect(() => {
-    const root = document.documentElement;
-    root.classList.toggle('theme-dark', isDark);
-    root.classList.toggle('dark', isDark);
-    root.dataset.theme = resolvedTheme;
-    root.style.colorScheme = isDark ? 'dark' : 'light';
-  }, [isDark, resolvedTheme]);
+  useEffect(() => {
+    applyTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, mode);
   }, [mode]);
 
-  useEffect(() => {
-    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
-    if (!media) return undefined;
-
-    const handleChange = (event) => setSystemDark(event.matches);
-    media.addEventListener?.('change', handleChange);
-    return () => media.removeEventListener?.('change', handleChange);
-  }, []);
-
   const value = useMemo(() => {
-    const cycleTheme = () => {
-      setMode((current) => {
-        if (current === 'light') return 'dark';
-        if (current === 'dark') return 'system';
-        return 'light';
-      });
-    };
+    const cycleTheme = () => setMode((current) => (current === 'dark' ? 'light' : 'dark'));
 
     return {
       mode,
