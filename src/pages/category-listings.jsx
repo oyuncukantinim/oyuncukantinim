@@ -4,6 +4,7 @@ import { ChevronRight, Plus, Search, SlidersHorizontal, Tag } from 'lucide-react
 import { useAuth } from '../context/AuthContext';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
+import useCategoriesTree from '../hooks/useCategoriesTree';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -30,7 +31,13 @@ function CategoryCard({ cat }) {
     <Link to={`/categories/${buildCatSlug(cat)}`}>
       <div className="group relative mx-auto flex h-[250px] w-[160px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
         {cat.image ? (
-          <img src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={cat.image}
+            alt={cat.name}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-400 to-violet-500">
             <span className="text-6xl opacity-30">{cat.icon}</span>
@@ -56,7 +63,7 @@ export default function CategoryListingsPage() {
   const catId = idFromCatSlug(catSlug);
 
   const [category, setCategory] = useState(null);
-  const [categories, setCategories] = useState([]);
+  const { categories } = useCategoriesTree();
   const [listings, setListings] = useState([]);
   const [catAttrs, setCatAttrs] = useState([]);
   const [attrFilters, setAttrFilters] = useState({});
@@ -65,25 +72,29 @@ export default function CategoryListingsPage() {
   const [sort, setSort] = useState('newest');
   const [subCatFilter, setSubCatFilter] = useState(null);
 
+  // Resolve the active category from the shared cached tree. Keeps the header
+  // & breadcrumb populated instantly on cache-hit visits instead of waiting
+  // for the per-category attribute + listings call.
+  useEffect(() => {
+    if (!catId || !categories.length) return;
+    const found = categories.find((c) => String(c.id) === String(catId));
+    setCategory(found || null);
+  }, [catId, categories]);
+
   useEffect(() => {
     if (!catId) return;
     setLoading(true);
     Promise.all([
-      fetchPublic('get_categories_tree'),
       fetchPublic('get_listings', { category_id: catId, sort }),
       fetchPublic('get_category_attributes', { category_id: catId }),
     ])
-      .then(([cats, items, attrs]) => {
-        const safeCats = cats || [];
-        const found = safeCats.find((c) => String(c.id) === String(catId));
+      .then(([items, attrs]) => {
         const safeAttrs = (attrs || []).filter((a) => a.is_filterable);
         const initFilters = {};
         safeAttrs.forEach((a) => {
           initFilters[a.slug] = '';
         });
 
-        setCategories(safeCats);
-        setCategory(found || null);
         setListings(items || []);
         setCatAttrs(safeAttrs);
         setAttrFilters(initFilters);

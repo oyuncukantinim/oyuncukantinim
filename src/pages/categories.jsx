@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, X, Tag } from 'lucide-react';
+import useCategoriesTree from '../hooks/useCategoriesTree';
 
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
@@ -15,7 +16,13 @@ function CategoryCard({ cat, isRoot }) {
     <Link to={`/categories/${slug}`}>
       <div className="group relative mx-auto flex h-[250px] w-[160px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
         {cat.image ? (
-          <img src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
+          <img
+            src={cat.image}
+            alt={cat.name}
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div
             className={`absolute inset-0 flex items-center justify-center bg-gradient-to-br ${
@@ -39,22 +46,21 @@ function CategoryCard({ cat, isRoot }) {
 }
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState([]);
+  const { categories } = useCategoriesTree();
   const [types, setTypes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [typesLoaded, setTypesLoaded] = useState(false);
   const [search, setSearch] = useState('');
   const [activeType, setActiveType] = useState(null);
+  // Show skeletons only while we have no data at all; if cache hydrated
+  // categories synchronously we can render immediately.
+  const loading = categories.length === 0 && !typesLoaded;
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}?action=get_categories_tree`).then((r) => r.json()),
-      fetch(`${API_URL}?action=get_category_types`).then((r) => r.json()),
-    ])
-      .then(([catJson, typeJson]) => {
-        setCategories(catJson.data || []);
-        setTypes(typeJson.data || []);
-      })
-      .finally(() => setLoading(false));
+    fetch(`${API_URL}?action=get_category_types`)
+      .then((r) => r.json())
+      .then((typeJson) => setTypes(typeJson.data || []))
+      .catch(() => {})
+      .finally(() => setTypesLoaded(true));
   }, []);
 
   const roots = useMemo(() => categories.filter((c) => !c.parent_id), [categories]);

@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
+import useCategoriesTree from '../hooks/useCategoriesTree';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
 import ThemeToggle from './ThemeToggle';
@@ -54,7 +55,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [recommendedListings, setRecommendedListings] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const { categories } = useCategoriesTree();
   const [searchLoading, setSearchLoading] = useState(false);
   const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
 
@@ -72,6 +73,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     }
 
     const fetchCounts = () => {
+      // Skip polling when the tab is hidden — saves bandwidth on idle tabs.
+      if (typeof document !== 'undefined' && document.hidden) return;
       Promise.all([getUnreadNotificationsCount(), getUnreadCount()])
         .then(([notificationResponse, messageResponse]) => {
           setUnreadNotif(notificationResponse.data?.unread ?? 0);
@@ -81,7 +84,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     };
 
     fetchCounts();
-    const interval = setInterval(fetchCounts, 15000);
+    const interval = setInterval(fetchCounts, 30000);
     const handler = () => setUnreadNotif(0);
     const handleFocus = () => fetchCounts();
     const handleVisibilityChange = () => {
@@ -121,11 +124,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   useEffect(() => {
     getListings({ limit: 4, status: 'active' })
       .then((response) => setRecommendedListings(response.data || []))
-      .catch(() => {});
-
-    fetch(`${API_URL}?action=get_categories_tree`)
-      .then((response) => response.json())
-      .then((json) => setCategories(json.data || []))
       .catch(() => {});
   }, []);
 

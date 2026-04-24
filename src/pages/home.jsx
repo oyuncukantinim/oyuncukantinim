@@ -12,6 +12,10 @@ import ListingCard from '../components/ListingCard';
 import HeroSlider from '../components/HeroSlider';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
+import { readCached, writeCached, fetchDedup } from '../lib/cache';
+
+const POPULAR_GAMES_CACHE_KEY = 'popular_games_cache_v1';
+const POPULAR_GAMES_TTL_MS = 24 * 60 * 60 * 1000; // 24h — admin-curated list
 
 const LISTING_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
 
@@ -135,9 +139,16 @@ function CategoryCard({ game, index }) {
 export default function Home() {
   const { defaultListingImage } = useSiteBrand();
   const [listings, setListings] = useState([]);
-  const [popularGames, setPopularGames] = useState([]);
+  // Seed popular games from cache so the grid paints instantly on return visits.
+  const [popularGames, setPopularGames] = useState(() => {
+    const cached = readCached(POPULAR_GAMES_CACHE_KEY);
+    return cached?.data && Array.isArray(cached.data) ? cached.data : [];
+  });
   const [listingsLoaded, setListingsLoaded] = useState(false);
-  const [popularGamesLoaded, setPopularGamesLoaded] = useState(false);
+  const [popularGamesLoaded, setPopularGamesLoaded] = useState(() => {
+    const cached = readCached(POPULAR_GAMES_CACHE_KEY);
+    return Boolean(cached?.data && cached.data.length);
+  });
 
   useEffect(() => {
     getListings({ limit: 32, status: 'active' })
@@ -145,9 +156,21 @@ export default function Home() {
       .catch(() => {})
       .finally(() => setListingsLoaded(true));
 
-    fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_popular_games')
-      .then((r) => r.json())
-      .then((j) => setPopularGames(j.data || []))
+    // Stale-while-revalidate: skip the network call entirely if the cached
+    // copy is still fresh. Otherwise fetch in the background and update.
+    const cached = readCached(POPULAR_GAMES_CACHE_KEY);
+    const fresh = cached && Date.now() - cached.ts < POPULAR_GAMES_TTL_MS;
+    if (fresh) return;
+
+    fetchDedup('popular_games_fetch', () =>
+      fetch('https://api.oyuncukantinim.com.tr/api.php?action=get_popular_games')
+        .then((r) => r.json())
+        .then((j) => (Array.isArray(j?.data) ? j.data : []))
+    )
+      .then((data) => {
+        setPopularGames(data);
+        writeCached(POPULAR_GAMES_CACHE_KEY, data);
+      })
       .catch(() => {})
       .finally(() => setPopularGamesLoaded(true));
   }, []);
