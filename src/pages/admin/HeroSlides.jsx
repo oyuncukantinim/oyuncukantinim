@@ -90,6 +90,10 @@ export default function AdminHeroSlides() {
     toastTimer.current = setTimeout(() => setToast(''), 2800);
   };
 
+  const setBusyTarget = (slideKey, target) => {
+    setBusyKey(`${slideKey}:${target}`);
+  };
+
   useEffect(() => {
     Promise.allSettled([adminGetHeroSlides(), adminGetHeroBackgrounds()])
       .then(([slidesRes, bgRes]) => {
@@ -135,7 +139,7 @@ export default function AdminHeroSlides() {
 
   const removeSlide = async (slide) => {
     if (slide.image_url || slide.icon_url) {
-      setBusyKey(slide._key);
+      setBusyTarget(slide._key, 'remove');
       try {
         if (slide.image_url) await adminDeleteUploadedImage(slide.image_url);
       } catch { /* ignore */ }
@@ -183,7 +187,7 @@ export default function AdminHeroSlides() {
 
   const handleImageUpload = async (slide, file) => {
     if (!file) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'image');
     try {
       // Capture local dimensions + size before upload for instant feedback.
       const dims = await readLocalDimensions(file);
@@ -211,7 +215,7 @@ export default function AdminHeroSlides() {
 
   const handleMobileImageUpload = async (slide, file) => {
     if (!file) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'mobile');
     try {
       const dims = await readLocalDimensions(file);
       const prevUrl = slide.mobile_image_url || '';
@@ -238,7 +242,7 @@ export default function AdminHeroSlides() {
 
   const handleIconUpload = async (slide, file) => {
     if (!file) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'icon');
     try {
       const prevUrl = slide.icon_url || '';
       const url = await adminUploadImage(file, 'hero-slider-icons');
@@ -256,7 +260,7 @@ export default function AdminHeroSlides() {
 
   const clearIcon = async (slide) => {
     if (!slide.icon_url) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'icon');
     try {
       await adminDeleteUploadedImage(slide.icon_url);
       showToast('İkon dosyadan silindi.');
@@ -269,7 +273,7 @@ export default function AdminHeroSlides() {
 
   const clearImage = async (slide) => {
     if (!slide.image_url) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'image');
     try {
       await adminDeleteUploadedImage(slide.image_url);
       showToast('Görsel dosyadan silindi.');
@@ -287,7 +291,7 @@ export default function AdminHeroSlides() {
 
   const clearMobileImage = async (slide) => {
     if (!slide.mobile_image_url) return;
-    setBusyKey(slide._key);
+    setBusyTarget(slide._key, 'mobile');
     try {
       await adminDeleteUploadedImage(slide.mobile_image_url);
       showToast('Mobil görsel dosyadan silindi.');
@@ -512,7 +516,9 @@ export default function AdminHeroSlides() {
         ) : (
           <div className="space-y-4">
             {slides.map((slide, idx) => {
-              const isBusy = busyKey === slide._key;
+              const isImageBusy = busyKey === `${slide._key}:image`;
+              const isIconBusy = busyKey === `${slide._key}:icon`;
+              const isMobileBusy = busyKey === `${slide._key}:mobile`;
               const fileInputId = `hero-slide-image-${slide._key}`;
               return (
                 <div
@@ -608,7 +614,7 @@ export default function AdminHeroSlides() {
                             </span>
                           </div>
                         )}
-                        {isBusy ? (
+                        {isImageBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
                             <Loader2 className="animate-spin" size={22} />
                           </div>
@@ -661,7 +667,7 @@ export default function AdminHeroSlides() {
                             </span>
                           </div>
                         )}
-                        {isBusy ? (
+                        {isMobileBusy ? (
                           <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
                             <Loader2 className="animate-spin" size={22} />
                           </div>
@@ -711,12 +717,17 @@ export default function AdminHeroSlides() {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="shrink-0">
-                            <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
+                            <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-dashed border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-900">
                               {slide.icon_url ? (
                                 <img src={slide.icon_url} alt="" className="h-full w-full object-contain p-2" />
                               ) : (
                                 <ImageIcon size={24} className="text-slate-300" />
                               )}
+                              {isIconBusy ? (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
+                                  <Loader2 className="animate-spin" size={20} />
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                           <div className="flex-1 space-y-2">
@@ -750,8 +761,9 @@ export default function AdminHeroSlides() {
                               ) : null}
                             </div>
                             <p className="text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                              Şeffaf arka planlı PNG / SVG öner · 128×128 px ideal. Bu ikon slider'ın
-                              alt sekmesinde başlık yerine geçer, aktifken slayt renginde parlar.
+                              Şeffaf arka planlı PNG / SVG öner. Yükleme sonrası otomatik 48×48 px tuvale
+                              dönüştürülür; slider'ın alt sekmesinde başlık yerine geçer ve aktifken slayt
+                              renginde parlar.
                             </p>
                           </div>
                         </div>
