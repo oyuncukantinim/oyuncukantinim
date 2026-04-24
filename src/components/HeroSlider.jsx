@@ -252,7 +252,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-44 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-48 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -344,7 +344,7 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-center gap-1.5 overflow-hidden px-4 py-4 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-start gap-1.5 overflow-hidden px-4 pb-14 pt-5 sm:max-w-[640px] sm:justify-center sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
@@ -369,7 +369,7 @@ export default function HeroSlider() {
                 </p>
               ) : <div />}
 
-              <div className="mt-1 flex flex-wrap items-center gap-2 sm:mt-2 sm:gap-2.5">
+              <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2 sm:gap-2.5">
                 {current.cta_label ? (
                   <Link
                     to={current.cta_url || '/market'}
@@ -394,7 +394,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[48px] w-full sm:-mt-[56px] lg:-mt-[56px]"
+            className="relative z-20 mx-auto -mt-[44px] w-full sm:-mt-[56px] lg:-mt-[56px]"
             role="tablist"
             aria-label="Slayt seçici"
           >
