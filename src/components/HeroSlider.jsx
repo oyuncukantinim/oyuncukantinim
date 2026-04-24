@@ -111,9 +111,16 @@ export default function HeroSlider() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const timerRef = useRef(null);
-  // Pick a random seed once per mount — used to select the static background.
-  // Does NOT update when the user switches slides, only on page refresh.
-  const [bgSeed] = useState(() => Math.random());
+  // Pick a seed once per mount for the static background.
+  // First-visit (no cached pool yet) → deterministic 0 so the URL matches the
+  // <link rel="preload"> injected into index.html at build time and the LCP
+  // image starts downloading from the very first byte of HTML.
+  // Returning visitors (cache hit) → random pick for variety, image is already
+  // warm in the browser cache so LCP isn't affected either way.
+  const [bgSeed] = useState(() => {
+    const cachedBgs = readCache(CACHE_KEY_BGS);
+    return cachedBgs && cachedBgs.length ? Math.random() : 0;
+  });
 
   useEffect(() => {
     Promise.allSettled([getHeroSlides(), getHeroBackgrounds()])
