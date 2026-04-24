@@ -194,8 +194,8 @@ export default function HeroSlider() {
 
   if (!loaded) {
     return (
-      <section className="relative left-1/2 -mt-8 h-[430px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
-        <div className="absolute inset-x-0 top-0 h-[148px] overflow-hidden bg-slate-950 sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]">
+      <section className="relative left-1/2 -mt-8 h-[500px] w-screen -translate-x-1/2 overflow-visible sm:h-[710px] lg:h-[770px]">
+        <div className="absolute inset-x-0 top-0 h-[24vw] min-h-[96px] max-h-[118px] overflow-hidden bg-slate-950 sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]">
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-violet-700/20 via-slate-900 to-cyan-700/10" />
         </div>
       </section>
@@ -205,7 +205,7 @@ export default function HeroSlider() {
 
   return (
     <section
-      className="hero-slider group/hero relative left-1/2 -mt-8 h-[430px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
+      className="hero-slider group/hero relative left-1/2 -mt-8 h-[500px] w-screen -translate-x-1/2 overflow-visible text-white sm:h-[710px] lg:h-[770px]"
       aria-label="Ana sayfa slider"
       style={{ '--accent': accentHex }}
     >
@@ -231,7 +231,7 @@ export default function HeroSlider() {
 
       {/* ============== BACKGROUND (static per page load) ============== */}
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[148px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[24vw] min-h-[96px] max-h-[118px] w-screen -translate-x-1/2 overflow-hidden sm:h-[420px] sm:min-h-0 sm:max-h-none lg:h-[460px]"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -252,7 +252,7 @@ export default function HeroSlider() {
 
       {/* ============== CONTENT LAYOUT ============== */}
       <div
-        className="absolute inset-x-0 bottom-24 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-3 pb-2 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
+        className="absolute inset-x-0 bottom-44 mx-auto flex w-full max-w-[1480px] flex-col justify-end px-4 pb-4 sm:bottom-48 sm:px-10 sm:pb-6 lg:bottom-52 lg:px-16 lg:pb-8"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -275,7 +275,7 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[230px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[210px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
             {hasTitle ? (
               <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
@@ -284,10 +284,10 @@ export default function HeroSlider() {
             {current.image_url && hasTitle ? (
               <div
                 key={`art-mobile-${current.id || index}`}
-                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 z-0 w-[44%] md:hidden"
+                className="hs-card-art pointer-events-none absolute inset-y-0 right-0 z-0 w-[46%] md:hidden"
                 style={{
                   backgroundImage: `url("${current.image_url}")`,
-                  backgroundSize: 'cover',
+                  backgroundSize: 'contain',
                   backgroundPosition: 'center right',
                   backgroundRepeat: 'no-repeat',
                 }}
@@ -344,12 +344,12 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[62%] flex-col justify-center gap-2 overflow-hidden px-4 py-4 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-center gap-2 overflow-hidden px-5 py-5 sm:max-w-[640px] sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
                   <span
-                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-white shadow-md sm:px-2.5 sm:text-[11px] sm:tracking-[0.22em]"
+                    className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-md sm:px-2.5 sm:text-[11px] sm:tracking-[0.22em]"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                     }}
@@ -359,12 +359,12 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className={`${titleSizeClass} font-black leading-[0.94] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
+              <h1 className={`${titleSizeClass} font-black leading-[0.98] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]`}>
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="line-clamp-2 max-w-[12rem] text-[10px] font-semibold leading-snug text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
+                <p className="line-clamp-2 max-w-[13rem] text-[11px] font-semibold leading-snug text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
@@ -373,7 +373,7 @@ export default function HeroSlider() {
                 {current.cta_label ? (
                   <Link
                     to={current.cta_url || '/market'}
-                    className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-[0.1em] text-white shadow-lg transition hover:-translate-y-0.5 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-wider"
+                    className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-xl px-3.5 py-2 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-lg transition hover:-translate-y-0.5 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-wider"
                     style={{
                       background: `linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 60%, #000) 100%)`,
                       boxShadow: `0 10px 28px -8px var(--accent)`,
@@ -394,11 +394,11 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[38px] w-full px-1 sm:-mt-[56px] sm:px-0 lg:-mt-[56px]"
+            className="relative z-20 mx-auto -mt-[48px] w-full sm:-mt-[56px] lg:-mt-[56px]"
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between overflow-hidden rounded-[18px] bg-slate-950/38 backdrop-blur-md ring-1 ring-black/10 dark:bg-slate-950/45 sm:rounded-b-[22px] sm:rounded-t-none">
+            <div className="flex items-stretch justify-between overflow-hidden rounded-b-[22px] bg-slate-950/30 backdrop-blur-md ring-1 ring-black/10 dark:bg-slate-950/45">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -411,7 +411,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[50px] flex-1 items-center justify-center px-1.5 py-1.5 transition-all duration-300 sm:min-w-[72px] sm:px-2 sm:py-1 ${
+                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-1 transition-all duration-300 sm:min-w-[72px] ${
                       active
                         ? 'shadow-lg'
                         : 'bg-slate-950/34 text-white/82 hover:bg-slate-950/48 dark:bg-slate-950/42 dark:text-white/80 dark:hover:bg-slate-950/56'
@@ -425,7 +425,7 @@ export default function HeroSlider() {
                     {/* Icon — acts as the tab header itself */}
                     <span
                       className={`flex items-center justify-center transition-transform duration-300 ${
-                        active ? 'h-8 w-8 scale-105 sm:h-12 sm:w-12' : 'h-7 w-7 sm:h-10 sm:w-10 group-hover/tab:scale-105'
+                        active ? 'h-10 w-10 scale-105 sm:h-12 sm:w-12' : 'h-8 w-8 sm:h-10 sm:w-10 group-hover/tab:scale-105'
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
@@ -439,13 +439,8 @@ export default function HeroSlider() {
                           loading="lazy"
                         />
                       ) : (
-                        <Gamepad2 size={active ? 26 : 22} className="text-white/85 sm:hidden" />
+                        <Gamepad2 size={active ? 34 : 28} className="text-white/85" />
                       )}
-                      {!slide.icon_url ? (
-                        <span className="hidden sm:block">
-                          <Gamepad2 size={active ? 34 : 28} className="text-white/85" />
-                        </span>
-                      ) : null}
                     </span>
 
                     {/* Active underline glow */}
