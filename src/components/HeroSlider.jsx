@@ -282,17 +282,6 @@ export default function HeroSlider() {
               <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
-            {desktopImageUrl && hasTitle ? (
-              <img
-                key={`art-mobile-${current.id || index}`}
-                src={desktopImageUrl}
-                alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 z-0 h-full w-full object-cover md:hidden"
-                loading="eager"
-                decoding="async"
-              />
-            ) : null}
-
             {/* Slide hero art (right side) */}
             {desktopImageUrl && hasTitle ? (
               <div
@@ -307,17 +296,6 @@ export default function HeroSlider() {
                   WebkitMaskImage:
                     'linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 100%)',
                 }}
-              />
-            ) : null}
-
-            {desktopImageUrl && !hasTitle ? (
-              <img
-                key={`art-full-mobile-${current.id || index}`}
-                src={desktopImageUrl}
-                alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover md:hidden"
-                loading="eager"
-                decoding="async"
               />
             ) : null}
 
