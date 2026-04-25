@@ -171,26 +171,26 @@ function Drawer({ open, title, onClose, children }) {
 
 function SummaryCard({ icon: Icon, label, value, tone, compact = false }) {
   return (
-    <div className={`rounded-2xl border ${compact ? 'px-3 py-2' : 'px-4 py-3'} ${tone}`}>
+    <div className={`rounded-2xl border ${compact ? 'px-3 py-2' : 'px-4 py-3'} ${tone} dark:border-slate-800 dark:bg-slate-900/80`}>
       <div className="flex items-center justify-between">
-        <div className={`${compact ? 'text-[9px] tracking-[0.12em]' : 'text-[11px] tracking-[0.16em]'} font-bold uppercase text-slate-500`}>{label}</div>
-        <Icon size={compact ? 14 : 16} className="text-slate-400" />
+        <div className={`${compact ? 'text-[9px] tracking-[0.12em]' : 'text-[11px] tracking-[0.16em]'} font-bold uppercase text-slate-500 dark:text-slate-400`}>{label}</div>
+        <Icon size={compact ? 14 : 16} className="text-slate-400 dark:text-slate-500" />
       </div>
-      <div className={`${compact ? 'mt-1 text-base' : 'mt-2 text-xl'} font-black text-slate-900`}>{value}</div>
+      <div className={`${compact ? 'mt-1 text-base' : 'mt-2 text-xl'} font-black text-slate-900 dark:text-white`}>{value}</div>
     </div>
   );
 }
 
 function InfoRow({ icon: Icon, label, value, multiline = false }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+    <div className="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3 dark:border-slate-800 dark:bg-slate-900/70">
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 rounded-xl bg-white p-2 text-slate-500 shadow-sm">
+        <div className="mt-0.5 rounded-xl bg-white p-2 text-slate-500 shadow-sm dark:bg-slate-800 dark:text-slate-300 dark:shadow-black/30">
           <Icon size={15} />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
-          <div className={`mt-1 text-sm font-semibold text-slate-700 ${multiline ? 'whitespace-pre-wrap' : ''}`}>
+          <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">{label}</div>
+          <div className={`mt-1 text-sm font-semibold text-slate-700 dark:text-slate-200 ${multiline ? 'whitespace-pre-wrap' : ''}`}>
             {value || 'Belirtilmedi'}
           </div>
         </div>
@@ -201,15 +201,15 @@ function InfoRow({ icon: Icon, label, value, multiline = false }) {
 
 function FormField({ label, children, span = '' }) {
   return (
-    <label className={`rounded-2xl border border-slate-200 bg-white px-4 py-3 ${span}`}>
-      <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</div>
+    <label className={`rounded-2xl border border-slate-200 bg-white px-4 py-3 dark:border-slate-800 dark:bg-slate-900 ${span}`}>
+      <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500">{label}</div>
       <div className="mt-2">{children}</div>
     </label>
   );
 }
 
 const inputClass =
-  'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none';
+  'w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700 focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500';
 
 const RESTRICTION_FIELDS = [
   { key: 'listing_create', label: 'İlan oluşturma', description: 'Yeni ilan eklemesini engeller.' },
@@ -1566,18 +1566,18 @@ export default function AdminUsers() {
                   <InfoRow icon={Clock} label="Doğum Tarihi" value={detailUser.birth_date || '—'} />
                 </div>
 
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                <div className="rounded-2xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-extrabold text-slate-900">Kimlik Belgeleri</div>
-                      <div className="mt-1 text-xs text-slate-400">Güvenli özel klasörde saklanan son kimlik doğrulama kaydı.</div>
+                      <div className="text-sm font-extrabold text-slate-900 dark:text-white">Kimlik Belgeleri</div>
+                      <div className="mt-1 text-xs text-slate-400 dark:text-slate-500">Güvenli özel klasörde saklanan son kimlik doğrulama kaydı.</div>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         disabled={!detailUser.identity_application?.id}
                         onClick={() => openIdentityPreview(detailUser.identity_application?.id, 'identity', `Kimlik • ${detailUser.username}`)}
-                        className="rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 disabled:opacity-50"
+                        className="rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 transition-colors hover:bg-violet-100 disabled:opacity-50 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-900/50"
                       >
                         Kimliği Gör
                       </button>
@@ -1585,7 +1585,7 @@ export default function AdminUsers() {
                         type="button"
                         disabled={!detailUser.identity_application?.id}
                         onClick={() => openIdentityPreview(detailUser.identity_application?.id, 'selfie', `Selfie • ${detailUser.username}`)}
-                        className="rounded-xl bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 disabled:opacity-50"
+                        className="rounded-xl bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 transition-colors hover:bg-cyan-100 disabled:opacity-50 dark:bg-cyan-950/40 dark:text-cyan-300 dark:hover:bg-cyan-900/50"
                       >
                         Selfieyi Gör
                       </button>
@@ -1605,7 +1605,7 @@ export default function AdminUsers() {
                       type="button"
                       onClick={() => handleIdentityDecision('rejected')}
                       disabled={!detailUser.identity_application?.id || drawerSaving === 'identity'}
-                      className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
+                      className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50 dark:bg-rose-700 dark:hover:bg-rose-600"
                     >
                       Kimliği Reddet
                     </button>
@@ -1613,7 +1613,7 @@ export default function AdminUsers() {
                       type="button"
                       onClick={() => handleIdentityDecision('approved')}
                       disabled={!detailUser.identity_application?.id || drawerSaving === 'identity'}
-                      className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                      className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50 dark:bg-emerald-700 dark:hover:bg-emerald-600"
                     >
                       {drawerSaving === 'identity' ? 'Kaydediliyor...' : 'Kimliği Onayla'}
                     </button>
