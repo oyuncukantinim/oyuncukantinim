@@ -1902,23 +1902,6 @@ export default function ProfilePage() {
                       </span>
                     </div>
 
-                    {identityOverview?.summary ? (
-                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
-                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Ad Soyad</div>
-                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.full_name || 'Belirtilmedi'}</div>
-                        </div>
-                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
-                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Kimlik No</div>
-                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.identity_number || 'Belirtilmedi'}</div>
-                        </div>
-                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
-                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Doğum Tarihi</div>
-                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.birth_date || 'Belirtilmedi'}</div>
-                        </div>
-                      </div>
-                    ) : null}
-
                     {identityOverview?.application?.created_at ? (
                       <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-xs font-semibold text-slate-600">
                         <span className="font-black uppercase tracking-wide text-slate-400">Son Başvuru:</span>{' '}
