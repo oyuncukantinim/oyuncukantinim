@@ -1808,7 +1808,7 @@ export default function ProfilePage() {
 
           {/* KİİSEL BİLGİLER */}
           {activeTab === 'personal' && (
-            <div className="max-w-3xl space-y-5">
+            <div className="max-w-4xl space-y-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-extrabold text-gray-800 flex items-center gap-2"><MapPin size={20} className="text-violet-500" /> Kişisel Bilgiler</h2>
@@ -1819,7 +1819,7 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              <div className="grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="grid gap-5 lg:grid-cols-[1fr_1fr]">
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
@@ -1874,7 +1874,7 @@ export default function ProfilePage() {
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
                     <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={4} placeholder="Açık adresiniz..." className="input-field resize-none" />
                   </div>
-                  <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
+                  <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 lg:min-w-[calc(100%+10rem)]">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <div className="flex items-center gap-2 text-sm font-extrabold text-gray-800">
@@ -1962,7 +1962,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-4 flex flex-col gap-4 self-start">
+                <div className="bg-gradient-to-br from-cyan-50 via-white to-violet-50 border border-cyan-100 rounded-2xl p-5 flex flex-col gap-5">
                   <div className="flex items-center gap-2 text-gray-700 font-bold">
                     <Shield size={16} className="text-cyan-600" />
                     Hesap Güvenliği
