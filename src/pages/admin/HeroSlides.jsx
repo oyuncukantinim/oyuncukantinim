@@ -213,7 +213,7 @@ export default function AdminHeroSlides() {
     }
   };
 
-  const handleMobileImageUpload = async (slide, file) => {
+  const _handleMobileImageUpload = async (slide, file) => {
     if (!file) return;
     setBusyTarget(slide._key, 'mobile');
     try {
@@ -289,7 +289,7 @@ export default function AdminHeroSlides() {
     setBusyKey(null);
   };
 
-  const clearMobileImage = async (slide) => {
+  const _clearMobileImage = async (slide) => {
     if (!slide.mobile_image_url) return;
     setBusyTarget(slide._key, 'mobile');
     try {
@@ -518,7 +518,7 @@ export default function AdminHeroSlides() {
             {slides.map((slide, idx) => {
               const isImageBusy = busyKey === `${slide._key}:image`;
               const isIconBusy = busyKey === `${slide._key}:icon`;
-              const isMobileBusy = busyKey === `${slide._key}:mobile`;
+              const _isMobileBusy = busyKey === `${slide._key}:mobile`;
               const fileInputId = `hero-slide-image-${slide._key}`;
               return (
                 <div
@@ -651,62 +651,6 @@ export default function AdminHeroSlides() {
                       </div>
                       <ImageSizeHint meta={imageMeta[getMetaKey(slide._key)]} hasImage={!!slide.image_url} />
                     </div>
-
-                    {false ? <div>
-                      <label className="mb-1.5 block text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Mobil Görsel <span className="font-semibold normal-case tracking-normal text-slate-400">· {MOBILE_RECOMMENDED_SIZE_LABEL}</span>
-                      </label>
-                      <div className={`relative flex aspect-[12/7] items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed bg-gradient-to-br ${slide.accent_color} border-transparent`}>
-                        {slide.mobile_image_url ? (
-                          <img src={slide.mobile_image_url} alt="" className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="flex flex-col items-center gap-1 text-white/90">
-                            <ImageIcon size={24} />
-                            <span className="text-[10px] font-black uppercase tracking-wider text-white/80">
-                              {MOBILE_RECOMMENDED_SIZE_LABEL}
-                            </span>
-                          </div>
-                        )}
-                        {isMobileBusy ? (
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
-                            <Loader2 className="animate-spin" size={22} />
-                          </div>
-                        ) : null}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <input
-                          id={`${fileInputId}-mobile`}
-                          type="file"
-                          accept="image/*,.webp"
-                          className="hidden"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0];
-                            handleMobileImageUpload(slide, file);
-                            event.target.value = '';
-                          }}
-                        />
-                        <label
-                          htmlFor={`${fileInputId}-mobile`}
-                          className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[11px] font-black text-white shadow-sm transition hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
-                        >
-                          <Upload size={12} />
-                          {slide.mobile_image_url ? 'Değiştir' : 'Yükle'}
-                        </label>
-                        {slide.mobile_image_url ? (
-                          <button
-                            type="button"
-                            onClick={() => clearMobileImage(slide)}
-                            className="inline-flex items-center gap-1 rounded-lg bg-rose-50 px-2 py-1.5 text-[11px] font-black text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
-                          >
-                            <X size={11} /> Kaldır
-                          </button>
-                        ) : null}
-                      </div>
-                      <p className="mt-2 text-[10px] font-semibold leading-snug text-slate-500 dark:text-slate-400">
-                        Mobilde bu görsel kullanılır. Boş bırakırsan masaüstü görseli otomatik kullanılır.
-                      </p>
-                      <ImageSizeHint meta={imageMeta[getMetaKey(slide._key, 'mobile')]} hasImage={!!slide.mobile_image_url} />
-                    </div> : null}
 
                     {/* Text fields */}
                     <div className="space-y-3">

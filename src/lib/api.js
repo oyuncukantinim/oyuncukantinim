@@ -219,6 +219,38 @@ export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });
 }
 
+export function getIdentityOverview() {
+  return request('get_identity_overview', { auth: true });
+}
+
+export async function submitIdentityVerification({ fullName, identityNumber, birthDate, identityImage, selfieImage, userNote = '' }) {
+  const formData = new FormData();
+  formData.append('full_name', fullName);
+  formData.append('identity_number', identityNumber);
+  formData.append('birth_date', birthDate);
+  formData.append('identity_image', identityImage);
+  formData.append('selfie_image', selfieImage);
+  formData.append('user_note', userNote);
+
+  const token = getToken();
+  const response = await fetch(`${API_URL}?action=submit_identity_verification`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({
+    status: 'error',
+    message: 'Sunucudan gecerli JSON donmedi.',
+  }));
+
+  if (!response.ok || data.status !== 'success') {
+    throw new Error(data.message || 'Kimlik doğrulama başvurusu gönderilemedi.');
+  }
+
+  return data;
+}
+
 async function uploadProfileMedia(file, type) {
   const formData = new FormData();
   formData.append('image', file);
@@ -270,29 +302,12 @@ export function getStoreApplicationOverview() {
   return request('get_store_application_overview', { auth: true });
 }
 
-export async function submitStoreApplication({ identityImage, selfieImage, userNote = '' }) {
-  const formData = new FormData();
-  formData.append('identity_image', identityImage);
-  formData.append('selfie_image', selfieImage);
-  formData.append('user_note', userNote);
-
-  const token = getToken();
-  const response = await fetch(`${API_URL}?action=submit_store_application`, {
+export function submitStoreApplication(userNote = '') {
+  return request('submit_store_application', {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
-    body: formData,
+    body: { user_note: userNote },
+    auth: true,
   });
-
-  const data = await response.json().catch(() => ({
-    status: 'error',
-    message: 'Sunucudan gecerli JSON donmedi.',
-  }));
-
-  if (!response.ok || data.status !== 'success') {
-    throw new Error(data.message || 'Basvuru gonderilemedi.');
-  }
-
-  return data;
 }
 
 // --- LISTINGS ---

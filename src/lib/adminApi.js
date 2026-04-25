@@ -80,6 +80,10 @@ export const adminDeleteUserMedia = (user_id, type) =>
   adminRequest('admin_delete_user_media', { method: 'POST', body: { user_id, type } });
 export const adminUploadUserMedia = (user_id, type, file) =>
   adminUploadRequest('admin_upload_user_media', file, { user_id, type }).then((json) => json.data?.url || '');
+export const adminUpdateIdentityVerification = (body) =>
+  adminRequest('admin_update_identity_verification', { method: 'POST', body });
+export const adminGetIdentityVerificationImageBase64 = (id, type) =>
+  adminRequest('admin_get_identity_verification_image_base64', { query: { id, type } });
 
 // Support
 export const adminGetSupportTickets = (params = {}) =>

@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -575,7 +575,11 @@ export default function ProfilePage() {
   const [balanceAmount, setBalanceAmount] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
-  const [personalInfo, setPersonalInfo] = useState({ full_name: '', country: '', city: '', district: '', address: '' });
+  const [personalInfo, setPersonalInfo] = useState({ full_name: '', identity_number: '', birth_date: '', country: '', city: '', district: '', address: '' });
+  const [identityOverview, setIdentityOverview] = useState(null);
+  const [identitySubmitting, setIdentitySubmitting] = useState(false);
+  const [identityFiles, setIdentityFiles] = useState({ identity: null, selfie: null });
+  const [identityNote, setIdentityNote] = useState('');
 
   const handlePaymentBalanceChange = useCallback((newBalance, newWithdrawableBalance) => {
     updateUser({
@@ -608,11 +612,15 @@ export default function ProfilePage() {
     setSelectedAvatar(user.avatar || defaultAvatar);
     setPersonalInfo({
       full_name: user.full_name || '',
+      identity_number: user.identity_number || '',
+      birth_date: user.birth_date || '',
       country:   user.country   || '',
       city:      user.city      || '',
       district:  user.district  || '',
       address:   user.address   || '',
     });
+    setIdentityFiles({ identity: null, selfie: null });
+    setIdentityNote('');
   }, [user, navigate, defaultAvatar, defaultProfileBanner]);
 
   const loadListings = useCallback(async () => {
@@ -653,6 +661,9 @@ export default function ProfilePage() {
     else if (activeTab === 'achievements') {
       getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
     }
+    else if (activeTab === 'personal') {
+      getIdentityOverview().then((response) => setIdentityOverview(response.data || null)).catch(() => {});
+    }
   }, [activeTab, user, token, loadListings, loadOrders, loadSales]);
 
   const normalizedUsername = editUsername.trim();
@@ -668,11 +679,16 @@ export default function ProfilePage() {
   const verificationExpiryTime = emailVerificationExpiresAt ? new Date(emailVerificationExpiresAt).getTime() : 0;
   const verificationSecondsLeft = verificationExpiryTime ? Math.max(0, Math.ceil((verificationExpiryTime - verificationNow) / 1000)) : 0;
   const verificationCanResend = emailVerificationPending && verificationSecondsLeft <= 0;
+  const identityLockedFields = new Set(identityOverview?.locked_fields || []);
+  const identityApproved = identityOverview?.status === 'approved';
+  const identityPending = identityOverview?.status === 'pending';
   const profileDirty =
     selectedAvatar !== (user?.avatar || defaultAvatar) ||
     normalizedBannerImage !== savedBannerImage;
   const personalDirty =
     personalInfo.full_name !== (user?.full_name || '') ||
+    personalInfo.identity_number !== (user?.identity_number || '') ||
+    personalInfo.birth_date !== (user?.birth_date || '') ||
     personalInfo.country !== (user?.country || '') ||
     personalInfo.city !== (user?.city || '') ||
     personalInfo.district !== (user?.district || '') ||
@@ -681,6 +697,8 @@ export default function ProfilePage() {
     Boolean(newPassword);
   const personalDirtyWithoutEmail =
     personalInfo.full_name !== (user?.full_name || '') ||
+    personalInfo.identity_number !== (user?.identity_number || '') ||
+    personalInfo.birth_date !== (user?.birth_date || '') ||
     personalInfo.country !== (user?.country || '') ||
     personalInfo.city !== (user?.city || '') ||
     personalInfo.district !== (user?.district || '') ||
@@ -920,6 +938,46 @@ export default function ProfilePage() {
       showToast(err.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSubmitIdentityVerification = async () => {
+    if (identityPending) {
+      showToast('Bekleyen bir kimlik doğrulama başvurun zaten var.');
+      return;
+    }
+    if (identityApproved) {
+      showToast('Kimlik doğrulaman zaten onaylı.');
+      return;
+    }
+    if (!identityFiles.identity || !identityFiles.selfie) {
+      showToast('Kimlik görseli ve selfie yüklemelisin.');
+      return;
+    }
+    if (!personalInfo.full_name.trim() || !personalInfo.identity_number.trim() || !personalInfo.birth_date.trim()) {
+      showToast('Ad soyad, kimlik numarası ve doğum tarihi alanlarını tamamlamalısın.');
+      return;
+    }
+
+    setIdentitySubmitting(true);
+    try {
+      await submitIdentityVerification({
+        fullName: personalInfo.full_name.trim(),
+        identityNumber: personalInfo.identity_number.trim(),
+        birthDate: personalInfo.birth_date.trim(),
+        identityImage: identityFiles.identity,
+        selfieImage: identityFiles.selfie,
+        userNote: identityNote.trim(),
+      });
+      const identityResponse = await getIdentityOverview();
+      setIdentityOverview(identityResponse.data || null);
+      setIdentityFiles({ identity: null, selfie: null });
+      setIdentityNote('');
+      showToast('Kimlik doğrulama başvurun incelemeye alındı.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setIdentitySubmitting(false);
     }
   };
 
@@ -1768,7 +1826,38 @@ export default function ProfilePage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Ad Soyad</label>
-                    <input type="text" value={personalInfo.full_name} onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))} placeholder="Adınız Soyadınız" className="input-field" />
+                    <input
+                      type="text"
+                      value={personalInfo.full_name}
+                      disabled={identityLockedFields.has('full_name')}
+                      onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))}
+                      placeholder="Adınız Soyadınız"
+                      className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Kimlik No</label>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={personalInfo.identity_number}
+                        disabled={identityLockedFields.has('identity_number')}
+                        onChange={e => setPersonalInfo(f => ({...f, identity_number: e.target.value.replace(/\D/g, '').slice(0, 20)}))}
+                        placeholder="Kimlik numaran"
+                        className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-600 mb-1.5">Doğum Tarihi</label>
+                      <input
+                        type="date"
+                        value={personalInfo.birth_date}
+                        disabled={identityLockedFields.has('birth_date')}
+                        onChange={e => setPersonalInfo(f => ({...f, birth_date: e.target.value}))}
+                        className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                      />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -1787,6 +1876,117 @@ export default function ProfilePage() {
                   <div>
                     <label className="block text-sm font-bold text-gray-600 mb-1.5">Adres</label>
                     <textarea value={personalInfo.address} onChange={e => setPersonalInfo(f => ({...f, address: e.target.value}))} rows={4} placeholder="Açık adresiniz..." className="input-field resize-none" />
+                  </div>
+                  <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 text-sm font-extrabold text-gray-800">
+                          <ShieldCheck size={16} className="text-violet-600" />
+                          Kimlik Doğrulama
+                        </div>
+                        <p className="mt-1 text-xs font-semibold text-gray-500">
+                          Belgeler yalnızca güvenli özel klasörde saklanır ve inceleme için admin tarafından görüntülenir.
+                        </p>
+                      </div>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black ${
+                        identityApproved
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : identityPending
+                            ? 'bg-amber-50 text-amber-700'
+                            : identityOverview?.status === 'rejected'
+                              ? 'bg-rose-50 text-rose-700'
+                              : 'bg-slate-100 text-slate-600'
+                      }`}>
+                        {identityApproved ? <CheckCircle size={12} /> : identityPending ? <Clock size={12} /> : identityOverview?.status === 'rejected' ? <AlertTriangle size={12} /> : <Shield size={12} />}
+                        {identityApproved ? 'Onaylandı' : identityPending ? 'İncelemede' : identityOverview?.status === 'rejected' ? 'Reddedildi' : 'Başvuru Yok'}
+                      </span>
+                    </div>
+
+                    {identityOverview?.summary ? (
+                      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
+                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Ad Soyad</div>
+                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.full_name || 'Belirtilmedi'}</div>
+                        </div>
+                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
+                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Kimlik No</div>
+                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.identity_number || 'Belirtilmedi'}</div>
+                        </div>
+                        <div className="rounded-2xl border border-white/80 bg-white/80 px-3 py-3">
+                          <div className="text-[11px] font-black uppercase tracking-[0.16em] text-gray-400">Doğum Tarihi</div>
+                          <div className="mt-1 text-sm font-bold text-gray-700">{identityOverview.summary.birth_date || 'Belirtilmedi'}</div>
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {identityOverview?.application?.created_at ? (
+                      <div className="mt-4 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-xs font-semibold text-slate-600">
+                        <span className="font-black uppercase tracking-wide text-slate-400">Son Başvuru:</span>{' '}
+                        {new Date(identityOverview.application.created_at).toLocaleString('tr-TR')}
+                      </div>
+                    ) : null}
+
+                    {identityOverview?.note ? (
+                      <div className={`mt-4 rounded-2xl px-3 py-3 text-xs font-semibold ${
+                        identityOverview?.status === 'rejected' ? 'border border-rose-200 bg-rose-50 text-rose-700' : 'border border-slate-200 bg-white text-slate-600'
+                      }`}>
+                        <span className="font-black uppercase tracking-wide">Admin notu:</span> {identityOverview.note}
+                      </div>
+                    ) : null}
+
+                    {!identityApproved ? (
+                      <div className="mt-4 space-y-3">
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <label className="rounded-2xl border border-dashed border-violet-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600">
+                            <span className="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Kimlik Görseli</span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/bmp"
+                              disabled={identityPending || identitySubmitting}
+                              onChange={(e) => setIdentityFiles((prev) => ({ ...prev, identity: e.target.files?.[0] || null }))}
+                              className="block w-full text-xs font-semibold text-gray-500 file:mr-3 file:rounded-xl file:border-0 file:bg-violet-600 file:px-3 file:py-2 file:text-xs file:font-black file:text-white"
+                            />
+                            <div className="mt-2 text-xs text-gray-400">{identityFiles.identity ? identityFiles.identity.name : 'Kimliğin net göründüğü belgeyi yükle.'}</div>
+                          </label>
+                          <label className="rounded-2xl border border-dashed border-cyan-200 bg-white px-4 py-3 text-sm font-semibold text-gray-600">
+                            <span className="mb-2 block text-xs font-black uppercase tracking-[0.16em] text-gray-400">Selfie</span>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp,image/bmp"
+                              disabled={identityPending || identitySubmitting}
+                              onChange={(e) => setIdentityFiles((prev) => ({ ...prev, selfie: e.target.files?.[0] || null }))}
+                              className="block w-full text-xs font-semibold text-gray-500 file:mr-3 file:rounded-xl file:border-0 file:bg-cyan-600 file:px-3 file:py-2 file:text-xs file:font-black file:text-white"
+                            />
+                            <div className="mt-2 text-xs text-gray-400">{identityFiles.selfie ? identityFiles.selfie.name : 'Yüzün ve belge bağlantısı net görünsün.'}</div>
+                          </label>
+                        </div>
+                        <textarea
+                          value={identityNote}
+                          disabled={identityPending || identitySubmitting}
+                          onChange={(e) => setIdentityNote(e.target.value.slice(0, 300))}
+                          rows={3}
+                          placeholder="İstersen kısa bir açıklama bırakabilirsin."
+                          className="input-field resize-none disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        />
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                          <p className="text-xs font-semibold text-gray-400">
+                            Onay sonrası ad soyad, kimlik no ve doğum tarihi kilitlenir.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={handleSubmitIdentityVerification}
+                            disabled={identityPending || identitySubmitting}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {identitySubmitting ? <><Clock size={14} /> Gönderiliyor...</> : <><ShieldCheck size={14} /> Kimlik Doğrulamasını Gönder</>}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-semibold text-emerald-700">
+                        Kimlik doğrulaman tamamlandı. Bu yüzden ad soyad, kimlik numarası ve doğum tarihi alanları kilitlendi.
+                      </div>
+                    )}
                   </div>
                 </div>
 

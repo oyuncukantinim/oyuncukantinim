@@ -54,6 +54,7 @@ const defaultCriteriaSettings = {
   min_successful_sales: 5,
   min_avg_rating: 4.5,
   require_email_verified: 1,
+  require_identity_verified: 1,
   require_profile_complete: 1,
   require_approved_bank: 1,
   require_clean_moderation: 1,
@@ -83,6 +84,7 @@ const moveBadgeBeforeTarget = (badges, sourceId, targetId) => {
 export default function AdminStoreManagement() {
   const [data, setData] = useState({ badges: [], applications: [], pending_count: 0 });
   const [status, setStatus] = useState('all');
+  const [identityStatus, setIdentityStatus] = useState('all');
   const [form, setForm] = useState(emptyBadge);
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState(null);
@@ -120,14 +122,14 @@ export default function AdminStoreManagement() {
   }, []);
 
   const load = useCallback(() => {
-    adminGetStoreManagement({ status })
+    adminGetStoreManagement({ status, identity_status: identityStatus })
       .then((response) => {
         const nextData = response.data || { badges: [], applications: [] };
         setData(nextData);
         setCriteriaForm({ ...defaultCriteriaSettings, ...(nextData.criteria_settings || {}) });
       })
       .catch((error) => showToast(error.message));
-  }, [status, showToast]);
+  }, [status, identityStatus, showToast]);
 
   useEffect(() => {
     load();
@@ -370,6 +372,7 @@ export default function AdminStoreManagement() {
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {[
                 ['require_email_verified', 'E-posta doğrulaması zorunlu olsun'],
+                ['require_identity_verified', 'Kimlik doğrulaması zorunlu olsun'],
                 ['require_profile_complete', 'Profil bilgileri tamamlanmış olsun'],
                 ['require_approved_bank', 'Onaylı banka hesabı zorunlu olsun'],
                 ['require_clean_moderation', 'Ban/kısıtlama olmaması zorunlu olsun'],
@@ -395,16 +398,29 @@ export default function AdminStoreManagement() {
               <h2 className="font-black text-slate-900">Onaylı Mağaza Başvuruları</h2>
               <p className="mt-1 text-xs font-semibold text-slate-400">Kimlik ve selfie görselleri sadece admin token ile görüntülenir.</p>
             </div>
-            <select
-              value={status}
-              onChange={(event) => setStatus(event.target.value)}
-              className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
-            >
-              <option value="all">Tüm başvurular</option>
-              <option value="pending">Bekleyen</option>
-              <option value="approved">Onaylanan</option>
-              <option value="rejected">Reddedilen</option>
-            </select>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value)}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
+              >
+                <option value="all">Tüm başvurular</option>
+                <option value="pending">Bekleyen</option>
+                <option value="approved">Onaylanan</option>
+                <option value="rejected">Reddedilen</option>
+              </select>
+              <select
+                value={identityStatus}
+                onChange={(event) => setIdentityStatus(event.target.value)}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
+              >
+                <option value="all">Kimlik: Tümü</option>
+                <option value="pending">Kimlik Bekliyor</option>
+                <option value="approved">Kimlik Onaylı</option>
+                <option value="rejected">Kimlik Reddedildi</option>
+                <option value="none">Kimlik Başvurusu Yok</option>
+              </select>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -413,6 +429,7 @@ export default function AdminStoreManagement() {
                 <tr>
                   <th className="px-4 py-3 font-black">Kullanıcı</th>
                   <th className="px-4 py-3 font-black">Durum</th>
+                  <th className="px-4 py-3 font-black">Kimlik</th>
                   <th className="px-4 py-3 font-black">Kriter</th>
                   <th className="px-4 py-3 font-black">Görseller</th>
                   <th className="px-4 py-3 font-black">Admin Notu</th>
@@ -435,6 +452,25 @@ export default function AdminStoreManagement() {
                       <td className="px-4 py-4">
                         <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-black ${meta.className}`}>
                           <StatusIcon size={13} /> {meta.label}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-black ${
+                          application.identity_status === 'approved'
+                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                            : application.identity_status === 'pending'
+                              ? 'border-amber-200 bg-amber-50 text-amber-700'
+                              : application.identity_status === 'rejected'
+                                ? 'border-rose-200 bg-rose-50 text-rose-700'
+                                : 'border-slate-200 bg-slate-50 text-slate-600'
+                        }`}>
+                          {application.identity_status === 'approved'
+                            ? 'Onaylı'
+                            : application.identity_status === 'pending'
+                              ? 'Bekliyor'
+                              : application.identity_status === 'rejected'
+                                ? 'Reddedildi'
+                                : 'Yok'}
                         </span>
                       </td>
                       <td className="px-4 py-4">
@@ -487,7 +523,7 @@ export default function AdminStoreManagement() {
                 })}
                 {(!data.applications || data.applications.length === 0) ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-10 text-center text-sm font-semibold text-slate-400">
+                    <td colSpan="7" className="px-4 py-10 text-center text-sm font-semibold text-slate-400">
                       Başvuru bulunmuyor.
                     </td>
                   </tr>

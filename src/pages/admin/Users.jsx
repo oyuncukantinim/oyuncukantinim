@@ -22,10 +22,11 @@ import {
   CreditCard,
   Trash2,
   Upload,
+  AlertTriangle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/AdminLayout';
-import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUserMedia, adminUploadUserMedia } from '../../lib/adminApi';
+import { adminGetUsers, adminUpdateUser, adminGetUser, adminGetUserTransactions, adminDeleteUserMedia, adminUploadUserMedia, adminUpdateIdentityVerification, adminGetIdentityVerificationImageBase64 } from '../../lib/adminApi';
 import { listingSlug } from '../../lib/api';
 import { getListingCoverImage } from '../../lib/listingMedia';
 import useSiteBrand from '../../hooks/useSiteBrand';
@@ -238,6 +239,7 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('');
   const [filterBanned, setFilterBanned] = useState('');
   const [filterVerified, setFilterVerified] = useState('');
+  const [filterIdentityStatus, setFilterIdentityStatus] = useState('');
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
 
@@ -266,6 +268,8 @@ export default function AdminUsers() {
     avatar: '',
     banner_image: '',
     full_name: '',
+    identity_number: '',
+    birth_date: '',
     country: '',
     city: '',
     district: '',
@@ -277,6 +281,7 @@ export default function AdminUsers() {
   const [financeSearch, setFinanceSearch] = useState('');
   const [financeTypeFilter, setFinanceTypeFilter] = useState('all');
   const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
+  const [identityPreview, setIdentityPreview] = useState(null);
 
   const showToast = (msg) => {
     setToast(msg);
@@ -286,7 +291,7 @@ export default function AdminUsers() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const r = await adminGetUsers({ page, search, is_banned: filterBanned, is_verified_store: filterVerified });
+      const r = await adminGetUsers({ page, search, is_banned: filterBanned, is_verified_store: filterVerified, identity_status: filterIdentityStatus });
       setUsers(r.data.users || []);
       setTotal(r.data.total || 0);
       setPages(r.data.pages || 1);
@@ -295,7 +300,7 @@ export default function AdminUsers() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, filterBanned, filterVerified]);
+  }, [page, search, filterBanned, filterVerified, filterIdentityStatus]);
 
   useEffect(() => {
     load();
@@ -310,6 +315,8 @@ export default function AdminUsers() {
       avatar: detailUser.avatar || '',
       banner_image: detailUser.banner_image || '',
       full_name: detailUser.full_name || '',
+      identity_number: detailUser.identity_number || '',
+      birth_date: detailUser.birth_date || '',
       country: detailUser.country || '',
       city: detailUser.city || '',
       district: detailUser.district || '',
@@ -361,6 +368,7 @@ export default function AdminUsers() {
     setAvatarPickerOpen(false);
     setDetailLoading(false);
     setTxLoading(false);
+    setIdentityPreview(null);
   };
 
   const loadUserTxns = async (userId, force = false) => {
@@ -405,6 +413,8 @@ export default function AdminUsers() {
         avatar: generalForm.avatar.trim(),
         banner_image: generalForm.banner_image.trim(),
         full_name: generalForm.full_name.trim(),
+        identity_number: generalForm.identity_number.trim(),
+        birth_date: generalForm.birth_date,
         country: generalForm.country.trim(),
         city: generalForm.city.trim(),
         district: generalForm.district.trim(),
@@ -449,6 +459,43 @@ export default function AdminUsers() {
       await refreshDetail(detailUser.id);
       await load();
       showToast(type === 'avatar' ? 'Profil resmi yüklendi.' : 'Profil bannerı yüklendi.');
+    } catch (e) {
+      showToast(e.message);
+    } finally {
+      setDrawerSaving('');
+    }
+  };
+
+  const openIdentityPreview = async (applicationId, type, title) => {
+    if (!applicationId) return;
+    setIdentityPreview({ title, loading: true, error: '', dataUrl: '' });
+    try {
+      const response = await adminGetIdentityVerificationImageBase64(applicationId, type);
+      const dataUrl = response?.data?.data_url || '';
+      if (!dataUrl) throw new Error('Görsel verisi alınamadı.');
+      setIdentityPreview({ title, loading: false, error: '', dataUrl });
+    } catch (e) {
+      setIdentityPreview({ title, loading: false, error: e.message, dataUrl: '' });
+    }
+  };
+
+  const handleIdentityDecision = async (status) => {
+    const applicationId = detailUser?.identity_application?.id;
+    if (!applicationId) {
+      showToast('İncelenecek kimlik başvurusu bulunamadı.');
+      return;
+    }
+
+    setDrawerSaving('identity');
+    try {
+      await adminUpdateIdentityVerification({
+        application_id: applicationId,
+        status,
+        admin_note: detailUser?.identity_note || '',
+      });
+      await refreshDetail(detailUser.id);
+      await load();
+      showToast(status === 'approved' ? 'Kimlik doğrulama onaylandı.' : 'Kimlik doğrulama reddedildi.');
     } catch (e) {
       showToast(e.message);
     } finally {
@@ -715,6 +762,20 @@ export default function AdminUsers() {
               <option value="1">Onaylı Kullanıcılar</option>
               <option value="0">Onaysız Kullanıcılar</option>
             </select>
+            <select
+              value={filterIdentityStatus}
+              onChange={(e) => {
+                setFilterIdentityStatus(e.target.value);
+                setPage(1);
+              }}
+              className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
+            >
+              <option value="">Kimlik Durumu</option>
+              <option value="none">Başvuru Yok</option>
+              <option value="pending">Bekliyor</option>
+              <option value="approved">Onaylı</option>
+              <option value="rejected">Reddedildi</option>
+            </select>
           </div>
         </div>
 
@@ -768,6 +829,11 @@ export default function AdminUsers() {
                           <div>
                             <div className="flex items-center gap-1.5 font-bold text-gray-800">
                               <span>{u.username}</span>
+                              {u.identity_status === 'pending' && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
+                                  <AlertTriangle size={11} /> Kimlik
+                                </span>
+                              )}
                               {Number(u.is_admin) === 1 && (
                                 <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-600">
                                   Admin
@@ -926,6 +992,7 @@ export default function AdminUsers() {
                   { id: 'listings', label: 'İlanlar' },
                   { id: 'bank_accounts', label: 'Bankalar' },
                   { id: 'finance', label: 'Finans' },
+                  { id: 'identity', label: 'Kimlik' },
                   { id: 'moderation', label: 'Moderasyon' },
                 ].map((tab) => (
                   <button
@@ -1072,6 +1139,21 @@ export default function AdminUsers() {
                     <input
                       value={generalForm.full_name}
                       onChange={(e) => setGeneralForm((prev) => ({ ...prev, full_name: e.target.value }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Kimlik No">
+                    <input
+                      value={generalForm.identity_number}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, identity_number: e.target.value.replace(/\D/g, '').slice(0, 20) }))}
+                      className={inputClass}
+                    />
+                  </FormField>
+                  <FormField label="Doğum Tarihi">
+                    <input
+                      type="date"
+                      value={generalForm.birth_date}
+                      onChange={(e) => setGeneralForm((prev) => ({ ...prev, birth_date: e.target.value }))}
                       className={inputClass}
                     />
                   </FormField>
@@ -1453,6 +1535,93 @@ export default function AdminUsers() {
               </div>
             )}
 
+            {detailTab === 'identity' && (
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <SummaryCard compact icon={ShieldCheck} label="Durum" value={
+                    detailUser.identity_status === 'approved'
+                      ? 'Onaylı'
+                      : detailUser.identity_status === 'pending'
+                        ? 'Bekliyor'
+                        : detailUser.identity_status === 'rejected'
+                          ? 'Reddedildi'
+                          : 'Başvuru yok'
+                  } tone={
+                    detailUser.identity_status === 'approved'
+                      ? 'border-emerald-100 bg-emerald-50/70'
+                      : detailUser.identity_status === 'pending'
+                        ? 'border-amber-100 bg-amber-50/70'
+                        : detailUser.identity_status === 'rejected'
+                          ? 'border-rose-100 bg-rose-50/70'
+                          : 'border-slate-100 bg-slate-50/70'
+                  } />
+                  <SummaryCard compact icon={Clock} label="Başvuru Tarihi" value={detailUser.identity_application?.created_at ? fmtDateTime(detailUser.identity_application.created_at) : '—'} tone="border-slate-100 bg-slate-50/70" />
+                  <SummaryCard compact icon={CheckCircle2} label="Onay Tarihi" value={detailUser.identity_verified_at ? fmtDateTime(detailUser.identity_verified_at) : '—'} tone="border-emerald-100 bg-emerald-50/70" />
+                  <SummaryCard compact icon={AlertTriangle} label="Red Tarihi" value={detailUser.identity_rejected_at ? fmtDateTime(detailUser.identity_rejected_at) : '—'} tone="border-rose-100 bg-rose-50/70" />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <InfoRow icon={FileText} label="Ad Soyad" value={detailUser.full_name} />
+                  <InfoRow icon={Key} label="Kimlik No" value={detailUser.identity_number || '—'} />
+                  <InfoRow icon={Clock} label="Doğum Tarihi" value={detailUser.birth_date || '—'} />
+                </div>
+
+                <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">Kimlik Belgeleri</div>
+                      <div className="mt-1 text-xs text-slate-400">Güvenli özel klasörde saklanan son kimlik doğrulama kaydı.</div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={!detailUser.identity_application?.id}
+                        onClick={() => openIdentityPreview(detailUser.identity_application?.id, 'identity', `Kimlik • ${detailUser.username}`)}
+                        className="rounded-xl bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 disabled:opacity-50"
+                      >
+                        Kimliği Gör
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!detailUser.identity_application?.id}
+                        onClick={() => openIdentityPreview(detailUser.identity_application?.id, 'selfie', `Selfie • ${detailUser.username}`)}
+                        className="rounded-xl bg-cyan-50 px-3 py-2 text-xs font-black text-cyan-700 disabled:opacity-50"
+                      >
+                        Selfieyi Gör
+                      </button>
+                    </div>
+                  </div>
+
+                  <textarea
+                    rows={3}
+                    value={detailUser.identity_note || ''}
+                    onChange={(e) => setDetailUser((prev) => ({ ...prev, identity_note: e.target.value }))}
+                    placeholder="Admin notu / red sebebi"
+                    className={`${inputClass} resize-none`}
+                  />
+
+                  <div className="mt-3 flex flex-wrap justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleIdentityDecision('rejected')}
+                      disabled={!detailUser.identity_application?.id || drawerSaving === 'identity'}
+                      className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-rose-500 disabled:opacity-50"
+                    >
+                      Kimliği Reddet
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleIdentityDecision('approved')}
+                      disabled={!detailUser.identity_application?.id || drawerSaving === 'identity'}
+                      className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                    >
+                      {drawerSaving === 'identity' ? 'Kaydediliyor...' : 'Kimliği Onayla'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {detailTab === 'moderation' && (
               <div className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1580,6 +1749,28 @@ export default function AdminUsers() {
           </div>
         )}
       </Drawer>
+
+      {identityPreview && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm" onClick={() => setIdentityPreview(null)}>
+          <div className="relative w-full max-w-4xl rounded-3xl bg-white p-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="text-sm font-extrabold text-slate-900">{identityPreview.title}</div>
+              <button onClick={() => setIdentityPreview(null)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex min-h-[280px] items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+              {identityPreview.loading ? (
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-600 border-t-transparent" />
+              ) : identityPreview.error ? (
+                <div className="px-6 text-center text-sm font-semibold text-rose-500">{identityPreview.error}</div>
+              ) : (
+                <img src={identityPreview.dataUrl} alt="" className="max-h-[75vh] w-full object-contain" />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {modalType === 'ban' && selectedUser && (
         <Modal title={Number(selectedUser.is_banned) === 1 ? 'Ban Kaldır' : `${selectedUser.username} Kullanıcısını Banla`} onClose={() => setModalType('')}>

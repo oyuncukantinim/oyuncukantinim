@@ -17,7 +17,6 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
-  Upload,
   Users,
   XCircle,
   Zap,
@@ -44,35 +43,6 @@ const benefits = [
   { icon: Users, title: 'Profesyonel Vitrin', text: 'Başarım, doğrulama ve rütbe alanlarıyla kurumsal görünüm.', accent: 'from-slate-600 to-slate-800' },
   { icon: Gamepad2, title: 'Oyuncu Teması', text: 'Pazarın oyun odaklı görsel diline uygun özel sergileme.', accent: 'from-lime-500 to-green-600' },
 ];
-
-function FileDrop({ id, label, description, file, onChange }) {
-  const has = Boolean(file);
-  return (
-    <label
-      htmlFor={id}
-      className={`group relative flex min-h-[130px] cursor-pointer items-center gap-4 rounded-2xl border-2 border-dashed p-4 transition-all duration-300 ${
-        has
-          ? 'border-emerald-300 bg-emerald-50/70 hover:border-emerald-400'
-          : 'border-violet-200 bg-white/80 hover:-translate-y-0.5 hover:border-violet-400 hover:bg-violet-50 hover:shadow-lg hover:shadow-violet-100'
-      }`}
-    >
-      <input id={id} type="file" accept="image/*,.webp" className="hidden" onChange={(e) => onChange(e.target.files?.[0] || null)} />
-      <div className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg transition-transform duration-300 group-hover:scale-110 ${
-        has ? 'bg-gradient-to-br from-emerald-500 to-teal-500 shadow-emerald-200' : 'bg-gradient-to-br from-violet-500 to-cyan-500 shadow-violet-200'
-      }`}>
-        {has ? <CheckCircle2 size={22} /> : <Upload size={22} className="transition-transform duration-300 group-hover:-translate-y-0.5" />}
-        {has ? <span className="absolute inset-0 rounded-2xl ring-2 ring-emerald-300 mb-ping-slow" /> : null}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-black text-slate-900">{label}</div>
-        <div className={`mt-1 truncate text-xs font-semibold leading-5 ${has ? 'text-emerald-600' : 'text-slate-400'}`}>
-          {has ? file.name : description}
-        </div>
-      </div>
-      <ChevronRight size={18} className={`shrink-0 transition-all duration-300 ${has ? 'text-emerald-500' : 'text-slate-300 group-hover:translate-x-1 group-hover:text-violet-500'}`} />
-    </label>
-  );
-}
 
 function ProgressRing({ progress }) {
   const size = 120;
@@ -112,10 +82,6 @@ export default function StoreApplicationPage() {
   const [overview, setOverview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [identityImage, setIdentityImage] = useState(null);
-  const [selfieImage, setSelfieImage] = useState(null);
-  const [userNote, setUserNote] = useState('');
-  const [exampleOpen, setExampleOpen] = useState(false);
 
   const loadOverview = useCallback(() => {
     setLoading(true);
@@ -137,16 +103,9 @@ export default function StoreApplicationPage() {
   }, [user, navigate, loadOverview]);
 
   const handleSubmit = async () => {
-    if (!identityImage || !selfieImage) {
-      showToast('Kimlik ve selfie görsellerini yüklemelisiniz.');
-      return;
-    }
     setSubmitting(true);
     try {
-      await submitStoreApplication({ identityImage, selfieImage, userNote });
-      setIdentityImage(null);
-      setSelfieImage(null);
-      setUserNote('');
+      await submitStoreApplication();
       showToast('Başvurunuz incelemeye alındı.');
       loadOverview();
     } catch (error) {
@@ -161,6 +120,8 @@ export default function StoreApplicationPage() {
   const appMeta = application ? statusMeta[application.status] : null;
   const AppIcon = appMeta?.icon || Clock;
   const isVerified = Boolean(overview?.is_verified_store);
+  const identityStatus = overview?.identity_status || 'none';
+  const identityApproved = identityStatus === 'approved';
   const isPending = application?.status === 'pending';
   const canApply = !isVerified && !isPending && criteria.eligible;
   const criteriaProgress = useMemo(() => {
@@ -353,7 +314,7 @@ export default function StoreApplicationPage() {
             <div>
               <div className="text-[11px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-300">Kriterler</div>
               <h2 className="mt-1 text-xl font-black text-slate-900 dark:text-white">Başvuru kriterleri</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">Tüm şartlar tamamlandığında doğrulama yükleme alanı aktif olur.</p>
+              <p className="mt-1 text-xs font-semibold text-slate-400 dark:text-slate-500">Tüm şartlar tamamlandığında mağaza başvurunu tek tuşla gönderebilirsin.</p>
             </div>
             {application?.status === 'rejected' && application.admin_note ? (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
@@ -429,99 +390,44 @@ export default function StoreApplicationPage() {
         </section>
       ) : null}
 
-      {/* APPLICATION FORM */}
-      {canApply ? (
+      {!isVerified ? (
         <section className="mb-fade-up relative overflow-hidden rounded-[2rem] border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-cyan-50 p-5 shadow-sm sm:p-7">
           <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-300/20 blur-3xl mb-float-a" />
           <div className="pointer-events-none absolute -bottom-16 -left-10 h-56 w-56 rounded-full bg-cyan-300/20 blur-3xl mb-float-b" />
 
-          <div className="relative mb-5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <div className="text-[11px] font-black uppercase tracking-widest text-violet-600">Doğrulama</div>
-              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Görselleri yükle ve başvur</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-500">
-                Kimlik ve selfie WebP formatına çevrilir, özel klasörde saklanır ve yalnızca admin tarafından görüntülenir.
+              <div className="text-[11px] font-black uppercase tracking-widest text-violet-600">Başvuru</div>
+              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Mağaza başvurunu gönder</h2>
+              <p className="mt-1 max-w-2xl text-xs font-semibold leading-6 text-slate-500">
+                Kimlik doğrulama artık profilindeki Kişisel Bilgiler alanından yönetiliyor. Bu sayfa sadece kriterlerini kontrol eder ve uygun olduğunda mağaza başvurunu tek tuşla gönderir.
               </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 transition hover:border-violet-200 hover:text-violet-700"
+                >
+                  <ImageIcon size={14} />
+                  Kişisel Bilgilere Git
+                </Link>
+                <span className={`inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-xs font-black ${
+                  identityApproved ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'
+                }`}>
+                  {identityApproved ? <CheckCircle2 size={14} /> : <Lock size={14} />}
+                  {identityApproved ? 'Kimlik doğrulaması tamamlandı' : 'Kimlik doğrulaması bekleniyor'}
+                </span>
+              </div>
             </div>
             <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || !canApply}
               className="group relative inline-flex shrink-0 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-6 py-3.5 text-sm font-black text-white shadow-lg shadow-violet-200 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300 disabled:pointer-events-none disabled:opacity-60"
             >
               <span className="absolute inset-0 mb-shimmer-wrap opacity-0 transition-opacity group-hover:opacity-100" />
               {submitting ? (<><Loader2 size={16} className="animate-spin" /> Gönderiliyor...</>) : (<><Send size={16} /> Başvuruyu Gönder</>)}
             </button>
           </div>
-
-          {/* Example image */}
-          <div className="relative mb-5 rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wide text-amber-700">
-                <ImageIcon size={14} /> Örnek Görsel
-              </div>
-              <p className="text-[11px] font-semibold text-slate-500">Önerilen poz ve kadraj</p>
-            </div>
-            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-              <button
-                type="button"
-                onClick={() => setExampleOpen(true)}
-                className="group w-full max-w-sm shrink-0 overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:ring-2 hover:ring-amber-300 sm:w-64"
-                title="Büyük göster"
-              >
-                <div className="aspect-[2816/1536] w-full overflow-hidden">
-                  <img
-                    src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
-                    alt="Örnek kimlik ve selfie doğrulama"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              </button>
-              <p className="text-xs font-semibold leading-5 text-slate-600">
-                Kimliğini tutan eliyle birlikte yüzünün net göründüğü bir selfie örneği. Aynı pozda net ve iyi aydınlatılmış bir fotoğraf yüklemen başvurunun hızlı onaylanmasını sağlar.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 xl:grid-cols-[1fr_1fr_1.2fr]">
-            <FileDrop id="identity-image" label="Kimlik görseli" description="Kimliğin net göründüğü görsel" file={identityImage} onChange={setIdentityImage} />
-            <FileDrop id="selfie-image" label="Selfie doğrulama" description="Kimlikle birlikte selfie görseli" file={selfieImage} onChange={setSelfieImage} />
-            <div className="relative flex flex-col">
-              <textarea
-                value={userNote}
-                onChange={(event) => setUserNote(event.target.value.slice(0, 200))}
-                rows={4}
-                maxLength={200}
-                placeholder="Admin için kısa not bırakmak istersen yazabilirsin."
-                className="min-h-[130px] w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold outline-none transition-all focus:-translate-y-0.5 focus:border-violet-400 focus:shadow-lg focus:shadow-violet-100"
-              />
-              <div className="mt-1 text-right text-[11px] font-semibold text-slate-400">{userNote.length}/200</div>
-            </div>
-          </div>
         </section>
-      ) : null}
-
-      {/* EXAMPLE LIGHTBOX */}
-      {exampleOpen ? (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 mb-fade-in backdrop-blur-sm"
-          onClick={() => setExampleOpen(false)}
-        >
-          <button
-            type="button"
-            onClick={() => setExampleOpen(false)}
-            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-all hover:scale-110 hover:bg-white/20"
-            title="Kapat"
-          >
-            <XCircle size={22} />
-          </button>
-          <img
-            src="https://api.oyuncukantinim.com.tr/uploads/store-badges/selfieandid.webp"
-            alt="Örnek kimlik ve selfie doğrulama - büyük"
-            className="max-h-[90vh] max-w-[95vw] rounded-2xl object-contain shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          />
-        </div>
       ) : null}
 
       {/* BADGES */}
