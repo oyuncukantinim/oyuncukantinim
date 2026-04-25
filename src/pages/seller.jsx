@@ -31,6 +31,9 @@ import UserAvatar from '../components/UserAvatar';
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
 
+  const visibleAchievements = (seller.store_badges || []).filter((badge) => Boolean(badge?.is_unlocked));
+  const hasVisibleAchievements = Boolean(seller.is_verified_store) || visibleAchievements.length > 0;
+
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -311,12 +314,18 @@ export default function SellerPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-            <VerifiedAchievementCard isVerified={Boolean(seller.is_verified_store)} />
-            {(seller.store_badges || []).map((badge) => (
-              <AchievementCard key={badge.id} badge={badge} />
-            ))}
-          </div>
+          {hasVisibleAchievements ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              {seller.is_verified_store ? <VerifiedAchievementCard isVerified /> : null}
+              {visibleAchievements.map((badge) => (
+                <AchievementCard key={badge.id} badge={badge} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-3xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400 shadow-sm">
+              Bu satÄ±cÄ±nÄ±n henÃ¼z gÃ¶rÃ¼nÃ¼r bir baÅŸarÄ±mÄ± bulunmuyor.
+            </div>
+          )}
         </div>
       )}
 
