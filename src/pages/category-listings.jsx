@@ -56,71 +56,93 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
     return list;
   }, [products, search]);
 
+  const featuredProducts = filtered.slice(0, 3);
+
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-950 shadow-xl">
-        <div className="relative">
+      <section className="relative overflow-hidden rounded-[34px] border border-cyan-400/15 bg-[linear-gradient(135deg,#050816_0%,#130b2f_48%,#07273e_100%)] shadow-[0_30px_80px_rgba(4,10,25,0.45)]">
+        <div className="pointer-events-none absolute inset-0">
           {category.hero_image ? (
-            <img src={category.hero_image} alt={category.name} className="h-64 w-full object-cover opacity-60" />
-          ) : (
-            <div className="h-64 w-full bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-800" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
-          <div className="absolute inset-0 flex items-center px-6 py-8 sm:px-10">
-            <div className="max-w-2xl">
-              <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-white/70">
-                Site Urunleri
-              </span>
-              <h1 className="mt-4 text-3xl font-black text-white sm:text-4xl">
-                {category.hero_title || category.name}
-              </h1>
-              <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-white/68">
-                {category.hero_subtitle || 'Bu kategoride resmi site urunleri kendi vitrin tasarimiyla listelenir.'}
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3 text-xs font-black text-white/75">
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">{products.length} urun</span>
-                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Resmi satis</span>
-              </div>
+            <img src={category.hero_image} alt={category.name} className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-30 mix-blend-screen" />
+          ) : null}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.22),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.24),transparent_32%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.96),rgba(2,6,23,0.88)_46%,rgba(2,6,23,0.55)_78%,rgba(2,6,23,0.2))]" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
+        </div>
+
+        <div className="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_340px] lg:px-10 lg:py-10">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-cyan-100/80">
+              Site Urunleri
+            </div>
+            <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.05] text-white sm:text-5xl">
+              {category.hero_title || category.name}
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-slate-300/78 sm:text-[15px]">
+              {category.hero_subtitle || 'Bu kategori resmi urun vitrini gibi calisir. Daha buyuk gorseller, daha guclu fiyat bloklari ve gaming temali yatay urun satirlari ile kesintisiz bir market deneyimi sunar.'}
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white/72">{products.length} urun</span>
+              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-200">Resmi Satis</span>
+              <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-fuchsia-100">Gaming Market</span>
+            </div>
+          </div>
+
+          <div className="rounded-[28px] border border-white/10 bg-black/20 p-4 backdrop-blur-md">
+            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/38">Vitrin Ozeti</div>
+            <div className="mt-4 space-y-3">
+              {featuredProducts.length > 0 ? featuredProducts.map((product, index) => (
+                <div key={product.id} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
+                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/45">Slot {String(index + 1).padStart(2, '0')}</div>
+                  <div className="mt-2 line-clamp-1 text-sm font-black text-white">{product.title}</div>
+                  <div className="mt-1 text-xs font-semibold text-slate-300/70">{Number(product.current_price ?? product.sale_price ?? product.price ?? 0).toFixed(2)} ₺</div>
+                </div>
+              )) : (
+                <div className="rounded-2xl border border-dashed border-white/12 bg-white/5 px-4 py-6 text-sm font-semibold text-white/58">
+                  Vitrin urunleri eklendiginde burada hizli ozet gorunecek.
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row">
+      <section className="rounded-[30px] border border-cyan-400/12 bg-[linear-gradient(180deg,rgba(9,12,24,0.96),rgba(12,18,32,0.98))] p-4 shadow-[0_24px_60px_rgba(3,10,25,0.3)] sm:p-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-100/40" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Site urunlerinde ara..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
+              className="w-full rounded-2xl border border-white/8 bg-white/5 py-3 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-white/28 focus:border-cyan-300/40 focus:outline-none"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal size={16} className="text-slate-400" />
+          <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-white/5 px-3 py-2.5">
+            <SlidersHorizontal size={16} className="text-cyan-100/40" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+              className="bg-transparent text-sm font-bold text-white outline-none"
             >
-              <option value="featured">One Cikanlar</option>
-              <option value="newest">En Yeni</option>
-              <option value="price-asc">Fiyat Artan</option>
-              <option value="price-desc">Fiyat Azalan</option>
+              <option value="featured" className="text-slate-900">One Cikanlar</option>
+              <option value="newest" className="text-slate-900">En Yeni</option>
+              <option value="price-asc" className="text-slate-900">Fiyat Artan</option>
+              <option value="price-desc" className="text-slate-900">Fiyat Azalan</option>
             </select>
           </div>
         </div>
-      </div>
+      </section>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
-          <div className="mb-4 text-5xl">📦</div>
-          <p className="text-lg font-extrabold text-slate-700">Bu kategoride gosterilecek site urunu yok.</p>
-          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu vitrin otomatik dolacak.</p>
+        <div className="rounded-[30px] border border-dashed border-cyan-300/15 bg-[linear-gradient(180deg,rgba(8,12,24,0.94),rgba(8,16,27,0.98))] px-6 py-16 text-center shadow-[0_18px_46px_rgba(2,8,20,0.28)]">
+          <div className="mb-4 text-5xl">🎮</div>
+          <p className="text-lg font-extrabold text-white/88">Bu kategoride gosterilecek site urunu yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu gaming vitrin otomatik dolacak.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="space-y-4">
           {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
