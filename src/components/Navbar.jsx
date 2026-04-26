@@ -198,7 +198,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   };
 
   const searchDropdownOpen = desktopSearchFocused && searchQuery.trim();
-  const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0), 0);
+  const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+  const cartCount = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
   const listingItems = searchResults.length > 0 ? searchResults : recommendedListings;
   const matchingCategories = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -440,18 +441,18 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 className="relative inline-flex rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
               >
                 <ShoppingCart size={19} />
-                {cart.length > 0 ? (
+                {cartCount > 0 ? (
                   <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-neon-pink px-1 text-[10px] font-bold text-white">
-                    {cart.length}
+                    {cartCount}
                   </span>
                 ) : null}
               </Link>
 
-              {cartHover && cart.length > 0 ? (
+              {cartHover && cartCount > 0 ? (
                 <div className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
                   <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                     <span className="text-sm font-extrabold text-slate-800">Sepet</span>
-                    <span className="text-xs text-slate-400">{cart.length} ürün</span>
+                    <span className="text-xs text-slate-400">{cartCount} ürün</span>
                   </div>
                   <div className="max-h-64 divide-y divide-slate-100 overflow-y-auto">
                     {cart.map((item, index) => (
@@ -466,7 +467,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-semibold text-slate-700">{item.title}</p>
                         </div>
-                        <span className="shrink-0 text-xs font-extrabold text-emerald-600">{formatPrice(item.price)}</span>
+                        <span className="shrink-0 text-xs font-extrabold text-emerald-600">{formatPrice(Number(item.price || 0) * Number(item.quantity || 1))}</span>
                       </div>
                     ))}
                   </div>
@@ -481,7 +482,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 </div>
               ) : null}
 
-              {cartHover && cart.length === 0 ? (
+              {cartHover && cartCount === 0 ? (
                 <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-2xl border border-slate-200 bg-white px-4 py-5 text-center shadow-2xl">
                   <ShoppingCart size={24} className="mx-auto mb-2 text-slate-200" />
                   <p className="text-xs font-semibold text-slate-400">Sepet boş</p>
@@ -536,9 +537,9 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               className="relative rounded-2xl border border-slate-200 p-3 text-slate-500"
             >
               <ShoppingCart size={19} />
-              {cart.length > 0 ? (
+              {cartCount > 0 ? (
                 <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-neon-pink px-1 text-[10px] font-bold text-white">
-                  {cart.length}
+                  {cartCount}
                 </span>
               ) : null}
             </Link>

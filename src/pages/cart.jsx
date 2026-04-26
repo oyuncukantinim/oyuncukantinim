@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, ShieldCheck, ShoppingCart, Trash2 } from 'lucide-react';
+import { CheckCircle2, Minus, Plus, ShieldCheck, ShoppingCart, Trash2 } from 'lucide-react';
 import { useCart } from '../context/useCart';
 import { useAuth } from '../context/useAuth';
 import { createOrder } from '../lib/api';
 
 export default function CartPage() {
-  const { cart, removeFromCart, clearCart, cartTotal, showToast } = useCart();
+  const { cart, removeFromCart, updateCartQuantity, clearCart, cartTotal, cartCount, showToast } = useCart();
   const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
@@ -24,11 +24,14 @@ export default function CartPage() {
 
     setProcessing(true);
     try {
-      const items = cart.map((item) => (
-        item.itemType === 'product'
+      const items = cart.flatMap((item) => {
+        const quantity = Math.max(1, Number(item.quantity || 1));
+        const payload = item.itemType === 'product'
           ? { product_id: item.product_id || item.id }
-          : { listing_id: item.listing_id || item.id }
-      ));
+          : { listing_id: item.listing_id || item.id };
+        return Array.from({ length: quantity }, () => payload);
+      });
+
       await createOrder(items);
       clearCart();
       await refreshUser();
@@ -49,7 +52,7 @@ export default function CartPage() {
 
       {cart.length === 0 ? (
         <div className="card p-12 text-center">
-          <div className="mb-4 text-6xl">🛒</div>
+          <div className="mb-4 text-6xl">Sepet</div>
           <h2 className="mb-2 text-2xl font-bold text-gray-700">Sepetin bos</h2>
           <p className="mb-6 text-gray-400">Pazara goz atarak sepetini doldurabilirsin.</p>
           <button onClick={() => navigate('/market')} className="btn-primary">Alisverise Basla</button>
@@ -63,7 +66,7 @@ export default function CartPage() {
                   {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
                     <img src={item.image} alt="" className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-2xl">🎮</div>
+                    <div className="flex h-full w-full items-center justify-center text-lg font-black text-slate-400">OK</div>
                   )}
                 </div>
 
@@ -75,6 +78,27 @@ export default function CartPage() {
                     </span>
                   </div>
                   {item.seller ? <p className="mt-1 text-xs text-gray-400">Satici: {item.seller}</p> : null}
+
+                  <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+                    <button
+                      type="button"
+                      onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) - 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="min-w-[24px] text-center text-sm font-extrabold text-gray-800 dark:text-slate-100">
+                      {Number(item.quantity || 1)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) + 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+
                   {item.path ? (
                     <Link to={item.path} className="mt-2 inline-flex text-xs font-bold text-violet-600 hover:underline">
                       Urune git
@@ -83,7 +107,12 @@ export default function CartPage() {
                 </div>
 
                 <div className="flex-shrink-0 text-right">
-                  <div className="font-extrabold text-neon-green">{Number(item.price || 0).toFixed(2)} ₺</div>
+                  <div className="text-xs font-bold text-gray-400">
+                    Birim: {Number(item.price || 0).toFixed(2)} ₺
+                  </div>
+                  <div className="font-extrabold text-neon-green">
+                    {(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)} ₺
+                  </div>
                   <button
                     onClick={() => removeFromCart(item.cartId)}
                     className="mt-2 flex items-center justify-end gap-1 text-sm text-red-400 hover:text-red-600"
@@ -100,7 +129,7 @@ export default function CartPage() {
               <h3 className="mb-6 text-xl font-bold text-gray-800">Siparis Ozeti</h3>
               <div className="mb-6 space-y-3 text-sm text-gray-500">
                 <div className="flex justify-between">
-                  <span>Urunler ({cart.length})</span>
+                  <span>Urunler ({cartCount})</span>
                   <span className="font-bold text-gray-800">{cartTotal.toFixed(2)} ₺</span>
                 </div>
                 <div className="flex justify-between">
