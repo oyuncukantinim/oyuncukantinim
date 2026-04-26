@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, X, Tag } from 'lucide-react';
-
-const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+import { Search, Tag, X } from 'lucide-react';
+import { getCategories } from '../lib/api';
 
 function buildCatSlug(cat) {
   return `${cat.slug}-${cat.id}`;
@@ -38,45 +37,75 @@ function CategoryCard({ cat, isRoot }) {
   );
 }
 
+function buildTypeList(categories) {
+  const seen = new Map();
+  categories.forEach((category) => {
+    if (!category.type_id || !category.type_name || seen.has(String(category.type_id))) return;
+    seen.set(String(category.type_id), {
+      id: category.type_id,
+      name: category.type_name,
+      slug: category.type_slug || '',
+      icon: category.type_icon || '🏷️',
+      color: category.type_color || 'from-violet-500 to-purple-600',
+    });
+  });
+  return Array.from(seen.values());
+}
+
+function categoryBelongsToType(category, categoriesById, activeTypeId) {
+  if (!category || !activeTypeId) return false;
+  let current = category;
+  while (current) {
+    if (String(current.type_id || '') === String(activeTypeId)) return true;
+    current = current.parent_id ? categoriesById.get(String(current.parent_id)) || null : null;
+  }
+  return false;
+}
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [types, setTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [activeType, setActiveType] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}?action=get_categories_tree`).then((r) => r.json()),
-      fetch(`${API_URL}?action=get_category_types`).then((r) => r.json()),
-    ])
-      .then(([catJson, typeJson]) => {
-        setCategories(catJson.data || []);
-        setTypes(typeJson.data || []);
+    getCategories()
+      .then((response) => {
+        setCategories(response.data || []);
+      })
+      .catch(() => {
+        setCategories([]);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const categoriesById = useMemo(() => {
+    const map = new Map();
+    categories.forEach((category) => {
+      map.set(String(category.id), category);
+    });
+    return map;
+  }, [categories]);
+
+  const types = useMemo(() => buildTypeList(categories), [categories]);
 
   const roots = useMemo(() => categories.filter((c) => !c.parent_id), [categories]);
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
-    return categories.filter((c) => c.name.toLowerCase().includes(q));
+    return categories.filter((c) => String(c.name || '').toLowerCase().includes(q));
   }, [categories, search]);
 
   const filteredRoots = useMemo(() => {
     if (!activeType) return roots;
-    return roots.filter((r) => String(r.type_id) === String(activeType));
-  }, [roots, activeType]);
+    return roots.filter((root) => categoryBelongsToType(root, categoriesById, activeType));
+  }, [activeType, categoriesById, roots]);
 
   const filteredAll = useMemo(() => {
     if (!activeType) return [];
-    const typeRootIds = new Set(filteredRoots.map((r) => r.id));
-    return categories.filter(
-      (c) => String(c.type_id) === String(activeType) || (c.parent_id && typeRootIds.has(Number(c.parent_id))),
-    );
-  }, [activeType, filteredRoots, categories]);
+    return categories.filter((category) => categoryBelongsToType(category, categoriesById, activeType));
+  }, [activeType, categories, categoriesById]);
 
   if (loading) {
     return (
@@ -125,17 +154,17 @@ export default function CategoriesPage() {
           >
             Tümü
           </button>
-          {types.map((t) => (
+          {types.map((type) => (
             <button
-              key={t.id}
-              onClick={() => setActiveType(activeType === t.id ? null : t.id)}
+              key={type.id}
+              onClick={() => setActiveType(activeType === type.id ? null : type.id)}
               className={`flex-shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition-all ${
-                activeType === t.id
+                activeType === type.id
                   ? 'border-violet-600 bg-violet-600 text-white shadow-md shadow-violet-200'
                   : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300'
               }`}
             >
-              <span>{t.icon}</span> {t.name}
+              <span>{type.icon}</span> {type.name}
             </button>
           ))}
         </div>
