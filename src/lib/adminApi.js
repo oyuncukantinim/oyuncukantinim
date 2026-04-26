@@ -201,7 +201,7 @@ export const adminSaveXpSettings = (body) =>
 
 // Store Verification / Badges
 export const adminGetStoreManagement = (params = {}) =>
-  adminRequest('admin_get_store_management', { query: params });
+  adminRequest('admin_get_store_management', { query: { ...params, viewer_token: getAdminToken() } });
 export const adminSaveStoreBadge = (body) =>
   adminRequest('admin_save_store_badge', { method: 'POST', body });
 export const adminDeleteStoreBadge = (badge_id) =>

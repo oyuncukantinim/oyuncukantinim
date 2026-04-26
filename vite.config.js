@@ -49,7 +49,6 @@ export default defineConfig({
     }),
   ],
   build: {
-    sourcemap: false,
     cssCodeSplit: true,
     modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 600,

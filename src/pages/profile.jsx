@@ -24,12 +24,11 @@ import { isImageAvatar } from '../lib/avatar';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
-async function apiAuth(action, body = null) {
+async function apiAuth(action, body = null, token) {
   const url = `${API}?action=${action}`;
   const opts = {
     method: body ? 'POST' : 'GET',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(url, opts);
@@ -111,7 +110,7 @@ function formatOrderTimelineDate(value) {
   });
 }
 
-function OrderLogsModal({ order, onClose }) {
+function OrderLogsModal({ order, token, onClose }) {
   const orderId = order.id;
   const [logs, setLogs] = useState([]);
   const [disputeReason, setDisputeReason] = useState('');
@@ -119,7 +118,7 @@ function OrderLogsModal({ order, onClose }) {
 
   useEffect(() => {
     fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_order_logs&order_id=${orderId}`, {
-      credentials: 'include',
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
       .then(j => {
@@ -130,7 +129,7 @@ function OrderLogsModal({ order, onClose }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [orderId]);
+  }, [orderId, token]);
 
   const timelineSteps = [
     {
@@ -260,7 +259,7 @@ function StarPicker({ value, onChange, size = 22 }) {
   );
 }
 
-function ReviewModal({ order, onClose, onSuccess }) {
+function ReviewModal({ order, token, onClose, onSuccess }) {
   const [ratings, setRatings] = useState({ reliability: 5, satisfaction: 5, speed: 5, service_quality: 5 });
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -281,8 +280,7 @@ function ReviewModal({ order, onClose, onSuccess }) {
     try {
       const res = await fetch('https://api.oyuncukantinim.com.tr/api.php?action=add_review', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ order_id: order.id, ...ratings, comment }),
       });
       const json = await res.json();
@@ -343,14 +341,14 @@ function ReviewModal({ order, onClose, onSuccess }) {
   );
 }
 
-function MyReviewViewModal({ orderId, onClose }) {
+function MyReviewViewModal({ orderId, token, onClose }) {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_review_by_order&order_id=${orderId}`, {
-      credentials: 'include',
+      headers: { Authorization: `Bearer ${token}` }
     }).then(r => r.json()).then(j => setReview(j.data || null)).catch(() => {}).finally(() => setLoading(false));
-  }, [orderId]);
+  }, [orderId, token]);
 
   const avg = review ? Math.round((+review.reliability + +review.satisfaction + +review.speed + +review.service_quality) / 4) : 0;
   return (
@@ -390,7 +388,7 @@ function MyReviewViewModal({ orderId, onClose }) {
   );
 }
 
-function OrderCard({ order, isSellerView, onRefresh, showToast }) {
+function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const { defaultListingImage } = useSiteBrand();
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -403,7 +401,7 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
   const act = async (action, body) => {
     setLoading(true);
     try {
-      await apiAuth(action, body);
+      await apiAuth(action, body, token);
       showToast('İşlem başarılı!');
       onRefresh();
     } catch (e) { showToast(e.message); }
@@ -417,9 +415,9 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
 
   return (
     <>
-    {showLogs && <OrderLogsModal order={order} onClose={() => setShowLogs(false)} />}
-    {showReview && <ReviewModal order={order} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
-    {showMyReview && <MyReviewViewModal orderId={order.id} onClose={() => setShowMyReview(false)} />}
+    {showLogs && <OrderLogsModal order={order} token={token} onClose={() => setShowLogs(false)} />}
+    {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
+    {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -596,6 +594,8 @@ export default function ProfilePage() {
   const [reviewStarFilter, setReviewStarFilter] = useState(0);
   const [storeOverview, setStoreOverview] = useState(null);
 
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
@@ -638,12 +638,12 @@ export default function ProfilePage() {
   }, []);
 
   const loadOrders = useCallback(() => {
-    apiAuth('get_my_orders').then(setOrders).catch(() => {});
-  }, []);
+    apiAuth('get_my_orders', null, token).then(setOrders).catch(() => {});
+  }, [token]);
 
   const loadSales = useCallback(() => {
-    apiAuth('get_my_sales').then(setSales).catch(() => {});
-  }, []);
+    apiAuth('get_my_sales', null, token).then(setSales).catch(() => {});
+  }, [token]);
 
   useEffect(() => {
     if (!user) return;
@@ -654,7 +654,7 @@ export default function ProfilePage() {
       getFavorites().then(r => setFavorites(r.data || [])).catch(() => {});
     }
     else if (activeTab === 'reviews') {
-      apiAuth('get_my_reviews').then(data => setMyReviews(data || [])).catch(() => {});
+      apiAuth('get_my_reviews', null, token).then(data => setMyReviews(data || [])).catch(() => {});
     }
     else if (activeTab === 'achievements') {
       getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
@@ -662,7 +662,7 @@ export default function ProfilePage() {
     else if (activeTab === 'personal') {
       getIdentityOverview().then((response) => setIdentityOverview(response.data || null)).catch(() => {});
     }
-  }, [activeTab, user, loadListings, loadOrders, loadSales]);
+  }, [activeTab, user, token, loadListings, loadOrders, loadSales]);
 
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
@@ -1431,7 +1431,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {orders.map(order => (
-                    <OrderCard key={order.id} order={order} isSellerView={false} onRefresh={loadOrders} showToast={showToast} />
+                    <OrderCard key={order.id} order={order} isSellerView={false} token={token} onRefresh={loadOrders} showToast={showToast} />
                   ))}
                 </div>
               )}
@@ -1450,7 +1450,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {sales.map(order => (
-                    <OrderCard key={order.id} order={order} isSellerView={true} onRefresh={loadSales} showToast={showToast} />
+                    <OrderCard key={order.id} order={order} isSellerView={true} token={token} onRefresh={loadSales} showToast={showToast} />
                   ))}
                 </div>
               )}
@@ -1602,7 +1602,7 @@ export default function ProfilePage() {
           )}
 
           {/* FİNANSAL HAREKETLERİM */}
-          {activeTab === 'finance' && <FinanceTabContent />}
+          {activeTab === 'finance' && <FinanceTabContent token={token} />}
 
           {activeTab === 'withdrawals' && (
             <WithdrawalsTabContent

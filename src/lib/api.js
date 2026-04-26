@@ -88,55 +88,28 @@ export function idFromSlug(slug) {
   return slug.split('-').pop();
 }
 
-export function setToken() {}
-
-function getBrowserStorage() {
-  try {
-    return typeof window !== 'undefined' ? window.localStorage : null;
-  } catch {
-    return null;
-  }
+function getToken() {
+  return localStorage.getItem('token');
 }
 
-function sanitizeStoredUser(user) {
-  if (!user || typeof user !== 'object') return null;
-  return {
-    id: user.id ?? null,
-    username: user.username ?? '',
-    avatar: user.avatar ?? '',
-    banner_image: user.banner_image ?? '',
-    is_verified_store: user.is_verified_store ?? 0,
-    is_admin: user.is_admin ?? 0,
-    level: user.level ?? 1,
-    xp: user.xp ?? 0,
-    email_verified_at: user.email_verified_at ?? null,
-  };
+export function setToken(token) {
+  if (token) localStorage.setItem('token', token);
+  else localStorage.removeItem('token');
 }
 
 export function getStoredUser() {
-  const storage = getBrowserStorage();
-  if (!storage) return null;
-  try {
-    const raw = storage.getItem('session_user');
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+  const raw = localStorage.getItem('user');
+  return raw ? JSON.parse(raw) : null;
 }
 
 export function setStoredUser(user) {
-  const storage = getBrowserStorage();
-  if (!storage) return;
-  if (!user) {
-    storage.removeItem('session_user');
-    return;
-  }
-  storage.setItem('session_user', JSON.stringify(sanitizeStoredUser(user)));
+  if (user) localStorage.setItem('user', JSON.stringify(user));
+  else localStorage.removeItem('user');
 }
 
 export function logout() {
-  setStoredUser(null);
-  return request('logout', { method: 'POST' }).catch(() => null);
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
 }
 
 async function request(action, options = {}) {
@@ -166,12 +139,15 @@ async function request(action, options = {}) {
   }
 
   const headers = { 'Content-Type': 'application/json' };
+  if (auth) {
+    const token = getToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const doRequest = async () => {
     const response = await fetch(`${API_URL}?${search.toString()}`, {
       method,
       cache,
-      credentials: 'include',
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -256,9 +232,10 @@ export async function submitIdentityVerification({ fullName, identityNumber, bir
   formData.append('selfie_image', selfieImage);
   formData.append('user_note', userNote);
 
+  const token = getToken();
   const response = await fetch(`${API_URL}?action=submit_identity_verification`, {
     method: 'POST',
-    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   });
 
@@ -278,9 +255,10 @@ async function uploadProfileMedia(file, type) {
   const formData = new FormData();
   formData.append('image', file);
 
+  const token = getToken();
   const response = await fetch(`${API_URL}?action=${type === 'avatar' ? 'upload_profile_avatar' : 'upload_profile_banner'}`, {
     method: 'POST',
-    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   });
 
@@ -382,9 +360,10 @@ export async function uploadListingImage(file) {
   const formData = new FormData();
   formData.append('image', file);
 
+  const token = getToken();
   const response = await fetch(`${API_URL}?action=upload_listing_image`, {
     method: 'POST',
-    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: formData,
   });
 
