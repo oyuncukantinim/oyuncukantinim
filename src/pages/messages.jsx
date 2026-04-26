@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag, BadgeCheck } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
 import UserAvatar from '../components/UserAvatar';
 

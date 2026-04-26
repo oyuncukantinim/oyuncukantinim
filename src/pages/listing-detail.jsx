@@ -6,8 +6,8 @@ import {
   User, X, Eye, Check, Sparkles, TrendingUp, Maximize2,
 } from 'lucide-react';
 import { getListing, idFromSlug, toggleFavorite, checkFavorite, getSellerReviews, getSellerListings, listingSlug, getCategoryAttributes } from '../lib/api';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/useCart';
+import { useAuth } from '../context/useAuth';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';

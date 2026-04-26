@@ -1,5 +1,5 @@
 import { CheckCircle2 } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 
 export default function Toast() {
   const { toastMessage } = useCart();

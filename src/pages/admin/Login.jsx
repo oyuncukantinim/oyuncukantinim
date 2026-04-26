@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 import { adminLogin } from '../../lib/adminApi';
-import { useAdminAuth } from '../../context/AdminAuthContext';
+import { useAdminAuth } from '../../context/useAdminAuth';
 import useSiteBrand from '../../hooks/useSiteBrand';
 import SiteBrand from '../../components/SiteBrand';
 

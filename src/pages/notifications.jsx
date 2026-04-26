@@ -4,7 +4,7 @@ import {
   Bell, CheckCheck, ShoppingBag, ShoppingCart, MessageCircle,
   Wallet, Megaphone, Info, TrendingDown, Star, Gift, Trash2, LifeBuoy
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import { clearNotifications, deleteNotification, getNotifications, markNotificationsRead } from '../lib/api';
 
 const TYPE_CONFIG = {

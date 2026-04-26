@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCallback } from 'react';
 import {
   CheckCircle2,
   Clock3,
@@ -12,8 +13,8 @@ import {
   UserCircle2,
   XCircle,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 import {
   closeSupportTicket,
   createSupportTicket,
@@ -436,7 +437,7 @@ export default function SupportPage() {
         && form.message.trim().length >= 10
         && form.message.length <= detailMaxLength;
 
-  const loadMeta = async () => {
+  const loadMeta = useCallback(async () => {
     setLoadingMeta(true);
     try {
       const response = await getSupportMeta();
@@ -457,9 +458,9 @@ export default function SupportPage() {
     } finally {
       setLoadingMeta(false);
     }
-  };
+  }, [showToast]);
 
-  const loadTickets = async (preferredId = null) => {
+  const loadTickets = useCallback(async (preferredId = null) => {
     setLoadingTickets(true);
     try {
       const response = await getMySupportTickets();
@@ -473,28 +474,47 @@ export default function SupportPage() {
     } finally {
       setLoadingTickets(false);
     }
-  };
+  }, [selectedId, showToast]);
 
-  const loadTicketDetail = async (ticketId) => {
-    if (!ticketId) return setSelectedTicket(null), setSelectedListings([]), setMessages([]);
+  const loadTicketDetail = useCallback(async (ticketId) => {
+    if (!ticketId) {
+      setSelectedTicket(null);
+      setSelectedListings([]);
+      setMessages([]);
+      return;
+    }
     setLoadingDetail(true);
     try {
-        const response = await getSupportTicket(ticketId);
-        setSelectedTicket(response.data?.ticket || null);
-        setSelectedListings((response.data?.selected_listings || []).map((item) => ({
-          ...item,
-          item_image: getListingCoverImage(item, defaultListingImage),
-        })));
-        setMessages(response.data?.messages || []);
+      const response = await getSupportTicket(ticketId);
+      setSelectedTicket(response.data?.ticket || null);
+      setSelectedListings((response.data?.selected_listings || []).map((item) => ({
+        ...item,
+        item_image: getListingCoverImage(item, defaultListingImage),
+      })));
+      setMessages(response.data?.messages || []);
     } catch (error) {
       showToast(error.message);
     } finally {
       setLoadingDetail(false);
     }
-  };
+  }, [defaultListingImage, showToast]);
 
-  useEffect(() => { if (user) { loadMeta(); loadTickets(); } }, [user]);
-  useEffect(() => { if (selectedId) loadTicketDetail(selectedId); else { setSelectedTicket(null); setSelectedListings([]); setMessages([]); } }, [selectedId]);
+  useEffect(() => {
+    if (user) {
+      loadMeta();
+      loadTickets();
+    }
+  }, [user, loadMeta, loadTickets]);
+
+  useEffect(() => {
+    if (selectedId) {
+      loadTicketDetail(selectedId);
+    } else {
+      setSelectedTicket(null);
+      setSelectedListings([]);
+      setMessages([]);
+    }
+  }, [selectedId, loadTicketDetail]);
 
   const filteredTickets = useMemo(() => tickets.filter((item) => {
     const keyword = search.trim().toLowerCase();

@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
-
-const CartContext = createContext(null);
+import { useState, useCallback, useMemo } from 'react';
+import { CartContext } from './cartContextStore';
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
@@ -37,10 +36,4 @@ export function CartProvider({ children }) {
       {children}
     </CartContext.Provider>
   );
-}
-
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be inside CartProvider');
-  return ctx;
 }

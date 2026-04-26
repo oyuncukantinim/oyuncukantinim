@@ -12,8 +12,8 @@ import {
 const FinanceIcon = TrendingUp;
 const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';

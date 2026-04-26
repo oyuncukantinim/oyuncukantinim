@@ -1,8 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { adminLogout as adminLogoutRequest, adminMe } from '../lib/adminApi';
-
-const AdminAuthContext = createContext(null);
+import { AdminAuthContext } from './adminAuthContextStore';
 
 export function AdminAuthProvider({ children }) {
   const location = useLocation();
@@ -65,12 +64,4 @@ export function AdminAuthProvider({ children }) {
       {children}
     </AdminAuthContext.Provider>
   );
-}
-
-export function useAdminAuth() {
-  const context = useContext(AdminAuthContext);
-  if (!context) {
-    throw new Error('useAdminAuth must be inside AdminAuthProvider');
-  }
-  return context;
 }

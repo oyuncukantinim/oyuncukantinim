@@ -13,8 +13,8 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 import { getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';

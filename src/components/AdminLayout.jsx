@@ -27,7 +27,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { useAdminAuth } from '../context/AdminAuthContext';
+import { useAdminAuth } from '../context/useAdminAuth';
 import useSiteBrand from '../hooks/useSiteBrand';
 import UserAvatar from './UserAvatar';
 import ThemeToggle from './ThemeToggle';

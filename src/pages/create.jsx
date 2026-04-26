@@ -4,8 +4,8 @@ import {
   ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2,
   Clock, Package, Info, Tag, Truck, Check, Upload
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 import { addListing, deleteListingImage, uploadListingImage } from '../lib/api';
 import CategoryPicker from '../components/CategoryPicker';
 import useSiteBrand from '../hooks/useSiteBrand';

@@ -1,8 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
-import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
+import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
+import { useAdminAuth } from './context/useAdminAuth';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';

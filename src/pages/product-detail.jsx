@@ -11,7 +11,7 @@ import {
   ShoppingCart,
 } from 'lucide-react';
 import { getProduct, idFromSlug, productSlug } from '../lib/api';
-import { useCart } from '../context/CartContext';
+import { useCart } from '../context/useCart';
 
 const PRODUCT_TYPE_LABELS = {
   digital_code: 'Dijital Kod',

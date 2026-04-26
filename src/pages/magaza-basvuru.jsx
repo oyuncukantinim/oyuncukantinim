@@ -21,8 +21,8 @@ import {
   XCircle,
   Zap,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/useAuth';
+import { useCart } from '../context/useCart';
 import { getStoreApplicationOverview, submitStoreApplication } from '../lib/api';
 import { AchievementCard, VerifiedAchievementCard, VerifiedStoreBadge } from '../components/StoreBadges';
 

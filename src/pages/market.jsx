@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { getListings, getCategories } from '../lib/api';
 import { SORT_OPTIONS } from '../data/catalog';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/useAuth';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 
