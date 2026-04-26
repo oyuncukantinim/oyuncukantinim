@@ -24,11 +24,12 @@ import { isImageAvatar } from '../lib/avatar';
 
 const API = 'https://api.oyuncukantinim.com.tr/api.php';
 
-async function apiAuth(action, body = null, token) {
+async function apiAuth(action, body = null) {
   const url = `${API}?action=${action}`;
   const opts = {
     method: body ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
   };
   if (body) opts.body = JSON.stringify(body);
   const res = await fetch(url, opts);
@@ -110,7 +111,7 @@ function formatOrderTimelineDate(value) {
   });
 }
 
-function OrderLogsModal({ order, token, onClose }) {
+function OrderLogsModal({ order, onClose }) {
   const orderId = order.id;
   const [logs, setLogs] = useState([]);
   const [disputeReason, setDisputeReason] = useState('');
@@ -118,7 +119,7 @@ function OrderLogsModal({ order, token, onClose }) {
 
   useEffect(() => {
     fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_order_logs&order_id=${orderId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      credentials: 'include',
     })
       .then(r => r.json())
       .then(j => {
@@ -129,7 +130,7 @@ function OrderLogsModal({ order, token, onClose }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [orderId, token]);
+  }, [orderId]);
 
   const timelineSteps = [
     {
@@ -259,7 +260,7 @@ function StarPicker({ value, onChange, size = 22 }) {
   );
 }
 
-function ReviewModal({ order, token, onClose, onSuccess }) {
+function ReviewModal({ order, onClose, onSuccess }) {
   const [ratings, setRatings] = useState({ reliability: 5, satisfaction: 5, speed: 5, service_quality: 5 });
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
@@ -280,7 +281,8 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
     try {
       const res = await fetch('https://api.oyuncukantinim.com.tr/api.php?action=add_review', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ order_id: order.id, ...ratings, comment }),
       });
       const json = await res.json();
@@ -341,14 +343,14 @@ function ReviewModal({ order, token, onClose, onSuccess }) {
   );
 }
 
-function MyReviewViewModal({ orderId, token, onClose }) {
+function MyReviewViewModal({ orderId, onClose }) {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_review_by_order&order_id=${orderId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      credentials: 'include',
     }).then(r => r.json()).then(j => setReview(j.data || null)).catch(() => {}).finally(() => setLoading(false));
-  }, [orderId, token]);
+  }, [orderId]);
 
   const avg = review ? Math.round((+review.reliability + +review.satisfaction + +review.speed + +review.service_quality) / 4) : 0;
   return (
@@ -388,7 +390,7 @@ function MyReviewViewModal({ orderId, token, onClose }) {
   );
 }
 
-function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
+function OrderCard({ order, isSellerView, onRefresh, showToast }) {
   const { defaultListingImage } = useSiteBrand();
   const [expanded, setExpanded] = useState(false);
   const [disputeOpen, setDisputeOpen] = useState(false);
@@ -401,7 +403,7 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
   const act = async (action, body) => {
     setLoading(true);
     try {
-      await apiAuth(action, body, token);
+      await apiAuth(action, body);
       showToast('İşlem başarılı!');
       onRefresh();
     } catch (e) { showToast(e.message); }
@@ -415,9 +417,9 @@ function OrderCard({ order, isSellerView, token, onRefresh, showToast }) {
 
   return (
     <>
-    {showLogs && <OrderLogsModal order={order} token={token} onClose={() => setShowLogs(false)} />}
-    {showReview && <ReviewModal order={order} token={token} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
-    {showMyReview && <MyReviewViewModal orderId={order.id} token={token} onClose={() => setShowMyReview(false)} />}
+    {showLogs && <OrderLogsModal order={order} onClose={() => setShowLogs(false)} />}
+    {showReview && <ReviewModal order={order} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
+    {showMyReview && <MyReviewViewModal orderId={order.id} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -594,8 +596,6 @@ export default function ProfilePage() {
   const [reviewStarFilter, setReviewStarFilter] = useState(0);
   const [storeOverview, setStoreOverview] = useState(null);
 
-  const token = localStorage.getItem('token');
-
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
     setEditUsername(user.username || '');
@@ -638,12 +638,12 @@ export default function ProfilePage() {
   }, []);
 
   const loadOrders = useCallback(() => {
-    apiAuth('get_my_orders', null, token).then(setOrders).catch(() => {});
-  }, [token]);
+    apiAuth('get_my_orders').then(setOrders).catch(() => {});
+  }, []);
 
   const loadSales = useCallback(() => {
-    apiAuth('get_my_sales', null, token).then(setSales).catch(() => {});
-  }, [token]);
+    apiAuth('get_my_sales').then(setSales).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -654,7 +654,7 @@ export default function ProfilePage() {
       getFavorites().then(r => setFavorites(r.data || [])).catch(() => {});
     }
     else if (activeTab === 'reviews') {
-      apiAuth('get_my_reviews', null, token).then(data => setMyReviews(data || [])).catch(() => {});
+      apiAuth('get_my_reviews').then(data => setMyReviews(data || [])).catch(() => {});
     }
     else if (activeTab === 'achievements') {
       getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
@@ -662,7 +662,7 @@ export default function ProfilePage() {
     else if (activeTab === 'personal') {
       getIdentityOverview().then((response) => setIdentityOverview(response.data || null)).catch(() => {});
     }
-  }, [activeTab, user, token, loadListings, loadOrders, loadSales]);
+  }, [activeTab, user, loadListings, loadOrders, loadSales]);
 
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
@@ -873,7 +873,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleLogout = () => { logout(); showToast('Görüşürüz!'); navigate('/'); };
+  const handleLogout = async () => { await logout(); showToast('Görüşürüz!'); navigate('/'); };
 
   const resetSecurityFields = () => {
     setCurrentPassword('');
@@ -1431,7 +1431,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {orders.map(order => (
-                    <OrderCard key={order.id} order={order} isSellerView={false} token={token} onRefresh={loadOrders} showToast={showToast} />
+                      <OrderCard key={order.id} order={order} isSellerView={false} onRefresh={loadOrders} showToast={showToast} />
                   ))}
                 </div>
               )}
@@ -1450,7 +1450,7 @@ export default function ProfilePage() {
               ) : (
                 <div className="space-y-3">
                   {sales.map(order => (
-                    <OrderCard key={order.id} order={order} isSellerView={true} token={token} onRefresh={loadSales} showToast={showToast} />
+                      <OrderCard key={order.id} order={order} isSellerView={true} onRefresh={loadSales} showToast={showToast} />
                   ))}
                 </div>
               )}
@@ -1602,7 +1602,7 @@ export default function ProfilePage() {
           )}
 
           {/* FİNANSAL HAREKETLERİM */}
-          {activeTab === 'finance' && <FinanceTabContent token={token} />}
+            {activeTab === 'finance' && <FinanceTabContent />}
 
           {activeTab === 'withdrawals' && (
             <WithdrawalsTabContent

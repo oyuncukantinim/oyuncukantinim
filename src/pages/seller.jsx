@@ -31,9 +31,6 @@ import UserAvatar from '../components/UserAvatar';
 function StarRating({ value, onChange, readonly = false }) {
   const [hovered, setHovered] = useState(0);
 
-  const visibleAchievements = (seller.store_badges || []).filter((badge) => Boolean(badge?.is_unlocked));
-  const hasVisibleAchievements = Boolean(seller.is_verified_store) || visibleAchievements.length > 0;
-
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
@@ -185,6 +182,8 @@ export default function SellerPage() {
     { id: 'followers', label: `Takipçiler (${seller.follower_count ?? 0})` },
     { id: 'following', label: `Takip (${seller.following_count ?? 0})` },
   ];
+  const visibleAchievements = (seller.store_badges || []).filter((badge) => Boolean(badge?.is_unlocked));
+  const hasVisibleAchievements = Boolean(seller.is_verified_store) || visibleAchievements.length > 0;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

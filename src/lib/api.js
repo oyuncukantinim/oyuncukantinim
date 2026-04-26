@@ -88,30 +88,6 @@ export function idFromSlug(slug) {
   return slug.split('-').pop();
 }
 
-function getToken() {
-  return localStorage.getItem('token');
-}
-
-export function setToken(token) {
-  if (token) localStorage.setItem('token', token);
-  else localStorage.removeItem('token');
-}
-
-export function getStoredUser() {
-  const raw = localStorage.getItem('user');
-  return raw ? JSON.parse(raw) : null;
-}
-
-export function setStoredUser(user) {
-  if (user) localStorage.setItem('user', JSON.stringify(user));
-  else localStorage.removeItem('user');
-}
-
-export function logout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-}
-
 async function request(action, options = {}) {
   // Use the browser's standard HTTP cache by default — honors Cache-Control
   // from the PHP API. Fast cache hits (0 ms) for unchanged data, revalidation
@@ -139,15 +115,12 @@ async function request(action, options = {}) {
   }
 
   const headers = { 'Content-Type': 'application/json' };
-  if (auth) {
-    const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-  }
 
   const doRequest = async () => {
     const response = await fetch(`${API_URL}?${search.toString()}`, {
       method,
       cache,
+      credentials: 'include',
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -202,6 +175,10 @@ export function getMe() {
   return request('me', { auth: true });
 }
 
+export function logout() {
+  return request('logout', { method: 'POST' });
+}
+
 export function getSiteSettings() {
   return request('get_site_settings', { ttl: 2 * 60 * 1000 });
 }
@@ -232,10 +209,9 @@ export async function submitIdentityVerification({ fullName, identityNumber, bir
   formData.append('selfie_image', selfieImage);
   formData.append('user_note', userNote);
 
-  const token = getToken();
   const response = await fetch(`${API_URL}?action=submit_identity_verification`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
     body: formData,
   });
 
@@ -255,10 +231,9 @@ async function uploadProfileMedia(file, type) {
   const formData = new FormData();
   formData.append('image', file);
 
-  const token = getToken();
   const response = await fetch(`${API_URL}?action=${type === 'avatar' ? 'upload_profile_avatar' : 'upload_profile_banner'}`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
     body: formData,
   });
 
@@ -360,10 +335,9 @@ export async function uploadListingImage(file) {
   const formData = new FormData();
   formData.append('image', file);
 
-  const token = getToken();
   const response = await fetch(`${API_URL}?action=upload_listing_image`, {
     method: 'POST',
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    credentials: 'include',
     body: formData,
   });
 

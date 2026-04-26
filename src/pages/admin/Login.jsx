@@ -1,18 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 import { adminLogin } from '../../lib/adminApi';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 import useSiteBrand from '../../hooks/useSiteBrand';
 import SiteBrand from '../../components/SiteBrand';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { adminUser, login } = useAdminAuth();
   const { siteName, siteLogo, siteLogoText } = useSiteBrand();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (adminUser) {
+      navigate('/admin', { replace: true });
+    }
+  }, [adminUser, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -21,8 +29,7 @@ export default function AdminLogin() {
 
     try {
       const response = await adminLogin(email, password);
-      localStorage.setItem('admin_token', response.data.token);
-      localStorage.setItem('admin_user', JSON.stringify(response.data.user));
+      login(response.data.user);
       navigate('/admin');
     } catch (err) {
       setError(err.message);

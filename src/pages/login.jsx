@@ -113,7 +113,7 @@ export default function LoginPage() {
 
       if (isRegister && awaitingVerification) {
         const response = await verifyRegistrationCode({ email, code: verificationCode });
-        login(response.data.token, response.data.user);
+        login(response.data.user);
         showToast('E-posta doğrulandı. Hoş geldin!');
         navigate('/profile');
         return;
@@ -130,7 +130,7 @@ export default function LoginPage() {
         return;
       }
 
-      login(response.data.token, response.data.user);
+      login(response.data.user);
       showToast(isLogin ? 'Hoş geldin!' : 'Kayıt başarılı! Hoş geldin!');
       navigate('/profile');
     } catch (err) {

@@ -1,9 +1,5 @@
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
-function getAdminToken() {
-  return localStorage.getItem('admin_token');
-}
-
 async function adminRequest(action, { method = 'GET', body = null, query = {}, cache = 'default' } = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
@@ -12,9 +8,9 @@ async function adminRequest(action, { method = 'GET', body = null, query = {}, c
   const options = {
     method,
     cache,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getAdminToken()}`,
     },
   };
   if (body && method !== 'GET') options.body = JSON.stringify(body);
@@ -45,9 +41,7 @@ async function adminUploadRequest(action, file, fields = {}) {
 
   const res = await fetch(url.toString(), {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${getAdminToken()}`,
-    },
+    credentials: 'include',
     body: formData,
   });
 
@@ -65,6 +59,8 @@ async function adminUploadRequest(action, file, fields = {}) {
 // Auth
 export const adminLogin = (email, password) =>
   adminRequest('admin_login', { method: 'POST', body: { email, password } });
+export const adminMe = () => adminRequest('admin_me');
+export const adminLogout = () => adminRequest('admin_logout', { method: 'POST' });
 
 // Dashboard
 export const adminStats = () => adminRequest('admin_stats');
@@ -268,7 +264,7 @@ export async function adminUploadImage(file, folder = 'misc', options = {}) {
 
   const res = await fetch(url.toString(), {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${getAdminToken()}` },
+    credentials: 'include',
     body: formData,
   });
   const json = await res.json();

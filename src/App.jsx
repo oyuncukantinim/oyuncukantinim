@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
+import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -116,8 +117,9 @@ function SitePageLoader() {
 }
 
 function AdminRoute({ children }) {
-  const token = localStorage.getItem('admin_token');
-  if (!token) return <Navigate to="/admin/login" replace />;
+  const { adminUser, loading, checked } = useAdminAuth();
+  if (!checked || loading) return <PageLoader />;
+  if (!adminUser) return <Navigate to="/admin/login" replace />;
   return children;
 }
 
@@ -167,6 +169,7 @@ function AnnouncementBanner({ text }) {
 
 function SiteLayout() {
   const location = useLocation();
+  const { adminUser, loading: adminLoading, checked: adminChecked, refreshAdmin } = useAdminAuth();
   const [siteState, setSiteState] = useState({
     checked: false,
     maintenance: false,
@@ -229,10 +232,16 @@ function SiteLayout() {
     }
   }, [siteState.siteFavicon]);
 
+  useEffect(() => {
+    if (siteState.checked && siteState.maintenance && !adminUser && !adminChecked && !adminLoading) {
+      refreshAdmin();
+    }
+  }, [adminChecked, adminLoading, adminUser, refreshAdmin, siteState.checked, siteState.maintenance]);
+
   if (!siteState.checked) return null;
 
-  const isAdmin = Boolean(localStorage.getItem('admin_token'));
-  if (siteState.maintenance && !isAdmin) {
+  if (siteState.maintenance && !adminUser) {
+    if (!adminChecked || adminLoading) return null;
     return (
       <MaintenancePage
         siteName={siteState.siteName}
@@ -292,35 +301,37 @@ function SiteLayout() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-              <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-              <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
-              <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
-              <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
-              <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
-              <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
-              <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-              <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
-              <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
-              <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-              <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
-              <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
-              <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
-              <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
-              <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
-              <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />
-              <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
-              <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
-              <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
-            </Routes>
-          </Suspense>
-        </CartProvider>
-      </AuthProvider>
+      <AdminAuthProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+                <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
+                <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+                <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
+                <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+                <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
+                <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+                <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+                <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
+                <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+                <Route path="/admin/popular-games" element={<AdminRoute><AdminPopularGames /></AdminRoute>} />
+                <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
+                <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+                <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
+                <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
+                <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />
+                <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
+                <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
+                <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
+              </Routes>
+            </Suspense>
+          </CartProvider>
+        </AuthProvider>
+      </AdminAuthProvider>
     </BrowserRouter>
   );
 }

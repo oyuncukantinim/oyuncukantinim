@@ -14,10 +14,10 @@ const NOTE_COLORS = [
 function colorCfg(id) { return NOTE_COLORS.find(c => c.id === id) || NOTE_COLORS[0]; }
 
 function api(action, body) {
-  const token = localStorage.getItem('admin_token');
   return fetch(`${API}?action=${action}`, {
     method: body ? 'POST' : 'GET',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     ...(body ? { body: JSON.stringify(body) } : {}),
   }).then(r => r.json());
 }

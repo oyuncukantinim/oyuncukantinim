@@ -1,25 +1,21 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { getMe, setToken, setStoredUser, getStoredUser, logout as apiLogout } from '../lib/api';
+import { getMe, logout as apiLogout } from '../lib/api';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => getStoredUser());
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (!token) { setLoading(false); return; }
-
+    setLoading(true);
     try {
       const res = await getMe();
       setUser(res.data);
-      setStoredUser(res.data);
     } catch (err) {
       if (err?.message && /ban/i.test(err.message)) {
         window.alert(err.message);
       }
-      apiLogout();
       setUser(null);
     } finally {
       setLoading(false);
@@ -28,20 +24,21 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { refreshUser(); }, [refreshUser]);
 
-  const login = useCallback((token, userData) => {
-    setToken(token);
-    setStoredUser(userData);
+  const login = useCallback((userData) => {
     setUser(userData);
   }, []);
 
-  const logout = useCallback(() => {
-    apiLogout();
+  const logout = useCallback(async () => {
+    try {
+      await apiLogout();
+    } catch {
+      // Sunucu isteği başarısız olsa bile istemci oturumunu kapat.
+    }
     setUser(null);
   }, []);
 
   const updateUser = useCallback((updatedUser) => {
     setUser(updatedUser);
-    setStoredUser(updatedUser);
   }, []);
 
   const value = useMemo(() => ({

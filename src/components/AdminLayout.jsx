@@ -28,6 +28,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import UserAvatar from './UserAvatar';
 import ThemeToggle from './ThemeToggle';
@@ -272,6 +273,7 @@ function AdminSidebar({
 export default function AdminLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { adminUser, logout } = useAdminAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('admin_sidebar_collapsed') === '1'; } catch { return false; }
@@ -286,19 +288,10 @@ export default function AdminLayout({ children }) {
     }
   }, [collapsed]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+  const handleLogout = async () => {
+    await logout();
     navigate('/admin/login');
   };
-
-  const adminUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem('admin_user') || '{}');
-    } catch {
-      return {};
-    }
-  })();
 
   const currentPage = flatNav.find((item) => item.path === location.pathname);
 
@@ -316,7 +309,7 @@ export default function AdminLayout({ children }) {
           locationPath={location.pathname}
           onClose={() => setSidebarOpen(false)}
           onLogout={handleLogout}
-          adminUser={adminUser}
+          adminUser={adminUser || {}}
           defaultAvatar={defaultAvatar}
           siteName={siteName}
           siteLogo={siteLogo}
@@ -334,7 +327,7 @@ export default function AdminLayout({ children }) {
               locationPath={location.pathname}
               onClose={() => setSidebarOpen(false)}
               onLogout={handleLogout}
-              adminUser={adminUser}
+              adminUser={adminUser || {}}
               defaultAvatar={defaultAvatar}
               siteName={siteName}
               siteLogo={siteLogo}
