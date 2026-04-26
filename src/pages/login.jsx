@@ -13,6 +13,8 @@ import { useCart } from '../context/CartContext';
 import useSiteBrand from '../hooks/useSiteBrand';
 import SiteBrand from '../components/SiteBrand';
 
+const RESET_TOKEN_STORAGE_KEY = 'ok_pending_reset_token';
+
 export default function LoginPage() {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
@@ -27,7 +29,11 @@ export default function LoginPage() {
   const [error, setError] = useState('');
 
   const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get('reset') || '';
+  const queryResetToken = searchParams.get('reset') || '';
+  const [resetToken, setResetToken] = useState(() => {
+    if (typeof window === 'undefined') return queryResetToken;
+    return queryResetToken || sessionStorage.getItem(RESET_TOKEN_STORAGE_KEY) || '';
+  });
   const navigate = useNavigate();
 
   const {
@@ -45,17 +51,40 @@ export default function LoginPage() {
   const { showToast } = useCart();
 
   useEffect(() => {
+    if (queryResetToken) {
+      setResetToken(queryResetToken);
+      try {
+        sessionStorage.setItem(RESET_TOKEN_STORAGE_KEY, queryResetToken);
+      } catch {
+        // Ignore storage access failures.
+      }
+      setMode('reset');
+      setError('');
+      setAwaitingVerification(false);
+      navigate('/login', { replace: true });
+      return;
+    }
+
     if (resetToken) {
       setMode('reset');
       setError('');
       setAwaitingVerification(false);
     }
-  }, [resetToken]);
+  }, [navigate, queryResetToken, resetToken]);
 
   const isLogin = mode === 'login';
   const isRegister = mode === 'register';
   const isForgot = mode === 'forgot';
   const isReset = mode === 'reset';
+
+  const clearResetToken = () => {
+    setResetToken('');
+    try {
+      sessionStorage.removeItem(RESET_TOKEN_STORAGE_KEY);
+    } catch {
+      // Ignore storage access failures.
+    }
+  };
 
   const switchMode = (nextMode) => {
     setMode(nextMode);
@@ -65,7 +94,10 @@ export default function LoginPage() {
     setNewPassword('');
     setConfirmPassword('');
     setError('');
-    if (resetToken && nextMode !== 'reset') navigate('/login', { replace: true });
+    if (resetToken && nextMode !== 'reset') {
+      clearResetToken();
+      navigate('/login', { replace: true });
+    }
   };
 
   const resendVerificationCode = async () => {
@@ -98,6 +130,7 @@ export default function LoginPage() {
         if (!resetToken) throw new Error('Şifre sıfırlama bağlantısı geçersiz.');
         if (newPassword !== confirmPassword) throw new Error('Yeni şifreler eşleşmiyor.');
         await resetPassword({ token: resetToken, password: newPassword });
+        clearResetToken();
         showToast('Şifren güncellendi. Yeni şifrenle giriş yapabilirsin.');
         setPassword('');
         setNewPassword('');

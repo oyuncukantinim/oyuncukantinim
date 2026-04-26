@@ -358,6 +358,7 @@ export default function AdminLayout({ children }) {
           <Link
             to="/"
             target="_blank"
+            rel="noopener noreferrer"
             className="hidden items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-violet-600 dark:text-slate-400 dark:hover:text-violet-300 sm:inline-flex"
           >
             <ChevronLeft size={14} /> Siteye Dön
