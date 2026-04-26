@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useEffect, useState, lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -9,25 +9,6 @@ import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
 
-function isProtectedPublicPage() {
-  if (typeof window === 'undefined') return false;
-  return !window.location.pathname.startsWith('/admin');
-}
-
-function DevtoolsLockScreen() {
-  return (
-    <div className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center overflow-hidden bg-[#7a0000]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_42%),linear-gradient(180deg,#9f0712_0%,#650006_60%,#2a0002_100%)]" />
-      <div className="relative flex flex-col items-center justify-center px-6 text-center text-white">
-        <div className="mb-4 text-7xl font-black tracking-[0.18em] sm:text-8xl">404</div>
-        <div className="text-base font-black uppercase tracking-[0.35em] text-white/88 sm:text-lg">Erişim Engellendi</div>
-        <div className="mt-3 max-w-md text-xs font-bold uppercase tracking-[0.22em] text-white/60 sm:text-sm">
-          Geliştirici araçları algılandı
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Kullanıcı sayfaları — lazy
 const Home                = lazy(() => import('./pages/home'));
@@ -304,45 +285,6 @@ function SiteLayout() {
 }
 
 export default function App() {
-  const [devtoolsLocked, setDevtoolsLocked] = useState(false);
-
-  useEffect(() => {
-    if (!import.meta.env.PROD || typeof window === 'undefined') return undefined;
-    if (!isProtectedPublicPage()) return undefined;
-
-    const detectDevtools = () => {
-      const widthGap = Math.abs(window.outerWidth - window.innerWidth);
-      const heightGap = Math.abs(window.outerHeight - window.innerHeight);
-      setDevtoolsLocked(widthGap > 160 || heightGap > 160);
-    };
-
-    const handleKeyDown = (event) => {
-      const key = event.key.toLowerCase();
-      if (
-        event.key === 'F12' ||
-        (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(key))
-      ) {
-        event.preventDefault();
-        setDevtoolsLocked(true);
-      }
-    };
-
-    detectDevtools();
-    const intervalId = window.setInterval(detectDevtools, 1000);
-    window.addEventListener('resize', detectDevtools);
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.clearInterval(intervalId);
-      window.removeEventListener('resize', detectDevtools);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-
-  if (devtoolsLocked) {
-    return <DevtoolsLockScreen />;
-  }
-
   return (
     <BrowserRouter>
       <AuthProvider>
