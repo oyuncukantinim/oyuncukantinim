@@ -9,19 +9,9 @@ import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const DEVTOOLS_LOCK_KEY = 'ok_devtools_lock_v1';
-
 function isProtectedPublicPage() {
   if (typeof window === 'undefined') return false;
   return !window.location.pathname.startsWith('/admin');
-}
-
-function activateDevtoolsLock() {
-  if (typeof window === 'undefined' || !isProtectedPublicPage()) return;
-  sessionStorage.setItem(DEVTOOLS_LOCK_KEY, '1');
-  window.history.replaceState({}, '', '/404');
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
 }
 
 function DevtoolsLockScreen() {
@@ -314,58 +304,38 @@ function SiteLayout() {
 }
 
 export default function App() {
-  const [devtoolsLocked, setDevtoolsLocked] = useState(() => {
-    if (!import.meta.env.PROD || typeof window === 'undefined') return false;
-    return sessionStorage.getItem(DEVTOOLS_LOCK_KEY) === '1' && isProtectedPublicPage();
-  });
+  const [devtoolsLocked, setDevtoolsLocked] = useState(false);
 
   useEffect(() => {
     if (!import.meta.env.PROD || typeof window === 'undefined') return undefined;
     if (!isProtectedPublicPage()) return undefined;
 
-    const triggerLock = () => {
-      activateDevtoolsLock();
-      setDevtoolsLocked(true);
-    };
-
-    if (sessionStorage.getItem(DEVTOOLS_LOCK_KEY) === '1') {
-      triggerLock();
-      return undefined;
-    }
-
     const detectDevtools = () => {
       const widthGap = Math.abs(window.outerWidth - window.innerWidth);
       const heightGap = Math.abs(window.outerHeight - window.innerHeight);
-      if (widthGap > 160 || heightGap > 160) {
-        triggerLock();
-      }
+      setDevtoolsLocked(widthGap > 160 || heightGap > 160);
     };
 
     const handleKeyDown = (event) => {
       const key = event.key.toLowerCase();
       if (
         event.key === 'F12' ||
-        (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(key)) ||
-        (event.ctrlKey && key === 'u')
+        (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(key))
       ) {
         event.preventDefault();
-        triggerLock();
+        setDevtoolsLocked(true);
       }
     };
 
-    const handleContextMenu = (event) => {
-      event.preventDefault();
-      triggerLock();
-    };
-
+    detectDevtools();
     const intervalId = window.setInterval(detectDevtools, 1000);
+    window.addEventListener('resize', detectDevtools);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('contextmenu', handleContextMenu);
 
     return () => {
       window.clearInterval(intervalId);
+      window.removeEventListener('resize', detectDevtools);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('contextmenu', handleContextMenu);
     };
   }, []);
 
