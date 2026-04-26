@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>403 | Oyuncu Kantinim</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070b15;
+        --panel: rgba(15, 23, 42, 0.84);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --accent-a: #f59e0b;
+        --accent-b: #f43f5e;
+        --button: #ffffff;
+        --button-text: #0f172a;
+      }
+
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; font-family: Inter, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top left, rgba(245, 158, 11, 0.22), transparent 28%),
+          radial-gradient(circle at bottom right, rgba(244, 63, 94, 0.2), transparent 34%),
+          linear-gradient(180deg, #0b1020 0%, #070b15 100%);
+      }
+
+      .shell {
+        width: min(100%, 1080px);
+        border-radius: 32px;
+        border: 1px solid var(--panel-border);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(7, 11, 21, 0.96));
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) 340px;
+        gap: 24px;
+        padding: 40px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.22);
+        color: #fbbf24;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+
+      .code {
+        margin: 18px 0 10px;
+        font-size: clamp(60px, 10vw, 88px);
+        font-weight: 900;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        background: linear-gradient(135deg, var(--accent-a), var(--accent-b));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+      }
+
+      p {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button, .button-alt {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 20px;
+        border-radius: 18px;
+        text-decoration: none;
+        font-weight: 800;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      }
+
+      .button {
+        background: var(--button);
+        color: var(--button-text);
+      }
+
+      .button-alt {
+        color: var(--text);
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.04);
+      }
+
+      .button:hover, .button-alt:hover { transform: translateY(-2px); }
+
+      .aside {
+        border-radius: 28px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+        padding: 24px;
+      }
+
+      .aside h2 {
+        margin: 0;
+        font-size: 22px;
+        letter-spacing: -0.03em;
+      }
+
+      .aside p {
+        margin-top: 12px;
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .link-list {
+        display: grid;
+        gap: 12px;
+        margin-top: 22px;
+      }
+
+      .link-list a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      @media (max-width: 900px) {
+        .grid { grid-template-columns: 1fr; padding: 28px; }
+      }
+
+      @media (max-width: 640px) {
+        .grid { padding: 22px; }
+        p { font-size: 15px; line-height: 1.7; }
+        .actions { flex-direction: column; }
+        .button, .button-alt { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div class="grid">
+        <section>
+          <div class="eyebrow">Erişim Sınırı</div>
+          <div class="code">403</div>
+          <h1>Bu alana erişim iznin bulunmuyor.</h1>
+          <p>
+            İstediğin içerik sadece belirli kullanıcılar veya özel yetkiler için açık olabilir.
+            İstersen ana akışa geri dönebilir ya da destek ekibimizle iletişime geçebilirsin.
+          </p>
+
+          <div class="actions">
+            <a class="button" href="/">Ana Sayfaya Dön</a>
+            <a class="button-alt" href="/support">Destek Merkezi</a>
+          </div>
+        </section>
+
+        <aside class="aside">
+          <h2>Hızlı Yönlendirme</h2>
+          <p>Takılmadan devam edebilmen için en çok kullanılan güvenli yollar burada.</p>
+          <div class="link-list">
+            <a href="/market"><span>Pazarı Keşfet</span><span>→</span></a>
+            <a href="/categories"><span>Kategorilere Git</span><span>→</span></a>
+            <a href="/login"><span>Giriş Yap</span><span>→</span></a>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </body>
+</html>
