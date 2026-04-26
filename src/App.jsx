@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
