@@ -169,7 +169,7 @@ export default function AdminCategories() {
   };
 
   const handleSaveType = async () => {
-    if (!typeForm.name || !typeForm.slug) { showToast('İsim ve slug gerekli.'); return; }
+    if (!typeForm.name || !typeForm.slug) { showToast('İsim ve URL gerekli.'); return; }
     setTypeSaving(true);
     try {
       await adminSaveCategoryType({ ...typeForm, id: editType?.id || null });
@@ -290,7 +290,7 @@ export default function AdminCategories() {
               {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
               {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
             </div>
-            <div className="text-xs text-gray-400">{cat.slug}</div>
+            <div className="text-xs text-gray-400">URL: {cat.slug}</div>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
@@ -455,9 +455,9 @@ export default function AdminCategories() {
                         {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
                         <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
                       </div>
-                      <div className="text-xs text-gray-400">
-                        {type.slug} · {getTypeColorMeta(type.color).label}
-                      </div>
+                        <div className="text-xs text-gray-400">
+                        URL: {type.slug} · {getTypeColorMeta(type.color).label}
+                        </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
@@ -489,7 +489,7 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Slug (URL) *</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">URL *</label>
               <input value={catForm.slug} onChange={e => setCatForm(f => ({...f, slug: e.target.value}))} placeholder="hesap-satisi" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
             </div>
 
@@ -767,7 +767,7 @@ export default function AdminCategories() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Slug *</label>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">URL *</label>
               <input value={typeForm.slug} onChange={e => setTypeForm(f => ({...f, slug: e.target.value}))} placeholder="hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
             </div>
 
