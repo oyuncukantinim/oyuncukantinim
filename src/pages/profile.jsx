@@ -609,10 +609,11 @@ export default function ProfilePage() {
     setEmailVerificationExpiresAt('');
     setBannerImage(user.banner_image || '');
     setSelectedAvatar(user.avatar || defaultAvatar);
+    setIdentityOverview(null);
     setPersonalInfo({
       full_name: user.full_name || '',
-      identity_number: user.identity_number || '',
-      birth_date: user.birth_date || '',
+      identity_number: '',
+      birth_date: '',
       country:   user.country   || '',
       city:      user.city      || '',
       district:  user.district  || '',
@@ -645,6 +646,21 @@ export default function ProfilePage() {
     apiAuth('get_my_sales').then(setSales).catch(() => {});
   }, []);
 
+  const loadIdentityOverview = useCallback(async () => {
+    const response = await getIdentityOverview();
+    const overview = response.data || null;
+    setIdentityOverview(overview);
+    if (overview?.form_values) {
+      setPersonalInfo((prev) => ({
+        ...prev,
+        full_name: overview.form_values.full_name || prev.full_name || '',
+        identity_number: overview.form_values.identity_number || '',
+        birth_date: overview.form_values.birth_date || '',
+      }));
+    }
+    return overview;
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     if (activeTab === 'listings') loadListings();
@@ -660,9 +676,9 @@ export default function ProfilePage() {
       getStoreApplicationOverview().then(response => setStoreOverview(response.data)).catch(() => {});
     }
     else if (activeTab === 'personal') {
-      getIdentityOverview().then((response) => setIdentityOverview(response.data || null)).catch(() => {});
+      loadIdentityOverview().catch(() => {});
     }
-  }, [activeTab, user, loadListings, loadOrders, loadSales]);
+  }, [activeTab, user, loadIdentityOverview, loadListings, loadOrders, loadSales]);
 
   const normalizedUsername = editUsername.trim();
   const normalizedEmail = editEmail.trim();
@@ -680,13 +696,17 @@ export default function ProfilePage() {
   const identityLockedFields = new Set(identityOverview?.locked_fields || []);
   const identityApproved = identityOverview?.status === 'approved';
   const identityPending = identityOverview?.status === 'pending';
+  const identityBaseline = identityOverview?.form_values || {};
+  const baselineFullName = identityBaseline.full_name ?? (user?.full_name || '');
+  const baselineIdentityNumber = identityBaseline.identity_number ?? '';
+  const baselineBirthDate = identityBaseline.birth_date ?? '';
   const profileDirty =
     selectedAvatar !== (user?.avatar || defaultAvatar) ||
     normalizedBannerImage !== savedBannerImage;
   const personalDirty =
-    personalInfo.full_name !== (user?.full_name || '') ||
-    personalInfo.identity_number !== (user?.identity_number || '') ||
-    personalInfo.birth_date !== (user?.birth_date || '') ||
+    personalInfo.full_name !== baselineFullName ||
+    personalInfo.identity_number !== baselineIdentityNumber ||
+    personalInfo.birth_date !== baselineBirthDate ||
     personalInfo.country !== (user?.country || '') ||
     personalInfo.city !== (user?.city || '') ||
     personalInfo.district !== (user?.district || '') ||
@@ -694,9 +714,9 @@ export default function ProfilePage() {
     normalizedEmail !== (user?.email || '') ||
     Boolean(newPassword);
   const personalDirtyWithoutEmail =
-    personalInfo.full_name !== (user?.full_name || '') ||
-    personalInfo.identity_number !== (user?.identity_number || '') ||
-    personalInfo.birth_date !== (user?.birth_date || '') ||
+    personalInfo.full_name !== baselineFullName ||
+    personalInfo.identity_number !== baselineIdentityNumber ||
+    personalInfo.birth_date !== baselineBirthDate ||
     personalInfo.country !== (user?.country || '') ||
     personalInfo.city !== (user?.city || '') ||
     personalInfo.district !== (user?.district || '') ||
@@ -912,6 +932,7 @@ export default function ProfilePage() {
         const res = await updateProfile(payload);
         updatedUser = res.data;
         updateUser(res.data);
+        await loadIdentityOverview().catch(() => {});
         resetSecurityFields();
       } else if (currentPassword || confirmPassword) {
         resetSecurityFields();
@@ -967,8 +988,7 @@ export default function ProfilePage() {
         selfieImage: identityFiles.selfie,
         userNote: '',
       });
-      const identityResponse = await getIdentityOverview();
-      setIdentityOverview(identityResponse.data || null);
+      await loadIdentityOverview();
       setIdentityFiles({ identity: null, selfie: null });
       showToast('Kimlik doğrulama başvurun incelemeye alındı.');
     } catch (err) {
