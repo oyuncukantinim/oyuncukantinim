@@ -36,6 +36,39 @@ const TYPE_COLOR_OPTIONS = [
   { label: 'Lacivert', value: 'from-indigo-500 to-blue-700' },
 ];
 
+const CATEGORY_ROLE_OPTIONS = [
+  {
+    key: 'container',
+    label: 'Klasör',
+    node_type: 'container',
+    content_type: 'neutral',
+    description: 'Ana başlık gibi davranır, içine ürün veya ilan eklenmez.',
+    badgeClass: 'bg-slate-100 text-slate-700',
+  },
+  {
+    key: 'listing',
+    label: 'İlan Kategorisi',
+    node_type: 'sellable',
+    content_type: 'listing',
+    description: 'Kullanıcıların ilan açacağı satış kategorisi.',
+    badgeClass: 'bg-violet-100 text-violet-700',
+  },
+  {
+    key: 'product',
+    label: 'Site Ürünü Kategorisi',
+    node_type: 'sellable',
+    content_type: 'product',
+    description: 'Sadece sitenin kendi ürünlerinin listeleneceği kategori.',
+    badgeClass: 'bg-emerald-100 text-emerald-700',
+  },
+];
+
+const PRODUCT_LAYOUT_OPTIONS = [
+  { value: 'editorial', label: 'Editoryal Vitrin' },
+  { value: 'catalog', label: 'Katalog Grid' },
+  { value: 'compact', label: 'Kompakt Raf' },
+];
+
 function getTypeColorMeta(value) {
   return TYPE_COLOR_OPTIONS.find((option) => option.value === value) || {
     label: 'Özel',
@@ -48,6 +81,16 @@ function slugify(str) {
     .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ü/g,'u').replace(/Ş/g,'s').replace(/Ö/g,'o').replace(/Ç/g,'c')
     .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
     .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+
+function getCategoryRoleMeta(category = {}) {
+  if (category.node_type === 'container') {
+    return CATEGORY_ROLE_OPTIONS[0];
+  }
+  if (category.content_type === 'product') {
+    return CATEGORY_ROLE_OPTIONS[2];
+  }
+  return CATEGORY_ROLE_OPTIONS[1];
 }
 
 function Modal({ title, onClose, children }) {
@@ -72,13 +115,20 @@ export default function AdminCategories() {
   const [toast, setToast] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
+  const [heroUploading, setHeroUploading] = useState(false);
   const fileInputRef = useRef(null);
   const bannerFileInputRef = useRef(null);
+  const heroFileInputRef = useRef(null);
 
   // Category modal
   const [catModal, setCatModal] = useState(false);
   const [editCat, setEditCat] = useState(null);
-  const [catForm, setCatForm] = useState({ name:'', slug:'', parent_id:'', icon:'🎮', sort_order:0, is_active:1, commission_rate:'', min_price:'', image:'', banner_image:'' });
+  const [catForm, setCatForm] = useState({
+    name: '', slug: '', parent_id: '', icon: '🎮', sort_order: 0, is_active: 1,
+    commission_rate: '', min_price: '', image: '', banner_image: '', type_id: '',
+    node_type: 'sellable', content_type: 'listing', layout_variant: 'classic',
+    accent_color: TYPE_COLOR_OPTIONS[0].value, hero_title: '', hero_subtitle: '', hero_image: '',
+  });
   const [catSaving, setCatSaving] = useState(false);
 
   // Attribute panel
@@ -115,6 +165,57 @@ export default function AdminCategories() {
     adminGetCategoryAttributes(catId).then(r => setAttrs(r.data)).catch(() => setAttrs([]));
   };
 
+  const buildCategoryPath = (categoryId) => {
+    const parts = [];
+    let current = categories.find((item) => Number(item.id) === Number(categoryId));
+    while (current) {
+      parts.unshift(current.name);
+      current = current.parent_id ? categories.find((item) => Number(item.id) === Number(current.parent_id)) : null;
+    }
+    return parts.join(' > ');
+  };
+
+  const setCategoryRole = (role) => {
+    setCatForm((prev) => {
+      if (role.key === 'container') {
+        return {
+          ...prev,
+          node_type: 'container',
+          content_type: 'neutral',
+          layout_variant: 'classic',
+          commission_rate: '',
+          min_price: '',
+          accent_color: TYPE_COLOR_OPTIONS[0].value,
+          hero_title: '',
+          hero_subtitle: '',
+          hero_image: '',
+        };
+      }
+      if (role.key === 'product') {
+        return {
+          ...prev,
+          node_type: 'sellable',
+          content_type: 'product',
+          layout_variant: prev.layout_variant === 'editorial' || prev.layout_variant === 'catalog' || prev.layout_variant === 'compact'
+            ? prev.layout_variant
+            : 'editorial',
+          commission_rate: '',
+          min_price: '',
+        };
+      }
+      return {
+        ...prev,
+        node_type: 'sellable',
+        content_type: 'listing',
+        layout_variant: 'classic',
+        accent_color: TYPE_COLOR_OPTIONS[0].value,
+        hero_title: '',
+        hero_subtitle: '',
+        hero_image: '',
+      };
+    });
+  };
+
   const handleDrop = (targetCat) => {
     if (!dragId || dragId === targetCat.id) return;
     const dragCat = categories.find(c => c.id === dragId);
@@ -146,13 +247,38 @@ export default function AdminCategories() {
 
   const openNewCat = (parentId = null) => {
     setEditCat(null);
-    setCatForm({ name:'', slug:'', parent_id: parentId || '', icon:'🎮', sort_order:0, is_active:1, commission_rate:'', min_price:'', image:'', banner_image:'', type_id:'' });
+    setCatForm({
+      name: '', slug: '', parent_id: parentId || '', icon: '🎮', sort_order: 0, is_active: 1,
+      commission_rate: '', min_price: '', image: '', banner_image: '', type_id: '',
+      node_type: 'sellable', content_type: 'listing', layout_variant: 'classic',
+      accent_color: TYPE_COLOR_OPTIONS[0].value, hero_title: '', hero_subtitle: '', hero_image: '',
+    });
     setCatModal(true);
   };
 
   const openEditCat = (cat) => {
     setEditCat(cat);
-    setCatForm({ name: cat.name, slug: cat.slug, parent_id: cat.parent_id || '', icon: cat.icon, sort_order: cat.sort_order, is_active: cat.is_active, commission_rate: cat.commission_rate ?? '', min_price: cat.min_price ?? '', image: cat.image || '', banner_image: cat.banner_image || '', type_id: cat.type_id || '' });
+    const roleMeta = getCategoryRoleMeta(cat);
+    setCatForm({
+      name: cat.name,
+      slug: cat.slug,
+      parent_id: cat.parent_id || '',
+      icon: cat.icon,
+      sort_order: cat.sort_order,
+      is_active: cat.is_active,
+      commission_rate: cat.commission_rate ?? '',
+      min_price: cat.min_price ?? '',
+      image: cat.image || '',
+      banner_image: cat.banner_image || '',
+      type_id: cat.type_id || '',
+      node_type: roleMeta.node_type,
+      content_type: roleMeta.content_type,
+      layout_variant: cat.layout_variant || (roleMeta.key === 'product' ? 'editorial' : 'classic'),
+      accent_color: cat.accent_color || TYPE_COLOR_OPTIONS[0].value,
+      hero_title: cat.hero_title || '',
+      hero_subtitle: cat.hero_subtitle || '',
+      hero_image: cat.hero_image || '',
+    });
     setCatModal(true);
   };
 
@@ -258,6 +384,7 @@ export default function AdminCategories() {
   const CategoryRow = ({ cat, depth = 0 }) => {
     const kids = children(cat.id);
     const isExpanded = expanded[cat.id];
+    const roleMeta = getCategoryRoleMeta(cat);
     return (
       <div>
         <div
@@ -284,16 +411,20 @@ export default function AdminCategories() {
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
               {!cat.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${roleMeta.badgeClass}`}>{roleMeta.label}</span>
               {kids.length > 0 && <span className="text-[10px] text-gray-400">{kids.length} alt kategori</span>}
               {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
               {cat.type_id && (() => { const t = typesList.find(x => x.id == cat.type_id); return t ? <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t.name}</span> : null; })()}
-              {cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
-              {cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
+              {cat.content_type === 'listing' && cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
+              {cat.content_type === 'listing' && cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
+              {cat.content_type === 'product' && cat.layout_variant && <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">{cat.layout_variant}</span>}
             </div>
             <div className="text-xs text-gray-400">URL: {cat.slug}</div>
           </div>
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
+            {cat.content_type === 'listing' && cat.node_type === 'sellable' ? (
+              <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
+            ) : null}
             <button onClick={() => openNewCat(cat.id)} title="Alt Kategori Ekle" className="p-1.5 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-600"><Plus size={13} /></button>
             <button onClick={() => openEditCat(cat)} title="Düzenle" className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
             <button onClick={() => handleDeleteCat(cat)} title="Sil" className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
@@ -304,6 +435,14 @@ export default function AdminCategories() {
     );
   };
 
+  const selectedRoleMeta = getCategoryRoleMeta(catForm);
+  const isListingCategory = selectedRoleMeta.key === 'listing';
+  const isProductCategory = selectedRoleMeta.key === 'product';
+  const parentOptions = categories.filter((category) => {
+    if (Number(category.id) === Number(editCat?.id)) return false;
+    return category.node_type === 'container';
+  });
+
   return (
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
@@ -312,7 +451,7 @@ export default function AdminCategories() {
         <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-extrabold text-gray-800">Kategori Yönetimi</h2>
-            <p className="text-sm text-gray-400">Kullanıcı ilan kategorilerini ve ana sayfadaki popüler kategori vitrinini tek alandan yönetin.</p>
+            <p className="text-sm text-gray-400">Klasör, ilan ve site ürünü kategorilerini aynı ağaçta yönetin; popüler kategori vitrini de burada kalsın.</p>
           </div>
           <div className="inline-flex rounded-2xl bg-gray-100 p-1.5">
             <button
@@ -374,7 +513,7 @@ export default function AdminCategories() {
                     {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
                   </h3>
                 </div>
-                {attrCat && (
+                {attrCat && attrCat.content_type === 'listing' && attrCat.node_type === 'sellable' && (
                   <button onClick={openNewAttr} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
                     <Plus size={13} /> Özellik Ekle
                   </button>
@@ -385,6 +524,12 @@ export default function AdminCategories() {
                 <div className="px-5 py-12 text-center text-gray-400">
                   <Filter size={32} className="mx-auto mb-3 opacity-30" />
                   <p className="text-sm">Bir kategoriye tıklayarak <br /> özelliklerini düzenleyebilirsiniz.</p>
+                </div>
+              ) : !(attrCat.content_type === 'listing' && attrCat.node_type === 'sellable') ? (
+                <div className="px-5 py-10 text-center text-gray-400">
+                  <Filter size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-semibold">Bu kategori için ilan filtresi kullanılmıyor.</p>
+                  <p className="mt-1 text-xs">Özellik alanları sadece kullanıcı ilanı kategorilerinde aktif.</p>
                 </div>
               ) : attrs.length === 0 ? (
                 <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henüz özellik eklenmemiş.</div>
@@ -477,6 +622,33 @@ export default function AdminCategories() {
       {catModal && (
         <Modal title={editCat ? 'Kategori Düzenle' : 'Yeni Kategori'} onClose={() => setCatModal(false)}>
           <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-xs font-bold text-gray-600">Kategori Rolü</label>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {CATEGORY_ROLE_OPTIONS.map((role) => {
+                  const active = selectedRoleMeta.key === role.key;
+                  return (
+                    <button
+                      key={role.key}
+                      type="button"
+                      onClick={() => setCategoryRole(role)}
+                      className={`rounded-2xl border px-3 py-3 text-left transition-all ${
+                        active
+                          ? 'border-violet-400 bg-violet-50 shadow-sm'
+                          : 'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-black text-gray-800">{role.label}</span>
+                        {active ? <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">Seçili</span> : null}
+                      </div>
+                      <p className="mt-1 text-[11px] font-semibold leading-5 text-gray-500">{role.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid grid-cols-4 gap-3">
               <div className="col-span-1">
                 <label className="block text-xs font-bold text-gray-600 mb-1.5">İkon</label>
@@ -497,8 +669,8 @@ export default function AdminCategories() {
               <label className="block text-xs font-bold text-gray-600 mb-1.5">Üst Kategori</label>
               <select value={catForm.parent_id} onChange={e => setCatForm(f => ({...f, parent_id: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400">
                 <option value="">— Ana Kategori —</option>
-                {categories.filter(c => !c.parent_id && c.id !== editCat?.id).map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                {parentOptions.map(c => (
+                  <option key={c.id} value={c.id}>{buildCategoryPath(c.id) || c.name}</option>
                 ))}
               </select>
             </div>
@@ -513,16 +685,124 @@ export default function AdminCategories() {
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon Oranı (%)</label>
-                <input type="number" step="0.01" min="0" max="100" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Site geneli" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+            {isListingCategory && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Komisyon Oranı (%)</label>
+                  <input type="number" step="0.01" min="0" max="100" value={catForm.commission_rate} onChange={e => setCatForm(f => ({...f, commission_rate: e.target.value}))} placeholder="Site geneli" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
+                  <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
-                <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
+            )}
+
+            {isProductCategory && (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 space-y-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Liste Tasarımı</label>
+                    <select value={catForm.layout_variant} onChange={e => setCatForm(f => ({ ...f, layout_variant: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400">
+                      {PRODUCT_LAYOUT_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Vurgu Rengi</label>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                      {TYPE_COLOR_OPTIONS.map((option) => {
+                        const active = catForm.accent_color === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setCatForm(f => ({ ...f, accent_color: option.value }))}
+                            className={`rounded-xl border p-1.5 transition-all ${active ? 'border-emerald-400 bg-white shadow-sm' : 'border-gray-200 bg-white hover:border-emerald-300'}`}
+                            title={option.label}
+                          >
+                            <div className={`h-6 rounded-lg bg-gradient-to-r ${option.value}`} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Hero Başlığı</label>
+                    <input value={catForm.hero_title} onChange={e => setCatForm(f => ({...f, hero_title: e.target.value}))} placeholder="Örn: Resmi Valorant Ürünleri" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Hero Alt Metni</label>
+                    <input value={catForm.hero_subtitle} onChange={e => setCatForm(f => ({...f, hero_subtitle: e.target.value}))} placeholder="Kategori üst açıklaması" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400" />
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between gap-3">
+                    <label className="block text-xs font-bold text-gray-600">Hero Görseli</label>
+                    <span className="text-[10px] font-semibold text-gray-400">Kategori üst alanı için</span>
+                  </div>
+                  <input
+                    ref={heroFileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setHeroUploading(true);
+                      try {
+                        const url = await adminUploadImage(file, 'categories', { preserveOriginal: true });
+                        setCatForm(f => ({ ...f, hero_image: url }));
+                        showToast('Hero görseli yüklendi.');
+                      } catch (err) {
+                        showToast(err.message);
+                      } finally {
+                        setHeroUploading(false);
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+
+                  {catForm.hero_image ? (
+                    <div className="relative h-36 w-full overflow-hidden rounded-xl border border-gray-200 bg-slate-100 group">
+                      <img src={catForm.hero_image} alt="" className="w-full h-full object-contain" />
+                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
+                        <button type="button" onClick={() => heroFileInputRef.current?.click()} className="bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+                          <Upload size={12} /> Değiştir
+                        </button>
+                        <button type="button" onClick={() => setCatForm(f => ({ ...f, hero_image: '' }))} className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+                          <X size={12} /> Kaldır
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => heroFileInputRef.current?.click()}
+                      disabled={heroUploading}
+                      className="w-full h-32 border-2 border-dashed border-emerald-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-400 hover:bg-white transition-all disabled:opacity-50"
+                    >
+                      {heroUploading ? (
+                        <>
+                          <Loader2 size={22} className="text-emerald-500 animate-spin" />
+                          <span className="text-xs text-gray-500 font-semibold">Yükleniyor...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon size={22} className="text-gray-400" />
+                          <span className="text-xs text-gray-500 font-semibold">Hero görseli seç</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-3">

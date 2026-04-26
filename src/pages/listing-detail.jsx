@@ -148,6 +148,7 @@ export default function ListingDetailPage() {
       id: listing.id, itemType: 'listing', title: listing.title,
       price: Number(listing.price),
       image: coverImg || '', listing_id: listing.id, seller: listing.seller,
+      path: listingSlug(listing.title, listing.id),
     });
   };
 

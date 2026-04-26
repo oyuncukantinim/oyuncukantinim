@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -118,6 +118,17 @@ function OrderLogsModal({ order, onClose }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (order.order_kind === 'product') {
+      getProductOrderLogs(order.product_order_item_id || orderId)
+        .then((response) => {
+          setLogs(response.data?.logs || []);
+          setDisputeReason(response.data?.delivery_note || '');
+        })
+        .catch(() => {})
+        .finally(() => setLoading(false));
+      return;
+    }
+
     fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_order_logs&order_id=${orderId}`, {
       credentials: 'include',
     })
@@ -130,17 +141,17 @@ function OrderLogsModal({ order, onClose }) {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [orderId]);
+  }, [order.order_kind, order.product_order_item_id, orderId]);
 
   const timelineSteps = [
     {
-      action: 'Sipariş oluşturuldu',
+      action: order.order_kind === 'product' ? 'Site urunu siparisi olusturuldu' : 'Sipariş oluşturuldu',
       admin_name: 'Sistem',
       created_at: order.created_at,
     },
     ...logs.map(log => ({
       ...log,
-      admin_name: log.admin_name || 'Sistem',
+      admin_name: log.admin_name || log.actor_type || 'Sistem',
     })),
   ];
 
@@ -163,7 +174,9 @@ function OrderLogsModal({ order, onClose }) {
 
         {disputeReason && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-4">
-            <div className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1"><AlertTriangle size={11} /> Anlaşmazlık Nedeni</div>
+            <div className="text-xs font-bold text-red-600 mb-1 flex items-center gap-1">
+              <AlertTriangle size={11} /> {order.order_kind === 'product' ? 'Teslimat Notu' : 'Anlaşmazlık Nedeni'}
+            </div>
             <p className="text-sm text-red-800">{disputeReason}</p>
           </div>
         )}
@@ -411,6 +424,7 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
   };
 
   const status = (order.delivery_status ?? 0);
+  const isProductOrder = order.order_kind === 'product';
   const orderImages = Array.isArray(order.item_images) ? order.item_images.filter(Boolean) : [];
   const coverImage = order.item_cover || orderImages[0] || defaultListingImage;
   const coverFallback = '🖼️';
@@ -430,7 +444,12 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="font-bold text-gray-800 truncate text-sm">{order.item_title || 'Ürün'}</div>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${isProductOrder ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-violet-700'}`}>
+              {isProductOrder ? 'Site Ürünü' : 'İlan'}
+            </span>
+          </div>
           <div className="text-xs text-gray-400 mt-0.5">
             {isSellerView ? `Alıcı: ${order.buyer_username || '—'}` : (order.seller_name ? `Satıcı: ${order.seller_name}` : '')}
           </div>
@@ -463,7 +482,7 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
           )}
 
           {/* Aksiyon butonları */}
-          {!isSellerView && (
+          {!isSellerView && !isProductOrder && (
             <div className="flex flex-wrap gap-2">
               {status === 1 && (
                 <>
@@ -501,21 +520,26 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
           {status === 2 && !order.seller_paid && (
             <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg"> Ödeme bekleniyor (onay sürecinde)</div>
           )}
-          {!isSellerView && status === 2 && !order.has_reviewed && (
+          {!isSellerView && !isProductOrder && status === 2 && !order.has_reviewed && (
             <button onClick={() => setShowReview(true)}
               className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
               <MessageSquarePlus size={13}/> Değerlendir
             </button>
           )}
-          {!isSellerView && status === 2 && order.has_reviewed == 1 && (
+          {!isSellerView && !isProductOrder && status === 2 && order.has_reviewed == 1 && (
             <button onClick={() => setShowMyReview(true)}
               className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
               <Star size={13} className="fill-yellow-500 text-yellow-500"/> Değerlendirmem
             </button>
           )}
+          {!isSellerView && isProductOrder && (
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+              Bu sipariş site ürünü akışında yönetilir. Teslimat geçmişi ve notlar için “Geçmiş” alanını kullanabilirsin.
+            </div>
+          )}
 
           {/* Anlaşmazlık formu */}
-          {disputeOpen && (
+          {disputeOpen && !isProductOrder && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 space-y-2">
               <div className="text-xs font-bold text-red-700">Anlaşmazlık Nedeni</div>
               <textarea value={disputeReason} onChange={e => setDisputeReason(e.target.value)}
@@ -557,6 +581,7 @@ export default function ProfilePage() {
   const [listingsLoading, setListingsLoading] = useState(false);
   const [listingsError, setListingsError] = useState('');
   const [orders, setOrders] = useState([]);
+  const [orderFilter, setOrderFilter] = useState('all');
   const [sales, setSales] = useState([]);
   const [editUsername, setEditUsername] = useState('');
   const [editEmail, setEditEmail] = useState('');
@@ -1104,6 +1129,11 @@ export default function ProfilePage() {
       .toLocaleLowerCase('tr-TR');
     return haystack.includes(query);
   });
+  const filteredOrders = orders.filter((order) => {
+    if (orderFilter === 'listing') return order.order_kind !== 'product';
+    if (orderFilter === 'product') return order.order_kind === 'product';
+    return true;
+  });
 
   useEffect(() => {
     if (!balanceAddEnabled && activeTab === 'balance') {
@@ -1442,15 +1472,36 @@ export default function ProfilePage() {
           {activeTab === 'orders' && (
             <div>
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Package size={20} className="text-violet-500" /> Siparişlerim</h2>
-              {orders.length === 0 ? (
+              <div className="mb-4 flex flex-wrap gap-2">
+                {[
+                  { id: 'all', label: 'Tümü' },
+                  { id: 'listing', label: 'İlan Siparişleri' },
+                  { id: 'product', label: 'Site Ürünleri' },
+                ].map((filter) => (
+                  <button
+                    key={filter.id}
+                    onClick={() => setOrderFilter(filter.id)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-black transition-colors ${
+                      orderFilter === filter.id
+                        ? 'bg-violet-600 text-white'
+                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    }`}
+                  >
+                    {filter.label}
+                  </button>
+                ))}
+              </div>
+              {filteredOrders.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-3">📦</div>
-                  <p className="text-gray-400 font-semibold">Henüz siparişin yok.</p>
+                  <p className="text-gray-400 font-semibold">
+                    {orderFilter === 'product' ? 'Henüz site ürünü siparişin yok.' : orderFilter === 'listing' ? 'Henüz ilan siparişin yok.' : 'Henüz siparişin yok.'}
+                  </p>
                   <Link to="/market" className="text-violet-600 font-bold hover:underline text-sm mt-1 inline-block">Pazara göz at</Link>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {orders.map(order => (
+                  {filteredOrders.map(order => (
                       <OrderCard key={order.id} order={order} isSellerView={false} onRefresh={loadOrders} showToast={showToast} />
                   ))}
                 </div>

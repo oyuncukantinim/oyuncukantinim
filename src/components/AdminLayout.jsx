@@ -53,6 +53,8 @@ const navGroups = [
     items: [
       { path: '/admin/listings', label: 'İlanlar', icon: ShoppingBag, accent: 'from-emerald-500 to-teal-500' },
       { path: '/admin/orders', label: 'Siparişler', icon: Package, accent: 'from-lime-500 to-green-500' },
+      { path: '/admin/products', label: 'Site Urunleri', icon: Package, accent: 'from-violet-500 to-fuchsia-500' },
+      { path: '/admin/product-orders', label: 'Urun Siparisleri', icon: Package, accent: 'from-cyan-500 to-blue-500' },
       { path: '/admin/reviews', label: 'Yorumlar', icon: Star, accent: 'from-yellow-500 to-amber-500' },
         { path: '/admin/categories', label: 'Kategoriler', icon: Tag, accent: 'from-fuchsia-500 to-pink-500' },
         { path: '/admin/doping', label: 'Doping', icon: Zap, accent: 'from-yellow-400 to-orange-500' },

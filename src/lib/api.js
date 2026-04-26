@@ -83,6 +83,19 @@ export function listingSlug(title, id) {
   return `/listing/${slug}-${id}`;
 }
 
+export function productSlug(title, id) {
+  const slug = title
+    .replace(/Ä°/g, 'i').replace(/I/g, 'i')
+    .replace(/Ä/g, 'g').replace(/Ãœ/g, 'u').replace(/Å/g, 's')
+    .replace(/Ã–/g, 'o').replace(/Ã‡/g, 'c')
+    .toLowerCase()
+    .replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/ÅŸ/g, 's')
+    .replace(/Ä±/g, 'i').replace(/Ã¶/g, 'o').replace(/Ã§/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return `/product/${slug}-${id}`;
+}
+
 // Slug'dan id'yi çıkarır: "minecraft-hesabi-123" → "123"
 export function idFromSlug(slug) {
   return slug.split('-').pop();
@@ -290,6 +303,10 @@ export function getListings(query = {}) {
   return request('get_listings', { query, ttl: 20 * 1000 });
 }
 
+export function getProducts(query = {}) {
+  return request('get_products', { query, ttl: 20 * 1000 });
+}
+
 export function getCategories() {
   return request('get_categories_tree', { ttl: 10 * 60 * 1000 });
 }
@@ -309,8 +326,19 @@ export function getListing(id) {
   return request('get_listing', { query: { id }, ttl: 20 * 1000 });
 }
 
+export function getProduct(id) {
+  return request('get_product', { query: { id }, ttl: 20 * 1000 });
+}
+
 export function getMyListings() {
   return request('get_my_listings', { auth: true });
+}
+
+export function getProductOrderLogs(orderItemId) {
+  return request('get_product_order_logs', {
+    auth: true,
+    query: { order_item_id: orderItemId },
+  });
 }
 
 export function addListing(payload) {

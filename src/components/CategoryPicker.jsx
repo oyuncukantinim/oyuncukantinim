@@ -53,14 +53,26 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   const selected = useMemo(() => categories.find((category) => category.id === value) || null, [categories, value]);
 
   const childrenOf = (parentId) => categories.filter((category) => category.parent_id == parentId);
+  const allowsListing = (category) => {
+    if (!category) return false;
+    if (category.node_type === 'container') {
+      return childrenOf(category.id).some((child) => allowsListing(child));
+    }
+    return category.node_type === 'sellable' && category.content_type === 'listing';
+  };
 
-  const searchResults = useMemo(() => {
-    if (!search.trim()) return [];
-    const query = search.toLowerCase();
-    return categories.filter(
-      (category) => category.name.toLowerCase().includes(query) || String(category.slug || '').toLowerCase().includes(query),
-    );
-  }, [search, categories]);
+  const visibleChildrenOf = (parentId) => childrenOf(parentId).filter((category) => allowsListing(category));
+
+  const normalizedSearch = search.trim().toLowerCase();
+  const searchResults = !normalizedSearch
+    ? []
+    : categories.filter((category) => {
+        if (!allowsListing(category)) return false;
+        return (
+          category.name.toLowerCase().includes(normalizedSearch) ||
+          String(category.slug || '').toLowerCase().includes(normalizedSearch)
+        );
+      });
 
   const getPath = (categoryId) => {
     const parts = [];
@@ -75,7 +87,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   };
 
   const navigate = (category) => {
-    const children = childrenOf(category.id);
+    const children = visibleChildrenOf(category.id);
 
     if (children.length > 0) {
       setPath((prev) => [...prev, category.id]);
@@ -103,7 +115,7 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
 
   const breadcrumbCats = path.map((id) => categories.find((category) => category.id === id)).filter(Boolean);
   const currentParentId = path.length > 0 ? path[path.length - 1] : null;
-  const currentLevel = childrenOf(currentParentId);
+  const currentLevel = visibleChildrenOf(currentParentId);
 
   const renderCards = (items, withPath = false) => (
     <div className="flex flex-wrap gap-4 p-3">

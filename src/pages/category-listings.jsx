@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, Plus, Search, SlidersHorizontal, Tag } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getCategories, getListings, getCategoryAttributes } from '../lib/api';
+import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
+import ProductCard from '../components/ProductCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 
 function idFromCatSlug(slug) {
@@ -16,16 +17,22 @@ function buildCatSlug(cat) {
 }
 
 function CategoryCard({ cat }) {
+  const isProduct = cat.content_type === 'product';
+
   return (
     <Link to={`/categories/${buildCatSlug(cat)}`}>
       <div className="group relative mx-auto flex h-[250px] w-[160px] cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
         {cat.image ? (
           <img src={cat.image} alt={cat.name} className="absolute inset-0 h-full w-full object-cover" />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-400 to-violet-500">
+          <div className={`absolute inset-0 flex items-center justify-center ${isProduct ? 'bg-gradient-to-br from-slate-900 via-violet-900 to-cyan-700' : 'bg-gradient-to-br from-indigo-400 to-violet-500'}`}>
             <span className="text-6xl opacity-30">{cat.icon}</span>
           </div>
         )}
+
+        <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+          {cat.node_type === 'container' ? 'Klasor' : (isProduct ? 'Site Urunu' : 'Ilan')}
+        </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
           <div className="max-w-full rounded-xl bg-black/42 px-3 py-1.5 text-center shadow-[0_8px_24px_rgba(0,0,0,0.4)] backdrop-blur-[1px]">
@@ -39,6 +46,90 @@ function CategoryCard({ cat }) {
   );
 }
 
+function ProductCategoryView({ category, products, search, setSearch, sort, setSort }) {
+  const filtered = useMemo(() => {
+    let list = products;
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      list = list.filter((product) => String(product.title || '').toLowerCase().includes(query));
+    }
+    return list;
+  }, [products, search]);
+
+  return (
+    <div className="space-y-6">
+      <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-slate-950 shadow-xl">
+        <div className="relative">
+          {category.hero_image ? (
+            <img src={category.hero_image} alt={category.name} className="h-64 w-full object-cover opacity-60" />
+          ) : (
+            <div className="h-64 w-full bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-800" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
+          <div className="absolute inset-0 flex items-center px-6 py-8 sm:px-10">
+            <div className="max-w-2xl">
+              <span className="inline-flex rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.24em] text-white/70">
+                Site Urunleri
+              </span>
+              <h1 className="mt-4 text-3xl font-black text-white sm:text-4xl">
+                {category.hero_title || category.name}
+              </h1>
+              <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-white/68">
+                {category.hero_subtitle || 'Bu kategoride resmi site urunleri kendi vitrin tasarimiyla listelenir.'}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3 text-xs font-black text-white/75">
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">{products.length} urun</span>
+                <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5">Resmi satis</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Site urunlerinde ara..."
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={16} className="text-slate-400" />
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+            >
+              <option value="featured">One Cikanlar</option>
+              <option value="newest">En Yeni</option>
+              <option value="price-asc">Fiyat Artan</option>
+              <option value="price-desc">Fiyat Azalan</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-[28px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+          <div className="mb-4 text-5xl">📦</div>
+          <p className="text-lg font-extrabold text-slate-700">Bu kategoride gosterilecek site urunu yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu vitrin otomatik dolacak.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {filtered.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function CategoryListingsPage() {
   const { catSlug } = useParams();
   const { user } = useAuth();
@@ -48,46 +139,71 @@ export default function CategoryListingsPage() {
   const [category, setCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const [listings, setListings] = useState([]);
+  const [products, setProducts] = useState([]);
   const [catAttrs, setCatAttrs] = useState([]);
   const [attrFilters, setAttrFilters] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest');
-  const [subCatFilter, setSubCatFilter] = useState(null);
 
   useEffect(() => {
     if (!catId) return;
     setLoading(true);
-    Promise.all([
-      getCategories().then((res) => res.data || []),
-      getListings({ category_id: catId, sort }).then((res) => res.data || []),
-      getCategoryAttributes(catId).then((res) => res.data || []),
-    ])
-      .then(([cats, items, attrs]) => {
-        const safeCats = cats || [];
-        const found = safeCats.find((c) => String(c.id) === String(catId));
-        const safeAttrs = (attrs || []).filter((a) => a.is_filterable);
-        const initFilters = {};
-        safeAttrs.forEach((a) => {
-          initFilters[a.slug] = '';
-        });
+    setSearch('');
+    getCategories()
+      .then((response) => {
+        const safeCategories = response.data || [];
+        const found = safeCategories.find((item) => String(item.id) === String(catId)) || null;
+        setCategories(safeCategories);
+        setCategory(found);
 
-        setCategories(safeCats);
-        setCategory(found || null);
-        setListings(items || []);
-        setCatAttrs(safeAttrs);
-        setAttrFilters(initFilters);
-        setSubCatFilter(null);
+        if (!found) {
+          setListings([]);
+          setProducts([]);
+          setCatAttrs([]);
+          setAttrFilters({});
+          return;
+        }
+
+        if (found.node_type === 'container') {
+          setListings([]);
+          setProducts([]);
+          setCatAttrs([]);
+          setAttrFilters({});
+          return;
+        }
+
+        if (found.content_type === 'product') {
+          return getProducts({ category_id: catId, sort }).then((productResponse) => {
+            setProducts(productResponse.data || []);
+            setListings([]);
+            setCatAttrs([]);
+            setAttrFilters({});
+          });
+        }
+
+        return Promise.all([
+          getListings({ category_id: catId, sort }).then((listingResponse) => listingResponse.data || []),
+          getCategoryAttributes(catId).then((attrResponse) => attrResponse.data || []),
+        ]).then(([listingItems, attrs]) => {
+          const safeAttrs = (attrs || []).filter((attr) => attr.is_filterable);
+          const nextFilters = {};
+          safeAttrs.forEach((attr) => {
+            nextFilters[attr.slug] = '';
+          });
+          setListings(listingItems || []);
+          setProducts([]);
+          setCatAttrs(safeAttrs);
+          setAttrFilters(nextFilters);
+        });
       })
       .finally(() => setLoading(false));
   }, [catId, sort]);
 
   const childCats = useMemo(
-    () => categories.filter((c) => String(c.parent_id) === String(catId)),
+    () => categories.filter((item) => String(item.parent_id) === String(catId)),
     [categories, catId],
   );
-
-  const hasChildren = childCats.length > 0;
 
   const breadcrumb = useMemo(() => {
     if (!category || !categories.length) return [];
@@ -96,32 +212,31 @@ export default function CategoryListingsPage() {
     while (current) {
       parts.unshift(current);
       current = current.parent_id
-        ? categories.find((c) => String(c.id) === String(current.parent_id))
+        ? categories.find((item) => String(item.id) === String(current.parent_id))
         : null;
     }
     return parts;
   }, [category, categories]);
 
-  const filtered = useMemo(() => {
+  const filteredListings = useMemo(() => {
     let list = listings;
-    if (subCatFilter) list = list.filter((l) => String(l.category_id) === String(subCatFilter));
     if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter((l) => l.title.toLowerCase().includes(q));
+      const query = search.toLowerCase();
+      list = list.filter((listing) => String(listing.title || '').toLowerCase().includes(query));
     }
-    Object.entries(attrFilters).forEach(([slug, val]) => {
-      if (!val) return;
-      list = list.filter((l) => {
-        const attrs = l.attributes
-          ? (typeof l.attributes === 'string' ? JSON.parse(l.attributes) : l.attributes)
+    Object.entries(attrFilters).forEach(([slug, value]) => {
+      if (!value) return;
+      list = list.filter((listing) => {
+        const attrs = listing.attributes
+          ? (typeof listing.attributes === 'string' ? JSON.parse(listing.attributes) : listing.attributes)
           : {};
-        const attrVal = attrs[slug];
-        if (Array.isArray(attrVal)) return attrVal.some((v) => String(v).toLowerCase().includes(val.toLowerCase()));
-        return String(attrVal || '').toLowerCase().includes(val.toLowerCase());
+        const attrValue = attrs[slug];
+        if (Array.isArray(attrValue)) return attrValue.some((item) => String(item).toLowerCase().includes(value.toLowerCase()));
+        return String(attrValue || '').toLowerCase().includes(value.toLowerCase());
       });
     });
     return list;
-  }, [listings, subCatFilter, search, attrFilters]);
+  }, [attrFilters, listings, search]);
 
   if (loading) {
     return (
@@ -137,57 +252,86 @@ export default function CategoryListingsPage() {
         <Link to="/" className="font-semibold hover:text-violet-600">Ana Sayfa</Link>
         <ChevronRight size={12} />
         <Link to="/categories" className="font-semibold hover:text-violet-600">Kategoriler</Link>
-        {breadcrumb.map((bc, index) => (
-          <span key={bc.id} className="flex items-center gap-1.5">
+        {breadcrumb.map((item, index) => (
+          <span key={item.id} className="flex items-center gap-1.5">
             <ChevronRight size={12} />
             {index === breadcrumb.length - 1 ? (
-              <span className="font-bold text-gray-700">{bc.name}</span>
+              <span className="font-bold text-gray-700">{item.name}</span>
             ) : (
-              <Link to={`/categories/${buildCatSlug(bc)}`} className="font-semibold hover:text-violet-600">
-                {bc.name}
+              <Link to={`/categories/${buildCatSlug(item)}`} className="font-semibold hover:text-violet-600">
+                {item.name}
               </Link>
             )}
           </span>
         ))}
       </nav>
 
-      <div className="card overflow-hidden">
-        {category?.banner_image ? (
-          <div className="relative h-40 bg-slate-100">
-            <img src={category.banner_image} alt={category.name} className="h-full w-full object-cover object-center" />
-            <div className="absolute inset-0 flex items-center bg-gradient-to-r from-black/70 to-transparent px-8">
-              <div>
-                <h1 className="text-3xl font-extrabold text-white">{category?.name}</h1>
-                <p className="mt-1 text-sm text-white/70">
-                  {hasChildren ? `${childCats.length} alt kategori bulundu` : `${filtered.length} ilan bulundu`}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-8">
-            <h1 className="text-3xl font-extrabold text-white">{category?.name || 'Kategori'}</h1>
-            <p className="mt-1 text-sm text-white/70">
-              {hasChildren ? `${childCats.length} alt kategori bulundu` : `${filtered.length} ilan bulundu`}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {hasChildren ? (
+      {!category ? (
+        <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-400 shadow-sm">
+          Kategori bulunamadi.
+        </div>
+      ) : category.node_type === 'container' ? (
         <>
-          <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700">
-            Bu kategorinin alt kategorileri var. Devam etmek için bir alt kategori seç.
+          <div className="card overflow-hidden">
+            {category.banner_image ? (
+              <div className="relative h-40 bg-slate-100">
+                <img src={category.banner_image} alt={category.name} className="h-full w-full object-cover object-center" />
+                <div className="absolute inset-0 flex items-center bg-gradient-to-r from-black/70 to-transparent px-8">
+                  <div>
+                    <h1 className="text-3xl font-extrabold text-white">{category.name}</h1>
+                    <p className="mt-1 text-sm text-white/70">{childCats.length} alt kategori bulundu</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-8">
+                <h1 className="text-3xl font-extrabold text-white">{category.name}</h1>
+                <p className="mt-1 text-sm text-white/70">{childCats.length} alt kategori bulundu</p>
+              </div>
+            )}
           </div>
+
+          <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700">
+            Bu kategori bir klasor gorevi gorur. Devam etmek icin alt kategorilerden birini sec.
+          </div>
+
           <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
-            {childCats.map((cat) => (
-              <CategoryCard key={cat.id} cat={cat} />
+            {childCats.map((item) => (
+              <CategoryCard key={item.id} cat={item} />
             ))}
           </div>
         </>
+      ) : category.content_type === 'product' ? (
+        <ProductCategoryView
+          category={category}
+          products={products}
+          search={search}
+          setSearch={setSearch}
+          sort={sort}
+          setSort={setSort}
+        />
       ) : (
         <>
-          {catAttrs.length > 0 && (
+          <div className="card overflow-hidden">
+            {category.banner_image ? (
+              <div className="relative h-40 bg-slate-100">
+                <img src={category.banner_image} alt={category.name} className="h-full w-full object-cover object-center" />
+                <div className="absolute inset-0 flex items-center bg-gradient-to-r from-black/70 to-transparent px-8">
+                  <div>
+                    <h1 className="text-3xl font-extrabold text-white">{category.name}</h1>
+                    <p className="mt-1 text-sm text-white/70">{filteredListings.length} ilan bulundu</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-8">
+                <h1 className="text-3xl font-extrabold text-white">{category.name}</h1>
+                <p className="mt-1 text-sm text-white/70">{filteredListings.length} ilan bulundu</p>
+              </div>
+            )}
+          </div>
+
+          {catAttrs.length > 0 ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {catAttrs.map((attr) => {
                 if (attr.type === 'boolean') {
@@ -195,12 +339,12 @@ export default function CategoryListingsPage() {
                     <select
                       key={attr.slug}
                       value={attrFilters[attr.slug] || ''}
-                      onChange={(e) => setAttrFilters((f) => ({ ...f, [attr.slug]: e.target.value }))}
+                      onChange={(e) => setAttrFilters((prev) => ({ ...prev, [attr.slug]: e.target.value }))}
                       className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                     >
-                      <option value="">{attr.name}: Tümü</option>
+                      <option value="">{attr.name}: Tumu</option>
                       <option value="Evet">Evet</option>
-                      <option value="Hayır">Hayır</option>
+                      <option value="Hayir">Hayir</option>
                     </select>
                   );
                 }
@@ -209,12 +353,12 @@ export default function CategoryListingsPage() {
                     <select
                       key={attr.slug}
                       value={attrFilters[attr.slug] || ''}
-                      onChange={(e) => setAttrFilters((f) => ({ ...f, [attr.slug]: e.target.value }))}
+                      onChange={(e) => setAttrFilters((prev) => ({ ...prev, [attr.slug]: e.target.value }))}
                       className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                     >
-                      <option value="">{attr.name}: Tümü</option>
-                      {(attr.options || []).map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
+                      <option value="">{attr.name}: Tumu</option>
+                      {(attr.options || []).map((option) => (
+                        <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
                   );
@@ -222,16 +366,15 @@ export default function CategoryListingsPage() {
                 return (
                   <input
                     key={attr.slug}
-                    type="text"
                     value={attrFilters[attr.slug] || ''}
-                    onChange={(e) => setAttrFilters((f) => ({ ...f, [attr.slug]: e.target.value }))}
+                    onChange={(e) => setAttrFilters((prev) => ({ ...prev, [attr.slug]: e.target.value }))}
                     placeholder={`${attr.name} ara...`}
                     className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                   />
                 );
               })}
             </div>
-          )}
+          ) : null}
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
@@ -239,45 +382,38 @@ export default function CategoryListingsPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="İlanlarda ara..."
+                placeholder="Ilanlarda ara..."
                 className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
               />
             </div>
             <div className="flex items-center gap-2">
-              <SlidersHorizontal size={16} className="flex-shrink-0 text-gray-400" />
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
-              >
+              <SlidersHorizontal size={16} className="text-gray-400" />
+              <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
                 <option value="newest">En Yeni</option>
                 <option value="price-asc">Fiyat Artan</option>
                 <option value="price-desc">Fiyat Azalan</option>
               </select>
             </div>
-            {user && (
-              <Link
-                to="/create"
-                className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500"
-              >
-                <Plus size={15} /> İlan Ekle
+            {user ? (
+              <Link to="/create" className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500">
+                <Plus size={15} /> Ilan Ekle
               </Link>
-            )}
+            ) : null}
           </div>
 
-          {filtered.length === 0 ? (
+          {filteredListings.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
               <div className="mb-3 text-5xl">🏪</div>
-              <p className="mb-1 text-lg font-semibold">Bu kategoride henüz ilan yok.</p>
-              {user && (
+              <p className="mb-1 text-lg font-semibold">Bu kategoride henuz ilan yok.</p>
+              {user ? (
                 <Link to="/create" className="text-sm font-bold text-violet-600 hover:underline">
-                  İlk ilanı sen ekle!
+                  Ilk ilani sen ekle
                 </Link>
-              )}
+              ) : null}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8">
-              {filtered.map((listing) => (
+              {filteredListings.map((listing) => (
                 <ListingCard key={listing.id} listing={listing} dense fallbackImage={defaultListingImage} />
               ))}
             </div>

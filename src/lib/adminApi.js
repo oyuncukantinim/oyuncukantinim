@@ -122,6 +122,12 @@ export const adminGetOrders = (params = {}) =>
   adminRequest('admin_get_orders', { query: params });
 export const adminUpdateOrder = (body) =>
   adminRequest('admin_update_order', { method: 'POST', body });
+export const adminGetProductOrders = (params = {}) =>
+  adminRequest('admin_get_product_orders', { query: params });
+export const adminGetProductOrderLogs = (order_item_id) =>
+  adminRequest('admin_get_product_order_logs', { query: { order_item_id } });
+export const adminUpdateProductOrder = (body) =>
+  adminRequest('admin_update_product_order', { method: 'POST', body });
 
 // Reviews
 export const adminGetReviews = (params = {}) =>
@@ -135,6 +141,14 @@ export const adminSaveCategory = (body) =>
   adminRequest('admin_save_category', { method: 'POST', body });
 export const adminDeleteCategory = (category_id) =>
   adminRequest('admin_delete_category', { method: 'POST', body: { category_id } });
+
+// Products
+export const adminGetProducts = (params = {}) =>
+  adminRequest('admin_get_products', { query: params });
+export const adminSaveProduct = (body) =>
+  adminRequest('admin_save_product', { method: 'POST', body });
+export const adminDeleteProduct = (product_id) =>
+  adminRequest('admin_delete_product', { method: 'POST', body: { product_id } });
 
 // Category Attributes
 export const adminGetCategoryAttributes = (category_id) =>

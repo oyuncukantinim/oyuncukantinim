@@ -15,6 +15,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 const Home                = lazy(() => import('./pages/home'));
 const MarketPage          = lazy(() => import('./pages/market'));
 const ListingDetailPage   = lazy(() => import('./pages/listing-detail'));
+const ProductDetailPage   = lazy(() => import('./pages/product-detail'));
 const CartPage            = lazy(() => import('./pages/cart'));
 const LoginPage           = lazy(() => import('./pages/login'));
 const ProfilePage         = lazy(() => import('./pages/profile'));
@@ -38,6 +39,8 @@ const AdminListings      = lazy(() => import('./pages/admin/Listings'));
 const AdminOrders        = lazy(() => import('./pages/admin/Orders'));
 const AdminReviews       = lazy(() => import('./pages/admin/Reviews'));
 const AdminCategories    = lazy(() => import('./pages/admin/Categories'));
+const AdminProducts      = lazy(() => import('./pages/admin/Products'));
+const AdminProductOrders = lazy(() => import('./pages/admin/ProductOrders'));
 const AdminDoping        = lazy(() => import('./pages/admin/Doping'));
 const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'));
 const AdminMessages      = lazy(() => import('./pages/admin/Messages'));
@@ -266,6 +269,7 @@ function SiteLayout() {
             <Route path="/" element={<Home />} />
             <Route path="/market" element={<MarketPage />} />
             <Route path="/listing/:slug" element={<ListingDetailPage />} />
+            <Route path="/product/:slug" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
@@ -312,6 +316,8 @@ export default function App() {
                 <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
                 <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
                 <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+                <Route path="/admin/products" element={<AdminRoute><AdminProducts /></AdminRoute>} />
+                <Route path="/admin/product-orders" element={<AdminRoute><AdminProductOrders /></AdminRoute>} />
                 <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
                 <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
                   <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
