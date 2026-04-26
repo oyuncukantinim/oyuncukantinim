@@ -5,6 +5,7 @@ import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import ProductCard from '../components/ProductCard';
+import Breadcrumb from '../components/Breadcrumb';
 import useSiteBrand from '../hooks/useSiteBrand';
 
 function idFromCatSlug(slug) {
@@ -243,23 +244,16 @@ export default function CategoryListingsPage() {
 
   return (
     <div className="space-y-6">
-      <nav className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
-        <Link to="/" className="font-semibold hover:text-violet-600">Ana Sayfa</Link>
-        <ChevronRight size={12} />
-        <Link to="/categories" className="font-semibold hover:text-violet-600">Kategoriler</Link>
-        {breadcrumb.map((item, index) => (
-          <span key={item.id} className="flex items-center gap-1.5">
-            <ChevronRight size={12} />
-            {index === breadcrumb.length - 1 ? (
-              <span className="font-bold text-gray-700">{item.name}</span>
-            ) : (
-              <Link to={`/categories/${buildCatSlug(item)}`} className="font-semibold hover:text-violet-600">
-                {item.name}
-              </Link>
-            )}
-          </span>
-        ))}
-      </nav>
+      <Breadcrumb
+        items={[
+          { label: 'Ana Sayfa', to: '/' },
+          { label: 'Kategoriler', to: '/categories' },
+          ...breadcrumb.map((item, index) => ({
+            label: item.name,
+            to: index === breadcrumb.length - 1 ? undefined : `/categories/${buildCatSlug(item)}`,
+          })),
+        ]}
+      />
 
       {!category ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-400 shadow-sm">

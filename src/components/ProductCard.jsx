@@ -15,10 +15,11 @@ import {
 } from 'lucide-react';
 import { productSlug } from '../lib/api';
 
-// Tactical-gaming aesthetic for first-party products. Deliberately darker /
-// neon to stand apart from the lighter, friendlier user-listing cards so the
-// "this is sold by the site, official, instant delivery" trust signal is
-// visually unmistakable.
+// First-party product card. Light mode: clean white card with violet accent
+// stripe and emerald "Resmi Ürün" badge. Dark mode: deep slate tactical look.
+// Both modes preserve the visual distinction from user-listing cards via the
+// always-present accent stripe + verified badge, while respecting the global
+// theme so the page never feels visually broken when toggling.
 
 const PRODUCT_TYPE_META = {
   digital_code: { label: 'Dijital Kod', icon: Tag },
@@ -31,36 +32,36 @@ function formatPrice(value) {
   return Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function StockBar({ count, visible, deliveryType }) {
+function StockIndicator({ count, visible, deliveryType }) {
   if (!visible) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/55">
+      <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
         <Boxes size={11} /> Stok Gizli
       </span>
     );
   }
   if (deliveryType === 'manual') {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-400/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-200">
+      <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
         <Clock3 size={11} /> Manuel
       </span>
     );
   }
   const stock = Number(count || 0);
-  const filled = Math.max(0, Math.min(5, Math.ceil(stock / 20))); // 0..5 cells
-  const tone = stock > 50 ? 'cyan' : stock > 10 ? 'amber' : 'rose';
+  const filled = Math.max(0, Math.min(5, Math.ceil(stock / 20)));
+  const tone = stock > 50 ? 'emerald' : stock > 10 ? 'amber' : 'rose';
   const cellColor = {
-    cyan: 'bg-gradient-to-r from-cyan-400 to-emerald-400',
-    amber: 'bg-gradient-to-r from-amber-400 to-orange-500',
-    rose: 'bg-gradient-to-r from-rose-500 to-red-500',
+    emerald: 'bg-emerald-500',
+    amber: 'bg-amber-500',
+    rose: 'bg-rose-500',
   }[tone];
   return (
-    <span className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-black/40 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/85">
+    <span className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 dark:bg-slate-800 dark:text-slate-200">
       <span className="flex items-center gap-[2px]">
         {Array.from({ length: 5 }).map((_, i) => (
           <span
             key={i}
-            className={`h-2.5 w-1 rounded-[1px] ${i < filled ? cellColor : 'bg-white/10'}`}
+            className={`h-2.5 w-1 rounded-[1px] ${i < filled ? cellColor : 'bg-slate-300 dark:bg-slate-700'}`}
           />
         ))}
       </span>
@@ -72,13 +73,13 @@ function StockBar({ count, visible, deliveryType }) {
 function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
-      <span className="relative inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-emerald-400 to-cyan-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950 shadow-[0_0_18px_rgba(34,211,238,0.45)]">
+      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
         <Zap size={11} strokeWidth={3} /> Anında Teslim
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/40 bg-amber-400/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-amber-200">
+    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
       <Clock3 size={11} strokeWidth={3} /> {estimated || 'Manuel'}
     </span>
   );
@@ -89,7 +90,7 @@ function DiscountChip({ price, salePrice }) {
   const pct = Math.round((1 - Number(salePrice) / Number(price)) * 100);
   if (pct <= 0) return null;
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-br from-rose-500 to-red-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_4px_14px_rgba(244,63,94,0.55)]">
+    <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
       <Flame size={11} strokeWidth={3} /> -{pct}%
     </span>
   );
@@ -108,46 +109,36 @@ export default function ProductCard({ product, compact = false }) {
     return (
       <Link
         to={href}
-        className="group relative block overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-1 hover:ring-cyan-400/60 hover:shadow-[0_20px_50px_-15px_rgba(6,182,212,0.45)]"
+        className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
       >
-        {/* Animated neon edge on hover */}
-        <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            background: 'linear-gradient(120deg, transparent 30%, rgba(6,182,212,0.18) 50%, transparent 70%)',
-          }}
-        />
+        {/* Top accent stripe — always visible, signals "first-party" */}
+        <span className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-emerald-500 via-violet-500 to-cyan-500" />
 
         {/* Image */}
-        <div className="relative aspect-[5/4] w-full overflow-hidden bg-slate-950">
+        <div className="relative aspect-[5/4] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
           {product.cover_image ? (
             <img
               src={product.cover_image}
               alt={product.title}
-              className="h-full w-full object-cover opacity-90 transition-all duration-500 group-hover:scale-110 group-hover:opacity-100"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 text-slate-600">
+            <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-700">
               <Boxes size={42} />
             </div>
           )}
-          {/* Bottom-up gradient for legibility */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
 
-          {/* Top-left badges */}
-          <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+          {/* Badges */}
+          <div className="absolute left-2.5 top-3 flex flex-wrap gap-1.5">
             <InstantBadge delivery={product.delivery_type} estimated={product.estimated_delivery_text} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
-
-          {/* Top-right "Site Ürünü" stamp */}
-          <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-slate-950/85 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300 backdrop-blur">
+          <span className="absolute right-2.5 top-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-950/90 dark:text-emerald-400">
             <ShieldCheck size={10} strokeWidth={3} /> Resmi
           </span>
-
-          {/* Custom badge text */}
           {product.badge_text ? (
-            <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-violet-600/90 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-lg">
+            <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-violet-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
               <Sparkles size={10} strokeWidth={3} /> {product.badge_text}
             </span>
           ) : null}
@@ -155,38 +146,37 @@ export default function ProductCard({ product, compact = false }) {
 
         {/* Body */}
         <div className="space-y-3 p-3.5">
-          <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-cyan-300/85">
+          <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
             <TypeIcon size={11} />
             <span>{typeMeta.label}</span>
             {product.category_name ? (
               <>
-                <span className="text-white/20">•</span>
-                <span className="truncate text-white/55">{product.category_name}</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="truncate text-slate-500 dark:text-slate-400">{product.category_name}</span>
               </>
             ) : null}
           </div>
 
-          <h3 className="line-clamp-2 min-h-[2.5em] text-sm font-black leading-snug text-white transition-colors group-hover:text-cyan-300">
+          <h3 className="line-clamp-2 min-h-[2.5em] text-sm font-black leading-snug text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300">
             {product.title}
           </h3>
 
-          <StockBar
+          <StockIndicator
             count={product.available_stock_count}
             visible={Boolean(product.stock_visibility)}
             deliveryType={product.delivery_type}
           />
 
-          {/* Price + CTA */}
           <div className="flex items-end justify-between gap-2 pt-1">
             <div>
               {hasDiscount ? (
-                <div className="text-[11px] font-bold text-white/35 line-through">{formatPrice(basePrice)} ₺</div>
+                <div className="text-[11px] font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
               ) : null}
-              <div className="bg-gradient-to-r from-cyan-300 via-cyan-300 to-emerald-300 bg-clip-text text-xl font-black leading-none text-transparent">
+              <div className="text-xl font-black leading-none text-emerald-600 dark:text-emerald-400">
                 {formatPrice(currentPrice)} ₺
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-lg bg-white/5 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white/80 ring-1 ring-white/10 transition-all group-hover:bg-cyan-400 group-hover:text-slate-950 group-hover:ring-cyan-300">
+            <span className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all group-hover:bg-violet-600 dark:bg-white dark:text-slate-900 dark:group-hover:bg-violet-500 dark:group-hover:text-white">
               İncele <ArrowRight size={11} strokeWidth={3} />
             </span>
           </div>
@@ -195,110 +185,96 @@ export default function ProductCard({ product, compact = false }) {
     );
   }
 
-  // ─────────────── EXPANDED (epin/row style) ───────────────
+  // ─────────────── EXPANDED (e-pin row style) ───────────────
   return (
     <Link
       to={href}
-      className="group relative block overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-0.5 hover:ring-cyan-400/60 hover:shadow-[0_20px_50px_-15px_rgba(6,182,212,0.45)] sm:rounded-[20px]"
+      className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
     >
-      {/* Subtle scan-line pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-30 mix-blend-overlay"
-        style={{
-          backgroundImage: 'repeating-linear-gradient(180deg, rgba(255,255,255,0.04) 0 1px, transparent 1px 3px)',
-        }}
-      />
-
-      {/* Diagonal neon accent on the leading edge */}
-      <span className="pointer-events-none absolute -left-px top-0 bottom-0 w-[3px] bg-gradient-to-b from-cyan-400 via-violet-400 to-emerald-400 opacity-50 transition-opacity duration-300 group-hover:opacity-100" />
+      {/* Leading accent stripe — vertical on sm+, horizontal on mobile */}
+      <span className="absolute left-0 top-0 z-10 h-[3px] w-full bg-gradient-to-r from-emerald-500 via-violet-500 to-cyan-500 sm:h-full sm:w-[3px] sm:bg-gradient-to-b" />
 
       <div className="relative flex flex-col gap-0 sm:flex-row">
         {/* IMAGE COLUMN */}
-        <div className="relative h-44 w-full overflow-hidden bg-slate-950 sm:h-auto sm:w-[200px] sm:flex-shrink-0 lg:w-[230px]">
+        <div className="relative h-44 w-full overflow-hidden bg-slate-50 dark:bg-slate-950 sm:h-auto sm:w-[210px] sm:flex-shrink-0 lg:w-[240px]">
           {product.cover_image ? (
             <img
               src={product.cover_image}
               alt={product.title}
-              className="h-full w-full object-cover opacity-90 transition-all duration-500 group-hover:scale-105 group-hover:opacity-100"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full min-h-[170px] w-full items-center justify-center bg-gradient-to-br from-slate-800 to-slate-950 text-slate-600">
+            <div className="flex h-full min-h-[170px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
               <Boxes size={50} />
             </div>
           )}
-          {/* Edge fade into card body */}
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-12 bg-gradient-to-r from-transparent to-slate-900/90 sm:block" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900 to-transparent sm:hidden" />
 
-          {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
             <InstantBadge delivery={product.delivery_type} estimated={product.estimated_delivery_text} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md border border-emerald-400/40 bg-slate-950/85 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-300 backdrop-blur">
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-950/90 dark:text-emerald-400">
             <ShieldCheck size={10} strokeWidth={3} /> Resmi
           </span>
         </div>
 
         {/* CONTENT COLUMN */}
-        <div className="relative flex flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
+        <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
           <div>
-            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300/85">
+            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
               <TypeIcon size={12} />
               <span>{typeMeta.label}</span>
               {product.category_name ? (
                 <>
-                  <span className="text-white/25">•</span>
-                  <span className="text-white/60">{product.category_name}</span>
+                  <span className="text-slate-300 dark:text-slate-700">•</span>
+                  <span className="text-slate-500 dark:text-slate-400">{product.category_name}</span>
                 </>
               ) : null}
               {product.badge_text ? (
-                <span className="ml-1 inline-flex items-center gap-1 rounded-md bg-violet-500/20 px-2 py-0.5 text-[10px] font-black tracking-[0.14em] text-violet-200 ring-1 ring-violet-400/30">
+                <span className="ml-1 inline-flex items-center gap-1 rounded-md bg-violet-100 px-2 py-0.5 text-[10px] font-black tracking-[0.14em] text-violet-700 dark:bg-violet-500/15 dark:text-violet-200">
                   <Sparkles size={10} strokeWidth={3} /> {product.badge_text}
                 </span>
               ) : null}
             </div>
 
-            <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-white transition-colors group-hover:text-cyan-300 sm:text-xl">
+            <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300 sm:text-xl">
               {product.title}
             </h3>
 
-            <p className="mt-1.5 line-clamp-2 max-w-2xl text-xs font-semibold leading-5 text-white/55 sm:text-[13px]">
+            <p className="mt-1.5 line-clamp-2 max-w-2xl text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400 sm:text-[13px]">
               {product.short_description || product.description || 'Bu resmi ürün için detaylı açıklama yakında burada görünecek.'}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <StockBar
+            <StockIndicator
               count={product.available_stock_count}
               visible={Boolean(product.stock_visibility)}
               deliveryType={product.delivery_type}
             />
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/70">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
               <CheckCircle2 size={11} strokeWidth={3} /> Garantili
             </span>
           </div>
         </div>
 
         {/* PRICE / CTA COLUMN */}
-        <div className="relative flex flex-row items-center justify-between gap-3 border-t border-white/10 bg-gradient-to-br from-slate-950/60 via-slate-950 to-black/80 p-4 sm:flex-col sm:items-end sm:border-l sm:border-t-0 sm:p-5 lg:min-w-[200px]">
+        <div className="flex flex-row items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-col sm:items-end sm:border-l sm:border-t-0 sm:p-5 lg:min-w-[200px]">
           <div className="flex flex-col items-start sm:items-end">
             {hasDiscount ? (
-              <div className="text-xs font-bold text-white/30 line-through">{formatPrice(basePrice)} ₺</div>
+              <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
             ) : null}
-            <div className="bg-gradient-to-r from-cyan-300 to-emerald-300 bg-clip-text text-2xl font-black leading-none text-transparent sm:text-[28px]">
+            <div className="text-2xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-[28px]">
               {formatPrice(currentPrice)} ₺
             </div>
-            <div className="mt-1 hidden text-[10px] font-black uppercase tracking-[0.2em] text-white/40 sm:block">
+            <div className="mt-1 hidden text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 sm:block">
               KDV dahil
             </div>
           </div>
 
-          <span className="relative inline-flex items-center justify-center gap-1.5 overflow-hidden rounded-xl bg-gradient-to-r from-cyan-400 to-emerald-400 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_8px_25px_-8px_rgba(34,211,238,0.65)] transition-all duration-300 group-hover:translate-y-[-2px] group-hover:shadow-[0_16px_40px_-12px_rgba(34,211,238,0.85)] sm:w-full">
-            <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-            <span className="relative">Satın Al</span>
-            <ArrowRight size={13} strokeWidth={3} className="relative" />
+          <span className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-violet-700 group-hover:shadow-lg sm:w-full">
+            Satın Al <ArrowRight size={13} strokeWidth={3} />
           </span>
         </div>
       </div>

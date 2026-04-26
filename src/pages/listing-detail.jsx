@@ -12,6 +12,7 @@ import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
 import UserAvatar from '../components/UserAvatar';
+import Breadcrumb from '../components/Breadcrumb';
 
 export default function ListingDetailPage() {
   const { slug } = useParams();
@@ -184,30 +185,22 @@ export default function ListingDetailPage() {
         .ld-stagger > *:nth-child(4) { animation-delay: .2s; }
       `}</style>
 
-      {/* Breadcrumb */}
-      <div className="mb-4 flex items-center gap-2 text-xs font-semibold text-slate-400 dark:text-slate-500">
-        <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1 rounded-lg px-2 py-1 transition-colors hover:bg-slate-100 hover:text-violet-600 dark:hover:bg-slate-800 dark:hover:text-violet-300"
-        >
-          <ChevronLeft size={14} /> Geri
-        </button>
-        <span className="text-slate-300 dark:text-slate-600">/</span>
-        <Link to="/market" className="hover:text-violet-600 dark:hover:text-violet-300">Pazar</Link>
-        {listing.category_name || listing.category ? (
-          <>
-            <span className="text-slate-300 dark:text-slate-600">/</span>
-            <Link
-              to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
-              className="hover:text-violet-600 dark:hover:text-violet-300"
-            >
-              {listing.category_name || listing.category}
-            </Link>
-          </>
-        ) : null}
-        <span className="text-slate-300 dark:text-slate-600">/</span>
-        <span className="truncate text-slate-700 dark:text-slate-300">{listing.title}</span>
-      </div>
+      {/* Breadcrumb — shared component */}
+      <Breadcrumb
+        className="mb-4"
+        items={[
+          { label: 'Pazar', to: '/market' },
+          (listing.category_name || listing.category)
+            ? {
+                label: listing.category_name || listing.category,
+                to: listing.category_id
+                  ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}`
+                  : '/categories',
+              }
+            : null,
+          { label: listing.title },
+        ]}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[700px_minmax(0,1fr)]">
         {/* LEFT — Gallery + Content */}
