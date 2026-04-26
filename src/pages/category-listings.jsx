@@ -59,61 +59,61 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 sm:px-6">
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))] sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">
+              <div className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
                 Site Urunleri
               </div>
-              <h1 className="mt-3 text-2xl font-black text-slate-900 sm:text-3xl">
+              <h1 className="mt-3 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
                 {category.hero_title || category.name}
               </h1>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500">
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
                 {category.hero_subtitle || 'Bu kategoride resmi site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600">{products.length} urun</span>
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">Resmi Satis</span>
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">{products.length} urun</span>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">Resmi Satis</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Site urunlerinde ara..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-            <SlidersHorizontal size={16} className="text-slate-400" />
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
+            <SlidersHorizontal size={16} className="text-slate-400 dark:text-slate-500" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="bg-transparent text-sm font-bold text-slate-700 outline-none"
+              className="bg-transparent text-sm font-bold text-slate-700 outline-none dark:text-slate-200"
             >
-              <option value="featured" className="text-slate-900">One Cikanlar</option>
-              <option value="newest" className="text-slate-900">En Yeni</option>
-              <option value="price-asc" className="text-slate-900">Fiyat Artan</option>
-              <option value="price-desc" className="text-slate-900">Fiyat Azalan</option>
+              <option value="featured" className="text-slate-900 dark:bg-slate-900 dark:text-white">One Cikanlar</option>
+              <option value="newest" className="text-slate-900 dark:bg-slate-900 dark:text-white">En Yeni</option>
+              <option value="price-asc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Artan</option>
+              <option value="price-desc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Azalan</option>
             </select>
           </div>
         </div>
       </section>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
+        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4 text-5xl">🎮</div>
-          <p className="text-lg font-extrabold text-slate-700">Bu kategoride gosterilecek site urunu yok.</p>
-          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu alan yatay market listesi olarak dolacak.</p>
+          <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">Bu kategoride gosterilecek site urunu yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-400 dark:text-slate-500">Urunler eklendiginde bu alan yatay market listesi olarak dolacak.</p>
         </div>
       ) : (
         <div className="space-y-4">

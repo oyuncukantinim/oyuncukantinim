@@ -15,12 +15,6 @@ import {
 } from 'lucide-react';
 import { productSlug } from '../lib/api';
 
-// First-party product card. Light mode: clean white card with violet accent
-// stripe and emerald "Resmi Ürün" badge. Dark mode: deep slate tactical look.
-// Both modes preserve the visual distinction from user-listing cards via the
-// always-present accent stripe + verified badge, while respecting the global
-// theme so the page never feels visually broken when toggling.
-
 const PRODUCT_TYPE_META = {
   digital_code: { label: 'Dijital Kod', icon: Tag },
   account: { label: 'Hesap', icon: User },
@@ -74,7 +68,7 @@ function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
-        <Zap size={11} strokeWidth={3} /> Anında Teslim
+        <Zap size={11} strokeWidth={3} /> Aninda Teslim
       </span>
     );
   }
@@ -101,20 +95,17 @@ export default function ProductCard({ product, compact = false }) {
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
-  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Ürün', icon: Tag };
+  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Urun', icon: Tag };
   const TypeIcon = typeMeta.icon;
 
-  // ─────────────── COMPACT (grid tile) ───────────────
   if (compact) {
     return (
       <Link
         to={href}
         className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
       >
-        {/* Top accent stripe — always visible, signals "first-party" */}
         <span className="absolute inset-x-0 top-0 z-10 h-[3px] bg-gradient-to-r from-emerald-500 via-violet-500 to-cyan-500" />
 
-        {/* Image */}
         <div className="relative aspect-[5/4] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
           {product.cover_image ? (
             <img
@@ -129,14 +120,10 @@ export default function ProductCard({ product, compact = false }) {
             </div>
           )}
 
-          {/* Badges */}
           <div className="absolute left-2.5 top-3 flex flex-wrap gap-1.5">
             <InstantBadge delivery={product.delivery_type} estimated={product.estimated_delivery_text} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
-          <span className="absolute right-2.5 top-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-950/90 dark:text-emerald-400">
-            <ShieldCheck size={10} strokeWidth={3} /> Resmi
-          </span>
           {product.badge_text ? (
             <span className="absolute bottom-2.5 left-2.5 inline-flex items-center gap-1 rounded-md bg-violet-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
               <Sparkles size={10} strokeWidth={3} /> {product.badge_text}
@@ -144,7 +131,6 @@ export default function ProductCard({ product, compact = false }) {
           ) : null}
         </div>
 
-        {/* Body */}
         <div className="space-y-3 p-3.5">
           <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
             <TypeIcon size={11} />
@@ -177,7 +163,7 @@ export default function ProductCard({ product, compact = false }) {
               </div>
             </div>
             <span className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-all group-hover:bg-violet-600 dark:bg-white dark:text-slate-900 dark:group-hover:bg-violet-500 dark:group-hover:text-white">
-              İncele <ArrowRight size={11} strokeWidth={3} />
+              Incele <ArrowRight size={11} strokeWidth={3} />
             </span>
           </div>
         </div>
@@ -185,17 +171,14 @@ export default function ProductCard({ product, compact = false }) {
     );
   }
 
-  // ─────────────── EXPANDED (e-pin row style) ───────────────
   return (
     <Link
       to={href}
       className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
     >
-      {/* Leading accent stripe — vertical on sm+, horizontal on mobile */}
       <span className="absolute left-0 top-0 z-10 h-[3px] w-full bg-gradient-to-r from-emerald-500 via-violet-500 to-cyan-500 sm:h-full sm:w-[3px] sm:bg-gradient-to-b" />
 
       <div className="relative flex flex-col gap-0 sm:flex-row">
-        {/* IMAGE COLUMN */}
         <div className="relative h-44 w-full overflow-hidden bg-slate-50 dark:bg-slate-950 sm:h-auto sm:w-[210px] sm:flex-shrink-0 lg:w-[240px]">
           {product.cover_image ? (
             <img
@@ -214,17 +197,16 @@ export default function ProductCard({ product, compact = false }) {
             <InstantBadge delivery={product.delivery_type} estimated={product.estimated_delivery_text} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm backdrop-blur dark:bg-slate-950/90 dark:text-emerald-400">
-            <ShieldCheck size={10} strokeWidth={3} /> Resmi
-          </span>
         </div>
 
-        {/* CONTENT COLUMN */}
         <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
           <div>
             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
               <TypeIcon size={12} />
               <span>{typeMeta.label}</span>
+              <span className="ml-1 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black tracking-[0.14em] text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                <ShieldCheck size={10} strokeWidth={3} /> Resmi Urun
+              </span>
               {product.category_name ? (
                 <>
                   <span className="text-slate-300 dark:text-slate-700">•</span>
@@ -243,7 +225,7 @@ export default function ProductCard({ product, compact = false }) {
             </h3>
 
             <p className="mt-1.5 line-clamp-2 max-w-2xl text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400 sm:text-[13px]">
-              {product.short_description || product.description || 'Bu resmi ürün için detaylı açıklama yakında burada görünecek.'}
+              {product.short_description || product.description || 'Bu resmi urun icin detayli aciklama yakinda burada gorunecek.'}
             </p>
           </div>
 
@@ -259,23 +241,28 @@ export default function ProductCard({ product, compact = false }) {
           </div>
         </div>
 
-        {/* PRICE / CTA COLUMN */}
-        <div className="flex flex-row items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/60 p-4 dark:border-slate-800 dark:bg-slate-950/60 sm:flex-col sm:items-end sm:border-l sm:border-t-0 sm:p-5 lg:min-w-[200px]">
-          <div className="flex flex-col items-start sm:items-end">
-            {hasDiscount ? (
-              <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
-            ) : null}
-            <div className="text-2xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-[28px]">
-              {formatPrice(currentPrice)} ₺
+        <div className="border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:border-l sm:border-t-0 sm:p-5 lg:min-w-[220px]">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/70">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+              Fiyat
             </div>
-            <div className="mt-1 hidden text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 sm:block">
-              KDV dahil
+            <div className="mt-3 flex flex-col items-start">
+              {hasDiscount ? (
+                <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
+              ) : null}
+              <div className="text-2xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-[28px]">
+                {formatPrice(currentPrice)} ₺
+              </div>
             </div>
-          </div>
 
-          <span className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 group-hover:-translate-y-0.5 group-hover:bg-violet-700 group-hover:shadow-lg sm:w-full">
-            Satın Al <ArrowRight size={13} strokeWidth={3} />
-          </span>
+            <div className="mt-4 rounded-xl bg-white px-3 py-2 text-[11px] font-semibold leading-5 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+              Hizli teslimat ve resmi urun guvencesi ile satin al.
+            </div>
+
+            <span className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 group-hover:bg-violet-700 group-hover:shadow-lg">
+              Satin Al <ArrowRight size={13} strokeWidth={3} />
+            </span>
+          </div>
         </div>
       </div>
     </Link>
