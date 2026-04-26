@@ -22,7 +22,10 @@ const PRODUCT_TYPE_META = {
 };
 
 function formatPrice(value) {
-  return Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return Number(value || 0).toLocaleString('tr-TR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 }
 
 function StockIndicator({ visible, deliveryType }) {
@@ -33,6 +36,7 @@ function StockIndicator({ visible, deliveryType }) {
       </span>
     );
   }
+
   if (deliveryType === 'manual') {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
@@ -40,6 +44,7 @@ function StockIndicator({ visible, deliveryType }) {
       </span>
     );
   }
+
   return (
     <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
       <Boxes size={11} /> Stok Var
@@ -55,6 +60,7 @@ function InstantBadge({ delivery, estimated }) {
       </span>
     );
   }
+
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
       <Clock3 size={11} strokeWidth={3} /> {estimated || 'Manuel'}
@@ -64,8 +70,10 @@ function InstantBadge({ delivery, estimated }) {
 
 function DiscountChip({ price, salePrice }) {
   if (!salePrice || Number(salePrice) <= 0 || Number(salePrice) >= Number(price || 0)) return null;
+
   const pct = Math.round((1 - Number(salePrice) / Number(price)) * 100);
   if (pct <= 0) return null;
+
   return (
     <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
       <Flame size={11} strokeWidth={3} /> -{pct}%
@@ -130,11 +138,7 @@ export default function ProductCard({ product, compact = false }) {
             {product.title}
           </h3>
 
-          <StockIndicator
-            count={product.available_stock_count}
-            visible={Boolean(product.stock_visibility)}
-            deliveryType={product.delivery_type}
-          />
+          <StockIndicator visible={Boolean(product.stock_visibility)} deliveryType={product.delivery_type} />
 
           <div className="flex items-end justify-between gap-2 pt-1">
             <div>
@@ -161,8 +165,8 @@ export default function ProductCard({ product, compact = false }) {
     >
       <span className="absolute left-0 top-0 z-10 h-[3px] w-full bg-gradient-to-r from-emerald-500 via-violet-500 to-cyan-500 sm:h-full sm:w-[3px] sm:bg-gradient-to-b" />
 
-      <div className="relative flex flex-col gap-0 sm:flex-row">
-        <div className="relative h-44 w-full overflow-hidden bg-slate-50 dark:bg-slate-950 sm:h-auto sm:w-[210px] sm:flex-shrink-0 lg:w-[240px]">
+      <div className="relative flex flex-col sm:flex-row">
+        <div className="relative h-36 w-full overflow-hidden bg-slate-50 dark:bg-slate-950 sm:h-auto sm:w-[190px] sm:flex-shrink-0 lg:w-[210px]">
           {product.cover_image ? (
             <img
               src={product.cover_image}
@@ -171,8 +175,8 @@ export default function ProductCard({ product, compact = false }) {
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full min-h-[170px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
-              <Boxes size={50} />
+            <div className="flex h-full min-h-[150px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
+              <Boxes size={46} />
             </div>
           )}
 
@@ -182,7 +186,7 @@ export default function ProductCard({ product, compact = false }) {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col justify-between gap-3 p-4 sm:p-5">
+        <div className="flex flex-1 flex-col justify-between gap-2.5 p-3.5 sm:p-4">
           <div>
             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
               <TypeIcon size={12} />
@@ -203,30 +207,19 @@ export default function ProductCard({ product, compact = false }) {
               ) : null}
             </div>
 
-            <h3 className="mt-2 line-clamp-2 text-lg font-black leading-tight text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300 sm:text-xl">
+            <h3 className="mt-2 line-clamp-2 text-base font-black leading-tight text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300 sm:text-lg">
               {product.title}
             </h3>
-
-            <p className="mt-1.5 line-clamp-2 max-w-2xl text-xs font-semibold leading-5 text-slate-500 dark:text-slate-400 sm:text-[13px]">
-              {product.short_description || product.description || 'Bu resmi urun icin detayli aciklama yakinda burada gorunecek.'}
-            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <StockIndicator
-              count={product.available_stock_count}
-              visible={Boolean(product.stock_visibility)}
-              deliveryType={product.delivery_type}
-            />
+            <StockIndicator visible={Boolean(product.stock_visibility)} deliveryType={product.delivery_type} />
           </div>
         </div>
 
-        <div className="border-t border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 sm:border-l sm:border-t-0 sm:p-5 lg:min-w-[220px]">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/70">
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-              Fiyat
-            </div>
-            <div className="mt-3 flex flex-col items-start">
+        <div className="border-t border-slate-100 bg-white px-3.5 py-4 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[200px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:px-4 lg:min-w-[210px]">
+          <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-stretch sm:gap-3">
+            <div className="flex min-w-0 flex-col">
               {hasDiscount ? (
                 <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
               ) : null}
@@ -235,11 +228,7 @@ export default function ProductCard({ product, compact = false }) {
               </div>
             </div>
 
-            <div className="mt-4 rounded-xl bg-white px-3 py-2 text-[11px] font-semibold leading-5 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-              Hizli teslimat ve resmi urun guvencesi ile satin al.
-            </div>
-
-            <span className="mt-4 inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-3 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 group-hover:bg-violet-700 group-hover:shadow-lg">
+            <span className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 group-hover:bg-violet-700 group-hover:shadow-lg sm:w-full">
               Satin Al <ArrowRight size={13} strokeWidth={3} />
             </span>
           </div>
