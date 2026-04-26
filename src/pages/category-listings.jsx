@@ -63,20 +63,12 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
         <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))] sm:px-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="min-w-0">
-              <div className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
-                Site Urunleri
-              </div>
-              <h1 className="mt-3 text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
                 {category.hero_title || category.name}
               </h1>
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
                 {category.hero_subtitle || 'Bu kategoride resmi site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
               </p>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">{products.length} urun</span>
-              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">Resmi Satis</span>
             </div>
           </div>
         </div>
