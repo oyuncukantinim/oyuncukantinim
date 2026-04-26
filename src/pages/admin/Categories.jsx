@@ -776,7 +776,7 @@ export default function AdminCategories() {
                   <label className="block text-xs font-bold text-gray-600">Hazır Renk Teması</label>
                   <span className="text-[10px] font-semibold text-gray-400">Yalnızca hazır seçenekler</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {TYPE_COLOR_OPTIONS.map((option) => {
                     const selected = typeForm.color === option.value;
                     return (
@@ -784,14 +784,14 @@ export default function AdminCategories() {
                         key={option.value}
                         type="button"
                         onClick={() => setTypeForm(f => ({ ...f, color: option.value }))}
-                        className={`rounded-xl border p-2 text-left transition-all ${
+                        className={`rounded-lg border px-2 py-1.5 text-left transition-all ${
                           selected
                             ? 'border-violet-400 bg-violet-50 ring-2 ring-violet-200'
                             : 'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/50'
                         }`}
                       >
-                        <div className={`mb-2 h-8 rounded-lg bg-gradient-to-br ${option.value}`} />
-                        <div className="text-xs font-bold text-gray-700">{option.label}</div>
+                        <div className={`mb-1.5 h-5 rounded-md bg-gradient-to-br ${option.value}`} />
+                        <div className="text-[11px] font-bold leading-tight text-gray-700">{option.label}</div>
                       </button>
                     );
                   })}
