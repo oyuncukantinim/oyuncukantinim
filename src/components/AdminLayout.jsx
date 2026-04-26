@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
-  Gamepad2,
   Images,
   LayoutDashboard,
   LifeBuoy,
@@ -55,11 +54,10 @@ const navGroups = [
       { path: '/admin/listings', label: 'İlanlar', icon: ShoppingBag, accent: 'from-emerald-500 to-teal-500' },
       { path: '/admin/orders', label: 'Siparişler', icon: Package, accent: 'from-lime-500 to-green-500' },
       { path: '/admin/reviews', label: 'Yorumlar', icon: Star, accent: 'from-yellow-500 to-amber-500' },
-      { path: '/admin/categories', label: 'Kategoriler', icon: Tag, accent: 'from-fuchsia-500 to-pink-500' },
-      { path: '/admin/doping', label: 'Doping', icon: Zap, accent: 'from-yellow-400 to-orange-500' },
-      { path: '/admin/popular-games', label: 'Popüler Kategoriler', icon: Gamepad2, accent: 'from-indigo-500 to-violet-500' },
-      { path: '/admin/hero-slides', label: 'Ana Sayfa Slider', icon: Images, accent: 'from-violet-500 via-fuchsia-500 to-cyan-500' },
-    ],
+        { path: '/admin/categories', label: 'Kategoriler', icon: Tag, accent: 'from-fuchsia-500 to-pink-500' },
+        { path: '/admin/doping', label: 'Doping', icon: Zap, accent: 'from-yellow-400 to-orange-500' },
+        { path: '/admin/hero-slides', label: 'Ana Sayfa Slider', icon: Images, accent: 'from-violet-500 via-fuchsia-500 to-cyan-500' },
+      ],
   },
   {
     label: 'Finans',

@@ -2,10 +2,11 @@
 import { useRef } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
-  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight,
+  X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight, Gamepad2,
   Upload, Image as ImageIcon, Loader2
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
+import PopularGamesManager from '../../components/admin/PopularGamesManager';
 import {
   adminGetCategories, adminSaveCategory, adminDeleteCategory,
   adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute,
@@ -45,6 +46,7 @@ function Modal({ title, onClose, children }) {
 }
 
 export default function AdminCategories() {
+  const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
   const [expanded, setExpanded] = useState({});
   const [toast, setToast] = useState('');
@@ -286,127 +288,168 @@ export default function AdminCategories() {
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Kategori Ağacı */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Tag size={18} className="text-violet-600" />
-              <h3 className="font-extrabold text-gray-800">Kategoriler</h3>
-            </div>
-            <button onClick={() => openNewCat()} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-              <Plus size={13} /> Yeni Kategori
+      <div className="mb-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-extrabold text-gray-800">Kategori Yönetimi</h2>
+            <p className="text-sm text-gray-400">Kullanıcı ilan kategorilerini ve ana sayfadaki popüler kategori vitrinini tek alandan yönetin.</p>
+          </div>
+          <div className="inline-flex rounded-2xl bg-gray-100 p-1.5">
+            <button
+              type="button"
+              onClick={() => setActiveTab('categories')}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeTab === 'categories'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Tag size={16} />
+              Kategoriler
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('popular')}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeTab === 'popular'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Gamepad2 size={16} />
+              Popüler Kategoriler
             </button>
           </div>
-          <div>
-            {roots.length === 0
-              ? <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz kategori yok.</div>
-              : roots.map(cat => <CategoryRow key={cat.id} cat={cat} />)
-            }
-          </div>
-        </div>
-
-        {/* Özellik Editörü */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter size={18} className="text-violet-600" />
-              <h3 className="font-extrabold text-gray-800">
-                {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
-              </h3>
-            </div>
-            {attrCat && (
-              <button onClick={openNewAttr} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-                <Plus size={13} /> Özellik Ekle
-              </button>
-            )}
-          </div>
-
-          {!attrCat ? (
-            <div className="px-5 py-12 text-center text-gray-400">
-              <Filter size={32} className="mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Bir kategoriye tıklayarak <br /> özelliklerini düzenleyebilirsiniz.</p>
-            </div>
-          ) : attrs.length === 0 ? (
-            <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henüz özellik eklenmemiş.</div>
-          ) : (
-            <div className="divide-y divide-gray-50">
-              {attrs.map(attr => (
-                <div key={attr.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
-                  <GripVertical size={14} className="text-gray-300 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-800 text-sm">{attr.name}</span>
-                      <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold">
-                        {ATTR_TYPES.find(t => t.value === attr.type)?.label || attr.type}
-                      </span>
-                      {attr.is_required == 1 && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">Zorunlu</span>}
-                      {attr.is_filterable == 1 && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded font-bold">Filtreli</span>}
-                    </div>
-                    <div className="text-xs text-gray-400">{attr.slug}</div>
-                    {Array.isArray(attr.options) && attr.options.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {attr.options.slice(0,5).map(o => (
-                          <span key={o} className="text-[10px] bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded">{o}</span>
-                        ))}
-                        {attr.options.length > 5 && <span className="text-[10px] text-gray-400">+{attr.options.length - 5}</span>}
-                      </div>
-                    )}
-                    {attr.type === 'range' && attr.options && (
-                      <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} — {attr.options.max}</div>
-                    )}
-                  </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEditAttr(attr)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-                    <button onClick={() => handleDeleteAttr(attr.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* Kategori Türleri Paneli */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Tag size={18} className="text-purple-600" />
-            <div>
-              <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
-              <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
+      {activeTab === 'categories' ? (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Kategori Ağacı */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Tag size={18} className="text-violet-600" />
+                  <h3 className="font-extrabold text-gray-800">Kategoriler</h3>
+                </div>
+                <button onClick={() => openNewCat()} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                  <Plus size={13} /> Yeni Kategori
+                </button>
+              </div>
+              <div>
+                {roots.length === 0
+                  ? <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz kategori yok.</div>
+                  : roots.map(cat => <CategoryRow key={cat.id} cat={cat} />)
+                }
+              </div>
+            </div>
+
+            {/* Özellik Editörü */}
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Filter size={18} className="text-violet-600" />
+                  <h3 className="font-extrabold text-gray-800">
+                    {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
+                  </h3>
+                </div>
+                {attrCat && (
+                  <button onClick={openNewAttr} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                    <Plus size={13} /> Özellik Ekle
+                  </button>
+                )}
+              </div>
+
+              {!attrCat ? (
+                <div className="px-5 py-12 text-center text-gray-400">
+                  <Filter size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">Bir kategoriye tıklayarak <br /> özelliklerini düzenleyebilirsiniz.</p>
+                </div>
+              ) : attrs.length === 0 ? (
+                <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henüz özellik eklenmemiş.</div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {attrs.map(attr => (
+                    <div key={attr.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
+                      <GripVertical size={14} className="text-gray-300 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-gray-800 text-sm">{attr.name}</span>
+                          <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold">
+                            {ATTR_TYPES.find(t => t.value === attr.type)?.label || attr.type}
+                          </span>
+                          {attr.is_required == 1 && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">Zorunlu</span>}
+                          {attr.is_filterable == 1 && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded font-bold">Filtreli</span>}
+                        </div>
+                        <div className="text-xs text-gray-400">{attr.slug}</div>
+                        {Array.isArray(attr.options) && attr.options.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {attr.options.slice(0,5).map(o => (
+                              <span key={o} className="text-[10px] bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded">{o}</span>
+                            ))}
+                            {attr.options.length > 5 && <span className="text-[10px] text-gray-400">+{attr.options.length - 5}</span>}
+                          </div>
+                        )}
+                        {attr.type === 'range' && attr.options && (
+                          <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} — {attr.options.max}</div>
+                        )}
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => openEditAttr(attr)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
+                        <button onClick={() => handleDeleteAttr(attr.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-            <Plus size={13} /> Yeni Tür
-          </button>
-        </div>
-        {typesList.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {typesList.map(type => (
-              <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
-                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
-                  {type.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
-                    {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
-                    <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
-                  </div>
-                  <div className="text-xs text-gray-400 font-mono">{type.slug} · {type.color}</div>
-                </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-                  <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+
+          {/* Kategori Türleri Paneli */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag size={18} className="text-purple-600" />
+                <div>
+                  <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
+                  <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
                 </div>
               </div>
-            ))}
+              <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                <Plus size={13} /> Yeni Tür
+              </button>
+            </div>
+            {typesList.length === 0 ? (
+              <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {typesList.map(type => (
+                  <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
+                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
+                      {type.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
+                        {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
+                        <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
+                      </div>
+                      <div className="text-xs text-gray-400 font-mono">{type.slug} · {type.color}</div>
+                    </div>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
+                      <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <PopularGamesManager onToast={showToast} />
+      )}
 
       {/* Kategori Modal */}
       {catModal && (
