@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { getMe, setToken, setStoredUser, getStoredUser, logout as apiLogout } from '../lib/api';
+import { getMe, setStoredUser, getStoredUser, logout as apiLogout } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -8,9 +8,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (!token) { setLoading(false); return; }
-
     try {
       const res = await getMe();
       setUser(res.data);
@@ -19,7 +16,7 @@ export function AuthProvider({ children }) {
       if (err?.message && /ban/i.test(err.message)) {
         window.alert(err.message);
       }
-      apiLogout();
+      setStoredUser(null);
       setUser(null);
     } finally {
       setLoading(false);
@@ -28,14 +25,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => { refreshUser(); }, [refreshUser]);
 
-  const login = useCallback((token, userData) => {
-    setToken(token);
+  const login = useCallback((userData) => {
     setStoredUser(userData);
     setUser(userData);
   }, []);
 
   const logout = useCallback(() => {
     apiLogout();
+    setStoredUser(null);
     setUser(null);
   }, []);
 
