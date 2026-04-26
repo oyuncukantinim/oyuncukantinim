@@ -26,6 +26,8 @@ const CategoriesPage      = lazy(() => import('./pages/categories'));
 const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
 const FinancePage         = lazy(() => import('./pages/finance'));
 const StoreApplicationPage = lazy(() => import('./pages/magaza-basvuru'));
+const Error403Page        = lazy(() => import('./pages/error-403'));
+const Error404Page        = lazy(() => import('./pages/error-404'));
 
 // Admin sayfaları — lazy (ayrı chunk)
 const AdminLogin         = lazy(() => import('./pages/admin/Login'));
@@ -269,6 +271,9 @@ function SiteLayout() {
             <Route path="/p/:username" element={<SellerPage />} />
             <Route path="/finance" element={<FinancePage />} />
             <Route path="/magaza-basvuru" element={<StoreApplicationPage />} />
+            <Route path="/403" element={<Error403Page />} />
+            <Route path="/404" element={<Error404Page />} />
+            <Route path="*" element={<Error404Page />} />
           </Routes>
         </Suspense>
       </main>
