@@ -56,75 +56,48 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
     return list;
   }, [products, search]);
 
-  const featuredProducts = filtered.slice(0, 3);
-
   return (
     <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[34px] border border-cyan-400/15 bg-[linear-gradient(135deg,#050816_0%,#130b2f_48%,#07273e_100%)] shadow-[0_30px_80px_rgba(4,10,25,0.45)]">
-        <div className="pointer-events-none absolute inset-0">
-          {category.hero_image ? (
-            <img src={category.hero_image} alt={category.name} className="absolute inset-y-0 right-0 h-full w-full object-cover opacity-30 mix-blend-screen" />
-          ) : null}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.22),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(168,85,247,0.24),transparent_32%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(2,6,23,0.96),rgba(2,6,23,0.88)_46%,rgba(2,6,23,0.55)_78%,rgba(2,6,23,0.2))]" />
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
-        </div>
-
-        <div className="relative grid gap-8 px-6 py-8 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_340px] lg:px-10 lg:py-10">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.28em] text-cyan-100/80">
-              Site Urunleri
+      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 sm:px-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <div className="inline-flex rounded-full bg-violet-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-violet-700">
+                Site Urunleri
+              </div>
+              <h1 className="mt-3 text-2xl font-black text-slate-900 sm:text-3xl">
+                {category.hero_title || category.name}
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500">
+                {category.hero_subtitle || 'Bu kategoride resmi site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
+              </p>
             </div>
-            <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[1.05] text-white sm:text-5xl">
-              {category.hero_title || category.name}
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm font-semibold leading-7 text-slate-300/78 sm:text-[15px]">
-              {category.hero_subtitle || 'Bu kategori resmi urun vitrini gibi calisir. Daha buyuk gorseller, daha guclu fiyat bloklari ve gaming temali yatay urun satirlari ile kesintisiz bir market deneyimi sunar.'}
-            </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white/72">{products.length} urun</span>
-              <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-emerald-200">Resmi Satis</span>
-              <span className="rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-fuchsia-100">Gaming Market</span>
-            </div>
-          </div>
-
-          <div className="rounded-[28px] border border-white/10 bg-black/20 p-4 backdrop-blur-md">
-            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white/38">Vitrin Ozeti</div>
-            <div className="mt-4 space-y-3">
-              {featuredProducts.length > 0 ? featuredProducts.map((product, index) => (
-                <div key={product.id} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3">
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-100/45">Slot {String(index + 1).padStart(2, '0')}</div>
-                  <div className="mt-2 line-clamp-1 text-sm font-black text-white">{product.title}</div>
-                  <div className="mt-1 text-xs font-semibold text-slate-300/70">{Number(product.current_price ?? product.sale_price ?? product.price ?? 0).toFixed(2)} ₺</div>
-                </div>
-              )) : (
-                <div className="rounded-2xl border border-dashed border-white/12 bg-white/5 px-4 py-6 text-sm font-semibold text-white/58">
-                  Vitrin urunleri eklendiginde burada hizli ozet gorunecek.
-                </div>
-              )}
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-600">{products.length} urun</span>
+              <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700">Resmi Satis</span>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="rounded-[30px] border border-cyan-400/12 bg-[linear-gradient(180deg,rgba(9,12,24,0.96),rgba(12,18,32,0.98))] p-4 shadow-[0_24px_60px_rgba(3,10,25,0.3)] sm:p-5">
+      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-100/40" />
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Site urunlerinde ara..."
-              className="w-full rounded-2xl border border-white/8 bg-white/5 py-3 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-white/28 focus:border-cyan-300/40 focus:outline-none"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none"
             />
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-white/8 bg-white/5 px-3 py-2.5">
-            <SlidersHorizontal size={16} className="text-cyan-100/40" />
+          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <SlidersHorizontal size={16} className="text-slate-400" />
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="bg-transparent text-sm font-bold text-white outline-none"
+              className="bg-transparent text-sm font-bold text-slate-700 outline-none"
             >
               <option value="featured" className="text-slate-900">One Cikanlar</option>
               <option value="newest" className="text-slate-900">En Yeni</option>
@@ -136,10 +109,10 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
       </section>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[30px] border border-dashed border-cyan-300/15 bg-[linear-gradient(180deg,rgba(8,12,24,0.94),rgba(8,16,27,0.98))] px-6 py-16 text-center shadow-[0_18px_46px_rgba(2,8,20,0.28)]">
+        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
           <div className="mb-4 text-5xl">🎮</div>
-          <p className="text-lg font-extrabold text-white/88">Bu kategoride gosterilecek site urunu yok.</p>
-          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu gaming vitrin otomatik dolacak.</p>
+          <p className="text-lg font-extrabold text-slate-700">Bu kategoride gosterilecek site urunu yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-400">Urunler eklendiginde bu alan yatay market listesi olarak dolacak.</p>
         </div>
       ) : (
         <div className="space-y-4">
