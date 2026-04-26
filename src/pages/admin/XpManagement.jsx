@@ -44,33 +44,36 @@ export default function XpManagement() {
   return (
     <AdminLayout>
       {toast ? <div className="fixed right-4 top-4 z-50 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-xl">{toast}</div> : null}
-      <div className="space-y-5">
-        <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-black text-cyan-100">
+
+      <div className="space-y-4">
+        <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 px-5 py-4 text-white shadow-xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[11px] font-black text-cyan-100">
             <Gamepad2 size={14} /> XP Yönetim Alanı
           </div>
-          <h1 className="mt-3 text-2xl font-black">Seviye ve XP Kuralları</h1>
-          <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-white/65">
+          <h1 className="mt-2 text-xl font-black">Seviye ve XP Kuralları</h1>
+          <p className="mt-1.5 max-w-3xl text-xs font-semibold leading-5 text-white/65">
             Seviye üst sınırı yoktur. Sonraki seviye için gereken XP, önceki seviyeye göre belirlediğin yüzde kadar artar.
           </p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" /></div>
+          <div className="flex justify-center py-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-violet-500 border-t-transparent" />
+          </div>
         ) : (
           <>
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">Seviye 1 başlangıç XP</span>
                 <input
                   type="number"
                   min="1"
                   value={settings.base_level_xp}
                   onChange={(event) => setSettings((prev) => ({ ...prev, base_level_xp: Number(event.target.value || 100) }))}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
                 />
               </label>
-              <label className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+              <label className="rounded-xl border border-slate-100 bg-white p-3 shadow-sm">
                 <span className="text-xs font-black uppercase tracking-wide text-slate-400">Sonraki seviye artış oranı (%)</span>
                 <input
                   type="number"
@@ -78,47 +81,68 @@ export default function XpManagement() {
                   step="0.1"
                   value={settings.level_growth_percent}
                   onChange={(event) => setSettings((prev) => ({ ...prev, level_growth_percent: Number(event.target.value || 5) }))}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
+                  className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold outline-none focus:border-violet-400"
                 />
               </label>
             </div>
 
-            <div className="rounded-3xl border border-slate-100 bg-white p-4 shadow-sm">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div className="rounded-2xl border border-slate-100 bg-white p-3.5 shadow-sm">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="font-black text-slate-900">İşlem XP Değerleri</h2>
                   <p className="mt-1 text-xs font-semibold text-slate-400">Negatif XP girerek kayıp işlemlerini de yönetebilirsin.</p>
                 </div>
-                <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-50">
+                <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-3.5 py-2 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-50">
                   <Save size={15} /> {saving ? 'Kaydediliyor...' : 'Ayarları Kaydet'}
                 </button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+
+              <div className="grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {(settings.actions || []).map((action) => (
-                  <div key={action.key} className="rounded-2xl border border-slate-100 bg-slate-50/70 p-3 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
-                    <div className="mb-2 flex items-start justify-between gap-2">
+                  <div key={action.key} className="rounded-xl border border-slate-100 bg-slate-50/70 p-2.5 shadow-[0_8px_20px_rgba(15,23,42,0.04)]">
+                    <div className="mb-1.5 flex items-start justify-between gap-2">
                       <div className="min-w-0 text-sm font-black leading-5 text-slate-900">
                         <div className="flex items-center gap-2">
                           <Sparkles size={14} className="shrink-0 text-violet-500" />
                           <span className="truncate">{action.label}</span>
                         </div>
                       </div>
-                      <label className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2 py-1 text-[11px] font-black text-slate-500">
-                        <input type="checkbox" checked={Number(action.is_active) === 1} onChange={(event) => updateAction(action.key, { is_active: event.target.checked ? 1 : 0 })} />
+                      <label className="flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2 py-1 text-[10px] font-black text-slate-500">
+                        <input
+                          type="checkbox"
+                          checked={Number(action.is_active) === 1}
+                          onChange={(event) => updateAction(action.key, { is_active: event.target.checked ? 1 : 0 })}
+                        />
                         Aktif
                       </label>
                     </div>
+
                     <div className="grid grid-cols-2 gap-2">
                       <label>
                         <span className="text-[11px] font-black uppercase text-slate-400">XP</span>
-                        <input type="number" value={action.xp} onChange={(event) => updateAction(action.key, { xp: Number(event.target.value || 0) })} className="mt-1 w-full rounded-xl border border-slate-200 px-2.5 py-1.5 text-sm font-bold outline-none focus:border-violet-400" />
+                        <input
+                          type="number"
+                          value={action.xp}
+                          onChange={(event) => updateAction(action.key, { xp: Number(event.target.value || 0) })}
+                          className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm font-bold outline-none focus:border-violet-400"
+                        />
                       </label>
                       <label>
                         <span className="text-[11px] font-black uppercase text-slate-400">Günlük Maks XP</span>
-                        <input type="number" min="0" value={action.daily_limit} onChange={(event) => updateAction(action.key, { daily_limit: Number(event.target.value || 0) })} className="mt-1 w-full rounded-xl border border-slate-200 px-2.5 py-1.5 text-sm font-bold outline-none focus:border-violet-400" />
+                        <input
+                          type="number"
+                          min="0"
+                          value={action.daily_limit}
+                          onChange={(event) => updateAction(action.key, { daily_limit: Number(event.target.value || 0) })}
+                          className="mt-1 w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm font-bold outline-none focus:border-violet-400"
+                        />
                       </label>
-                      <label className="col-span-2 flex items-center gap-2 rounded-xl bg-white px-2.5 py-2 text-xs font-black text-slate-500">
-                        <input type="checkbox" checked={Number(action.once) === 1} onChange={(event) => updateAction(action.key, { once: event.target.checked ? 1 : 0 })} />
+                      <label className="col-span-2 flex items-center gap-2 rounded-lg bg-white px-2.5 py-1.5 text-xs font-black text-slate-500">
+                        <input
+                          type="checkbox"
+                          checked={Number(action.once) === 1}
+                          onChange={(event) => updateAction(action.key, { once: event.target.checked ? 1 : 0 })}
+                        />
                         Tek sefer
                       </label>
                     </div>
