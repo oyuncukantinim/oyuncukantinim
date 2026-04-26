@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Boxes,
-  CheckCircle2,
   Clock3,
   Flame,
   Package,
@@ -26,7 +25,7 @@ function formatPrice(value) {
   return Number(value || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function StockIndicator({ count, visible, deliveryType }) {
+function StockIndicator({ visible, deliveryType }) {
   if (!visible) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
@@ -41,25 +40,9 @@ function StockIndicator({ count, visible, deliveryType }) {
       </span>
     );
   }
-  const stock = Number(count || 0);
-  const filled = Math.max(0, Math.min(5, Math.ceil(stock / 20)));
-  const tone = stock > 50 ? 'emerald' : stock > 10 ? 'amber' : 'rose';
-  const cellColor = {
-    emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500',
-    rose: 'bg-rose-500',
-  }[tone];
   return (
-    <span className="inline-flex items-center gap-2 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-      <span className="flex items-center gap-[2px]">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <span
-            key={i}
-            className={`h-2.5 w-1 rounded-[1px] ${i < filled ? cellColor : 'bg-slate-300 dark:bg-slate-700'}`}
-          />
-        ))}
-      </span>
-      {stock} stok
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+      <Boxes size={11} /> Stok Var
     </span>
   );
 }
@@ -235,9 +218,6 @@ export default function ProductCard({ product, compact = false }) {
               visible={Boolean(product.stock_visibility)}
               deliveryType={product.delivery_type}
             />
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-              <CheckCircle2 size={11} strokeWidth={3} /> Garantili
-            </span>
           </div>
         </div>
 
