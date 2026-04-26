@@ -208,6 +208,10 @@ export default function ProductCard({ product, compact = false }) {
                 {product.title}
               </h3>
             </Link>
+
+            <p className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
+              {product.short_description || product.description || 'Detaylı açıklama ürün sayfasında yer alır.'}
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
