@@ -89,23 +89,21 @@ export default function CategoriesPage() {
 
   const types = useMemo(() => buildTypeList(categories), [categories]);
 
-  const roots = useMemo(() => categories.filter((c) => !c.parent_id), [categories]);
-
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
     const q = search.toLowerCase();
     return categories.filter((c) => String(c.name || '').toLowerCase().includes(q));
   }, [categories, search]);
 
-  const filteredRoots = useMemo(() => {
-    if (!activeType) return roots;
-    return roots.filter((root) => categoryBelongsToType(root, categoriesById, activeType));
-  }, [activeType, categoriesById, roots]);
-
   const filteredAll = useMemo(() => {
     if (!activeType) return [];
     return categories.filter((category) => categoryBelongsToType(category, categoriesById, activeType));
   }, [activeType, categories, categoriesById]);
+
+  const visibleCategories = useMemo(() => {
+    if (activeType) return filteredAll;
+    return categories;
+  }, [activeType, categories, filteredAll]);
 
   if (loading) {
     return (
@@ -202,15 +200,15 @@ export default function CategoriesPage() {
                 ))}
               </div>
             )
-          ) : filteredRoots.length === 0 ? (
+          ) : visibleCategories.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
               <Tag size={40} className="mx-auto mb-3 opacity-20" />
               <p className="font-semibold">Kategori bulunamadı.</p>
             </div>
           ) : (
             <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
-              {filteredRoots.map((cat) => (
-                <CategoryCard key={cat.id} cat={cat} isRoot />
+              {visibleCategories.map((cat) => (
+                <CategoryCard key={cat.id} cat={cat} isRoot={!cat.parent_id} />
               ))}
             </div>
           )}
