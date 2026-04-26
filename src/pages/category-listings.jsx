@@ -32,7 +32,7 @@ function CategoryCard({ cat }) {
         )}
 
         <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
-          {cat.node_type === 'container' ? 'Klasor' : (isProduct ? 'Site Urunu' : 'Ilan')}
+          {cat.node_type === 'container' ? 'Klasör' : (isProduct ? 'Site Ürünü' : 'İlan')}
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
@@ -67,7 +67,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
                 {category.hero_title || category.name}
               </h1>
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-                {category.hero_subtitle || 'Bu kategoride resmi site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
+                {category.hero_subtitle || 'Bu kategoride site ürünleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hızlı tarama ve net fiyat odaklı bir deneyim sunmaktır.'}
               </p>
             </div>
           </div>
@@ -81,7 +81,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Site urunlerinde ara..."
+              placeholder="Site ürünlerinde ara..."
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500"
             />
           </div>
@@ -92,7 +92,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
               onChange={(e) => setSort(e.target.value)}
               className="bg-transparent text-sm font-bold text-slate-700 outline-none dark:text-slate-200"
             >
-              <option value="featured" className="text-slate-900 dark:bg-slate-900 dark:text-white">One Cikanlar</option>
+              <option value="featured" className="text-slate-900 dark:bg-slate-900 dark:text-white">Öne Çıkanlar</option>
               <option value="newest" className="text-slate-900 dark:bg-slate-900 dark:text-white">En Yeni</option>
               <option value="price-asc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Artan</option>
               <option value="price-desc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Azalan</option>

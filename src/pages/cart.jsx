@@ -13,7 +13,7 @@ export default function CartPage() {
 
   const handleCheckout = async () => {
     if (!user) {
-      showToast('Odeme icin giris yapin.');
+      showToast('Ödeme için giriş yapın.');
       navigate('/login');
       return;
     }
@@ -35,7 +35,7 @@ export default function CartPage() {
       await createOrder(items);
       clearCart();
       await refreshUser();
-      showToast('Siparis tamamlandi.');
+      showToast('Sipariş tamamlandı.');
       navigate('/profile');
     } catch (error) {
       showToast(error.message);
@@ -53,9 +53,9 @@ export default function CartPage() {
       {cart.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="mb-4 text-6xl">Sepet</div>
-          <h2 className="mb-2 text-2xl font-bold text-gray-700">Sepetin bos</h2>
-          <p className="mb-6 text-gray-400">Pazara goz atarak sepetini doldurabilirsin.</p>
-          <button onClick={() => navigate('/market')} className="btn-primary">Alisverise Basla</button>
+          <h2 className="mb-2 text-2xl font-bold text-gray-700">Sepetin boş</h2>
+          <p className="mb-6 text-gray-400">Pazara göz atarak sepetini doldurabilirsin.</p>
+          <button onClick={() => navigate('/market')} className="btn-primary">Alışverişe Başla</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -74,34 +74,37 @@ export default function CartPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="truncate font-bold text-gray-800">{item.title}</h3>
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${item.itemType === 'product' ? 'bg-emerald-50 text-emerald-700' : 'bg-violet-50 text-violet-700'}`}>
-                      {item.itemType === 'product' ? 'Site Urunu' : 'Ilan'}
+                      {item.itemType === 'product' ? 'Site Ürünü' : 'İlan'}
                     </span>
                   </div>
-                  {item.seller ? <p className="mt-1 text-xs text-gray-400">Satici: {item.seller}</p> : null}
+                  {item.seller ? <p className="mt-1 text-xs text-gray-400">Satıcı: {item.seller}</p> : null}
 
-                  <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
-                    <button
-                      type="button"
-                      onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) - 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <Minus size={14} />
-                    </button>
-                    <span className="min-w-[24px] text-center text-sm font-extrabold text-gray-800 dark:text-slate-100">
-                      {Number(item.quantity || 1)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) + 1)}
-                      className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <Plus size={14} />
-                    </button>
-                  </div>
+                  {item.itemType === 'product' ? (
+                    <div className="mt-2 inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-1 dark:border-slate-700 dark:bg-slate-900">
+                      <button
+                        type="button"
+                        onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) - 1)}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="min-w-[24px] text-center text-sm font-extrabold text-gray-800 dark:text-slate-100">
+                        {Number(item.quantity || 1)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => updateCartQuantity(item.cartId, Number(item.quantity || 1) + 1)}
+                        disabled={Boolean(item.maxQuantity) && Number(item.quantity || 1) >= Number(item.maxQuantity)}
+                        className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  ) : null}
 
                   {item.path ? (
                     <Link to={item.path} className="mt-2 inline-flex text-xs font-bold text-violet-600 hover:underline">
-                      Urune git
+                      Ürüne git
                     </Link>
                   ) : null}
                 </div>
@@ -117,7 +120,7 @@ export default function CartPage() {
                     onClick={() => removeFromCart(item.cartId)}
                     className="mt-2 flex items-center justify-end gap-1 text-sm text-red-400 hover:text-red-600"
                   >
-                    <Trash2 size={14} /> Kaldir
+                    <Trash2 size={14} /> Kaldır
                   </button>
                 </div>
               </div>
@@ -126,15 +129,15 @@ export default function CartPage() {
 
           <div className="lg:col-span-1">
             <div className="card sticky top-20 p-6">
-              <h3 className="mb-6 text-xl font-bold text-gray-800">Siparis Ozeti</h3>
+              <h3 className="mb-6 text-xl font-bold text-gray-800">Sipariş Özeti</h3>
               <div className="mb-6 space-y-3 text-sm text-gray-500">
                 <div className="flex justify-between">
-                  <span>Urunler ({cartCount})</span>
+                  <span>Ürünler ({cartCount})</span>
                   <span className="font-bold text-gray-800">{cartTotal.toFixed(2)} ₺</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Hizmet Bedeli</span>
-                  <span className="font-bold text-neon-green">Ucretsiz</span>
+                  <span className="font-bold text-neon-green">Ücretsiz</span>
                 </div>
                 <hr className="my-4 border-gray-100" />
                 <div className="flex justify-between text-lg">
@@ -160,12 +163,12 @@ export default function CartPage() {
                   <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
                   <>
-                    <CheckCircle2 size={20} /> Odemeyi Tamamla
+                    <CheckCircle2 size={20} /> Ödemeyi Tamamla
                   </>
                 )}
               </button>
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-400">
-                <ShieldCheck size={14} /> %100 Guvenli Odeme
+                <ShieldCheck size={14} /> %100 Güvenli Ödeme
               </div>
             </div>
           </div>

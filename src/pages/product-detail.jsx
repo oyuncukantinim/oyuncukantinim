@@ -30,6 +30,13 @@ function formatPrice(value) {
   });
 }
 
+function getMaxProductQuantity(product) {
+  if (product.delivery_type !== 'automatic') return undefined;
+  const stock = Number(product.available_stock_count || 0);
+  if (!Number.isFinite(stock) || stock <= 0) return 1;
+  return stock;
+}
+
 export default function ProductDetailPage() {
   const { slug } = useParams();
   const id = idFromSlug(slug);
@@ -91,6 +98,7 @@ export default function ProductDetailPage() {
   const currentImage = images[activeImage] || product.cover_image || '';
   const typeMeta = PRODUCT_TYPE_META[product.product_type] || PRODUCT_TYPE_META.digital_code;
   const TypeIcon = typeMeta.icon;
+  const maxQuantity = getMaxProductQuantity(product);
   const lineTotal = currentPrice * quantity;
 
   const breadcrumbItems = [
@@ -114,6 +122,7 @@ export default function ProductDetailPage() {
       title: product.title,
       price: currentPrice,
       quantity,
+      maxQuantity,
       image: product.cover_image || '',
       product_id: product.id,
       seller: 'OyuncuKantinim',
@@ -184,7 +193,7 @@ export default function ProductDetailPage() {
             </h1>
 
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-              {product.short_description || 'Bu urun icin detayli aciklama asagida yer alir.'}
+              {product.short_description || 'Bu ürün için detaylı açıklama aşağıda yer alır.'}
             </p>
           </div>
 
@@ -218,8 +227,9 @@ export default function ProductDetailPage() {
                   <span className="min-w-[28px] text-center text-base font-black text-slate-900 dark:text-white">{quantity}</span>
                   <button
                     type="button"
-                    onClick={() => setQuantity((prev) => prev + 1)}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    onClick={() => setQuantity((prev) => (maxQuantity ? Math.min(prev + 1, maxQuantity) : prev + 1))}
+                    disabled={Boolean(maxQuantity) && quantity >= maxQuantity}
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                   >
                     <Plus size={16} />
                   </button>
@@ -233,7 +243,7 @@ export default function ProductDetailPage() {
                 >
                   {isUnavailable ? (
                     <>
-                      <Lock size={15} strokeWidth={3} /> Satin Alinamaz
+                      <Lock size={15} strokeWidth={3} /> Satın Alınamaz
                     </>
                   ) : (
                     <>
@@ -248,10 +258,10 @@ export default function ProductDetailPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Urun Aciklamasi</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Ürün Açıklaması</h2>
         <div className="mt-3 h-[2px] w-12 rounded-full bg-violet-600 dark:bg-violet-400" />
         <div className="mt-5 whitespace-pre-line text-sm font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-[15px]">
-          {product.description || 'Detayli aciklama yakinda burada gorunecek.'}
+          {product.description || 'Detaylı açıklama yakında burada görünecek.'}
         </div>
       </section>
     </div>
