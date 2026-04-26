@@ -1,5 +1,4 @@
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
-const PUBLIC_CACHE_PREFIX = 'api-cache:';
 const memoryCache = new Map();
 const pendingRequests = new Map();
 
@@ -20,31 +19,16 @@ function readCached(cacheKey, ttl) {
 
   const now = Date.now();
   const memoryEntry = memoryCache.get(cacheKey);
-  if (memoryEntry && now - memoryEntry.ts < ttl) return memoryEntry.data;
-
-  try {
-    const raw = sessionStorage.getItem(PUBLIC_CACHE_PREFIX + cacheKey);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!parsed || now - Number(parsed.ts || 0) >= ttl) {
-      sessionStorage.removeItem(PUBLIC_CACHE_PREFIX + cacheKey);
-      return null;
-    }
-    memoryCache.set(cacheKey, parsed);
-    return parsed.data;
-  } catch {
+  if (!memoryEntry) return null;
+  if (now - memoryEntry.ts >= ttl) {
+    memoryCache.delete(cacheKey);
     return null;
   }
+  return memoryEntry.data;
 }
 
 function writeCached(cacheKey, data) {
-  const entry = { ts: Date.now(), data };
-  memoryCache.set(cacheKey, entry);
-  try {
-    sessionStorage.setItem(PUBLIC_CACHE_PREFIX + cacheKey, JSON.stringify(entry));
-  } catch {
-    // Ignore storage quota / privacy mode failures.
-  }
+  memoryCache.set(cacheKey, { ts: Date.now(), data });
 }
 
 function invalidatePublicCache(actions = []) {
@@ -53,19 +37,6 @@ function invalidatePublicCache(actions = []) {
 
   for (const key of Array.from(memoryCache.keys())) {
     if (prefixes.some((prefix) => key.includes(prefix))) memoryCache.delete(key);
-  }
-
-  try {
-    for (let i = sessionStorage.length - 1; i >= 0; i -= 1) {
-      const storageKey = sessionStorage.key(i);
-      if (!storageKey?.startsWith(PUBLIC_CACHE_PREFIX)) continue;
-      const cacheKey = storageKey.slice(PUBLIC_CACHE_PREFIX.length);
-      if (prefixes.some((prefix) => cacheKey.includes(prefix))) {
-        sessionStorage.removeItem(storageKey);
-      }
-    }
-  } catch {
-    // Ignore storage access failures.
   }
 }
 
@@ -112,7 +83,7 @@ async function request(action, options = {}) {
     query = {},
     body,
     auth = false,
-    cache = 'default',
+    cache = 'no-store',
     ttl = 0,
     invalidateActions = [],
   } = options;
@@ -193,15 +164,15 @@ export function logout() {
 }
 
 export function getSiteSettings() {
-  return request('get_site_settings', { ttl: 2 * 60 * 1000 });
+  return request('get_site_settings', { ttl: 30 * 1000 });
 }
 
 export function getHeroSlides() {
-  return request('get_hero_slides', { ttl: 2 * 60 * 1000 });
+  return request('get_hero_slides', { ttl: 30 * 1000 });
 }
 
 export function getHeroBackgrounds() {
-  return request('get_hero_backgrounds', { ttl: 2 * 60 * 1000 });
+  return request('get_hero_backgrounds', { ttl: 30 * 1000 });
 }
 
 // --- PROFILE ---
@@ -308,17 +279,17 @@ export function getProducts(query = {}) {
 }
 
 export function getCategories() {
-  return request('get_categories_tree', { ttl: 10 * 60 * 1000 });
+  return request('get_categories_tree', { ttl: 30 * 1000 });
 }
 
 export function getPopularGames() {
-  return request('get_popular_games', { ttl: 5 * 60 * 1000 });
+  return request('get_popular_games', { ttl: 30 * 1000 });
 }
 
 export function getCategoryAttributes(categoryId) {
   return request('get_category_attributes', {
     query: { category_id: categoryId },
-    ttl: 10 * 60 * 1000,
+    ttl: 30 * 1000,
   });
 }
 

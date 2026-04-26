@@ -88,6 +88,7 @@ export default function CategoriesPage() {
   }, [categories]);
 
   const types = useMemo(() => buildTypeList(categories), [categories]);
+  const rootCategories = useMemo(() => categories.filter((category) => !category.parent_id), [categories]);
 
   const searchResults = useMemo(() => {
     if (!search.trim()) return [];
@@ -97,13 +98,13 @@ export default function CategoriesPage() {
 
   const filteredAll = useMemo(() => {
     if (!activeType) return [];
-    return categories.filter((category) => categoryBelongsToType(category, categoriesById, activeType));
-  }, [activeType, categories, categoriesById]);
+    return rootCategories.filter((category) => categoryBelongsToType(category, categoriesById, activeType));
+  }, [activeType, categoriesById, rootCategories]);
 
   const visibleCategories = useMemo(() => {
     if (activeType) return filteredAll;
-    return categories;
-  }, [activeType, categories, filteredAll]);
+    return rootCategories;
+  }, [activeType, filteredAll, rootCategories]);
 
   if (loading) {
     return (
