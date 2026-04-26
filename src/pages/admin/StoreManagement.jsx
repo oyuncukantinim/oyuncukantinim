@@ -396,7 +396,7 @@ export default function AdminStoreManagement() {
           <div className="flex flex-col gap-3 border-b border-slate-100 p-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="font-black text-slate-900">Onaylı Mağaza Başvuruları</h2>
-              <p className="mt-1 text-xs font-semibold text-slate-400">Kimlik ve selfie görselleri sadece admin token ile görüntülenir.</p>
+              <p className="mt-1 text-xs font-semibold text-slate-400">Kimlik ve selfie görselleri sadece yetkili admin isteğiyle güvenli olarak açılır.</p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <select
@@ -761,3 +761,4 @@ export default function AdminStoreManagement() {
     </AdminLayout>
   );
 }
+
