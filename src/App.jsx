@@ -9,6 +9,36 @@ import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
 
+const DEVTOOLS_LOCK_KEY = 'ok_devtools_lock_v1';
+
+function isProtectedPublicPage() {
+  if (typeof window === 'undefined') return false;
+  return !window.location.pathname.startsWith('/admin');
+}
+
+function activateDevtoolsLock() {
+  if (typeof window === 'undefined' || !isProtectedPublicPage()) return;
+  sessionStorage.setItem(DEVTOOLS_LOCK_KEY, '1');
+  window.history.replaceState({}, '', '/404');
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
+}
+
+function DevtoolsLockScreen() {
+  return (
+    <div className="fixed inset-0 z-[9999] flex min-h-screen items-center justify-center overflow-hidden bg-[#7a0000]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_42%),linear-gradient(180deg,#9f0712_0%,#650006_60%,#2a0002_100%)]" />
+      <div className="relative flex flex-col items-center justify-center px-6 text-center text-white">
+        <div className="mb-4 text-7xl font-black tracking-[0.18em] sm:text-8xl">404</div>
+        <div className="text-base font-black uppercase tracking-[0.35em] text-white/88 sm:text-lg">Erişim Engellendi</div>
+        <div className="mt-3 max-w-md text-xs font-bold uppercase tracking-[0.22em] text-white/60 sm:text-sm">
+          Geliştirici araçları algılandı
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Kullanıcı sayfaları — lazy
 const Home                = lazy(() => import('./pages/home'));
 const MarketPage          = lazy(() => import('./pages/market'));
@@ -284,6 +314,65 @@ function SiteLayout() {
 }
 
 export default function App() {
+  const [devtoolsLocked, setDevtoolsLocked] = useState(() => {
+    if (!import.meta.env.PROD || typeof window === 'undefined') return false;
+    return sessionStorage.getItem(DEVTOOLS_LOCK_KEY) === '1' && isProtectedPublicPage();
+  });
+
+  useEffect(() => {
+    if (!import.meta.env.PROD || typeof window === 'undefined') return undefined;
+    if (!isProtectedPublicPage()) return undefined;
+
+    const triggerLock = () => {
+      activateDevtoolsLock();
+      setDevtoolsLocked(true);
+    };
+
+    if (sessionStorage.getItem(DEVTOOLS_LOCK_KEY) === '1') {
+      triggerLock();
+      return undefined;
+    }
+
+    const detectDevtools = () => {
+      const widthGap = Math.abs(window.outerWidth - window.innerWidth);
+      const heightGap = Math.abs(window.outerHeight - window.innerHeight);
+      if (widthGap > 160 || heightGap > 160) {
+        triggerLock();
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      const key = event.key.toLowerCase();
+      if (
+        event.key === 'F12' ||
+        (event.ctrlKey && event.shiftKey && ['i', 'j', 'c'].includes(key)) ||
+        (event.ctrlKey && key === 'u')
+      ) {
+        event.preventDefault();
+        triggerLock();
+      }
+    };
+
+    const handleContextMenu = (event) => {
+      event.preventDefault();
+      triggerLock();
+    };
+
+    const intervalId = window.setInterval(detectDevtools, 1000);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
+
+  if (devtoolsLocked) {
+    return <DevtoolsLockScreen />;
+  }
+
   return (
     <BrowserRouter>
       <AuthProvider>
