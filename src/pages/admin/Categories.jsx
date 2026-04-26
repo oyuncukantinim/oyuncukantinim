@@ -23,6 +23,26 @@ const ATTR_TYPES = [
   { value: 'boolean',     label: 'Evet/Hayır' },
 ];
 
+const TYPE_COLOR_OPTIONS = [
+  { label: 'Mor', value: 'from-violet-500 to-purple-600' },
+  { label: 'Mavi', value: 'from-blue-500 to-cyan-600' },
+  { label: 'Yeşil', value: 'from-emerald-500 to-green-600' },
+  { label: 'Turuncu', value: 'from-orange-500 to-red-500' },
+  { label: 'Sarı', value: 'from-yellow-400 to-orange-500' },
+  { label: 'Pembe', value: 'from-pink-500 to-fuchsia-600' },
+  { label: 'Kırmızı', value: 'from-rose-500 to-red-600' },
+  { label: 'Camgöbeği', value: 'from-cyan-500 to-blue-600' },
+  { label: 'Gri', value: 'from-slate-500 to-slate-700' },
+  { label: 'Lacivert', value: 'from-indigo-500 to-blue-700' },
+];
+
+function getTypeColorMeta(value) {
+  return TYPE_COLOR_OPTIONS.find((option) => option.value === value) || {
+    label: 'Özel',
+    value: value || 'from-gray-300 to-gray-500',
+  };
+}
+
 function slugify(str) {
   return str.toLowerCase()
     .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ü/g,'u').replace(/Ş/g,'s').replace(/Ö/g,'o').replace(/Ç/g,'c')
@@ -435,7 +455,9 @@ export default function AdminCategories() {
                         {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
                         <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
                       </div>
-                      <div className="text-xs text-gray-400 font-mono">{type.slug} · {type.color}</div>
+                      <div className="text-xs text-gray-400">
+                        {type.slug} · {getTypeColorMeta(type.color).label}
+                      </div>
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
@@ -749,13 +771,35 @@ export default function AdminCategories() {
               <input value={typeForm.slug} onChange={e => setTypeForm(f => ({...f, slug: e.target.value}))} placeholder="hesap" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Gradient Rengi (Tailwind)</label>
-              <input value={typeForm.color} onChange={e => setTypeForm(f => ({...f, color: e.target.value}))} placeholder="from-violet-500 to-purple-600" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-violet-400" />
-              <div className={`mt-2 h-8 rounded-xl bg-gradient-to-br ${typeForm.color || 'from-gray-200 to-gray-300'} flex items-center justify-center text-white text-xs font-bold`}>
-                {typeForm.icon} {typeForm.name || 'Önizleme'}
+              <div>
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <label className="block text-xs font-bold text-gray-600">Hazır Renk Teması</label>
+                  <span className="text-[10px] font-semibold text-gray-400">Yalnızca hazır seçenekler</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  {TYPE_COLOR_OPTIONS.map((option) => {
+                    const selected = typeForm.color === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setTypeForm(f => ({ ...f, color: option.value }))}
+                        className={`rounded-xl border p-2 text-left transition-all ${
+                          selected
+                            ? 'border-violet-400 bg-violet-50 ring-2 ring-violet-200'
+                            : 'border-gray-200 bg-white hover:border-violet-300 hover:bg-violet-50/50'
+                        }`}
+                      >
+                        <div className={`mb-2 h-8 rounded-lg bg-gradient-to-br ${option.value}`} />
+                        <div className="text-xs font-bold text-gray-700">{option.label}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className={`mt-3 h-8 rounded-xl bg-gradient-to-br ${typeForm.color || 'from-gray-200 to-gray-300'} flex items-center justify-center text-white text-xs font-bold`}>
+                  {typeForm.icon} {typeForm.name || 'Önizleme'}
+                </div>
               </div>
-            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
