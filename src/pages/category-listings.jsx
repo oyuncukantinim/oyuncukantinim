@@ -52,38 +52,32 @@ function ProductCategoryView({ category, products }) {
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="grid gap-0 md:grid-cols-[minmax(0,1fr)_300px]">
-          <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))] sm:px-6">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-                {category.hero_title || category.name}
-              </h1>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-                {category.hero_subtitle || 'Bu kategoride site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
-              </p>
+      <section className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] shadow-sm dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))]">
+        {heroImage ? (
+          <>
+            <div
+              className="absolute inset-0"
+              style={{
+                WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.82) 68%, black 100%)',
+                maskImage: 'linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.82) 68%, black 100%)',
+              }}
+            >
+              <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
             </div>
-          </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 via-[28%] to-white/0 dark:from-slate-950 dark:via-slate-950/82 dark:via-[28%] dark:to-slate-950/0" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.18),transparent_34%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.2),transparent_28%)]" />
+        )}
 
-          <div className="relative min-h-[180px] overflow-hidden border-t border-slate-200 bg-[radial-gradient(circle_at_left,rgba(255,255,255,0.95),rgba(241,245,249,0.9)_42%,rgba(226,232,240,0.92))] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_left,rgba(30,41,59,0.92),rgba(15,23,42,0.96)_45%,rgba(2,6,23,0.98))] md:min-h-full md:border-l md:border-t-0">
-            {heroImage ? (
-              <>
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.24) 18%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.9) 78%, black 100%)',
-                    maskImage: 'linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.24) 18%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.9) 78%, black 100%)',
-                  }}
-                >
-                  <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/15 to-transparent dark:from-slate-950/80 dark:via-slate-950/18 dark:to-transparent" />
-              </>
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(135deg,#f8fafc,#eef2ff)] text-slate-300 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.2),transparent_28%),linear-gradient(135deg,#0f172a,#111827)] dark:text-slate-700">
-                <span className="text-5xl font-black tracking-[0.22em] uppercase">{category.icon || 'Urun'}</span>
-              </div>
-            )}
+        <div className="relative min-h-[220px] px-5 py-6 sm:px-6 sm:py-7">
+          <div className="min-w-0 max-w-3xl">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+              {category.hero_title || category.name}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
+              {category.hero_subtitle || 'Bu kategoride site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
+            </p>
           </div>
         </div>
       </section>

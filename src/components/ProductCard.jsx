@@ -157,12 +157,14 @@ export default function ProductCard({ product, compact = false }) {
         <Link to={href} className="h-24 w-full bg-white dark:bg-slate-900 sm:h-auto sm:w-[158px] sm:flex-shrink-0 lg:w-[176px]">
           <div className="flex h-full w-full items-center justify-start px-2 py-2 sm:px-2.5 sm:py-2.5">
             {product.cover_image ? (
-              <img
-                src={product.cover_image}
-                alt={product.title}
-                className="h-full w-full object-contain object-left transition-transform duration-500 group-hover:scale-[1.02]"
-                loading="lazy"
-              />
+              <div className="flex h-full min-h-[92px] w-full items-center justify-start overflow-hidden">
+                <img
+                  src={product.cover_image}
+                  alt={product.title}
+                  className="h-full w-full object-contain object-left transition-transform duration-500 group-hover:scale-[1.02]"
+                  loading="lazy"
+                />
+              </div>
             ) : (
               <div className="flex h-full min-h-[92px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
                 <Boxes size={34} />
