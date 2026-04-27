@@ -37,30 +37,6 @@ function getMaxProductQuantity(product) {
   return stock;
 }
 
-function StockIndicator({ visible, deliveryType }) {
-  if (!visible) {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-        <Boxes size={11} /> Stok Gizli
-      </span>
-    );
-  }
-
-  if (deliveryType === 'manual') {
-    return (
-      <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-        <Clock3 size={11} /> Manuel
-      </span>
-    );
-  }
-
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-      <Boxes size={11} /> Stok Var
-    </span>
-  );
-}
-
 function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
@@ -100,6 +76,7 @@ export default function ProductCard({ product, compact = false }) {
   const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Ürün', icon: Tag };
   const TypeIcon = typeMeta.icon;
   const maxQuantity = useMemo(() => getMaxProductQuantity(product), [product]);
+  const isOutOfStock = product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1;
 
   const handleAddToCart = () => {
     addToCart({
@@ -158,8 +135,6 @@ export default function ProductCard({ product, compact = false }) {
             {product.title}
           </h3>
 
-          <StockIndicator visible={Boolean(product.stock_visibility)} deliveryType={product.delivery_type} />
-
           <div className="flex items-end justify-between gap-2 pt-1">
             <div className="flex items-center gap-2">
               {hasDiscount ? (
@@ -213,9 +188,6 @@ export default function ProductCard({ product, compact = false }) {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <StockIndicator visible={Boolean(product.stock_visibility)} deliveryType={product.delivery_type} />
-          </div>
         </div>
 
         <div className="border-t border-slate-100 bg-white px-2.5 py-2.5 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[220px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:px-3 lg:min-w-[236px]">
@@ -255,9 +227,10 @@ export default function ProductCard({ product, compact = false }) {
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg"
+                disabled={isOutOfStock}
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
               >
-                <ShoppingCart size={12} strokeWidth={3} /> Sepete Ekle
+                <ShoppingCart size={12} strokeWidth={3} /> {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
               </button>
             </div>
           </div>
