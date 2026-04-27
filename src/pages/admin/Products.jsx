@@ -584,26 +584,26 @@ function ProductListCard({ product, onEdit, onDelete }) {
 
   return (
     <article className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
-      <div className="grid grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 md:grid-cols-[168px_minmax(0,1fr)]">
         <div className="relative bg-slate-100">
           {product.cover_image ? (
-            <img src={product.cover_image} alt={product.title} className="h-full w-full object-cover md:min-h-[220px]" />
+            <img src={product.cover_image} alt={product.title} className="h-full w-full object-cover md:min-h-[168px]" />
           ) : (
-            <div className="flex h-full min-h-[220px] items-center justify-center bg-gradient-to-br from-violet-100 to-cyan-100 text-violet-400">
-              <Package size={34} />
+            <div className="flex h-full min-h-[168px] items-center justify-center bg-gradient-to-br from-violet-100 to-cyan-100 text-violet-400">
+              <Package size={28} />
             </div>
           )}
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-            <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${meta.tone}`}>{meta.label}</span>
-            <span className="rounded-full border border-slate-200 bg-white/90 px-2.5 py-1 text-[10px] font-black text-slate-700">
+          <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${meta.tone}`}>{meta.label}</span>
+            <span className="rounded-full border border-slate-200 bg-white/90 px-2 py-0.5 text-[10px] font-black text-slate-700">
               Site Urunu
             </span>
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-col justify-between gap-4 p-5">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-400">
+        <div className="flex min-w-0 flex-col justify-between gap-3 p-4">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold text-gray-400">
               <span>{product.category_name || 'Kategori yok'}</span>
               <span>•</span>
               <span>{PRODUCT_TYPE_OPTIONS.find((item) => item.value === product.product_type)?.label || product.product_type}</span>
@@ -611,37 +611,37 @@ function ProductListCard({ product, onEdit, onDelete }) {
               <span>{DELIVERY_TYPE_OPTIONS.find((item) => item.value === product.delivery_type)?.label || product.delivery_type}</span>
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-gray-900">{product.title}</h3>
-              <p className="mt-1 text-sm font-semibold text-gray-400">/{product.product_path || productSlug(product.title, product.id)}</p>
+              <h3 className="line-clamp-1 text-lg font-extrabold text-gray-900">{product.title}</h3>
+              <p className="mt-0.5 text-xs font-semibold text-gray-400">/{product.product_path || productSlug(product.title, product.id)}</p>
             </div>
-            <p className="line-clamp-2 text-sm text-gray-500">
+            <p className="line-clamp-2 text-xs leading-5 text-gray-500">
               {product.short_description || product.description || 'Bu urun icin henuz kisa aciklama eklenmedi.'}
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 md:flex-row md:items-end md:justify-between">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold text-gray-500">
+          <div className="flex flex-col gap-2.5 border-t border-gray-100 pt-3 md:flex-row md:items-end md:justify-between">
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-gray-500">
               <span className="rounded-full bg-slate-100 px-2.5 py-1">Aktif stok: {Number(product.available_stock_count || 0)}</span>
               <span className="rounded-full bg-slate-100 px-2.5 py-1">Toplam satir: {Number(product.inventory_count || 0)}</span>
               {product.badge_text ? <span className="rounded-full bg-violet-50 px-2.5 py-1 text-violet-700">{product.badge_text}</span> : null}
             </div>
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="text-right">
-                {product.sale_price ? <div className="text-xs font-bold text-gray-300 line-through">{money(basePrice)}</div> : null}
-                <div className="text-2xl font-black text-emerald-600">{money(currentPrice)}</div>
+                {product.sale_price ? <div className="text-[11px] font-bold text-gray-300 line-through">{money(basePrice)}</div> : null}
+                <div className="text-xl font-black text-emerald-600">{money(currentPrice)}</div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => onEdit(product)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 hover:bg-violet-100"
+                  className="inline-flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11px] font-black text-violet-700 hover:bg-violet-100"
                 >
                   <Edit3 size={13} /> Duzenle
                 </button>
                 <button
                   type="button"
                   onClick={() => onDelete(product)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-600 hover:bg-red-100"
+                  className="inline-flex items-center gap-1 rounded-xl border border-red-200 bg-red-50 px-3 py-1.5 text-[11px] font-black text-red-600 hover:bg-red-100"
                 >
                   <Trash2 size={13} /> Sil
                 </button>
