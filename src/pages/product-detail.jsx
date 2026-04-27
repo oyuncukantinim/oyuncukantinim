@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
             </h1>
 
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-              {product.short_description || 'Bu ürün için detaylý açýklama aþaðýda yer alýr.'}
+              {product.short_description || 'Bu ï¿½rï¿½n iï¿½in detaylï¿½ aï¿½ï¿½klama aï¿½aï¿½ï¿½da yer alï¿½r.'}
             </p>
           </div>
 
@@ -247,7 +247,7 @@ export default function ProductDetailPage() {
                 >
                   {isUnavailable ? (
                     <>
-                      <Lock size={15} strokeWidth={3} /> Satýn Alýnamaz
+                      <Lock size={15} strokeWidth={3} /> Satï¿½n Alï¿½namaz
                     </>
                   ) : (
                     <>
@@ -262,10 +262,10 @@ export default function ProductDetailPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Ürün Açýklamasý</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">ï¿½rï¿½n Aï¿½ï¿½klamasï¿½</h2>
         <div className="mt-3 h-[2px] w-12 rounded-full bg-violet-600 dark:bg-violet-400" />
         <div className="mt-5 whitespace-pre-line text-sm font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-[15px]">
-          {product.description || 'Detaylý açýklama yakýnda burada görünecek.'}
+          {product.description || 'Detaylï¿½ aï¿½ï¿½klama yakï¿½nda burada gï¿½rï¿½necek.'}
         </div>
       </section>
     </div>
