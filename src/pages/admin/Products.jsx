@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import {
+  adminDeleteUploadedImage,
   adminDeleteProduct,
   adminGetCategories,
   adminGetProducts,
@@ -151,16 +152,22 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
   const galleryInputRef = useRef(null);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
+  const [persistedMedia, setPersistedMedia] = useState([]);
 
   useEffect(() => {
     if (!open) return;
     if (!product) {
+      setPersistedMedia([]);
       setForm({
         ...DEFAULT_FORM,
         category_id: categories[0]?.id || '',
       });
       return;
     }
+
+    const existingGallery = Array.isArray(product.gallery) ? product.gallery : [];
+    const existingCover = product.cover_image || '';
+    setPersistedMedia(Array.from(new Set([existingCover, ...existingGallery].filter(Boolean))));
 
     setForm({
       id: product.id,
@@ -175,8 +182,8 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
       price: product.price ?? '',
       sale_price: product.sale_price ?? '',
       currency: product.currency || 'TRY',
-      cover_image: product.cover_image || '',
-      gallery: Array.isArray(product.gallery) ? product.gallery : [],
+      cover_image: existingCover,
+      gallery: existingGallery,
       badge_text: product.badge_text || '',
       estimated_delivery_text: product.estimated_delivery_text || '',
       stock_visibility: Number(product.stock_visibility) === 1,
@@ -258,9 +265,13 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     setForm((prev) => ({ ...prev, cover_image: image }));
   };
 
-  const removeGalleryImage = (index) => {
+  const removeGalleryImage = async (index) => {
+    const removedImage = form.gallery[index];
+    if (!removedImage) return;
+
+    const isPersisted = persistedMedia.includes(removedImage);
+
     setForm((prev) => {
-      const removedImage = prev.gallery[index];
       const nextGallery = prev.gallery.filter((_, itemIndex) => itemIndex !== index);
       const nextCover = prev.cover_image === removedImage ? (nextGallery[0] || '') : prev.cover_image;
       return {
@@ -269,6 +280,17 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
         cover_image: nextCover,
       };
     });
+
+    if (isPersisted) {
+      showToast('Kaydettiğinde dosyadan da silinecek.');
+      return;
+    }
+
+    try {
+      await adminDeleteUploadedImage(removedImage);
+    } catch (error) {
+      showToast(error.message || 'Gorsel dosyasi silinemedi.');
+    }
   };
 
   if (!open) return null;
