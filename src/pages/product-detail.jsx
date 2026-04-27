@@ -30,6 +30,13 @@ function formatPrice(value) {
   });
 }
 
+function getDiscountPercent(price, salePrice) {
+  const base = Number(price || 0);
+  const sale = Number(salePrice || 0);
+  if (!base || !sale || sale >= base) return 0;
+  return Math.round((1 - sale / base) * 100);
+}
+
 function getMaxProductQuantity(product) {
   if (product.delivery_type !== 'automatic') return undefined;
   const stock = Number(product.available_stock_count || 0);
@@ -94,6 +101,7 @@ export default function ProductDetailPage() {
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
+  const discountPercent = getDiscountPercent(basePrice, product.sale_price);
   const isUnavailable = product.status !== 'active' || (product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1);
   const currentImage = images[activeImage] || product.cover_image || '';
   const typeMeta = PRODUCT_TYPE_META[product.product_type] || PRODUCT_TYPE_META.digital_code;
@@ -188,7 +196,7 @@ export default function ProductDetailPage() {
             </h1>
 
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-              {product.short_description || 'Bu Ã¼rÃ¼n iÃ§in detaylÄ± aÃ§Ä±klama aÅŸaÄŸÄ±da yer alÄ±r.'}
+              {product.short_description || 'Bu ürün için detaylý açýklama aþaðýda yer alýr.'}
             </p>
           </div>
 
@@ -196,16 +204,17 @@ export default function ProductDetailPage() {
             <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 {hasDiscount ? (
-                  <div className="text-sm font-bold text-slate-400 line-through dark:text-slate-500">
-                    {formatPrice(basePrice)} â‚º
+                  <div className="flex items-center gap-3 text-sm font-bold text-slate-400 dark:text-slate-500">
+                    <span className="line-through">{formatPrice(basePrice)} &#8378;</span>
+                    <span>-%{discountPercent}</span>
                   </div>
                 ) : null}
                 <div className="mt-1 text-4xl font-black leading-none text-slate-900 dark:text-white sm:text-[42px]">
-                  {formatPrice(currentPrice)} <span className="text-2xl text-emerald-600 dark:text-emerald-400">â‚º</span>
+                  {formatPrice(currentPrice)} <span className="text-2xl text-emerald-600 dark:text-emerald-400">&#8378;</span>
                 </div>
                 {quantity > 1 ? (
                   <div className="mt-2 text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                    Toplam: {formatPrice(lineTotal)} â‚º
+                    Toplam: {formatPrice(lineTotal)} &#8378;
                   </div>
                 ) : null}
               </div>
@@ -238,7 +247,7 @@ export default function ProductDetailPage() {
                 >
                   {isUnavailable ? (
                     <>
-                      <Lock size={15} strokeWidth={3} /> SatÄ±n AlÄ±namaz
+                      <Lock size={15} strokeWidth={3} /> Satýn Alýnamaz
                     </>
                   ) : (
                     <>
@@ -253,10 +262,10 @@ export default function ProductDetailPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">ÃœrÃ¼n AÃ§Ä±klamasÄ±</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Ürün Açýklamasý</h2>
         <div className="mt-3 h-[2px] w-12 rounded-full bg-violet-600 dark:bg-violet-400" />
         <div className="mt-5 whitespace-pre-line text-sm font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-[15px]">
-          {product.description || 'DetaylÄ± aÃ§Ä±klama yakÄ±nda burada gÃ¶rÃ¼necek.'}
+          {product.description || 'Detaylý açýklama yakýnda burada görünecek.'}
         </div>
       </section>
     </div>

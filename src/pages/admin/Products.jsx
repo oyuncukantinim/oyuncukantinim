@@ -7,9 +7,7 @@ import {
   Package,
   Plus,
   Search,
-  ShieldCheck,
   Trash2,
-  Upload,
   X,
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
@@ -196,11 +194,6 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     });
   }, [open, product, categories]);
 
-  const selectedCategory = useMemo(
-    () => categories.find((item) => String(item.id) === String(form.category_id)) || null,
-    [categories, form.category_id],
-  );
-  const previewCover = form.cover_image || form.gallery[0] || '';
   const remainingGallerySlots = Math.max(0, 5 - form.gallery.length);
 
   const addInventoryRow = () => {
@@ -485,7 +478,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-3">
             <div className="rounded-2xl border border-gray-100 p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -508,11 +501,12 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                   <ImageIcon size={26} />
                 </div>
               ) : (
-                <div className="grid grid-cols-5 gap-2">
+                <div className="overflow-x-auto pb-1">
+                  <div className="flex min-w-max gap-2">
                   {form.gallery.map((image, index) => (
                     <div
                       key={`${image}-${index}`}
-                      className={`group relative overflow-hidden rounded-xl border bg-slate-50 ${
+                      className={`group relative w-24 shrink-0 overflow-hidden rounded-xl border bg-slate-50 ${
                         form.cover_image === image ? 'border-violet-400 ring-2 ring-violet-200' : 'border-gray-200'
                       }`}
                     >
@@ -534,55 +528,11 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                       </button>
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
               <div className="text-[11px] font-semibold text-gray-400">
                 {form.gallery.length}/5 gorsel • Kapak, secili galeriden belirlenir.
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-gray-100 bg-slate-950 p-4 text-white shadow-xl">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-black uppercase tracking-[0.24em] text-white/45">Canli Onizleme</p>
-                  <h3 className="mt-1 font-extrabold">{form.title || 'Urun Basligi'}</h3>
-                </div>
-                <span className={`rounded-full border px-2.5 py-1 text-[10px] font-black ${statusMeta(form.status).tone}`}>
-                  {statusMeta(form.status).label}
-                </span>
-              </div>
-              <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                {previewCover ? (
-                  <img src={previewCover} alt="" className="aspect-[4/3] w-full object-cover" />
-                ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-cyan-500/20 text-white/35">
-                    <Package size={34} />
-                  </div>
-                )}
-                <div className="space-y-3 p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-black text-white/80">{selectedCategory?.name || 'Kategori'}</span>
-                    <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-black text-emerald-300">
-                      {DELIVERY_TYPE_OPTIONS.find((item) => item.value === form.delivery_type)?.label || 'Teslimat'}
-                    </span>
-                    {form.badge_text ? <span className="rounded-full bg-violet-500/20 px-2.5 py-1 text-[10px] font-black text-violet-200">{form.badge_text}</span> : null}
-                  </div>
-                  <p className="text-sm font-semibold text-white/75">{form.short_description || 'Kisa aciklama burada gorunur.'}</p>
-                  <div className="flex items-end justify-between gap-3">
-                    <div>
-                      {form.sale_price ? <p className="text-xs font-bold text-white/35 line-through">{money(form.price)}</p> : null}
-                      <p className="text-2xl font-black text-emerald-300">{money(form.sale_price || form.price)}</p>
-                    </div>
-                    <div className="text-right text-[11px] font-semibold text-white/55">
-                      <div>{form.delivery_type === 'automatic' ? 'Aninda teslim' : (form.estimated_delivery_text || 'Manuel teslim')}</div>
-                      <div>{form.stock_visibility ? `${form.inventory_entries.filter((item) => item.is_active && !item.is_sold).length} aktif stok` : 'Stok gizli'}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-white/45">
-                <span>{productSlug(form.title || 'urun', form.id || 0)}</span>
-                <span className="inline-flex items-center gap-1"><ShieldCheck size={12} /> Site Urunu</span>
               </div>
             </div>
           </div>
