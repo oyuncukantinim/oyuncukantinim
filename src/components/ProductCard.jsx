@@ -79,7 +79,6 @@ function InstantBadge({ delivery, estimated }) {
 
 function DiscountChip({ price, salePrice }) {
   if (!salePrice || Number(salePrice) <= 0 || Number(salePrice) >= Number(price || 0)) return null;
-
   const pct = Math.round((1 - Number(salePrice) / Number(price)) * 100);
   if (pct <= 0) return null;
 
@@ -179,8 +178,8 @@ export default function ProductCard({ product, compact = false }) {
   return (
     <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]">
       <div className="relative flex flex-col sm:flex-row">
-        <Link to={href} className="h-36 w-full bg-white dark:bg-slate-900 sm:h-auto sm:w-[210px] sm:flex-shrink-0 lg:w-[230px]">
-          <div className="flex h-full w-full items-center justify-start px-3 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4">
+        <Link to={href} className="h-28 w-full bg-white dark:bg-slate-900 sm:h-auto sm:w-[170px] sm:flex-shrink-0 lg:w-[188px]">
+          <div className="flex h-full w-full items-center justify-start px-2.5 py-2.5 sm:px-3 sm:py-3">
             {product.cover_image ? (
               <img
                 src={product.cover_image}
@@ -189,27 +188,27 @@ export default function ProductCard({ product, compact = false }) {
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-full min-h-[140px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
-                <Boxes size={46} />
+              <div className="flex h-full min-h-[104px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
+                <Boxes size={38} />
               </div>
             )}
           </div>
         </Link>
 
-        <div className="flex flex-1 flex-col justify-between gap-2.5 p-3.5 sm:p-4">
+        <div className="flex flex-1 flex-col justify-between gap-2 p-3 sm:p-3.5">
           <div>
             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
-              <TypeIcon size={12} />
+              <TypeIcon size={11} />
               <span>{typeMeta.label}</span>
             </div>
 
             <Link to={href}>
-              <h3 className="mt-2 line-clamp-2 text-base font-black leading-tight text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-lg">
+              <h3 className="mt-1.5 line-clamp-2 text-[15px] font-black leading-tight text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-base">
                 {product.title}
               </h3>
             </Link>
 
-            <p className="mt-2 line-clamp-2 text-sm font-medium leading-6 text-slate-500 dark:text-slate-400">
+            <p className="mt-1.5 line-clamp-2 text-[13px] font-medium leading-5 text-slate-500 dark:text-slate-400">
               {product.short_description || product.description || 'Detaylı açıklama ürün sayfasında yer alır.'}
             </p>
           </div>
@@ -219,14 +218,14 @@ export default function ProductCard({ product, compact = false }) {
           </div>
         </div>
 
-        <div className="border-t border-slate-100 bg-white px-3.5 py-4 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[270px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:px-4 lg:min-w-[290px]">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
+        <div className="border-t border-slate-100 bg-white px-3 py-3 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[232px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:px-3.5 lg:min-w-[248px]">
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 {hasDiscount ? (
-                  <div className="text-sm font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
+                  <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
                 ) : null}
-                <div className="text-2xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-[28px]">
+                <div className="text-xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-[22px]">
                   {formatPrice(currentPrice)} ₺
                 </div>
               </div>
@@ -234,31 +233,31 @@ export default function ProductCard({ product, compact = false }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 dark:border-slate-700 dark:bg-slate-950/70">
+              <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1.5 dark:border-slate-700 dark:bg-slate-950/70">
                 <button
                   type="button"
                   onClick={decrement}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  <Minus size={14} />
+                  <Minus size={13} />
                 </button>
-                <span className="min-w-[24px] text-center text-sm font-extrabold text-slate-900 dark:text-white">{quantity}</span>
+                <span className="min-w-[22px] text-center text-sm font-extrabold text-slate-900 dark:text-white">{quantity}</span>
                 <button
                   type="button"
                   onClick={increment}
                   disabled={Boolean(maxQuantity) && quantity >= maxQuantity}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                 >
-                  <Plus size={14} />
+                  <Plus size={13} />
                 </button>
               </div>
 
               <button
                 type="button"
                 onClick={handleAddToCart}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-4 py-2.5 text-xs font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg"
+                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg"
               >
-                <ShoppingCart size={14} strokeWidth={3} /> Sepete Ekle
+                <ShoppingCart size={13} strokeWidth={3} /> Sepete Ekle
               </button>
             </div>
           </div>
