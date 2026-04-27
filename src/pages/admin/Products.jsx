@@ -66,18 +66,18 @@ const DEFAULT_FORM = {
 function slugify(value) {
   return String(value || '')
     .toLowerCase()
-    .replace(/ı/g, 'i')
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c')
+    .replace(/\u0131/g, 'i')
+    .replace(/\u011f/g, 'g')
+    .replace(/\u00fc/g, 'u')
+    .replace(/\u015f/g, 's')
+    .replace(/\u00f6/g, 'o')
+    .replace(/\u00e7/g, 'c')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
 
 function money(value) {
-  return `${Number(value || 0).toFixed(2)} ₺`;
+  return `${Number(value || 0).toFixed(2)} \u20BA`;
 }
 
 function inventoryPayloadToText(entry) {
@@ -282,7 +282,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     });
 
     if (isPersisted) {
-      showToast('Kaydettiğinde dosyadan da silinecek.');
+      showToast('Kaydetti\u011finde dosyadan da silinecek.');
       return;
     }
 
@@ -554,7 +554,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                 </div>
               )}
               <div className="text-[11px] font-semibold text-gray-400">
-                {form.gallery.length}/5 gorsel • Kapak, secili galeriden belirlenir.
+                {form.gallery.length}/5 g\u00f6rsel {'\u2022'} Kapak, se\u00e7ili galeriden belirlenir.
               </div>
             </div>
           </div>
@@ -600,9 +600,9 @@ function ProductListCard({ product, onEdit, onDelete }) {
             <div className="min-w-0 space-y-1.5">
               <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-gray-400">
                 <span>{product.category_name || 'Kategori yok'}</span>
-                <span>�</span>
+                <span>{'\u2022'}</span>
                 <span>{PRODUCT_TYPE_OPTIONS.find((item) => item.value === product.product_type)?.label || product.product_type}</span>
-                <span>�</span>
+                <span>{'\u2022'}</span>
                 <span>{DELIVERY_TYPE_OPTIONS.find((item) => item.value === product.delivery_type)?.label || product.delivery_type}</span>
               </div>
               <div>
@@ -815,7 +815,7 @@ export default function AdminProducts() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-gray-400">
             <span>{total} urun</span>
-            <span>•</span>
+            <span>{'\u2022'}</span>
             <span>{productCategories.length} site urunu kategorisi</span>
           </div>
         </div>
