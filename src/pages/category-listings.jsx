@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { ChevronRight, Plus, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -47,16 +47,7 @@ function CategoryCard({ cat }) {
   );
 }
 
-function ProductCategoryView({ category, products, search, setSearch, sort, setSort }) {
-  const filtered = useMemo(() => {
-    let list = products;
-    if (search.trim()) {
-      const query = search.toLowerCase();
-      list = list.filter((product) => String(product.title || '').toLowerCase().includes(query));
-    }
-    return list;
-  }, [products, search]);
-
+function ProductCategoryView({ category, products, sort, setSort }) {
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -75,16 +66,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
       </section>
 
       <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Site ürünlerinde ara..."
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm font-semibold text-slate-700 placeholder:text-slate-400 focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500"
-            />
-          </div>
+        <div className="flex justify-end">
           <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
             <SlidersHorizontal size={16} className="text-slate-400 dark:text-slate-500" />
             <select
@@ -101,7 +83,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
         </div>
       </section>
 
-      {filtered.length === 0 ? (
+      {products.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4 text-5xl">🎮</div>
           <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">Bu kategoride gosterilecek site urunu yok.</p>
@@ -109,7 +91,7 @@ function ProductCategoryView({ category, products, search, setSearch, sort, setS
         </div>
       ) : (
         <div className="space-y-4">
-          {filtered.map((product) => (
+          {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -286,8 +268,6 @@ export default function CategoryListingsPage() {
         <ProductCategoryView
           category={category}
           products={products}
-          search={search}
-          setSearch={setSearch}
           sort={sort}
           setSort={setSort}
         />

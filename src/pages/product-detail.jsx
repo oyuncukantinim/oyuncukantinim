@@ -176,11 +176,6 @@ export default function ProductDetailPage() {
               <span className="inline-flex items-center gap-1.5 rounded-md bg-violet-50 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-violet-700 dark:bg-violet-500/10 dark:text-violet-300">
                 <TypeIcon size={12} strokeWidth={3} /> {typeMeta.label}
               </span>
-              {product.category_name ? (
-                <span className="inline-flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                  <Tag size={12} strokeWidth={3} /> {product.category_name}
-                </span>
-              ) : null}
               {product.badge_text ? (
                 <span className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.18em] text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                   <Sparkles size={12} strokeWidth={3} /> {product.badge_text}
