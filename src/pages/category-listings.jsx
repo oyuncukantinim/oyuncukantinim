@@ -65,11 +65,19 @@ function ProductCategoryView({ category, products }) {
             </div>
           </div>
 
-          <div className="relative min-h-[180px] overflow-hidden border-t border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-950 md:min-h-full md:border-l md:border-t-0">
+          <div className="relative min-h-[180px] overflow-hidden border-t border-slate-200 bg-[radial-gradient(circle_at_left,rgba(255,255,255,0.95),rgba(241,245,249,0.9)_42%,rgba(226,232,240,0.92))] dark:border-slate-800 dark:bg-[radial-gradient(circle_at_left,rgba(30,41,59,0.92),rgba(15,23,42,0.96)_45%,rgba(2,6,23,0.98))] md:min-h-full md:border-l md:border-t-0">
             {heroImage ? (
               <>
-                <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
-                <div className="absolute inset-0 bg-gradient-to-l from-black/15 via-black/5 to-transparent dark:from-black/35 dark:via-black/10 dark:to-transparent" />
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.28) 24%, rgba(0,0,0,0.72) 58%, black 100%)',
+                    maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.28) 24%, rgba(0,0,0,0.72) 58%, black 100%)',
+                  }}
+                >
+                  <img src={heroImage} alt={category.name} className="h-full w-full object-contain object-center p-4 md:p-5" />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/8 via-transparent to-black/[0.08] dark:from-slate-950/5 dark:via-transparent dark:to-black/[0.18]" />
               </>
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(135deg,#f8fafc,#eef2ff)] text-slate-300 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.2),transparent_28%),linear-gradient(135deg,#0f172a,#111827)] dark:text-slate-700">
