@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, Plus, SlidersHorizontal } from 'lucide-react';
+import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -32,7 +32,7 @@ function CategoryCard({ cat }) {
         )}
 
         <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
-          {cat.node_type === 'container' ? 'Klasör' : (isProduct ? 'Site Ürünü' : 'İlan')}
+          {cat.node_type === 'container' ? 'Klasor' : (isProduct ? 'Site Urunu' : 'Ilan')}
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
@@ -47,45 +47,25 @@ function CategoryCard({ cat }) {
   );
 }
 
-function ProductCategoryView({ category, products, sort, setSort }) {
+function ProductCategoryView({ category, products }) {
   return (
     <div className="space-y-6">
       <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="border-b border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] px-5 py-5 dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))] sm:px-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-                {category.hero_title || category.name}
-              </h1>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-                {category.hero_subtitle || 'Bu kategoride site ürünleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hızlı tarama ve net fiyat odaklı bir deneyim sunmaktır.'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="flex justify-end">
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-950">
-            <SlidersHorizontal size={16} className="text-slate-400 dark:text-slate-500" />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="bg-transparent text-sm font-bold text-slate-700 outline-none dark:text-slate-200"
-            >
-              <option value="featured" className="text-slate-900 dark:bg-slate-900 dark:text-white">Öne Çıkanlar</option>
-              <option value="newest" className="text-slate-900 dark:bg-slate-900 dark:text-white">En Yeni</option>
-              <option value="price-asc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Artan</option>
-              <option value="price-desc" className="text-slate-900 dark:bg-slate-900 dark:text-white">Fiyat Azalan</option>
-            </select>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+              {category.hero_title || category.name}
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
+              {category.hero_subtitle || 'Bu kategoride site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
+            </p>
           </div>
         </div>
       </section>
 
       {products.length === 0 ? (
         <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="mb-4 text-5xl">🎮</div>
+          <div className="mb-4 text-5xl">Urun</div>
           <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">Bu kategoride gosterilecek site urunu yok.</p>
           <p className="mt-2 text-sm font-semibold text-slate-400 dark:text-slate-500">Urunler eklendiginde bu alan yatay market listesi olarak dolacak.</p>
         </div>
@@ -120,6 +100,7 @@ export default function CategoryListingsPage() {
     if (!catId) return;
     setLoading(true);
     setSearch('');
+
     getCategories()
       .then((response) => {
         const safeCategories = response.data || [];
@@ -265,12 +246,7 @@ export default function CategoryListingsPage() {
           </div>
         </>
       ) : category.content_type === 'product' ? (
-        <ProductCategoryView
-          category={category}
-          products={products}
-          sort={sort}
-          setSort={setSort}
-        />
+        <ProductCategoryView category={category} products={products} />
       ) : (
         <>
           <div className="card overflow-hidden">
@@ -364,7 +340,7 @@ export default function CategoryListingsPage() {
 
           {filteredListings.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
-              <div className="mb-3 text-5xl">🏪</div>
+              <div className="mb-3 text-5xl">Dukkan</div>
               <p className="mb-1 text-lg font-semibold">Bu kategoride henuz ilan yok.</p>
               {user ? (
                 <Link to="/create" className="text-sm font-bold text-violet-600 hover:underline">
