@@ -88,10 +88,6 @@ function inventoryPayloadToText(entry) {
     .join('\n');
 }
 
-function statusMeta(status) {
-  return PRODUCT_STATUS_OPTIONS.find((option) => option.value === status) || PRODUCT_STATUS_OPTIONS[0];
-}
-
 function InventoryRowEditor({ row, onChange, onRemove }) {
   return (
     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3 space-y-3">
@@ -309,7 +305,64 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-5">
+          <div className="rounded-2xl border border-gray-100 p-3 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="font-extrabold text-gray-800">Galeri</h3>
+                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">En fazla 5 gorsel ekleyebilir, kapagi bunlardan secebilirsin.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => galleryInputRef.current?.click()}
+                disabled={uploadingGallery || remainingGallerySlots <= 0}
+                className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[11px] font-black text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {uploadingGallery ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+                Gorsel Ekle
+              </button>
+            </div>
+            <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadGallery(e.target.files)} />
+            {form.gallery.length === 0 ? (
+              <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 text-gray-300">
+                <ImageIcon size={26} />
+              </div>
+            ) : (
+              <div className="overflow-x-auto pb-1">
+                <div className="flex min-w-max gap-2">
+                  {form.gallery.map((image, index) => (
+                    <div
+                      key={`${image}-${index}`}
+                      className={`group relative w-24 shrink-0 overflow-hidden rounded-xl border bg-slate-50 ${
+                        form.cover_image === image ? 'border-violet-400 ring-2 ring-violet-200' : 'border-gray-200'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setGalleryImageAsCover(image)}
+                        className="block w-full"
+                        title="Kapak olarak sec"
+                      >
+                        <img src={image} alt="" className="aspect-square w-full object-cover" />
+                      </button>
+                      <span className={`absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-black ${
+                        form.cover_image === image ? 'bg-violet-600 text-white' : 'bg-black/65 text-white'
+                      }`}>
+                        {form.cover_image === image ? 'Kapak' : 'Sec'}
+                      </span>
+                      <button type="button" onClick={() => removeGalleryImage(index)} className="absolute right-1.5 top-1.5 rounded-lg bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="text-[11px] font-semibold text-gray-400">
+              {form.gallery.length}/5 g\u00f6rsel {'\u2022'} Kapak, se\u00e7ili galeriden belirlenir.
+            </div>
+          </div>
+
           <div className="space-y-5">
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-[96px_minmax(0,1fr)]">
@@ -499,65 +552,6 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
               )}
             </div>
           </div>
-
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-gray-100 p-3 space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-extrabold text-gray-800">Galeri</h3>
-                  <p className="mt-0.5 text-[11px] font-semibold text-gray-400">En fazla 5 gorsel ekleyebilir, kapagi bunlardan secebilirsin.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => galleryInputRef.current?.click()}
-                  disabled={uploadingGallery || remainingGallerySlots <= 0}
-                  className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[11px] font-black text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {uploadingGallery ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-                  Gorsel Ekle
-                </button>
-              </div>
-              <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadGallery(e.target.files)} />
-              {form.gallery.length === 0 ? (
-                <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 text-gray-300">
-                  <ImageIcon size={26} />
-                </div>
-              ) : (
-                <div className="overflow-x-auto pb-1">
-                  <div className="flex min-w-max gap-2">
-                  {form.gallery.map((image, index) => (
-                    <div
-                      key={`${image}-${index}`}
-                      className={`group relative w-24 shrink-0 overflow-hidden rounded-xl border bg-slate-50 ${
-                        form.cover_image === image ? 'border-violet-400 ring-2 ring-violet-200' : 'border-gray-200'
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setGalleryImageAsCover(image)}
-                        className="block w-full"
-                        title="Kapak olarak sec"
-                      >
-                        <img src={image} alt="" className="aspect-square w-full object-cover" />
-                      </button>
-                      <span className={`absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-black ${
-                        form.cover_image === image ? 'bg-violet-600 text-white' : 'bg-black/65 text-white'
-                      }`}>
-                        {form.cover_image === image ? 'Kapak' : 'Sec'}
-                      </span>
-                      <button type="button" onClick={() => removeGalleryImage(index)} className="absolute right-1.5 top-1.5 rounded-lg bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ))}
-                  </div>
-                </div>
-              )}
-              <div className="text-[11px] font-semibold text-gray-400">
-                {form.gallery.length}/5 g\u00f6rsel {'\u2022'} Kapak, se\u00e7ili galeriden belirlenir.
-              </div>
-            </div>
-          </div>
         </div>
 
         <div className="mt-6 flex flex-col-reverse gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-end">
@@ -575,7 +569,6 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
 }
 
 function ProductListCard({ product, onEdit, onDelete }) {
-  const meta = statusMeta(product.status);
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
 
@@ -590,9 +583,6 @@ function ProductListCard({ product, onEdit, onDelete }) {
               <Package size={22} />
             </div>
           )}
-          <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
-            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black ${meta.tone}`}>{meta.label}</span>
-          </div>
         </div>
 
         <div className="flex min-w-0 flex-col gap-2 p-3">
@@ -762,26 +752,8 @@ export default function AdminProducts() {
       ) : null}
 
       <div className="space-y-5">
-        <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Site Urunleri</h1>
-              <p className="mt-1 text-sm font-semibold text-gray-400">
-                Resmi urun, hesap, item ve manuel teslim urunlerini tek panelden yonetin.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={openCreate}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-violet-200 transition-colors hover:bg-violet-500"
-            >
-              <Plus size={16} /> Yeni Site Urunu
-            </button>
-          </div>
-        </div>
-
         <div className="rounded-3xl border border-gray-100 bg-white p-4 shadow-sm">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px]">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_180px_180px_160px]">
             <div className="relative">
               <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
@@ -812,6 +784,13 @@ export default function AdminProducts() {
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
+            <button
+              type="button"
+              onClick={openCreate}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-violet-200 transition-colors hover:bg-violet-500"
+            >
+              <Plus size={16} /> Urun Ekle
+            </button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-gray-400">
             <span>{total} urun</span>

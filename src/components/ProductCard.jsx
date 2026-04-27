@@ -41,7 +41,7 @@ function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
       <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
-        <Zap size={11} strokeWidth={3} /> Anında Teslim
+        <Zap size={11} strokeWidth={3} /> Aninda Teslim
       </span>
     );
   }
@@ -73,7 +73,7 @@ export default function ProductCard({ product, compact = false }) {
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
-  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Ürün', icon: Tag };
+  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Urun', icon: Tag };
   const TypeIcon = typeMeta.icon;
   const maxQuantity = useMemo(() => getMaxProductQuantity(product), [product]);
   const isOutOfStock = product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1;
@@ -97,6 +97,7 @@ export default function ProductCard({ product, compact = false }) {
     const next = prev + 1;
     return maxQuantity ? Math.min(next, maxQuantity) : next;
   });
+
   const decrement = () => setQuantity((prev) => Math.max(1, prev - 1));
 
   if (compact) {
@@ -138,10 +139,10 @@ export default function ProductCard({ product, compact = false }) {
           <div className="flex items-end justify-between gap-2 pt-1">
             <div className="flex items-center gap-2">
               {hasDiscount ? (
-                <div className="text-[11px] font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
+                <div className="text-[11px] font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} {'\u20BA'}</div>
               ) : null}
               <div className="text-xl font-black leading-none text-emerald-600 dark:text-emerald-400">
-                {formatPrice(currentPrice)} ₺
+                {formatPrice(currentPrice)} {'\u20BA'}
               </div>
             </div>
           </div>
@@ -184,55 +185,52 @@ export default function ProductCard({ product, compact = false }) {
             </Link>
 
             <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-4.5 text-slate-500 dark:text-slate-400">
-              {product.short_description || product.description || 'Detaylı açıklama ürün sayfasında yer alır.'}
+              {product.short_description || product.description || 'Detayli aciklama urun sayfasinda yer alir.'}
             </p>
           </div>
-
         </div>
 
-        <div className="border-t border-slate-100 bg-white px-2.5 py-2.5 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[220px] sm:flex-col sm:justify-center sm:border-l sm:border-t-0 sm:px-3 lg:min-w-[236px]">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-1.5">
-              <div className="flex items-center gap-2">
-                {hasDiscount ? (
-                  <div className="text-xs font-bold text-slate-400 line-through dark:text-slate-500">{formatPrice(basePrice)} ₺</div>
-                ) : null}
-                <div className="text-lg font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-xl">
-                  {formatPrice(currentPrice)} ₺
+        <div className="border-t border-slate-100 bg-white px-2.5 py-2.5 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[308px] sm:items-center sm:border-t-0 sm:px-3 lg:min-w-[348px]">
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-[110px]">
+              {hasDiscount ? (
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500">
+                  <span className="line-through">{formatPrice(basePrice)} {'\u20BA'}</span>
+                  <DiscountChip price={basePrice} salePrice={product.sale_price} />
                 </div>
+              ) : null}
+              <div className="mt-1 text-xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-2xl">
+                {formatPrice(currentPrice)} {'\u20BA'}
               </div>
-              <DiscountChip price={basePrice} salePrice={product.sale_price} />
             </div>
 
-            <div className="flex items-center gap-1.5">
-              <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1.5 dark:border-slate-700 dark:bg-slate-950/70">
-                <button
-                  type="button"
-                  onClick={decrement}
-                  className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  <Minus size={12} />
-                </button>
-                <span className="min-w-[20px] text-center text-xs font-extrabold text-slate-900 dark:text-white">{quantity}</span>
-                <button
-                  type="button"
-                  onClick={increment}
-                  disabled={Boolean(maxQuantity) && quantity >= maxQuantity}
-                  className="flex h-6 w-6 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                >
-                  <Plus size={12} />
-                </button>
-              </div>
-
+            <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1.5 dark:border-slate-700 dark:bg-slate-950/70">
               <button
                 type="button"
-                onClick={handleAddToCart}
-                disabled={isOutOfStock}
-                className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
+                onClick={decrement}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
               >
-                <ShoppingCart size={12} strokeWidth={3} /> {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
+                <Minus size={12} />
+              </button>
+              <span className="min-w-[22px] text-center text-xs font-extrabold text-slate-900 dark:text-white">{quantity}</span>
+              <button
+                type="button"
+                onClick={increment}
+                disabled={Boolean(maxQuantity) && quantity >= maxQuantity}
+                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                <Plus size={12} />
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className="inline-flex min-w-[138px] items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
+            >
+              <ShoppingCart size={12} strokeWidth={3} /> {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
+            </button>
           </div>
         </div>
       </div>

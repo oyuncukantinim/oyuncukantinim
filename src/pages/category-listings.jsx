@@ -71,13 +71,13 @@ function ProductCategoryView({ category, products }) {
                 <div
                   className="absolute inset-0"
                   style={{
-                    WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.28) 24%, rgba(0,0,0,0.72) 58%, black 100%)',
-                    maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.28) 24%, rgba(0,0,0,0.72) 58%, black 100%)',
+                    WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.24) 18%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.9) 78%, black 100%)',
+                    maskImage: 'linear-gradient(to right, rgba(0,0,0,0.04) 0%, rgba(0,0,0,0.24) 18%, rgba(0,0,0,0.62) 52%, rgba(0,0,0,0.9) 78%, black 100%)',
                   }}
                 >
-                  <img src={heroImage} alt={category.name} className="h-full w-full object-contain object-center p-4 md:p-5" />
+                  <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/8 via-transparent to-black/[0.08] dark:from-slate-950/5 dark:via-transparent dark:to-black/[0.18]" />
+                <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/15 to-transparent dark:from-slate-950/80 dark:via-slate-950/18 dark:to-transparent" />
               </>
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.18),transparent_34%),linear-gradient(135deg,#f8fafc,#eef2ff)] text-slate-300 dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.2),transparent_28%),linear-gradient(135deg,#0f172a,#111827)] dark:text-slate-700">
