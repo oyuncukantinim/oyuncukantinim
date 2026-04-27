@@ -150,9 +150,7 @@ function InventoryRowEditor({ row, onChange, onRemove }) {
 }
 
 function ProductModal({ open, onClose, onSave, product, categories, showToast, saving }) {
-  const coverInputRef = useRef(null);
   const galleryInputRef = useRef(null);
-  const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
 
@@ -202,6 +200,8 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     () => categories.find((item) => String(item.id) === String(form.category_id)) || null,
     [categories, form.category_id],
   );
+  const previewCover = form.cover_image || form.gallery[0] || '';
+  const remainingGallerySlots = Math.max(0, 5 - form.gallery.length);
 
   const addInventoryRow = () => {
     setForm((prev) => ({
@@ -216,6 +216,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
   const save = () => {
     onSave({
       ...form,
+      cover_image: form.cover_image || form.gallery[0] || '',
       inventory_entries: form.inventory_entries.map((row) => ({
         id: row.id || undefined,
         entry_type: row.entry_type,
@@ -226,36 +227,55 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     });
   };
 
-  const uploadCover = async (file) => {
-    if (!file) return;
-    setUploadingCover(true);
-    try {
-      const url = await adminUploadImage(file, 'products');
-      setForm((prev) => ({ ...prev, cover_image: url }));
-      showToast('Kapak gorseli yuklendi.');
-    } catch (error) {
-      showToast(error.message);
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
   const uploadGallery = async (files) => {
     if (!files?.length) return;
+    if (remainingGallerySlots <= 0) {
+      showToast('En fazla 5 galeri gorseli ekleyebilirsin.');
+      return;
+    }
     setUploadingGallery(true);
     try {
       const uploaded = [];
-      for (const file of Array.from(files)) {
+      const queue = Array.from(files).slice(0, remainingGallerySlots);
+      for (const file of queue) {
         const url = await adminUploadImage(file, 'products');
         uploaded.push(url);
       }
-      setForm((prev) => ({ ...prev, gallery: [...prev.gallery, ...uploaded] }));
-      showToast('Galeri gorselleri eklendi.');
+      setForm((prev) => {
+        const nextGallery = [...prev.gallery, ...uploaded];
+        return {
+          ...prev,
+          gallery: nextGallery,
+          cover_image: prev.cover_image || nextGallery[0] || '',
+        };
+      });
+      showToast(
+        files.length > remainingGallerySlots
+          ? `Ilk ${remainingGallerySlots} gorsel eklendi. Galeri en fazla 5 adet olabilir.`
+          : 'Galeri gorselleri eklendi.',
+      );
     } catch (error) {
       showToast(error.message);
     } finally {
       setUploadingGallery(false);
     }
+  };
+
+  const setGalleryImageAsCover = (image) => {
+    setForm((prev) => ({ ...prev, cover_image: image }));
+  };
+
+  const removeGalleryImage = (index) => {
+    setForm((prev) => {
+      const removedImage = prev.gallery[index];
+      const nextGallery = prev.gallery.filter((_, itemIndex) => itemIndex !== index);
+      const nextCover = prev.cover_image === removedImage ? (nextGallery[0] || '') : prev.cover_image;
+      return {
+        ...prev,
+        gallery: nextGallery,
+        cover_image: nextCover,
+      };
+    });
   };
 
   if (!open) return null;
@@ -466,54 +486,59 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
           </div>
 
           <div className="space-y-5">
-            <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
+            <div className="rounded-2xl border border-gray-100 p-3 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-gray-800">Kapak Gorseli</h3>
-                <button type="button" onClick={() => coverInputRef.current?.click()} className="inline-flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-black text-violet-700 hover:bg-violet-100">
-                  {uploadingCover ? <Loader2 size={13} className="animate-spin" /> : <Upload size={13} />}
-                  {form.cover_image ? 'Degistir' : 'Yukle'}
-                </button>
-              </div>
-              <input ref={coverInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => uploadCover(e.target.files?.[0])} />
-              {form.cover_image ? (
-                <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-slate-50">
-                  <img src={form.cover_image} alt="" className="aspect-[4/3] w-full object-cover" />
-                  <button type="button" onClick={() => setForm((prev) => ({ ...prev, cover_image: '' }))} className="absolute right-3 top-3 rounded-xl bg-black/70 px-2 py-1 text-[11px] font-black text-white hover:bg-black">
-                    Kaldir
-                  </button>
+                <div>
+                  <h3 className="font-extrabold text-gray-800">Galeri</h3>
+                  <p className="mt-0.5 text-[11px] font-semibold text-gray-400">En fazla 5 gorsel ekleyebilir, kapagi bunlardan secebilirsin.</p>
                 </div>
-              ) : (
-                <div className="flex aspect-[4/3] items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 text-gray-300">
-                  <ImageIcon size={30} />
-                </div>
-              )}
-            </div>
-
-            <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-extrabold text-gray-800">Galeri</h3>
-                <button type="button" onClick={() => galleryInputRef.current?.click()} className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-black text-gray-700 hover:bg-gray-100">
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  disabled={uploadingGallery || remainingGallerySlots <= 0}
+                  className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[11px] font-black text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
                   {uploadingGallery ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
                   Gorsel Ekle
                 </button>
               </div>
               <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadGallery(e.target.files)} />
               {form.gallery.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-center text-sm text-gray-400">
-                  Galeri bos. Sadece kapakla da yayinlayabilirsin.
+                <div className="flex h-24 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50 text-gray-300">
+                  <ImageIcon size={26} />
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-5 gap-2">
                   {form.gallery.map((image, index) => (
-                    <div key={`${image}-${index}`} className="group relative overflow-hidden rounded-xl border border-gray-200 bg-slate-50">
-                      <img src={image} alt="" className="aspect-square w-full object-cover" />
-                      <button type="button" onClick={() => setForm((prev) => ({ ...prev, gallery: prev.gallery.filter((_, itemIndex) => itemIndex !== index) }))} className="absolute right-1.5 top-1.5 rounded-lg bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    <div
+                      key={`${image}-${index}`}
+                      className={`group relative overflow-hidden rounded-xl border bg-slate-50 ${
+                        form.cover_image === image ? 'border-violet-400 ring-2 ring-violet-200' : 'border-gray-200'
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setGalleryImageAsCover(image)}
+                        className="block w-full"
+                        title="Kapak olarak sec"
+                      >
+                        <img src={image} alt="" className="aspect-square w-full object-cover" />
+                      </button>
+                      <span className={`absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-black ${
+                        form.cover_image === image ? 'bg-violet-600 text-white' : 'bg-black/65 text-white'
+                      }`}>
+                        {form.cover_image === image ? 'Kapak' : 'Sec'}
+                      </span>
+                      <button type="button" onClick={() => removeGalleryImage(index)} className="absolute right-1.5 top-1.5 rounded-lg bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
                         <X size={12} />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
+              <div className="text-[11px] font-semibold text-gray-400">
+                {form.gallery.length}/5 gorsel • Kapak, secili galeriden belirlenir.
+              </div>
             </div>
 
             <div className="rounded-2xl border border-gray-100 bg-slate-950 p-4 text-white shadow-xl">
@@ -527,8 +552,8 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                 </span>
               </div>
               <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5">
-                {form.cover_image ? (
-                  <img src={form.cover_image} alt="" className="aspect-[4/3] w-full object-cover" />
+                {previewCover ? (
+                  <img src={previewCover} alt="" className="aspect-[4/3] w-full object-cover" />
                 ) : (
                   <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-violet-500/20 via-fuchsia-500/10 to-cyan-500/20 text-white/35">
                     <Package size={34} />
@@ -567,7 +592,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
           <button type="button" onClick={onClose} className="rounded-2xl border border-gray-200 px-4 py-2.5 text-sm font-black text-gray-600 hover:bg-gray-50">
             Vazgec
           </button>
-          <button type="button" onClick={save} disabled={saving || uploadingCover || uploadingGallery} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-60">
+          <button type="button" onClick={save} disabled={saving || uploadingGallery} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-60">
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Edit3 size={15} />}
             {product ? 'Urunu Kaydet' : 'Urunu Olustur'}
           </button>
