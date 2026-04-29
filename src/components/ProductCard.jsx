@@ -4,7 +4,9 @@ import {
   BadgePercent,
   Boxes,
   Flame,
+  Minus,
   Package,
+  Plus,
   ShoppingCart,
   Star,
   Tag,
@@ -70,7 +72,7 @@ function DiscountChip({ price, salePrice }) {
 }
 
 export default function ProductCard({ product, compact = false }) {
-  const { addToCart } = useCart();
+  const { addToCart, cart, removeFromCart, updateCartQuantity } = useCart();
 
   const href = productPath(product);
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
@@ -81,6 +83,9 @@ export default function ProductCard({ product, compact = false }) {
   const maxQuantity = useMemo(() => getMaxProductQuantity(product), [product]);
   const isInstantDelivery = isInstantProduct(product);
   const isOutOfStock = isInstantDelivery && Number(product.is_in_stock) !== 1;
+  const cartItem = cart.find((item) => item.itemType === 'product' && String(item.id) === String(product.id));
+  const cartQuantity = Number(cartItem?.quantity || 0);
+  const canIncrease = !cartItem || !Number.isFinite(Number(maxQuantity)) || Number(maxQuantity) <= 0 || cartQuantity < Number(maxQuantity);
 
   const handleAddToCart = () => {
     addToCart({
@@ -95,6 +100,20 @@ export default function ProductCard({ product, compact = false }) {
       seller: 'OyuncuKantinim',
       path: href,
     });
+  };
+
+  const handleDecreaseCart = () => {
+    if (!cartItem) return;
+    if (cartQuantity <= 1) {
+      removeFromCart(cartItem.cartId);
+      return;
+    }
+    updateCartQuantity(cartItem.cartId, cartQuantity - 1);
+  };
+
+  const handleIncreaseCart = () => {
+    if (!cartItem || !canIncrease) return;
+    updateCartQuantity(cartItem.cartId, cartQuantity + 1);
   };
 
   if (compact) {
@@ -213,14 +232,40 @@ export default function ProductCard({ product, compact = false }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_14px_28px_-18px_rgba(124,58,237,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:from-violet-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:text-white disabled:shadow-none dark:disabled:from-slate-700 dark:disabled:to-slate-700 dark:disabled:text-slate-300"
-          >
-            {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
-          </button>
+          {cartItem ? (
+            <div className="grid h-9 grid-cols-[42px_minmax(0,1fr)_42px] overflow-hidden rounded-xl border border-violet-200 bg-violet-50 shadow-[0_14px_28px_-20px_rgba(124,58,237,0.75)] dark:border-violet-400/25 dark:bg-violet-400/10">
+              <button
+                type="button"
+                onClick={handleDecreaseCart}
+                className="inline-flex items-center justify-center border-r border-violet-200 text-violet-700 transition hover:bg-violet-100 dark:border-violet-400/20 dark:text-violet-200 dark:hover:bg-violet-400/15"
+                aria-label="Adedi azalt"
+              >
+                <Minus size={15} strokeWidth={3} />
+              </button>
+              <div className="inline-flex items-center justify-center gap-1.5 px-2 text-[12px] font-black text-slate-900 dark:text-white">
+                <span>{cartQuantity}</span>
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">adet</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleIncreaseCart}
+                disabled={!canIncrease}
+                className="inline-flex items-center justify-center border-l border-violet-200 text-violet-700 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:text-slate-300 dark:border-violet-400/20 dark:text-violet-200 dark:hover:bg-violet-400/15 dark:disabled:text-slate-600"
+                aria-label="Adedi artır"
+              >
+                <Plus size={15} strokeWidth={3} />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_14px_28px_-18px_rgba(124,58,237,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:from-violet-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:text-white disabled:shadow-none dark:disabled:from-slate-700 dark:disabled:to-slate-700 dark:disabled:text-slate-300"
+            >
+              {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
+            </button>
+          )}
         </div>
       </div>
     </article>
