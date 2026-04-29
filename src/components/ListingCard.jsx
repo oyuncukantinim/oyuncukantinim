@@ -32,7 +32,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
     return (
       <article className={`card group flex flex-row overflow-hidden p-0 ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>
         {/* Sol: Fotoğraf */}
-        <Link to={listingUrl} className="relative w-36 shrink-0 self-stretch overflow-hidden rounded-l-2xl bg-surface-100 sm:w-40">
+        <Link to={listingUrl} className="relative w-36 shrink-0 self-stretch overflow-hidden bg-surface-100 sm:w-40">
           {coverImg ? (
             <img
               src={coverImg}
@@ -100,13 +100,12 @@ export default function ListingCard({ listing, compact = false, dense = false, f
     );
   }
 
-  const cardPad = dense ? 'p-0.5' : 'p-1';
-  const imgMb = dense ? 'mb-2' : 'mb-4';
+  const contentPad = dense ? 'px-1.5 pb-1.5 pt-2' : 'px-2.5 pb-2.5 pt-2.5';
   const badgeMb = dense ? 'mb-2' : 'mb-3';
   const titleCls = dense
     ? 'mb-2.5 text-[13px] leading-snug'
     : 'mb-3 text-[15px] leading-snug';
-  const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2.5 rounded-xl p-2.5';
+  const sellerBox = dense ? 'mb-2 gap-2 rounded-lg p-1.5' : 'mb-2.5 gap-2.5 rounded-xl p-2';
   const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-8 w-8 text-lg';
   const sellerNameCls = dense ? 'text-[11px]' : 'text-xs';
   const priceCls = dense ? 'text-sm' : 'text-xl';
@@ -116,9 +115,9 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const imageAspectCls = 'aspect-[3/2]';
 
   return (
-    <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>
+    <article className={`card group flex h-full flex-col overflow-hidden p-0 ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>
       <Link to={listingUrl} className="block">
-        <div className={`relative ${imgMb} ${imageAspectCls} w-full overflow-hidden rounded-xl bg-surface-100`}>
+        <div className={`relative ${imageAspectCls} w-full overflow-hidden bg-surface-100`}>
           {coverImg ? (
             <img
               src={coverImg}
@@ -148,7 +147,10 @@ export default function ListingCard({ listing, compact = false, dense = false, f
             </div>
           ) : null}
         </div>
+      </Link>
 
+      <div className={`${contentPad} flex flex-1 flex-col`}>
+        <Link to={listingUrl} className="block">
         <div className={badgeMb}>
           <span className={`${CATEGORY_CHIP_BASE} ${dense ? 'px-1.5 py-0 text-[9px] leading-4' : 'px-2 py-0.5 text-[10px]'}`}>
             {listing.category_name || listing.category || listing.type}
@@ -189,6 +191,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         <Link to={listingUrl} className={`badge-purple inline-flex items-center ${detailBtnCls}`}>
           Detay
         </Link>
+      </div>
       </div>
     </article>
   );
