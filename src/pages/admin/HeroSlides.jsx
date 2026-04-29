@@ -38,9 +38,9 @@ const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 
 // Background pool is rendered full-bleed behind the card with heavy dimming,
 // so wide cinematic landscape screenshots work best.
-const BG_RECOMMENDED_WIDTH = 1910;
+const BG_RECOMMENDED_WIDTH = 1920;
 const BG_RECOMMENDED_HEIGHT = 460;
-const BG_RECOMMENDED_SIZE_LABEL = '1910x460px';
+const BG_RECOMMENDED_SIZE_LABEL = '1920x460px';
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -242,6 +242,43 @@ export default function AdminHeroSlides() {
     });
   };
 
+  const resizeBackgroundImageToCanvas = async (file) => {
+    const img = await loadImageFromFile(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = BG_RECOMMENDED_WIDTH;
+    canvas.height = BG_RECOMMENDED_HEIGHT;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Arka plan görsel işleme başlatılamadı.');
+    }
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, BG_RECOMMENDED_WIDTH, BG_RECOMMENDED_HEIGHT);
+
+    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? file.type : 'image/webp';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 0.92));
+    if (!blob) {
+      throw new Error('Arka plan görseli 1920x460px tuvale dönüştürülemedi.');
+    }
+
+    const baseName = String(file.name || 'slider-arka-plan')
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^\w.-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'slider-arka-plan';
+    const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    const outputExt = outputType === 'image/jpeg'
+      ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
+      : outputType.replace('image/', '');
+
+    return new File([blob], `${baseName}.${outputExt}`, {
+      type: outputType,
+      lastModified: Date.now(),
+    });
+  };
+
   const handleImageUpload = async (slide, file) => {
     if (!file) return;
     setBusyTarget(slide._key, 'image');
@@ -398,7 +435,8 @@ export default function AdminHeroSlides() {
     if (!file) return;
     setBgBusy(true);
     try {
-      const url = await adminUploadImage(file, 'hero-slider-bg');
+      const preparedFile = await resizeBackgroundImageToCanvas(file);
+      const url = await adminUploadImage(preparedFile, 'hero-slider-bg');
       setBackgrounds((prev) => [...prev, { _key: `bg-new-${Date.now()}-${Math.random()}`, image_url: url }]);
       showToast('Arka plan yüklendi (kaydetmeyi unutma).');
     } catch (err) {
