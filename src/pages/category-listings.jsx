@@ -54,9 +54,15 @@ function ProductCategoryView({ category, products, sort, setSort }) {
 
   const visibleProducts = useMemo(() => products.filter((product) => {
     const hasDiscount = Number(product.sale_price || 0) > 0 && Number(product.sale_price) < Number(product.price || 0);
-    const isFast = product.delivery_type === 'automatic';
+    const delivery = String(product.delivery_type || '').toLowerCase();
+    const isFast = delivery === 'automatic'
+      || delivery === 'stock'
+      || delivery === 'stok'
+      || Number(product.is_automatic_delivery || 0) === 1
+      || Number(product.available_stock_count || 0) > 0;
 
-    if (deliveryFilter !== 'all' && product.delivery_type !== deliveryFilter) return false;
+    if (deliveryFilter === 'automatic' && !isFast) return false;
+    if (deliveryFilter === 'manual' && isFast) return false;
     if (highlightFilter === 'discount' && !hasDiscount) return false;
     if (highlightFilter === 'fast' && !isFast) return false;
 

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Box,
   Edit3,
   Image as ImageIcon,
   Loader2,
@@ -365,22 +364,14 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
 
           <div className="space-y-5">
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-[96px_minmax(0,1fr)]">
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Tur</label>
-                  <div className="flex h-12 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50">
-                    <Box size={20} className="text-violet-500" />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Urun Basligi *</label>
-                  <input
-                    value={form.title}
-                    onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value, slug: slugify(e.target.value) }))}
-                    placeholder="Orn: Valorant 475 VP Resmi Kod"
-                    className="w-full rounded-2xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
-                  />
-                </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Urun Basligi *</label>
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value, slug: slugify(e.target.value) }))}
+                  placeholder="Orn: Valorant 475 VP Resmi Kod"
+                  className="w-full rounded-2xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

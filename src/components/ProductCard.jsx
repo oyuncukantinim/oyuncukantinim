@@ -30,14 +30,23 @@ function formatPrice(value) {
 }
 
 function getMaxProductQuantity(product) {
-  if (product.delivery_type !== 'automatic') return undefined;
+  if (!isInstantProduct(product)) return undefined;
   const stock = Number(product.available_stock_count || 0);
   if (!Number.isFinite(stock) || stock <= 0) return 1;
   return stock;
 }
 
-function InstantBadge({ delivery }) {
-  if (delivery === 'automatic') {
+function isInstantProduct(product) {
+  const delivery = String(product?.delivery_type || '').toLowerCase();
+  return delivery === 'automatic'
+    || delivery === 'stock'
+    || delivery === 'stok'
+    || Number(product?.is_automatic_delivery || 0) === 1
+    || Number(product?.available_stock_count || 0) > 0;
+}
+
+function InstantBadge({ product }) {
+  if (isInstantProduct(product)) {
     return (
       <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-black text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200">
         <Zap size={11} strokeWidth={3} /> Anında Teslimat
@@ -70,7 +79,8 @@ export default function ProductCard({ product, compact = false }) {
   const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Ürün', icon: Tag };
   const TypeIcon = typeMeta.icon;
   const maxQuantity = useMemo(() => getMaxProductQuantity(product), [product]);
-  const isOutOfStock = product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1;
+  const isInstantDelivery = isInstantProduct(product);
+  const isOutOfStock = isInstantDelivery && Number(product.is_in_stock) !== 1;
 
   const handleAddToCart = () => {
     addToCart({
@@ -108,7 +118,7 @@ export default function ProductCard({ product, compact = false }) {
           )}
 
           <div className="absolute left-2.5 top-3 flex flex-wrap gap-1.5">
-            <InstantBadge delivery={product.delivery_type} estimated={product.estimated_delivery_text} />
+            <InstantBadge product={product} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
         </div>
@@ -180,7 +190,7 @@ export default function ProductCard({ product, compact = false }) {
             </h3>
           </Link>
 
-          {product.delivery_type === 'automatic' ? (
+          {isInstantDelivery ? (
             <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 dark:text-slate-400">
               <Zap size={13} className="text-emerald-500 dark:text-emerald-300" strokeWidth={3} />
               <span>Anında teslimat</span>
