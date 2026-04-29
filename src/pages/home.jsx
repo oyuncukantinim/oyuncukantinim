@@ -112,6 +112,12 @@ function CategoryCard({ game, index }) {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(216,180,254,0.36),transparent_29%),radial-gradient(circle_at_22%_12%,rgba(59,130,246,0.34),transparent_34%),radial-gradient(circle_at_82%_24%,rgba(236,72,153,0.26),transparent_32%),linear-gradient(180deg,rgba(15,23,42,0.16),rgba(2,6,23,0.76))]" />
         <div className="pointer-events-none absolute inset-0 opacity-70" style={CATEGORY_STAR_FIELD_STYLE} />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.08)_42%,transparent_56%)] opacity-60" />
+        <span className="pointer-events-none absolute left-3 top-7 h-px w-14 -rotate-[24deg] bg-gradient-to-r from-transparent via-white/55 to-transparent opacity-70 shadow-[0_0_10px_rgba(255,255,255,0.45)]" />
+        <span className="pointer-events-none absolute right-4 top-5 h-px w-10 -rotate-[24deg] bg-gradient-to-r from-transparent via-fuchsia-200/70 to-transparent opacity-60 shadow-[0_0_12px_rgba(217,70,239,0.55)]" />
+        <span className="pointer-events-none absolute bottom-12 left-5 h-px w-11 -rotate-[24deg] bg-gradient-to-r from-transparent via-cyan-200/65 to-transparent opacity-55 shadow-[0_0_12px_rgba(34,211,238,0.5)]" />
+        <span className="pointer-events-none absolute bottom-16 right-7 h-px w-8 -rotate-[24deg] bg-gradient-to-r from-transparent via-white/45 to-transparent opacity-50" />
+        <span className="pointer-events-none absolute right-8 top-12 h-1 w-1 rounded-full bg-white/90 shadow-[0_0_10px_3px_rgba(255,255,255,0.32)]" />
+        <span className="pointer-events-none absolute left-8 bottom-9 h-1 w-1 rounded-full bg-fuchsia-200/90 shadow-[0_0_10px_3px_rgba(217,70,239,0.36)]" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
         {/* HOT badge */}
         {isHot ? (
