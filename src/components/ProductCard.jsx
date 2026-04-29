@@ -41,14 +41,14 @@ function getMaxProductQuantity(product) {
 function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-cyan-300/35 bg-cyan-400/25 px-2 py-1 text-[10px] font-black text-cyan-50 shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur">
+      <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-black text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200">
         <Zap size={11} strokeWidth={3} /> Hızlı Teslimat
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/30 bg-amber-400/20 px-2 py-1 text-[10px] font-black text-amber-50 backdrop-blur">
+    <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-black text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200">
       <Clock3 size={11} strokeWidth={3} /> {estimated || 'Manuel'}
     </span>
   );
@@ -60,7 +60,7 @@ function DiscountChip({ price, salePrice }) {
   if (pct <= 0) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-300/35 bg-fuchsia-500/35 px-2 py-1 text-[10px] font-black text-fuchsia-50 shadow-[0_0_20px_rgba(217,70,239,0.22)] backdrop-blur">
+    <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[10px] font-black text-fuchsia-700 dark:border-fuchsia-400/25 dark:bg-fuchsia-400/10 dark:text-fuchsia-200">
       <Flame size={11} strokeWidth={3} /> İndirimli
     </span>
   );
@@ -97,9 +97,9 @@ export default function ProductCard({ product, compact = false }) {
     return (
       <Link
         to={href}
-        className="scroll-optimized-card group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
+        className="scroll-optimized-card group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60"
       >
-        <div className="relative aspect-[5/4] w-full overflow-hidden bg-white dark:bg-slate-900">
+        <div className="relative aspect-[5/4] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
           {product.cover_image ? (
             <img
               src={product.cover_image}
@@ -145,53 +145,52 @@ export default function ProductCard({ product, compact = false }) {
   }
 
   return (
-    <article className="group relative flex h-full min-h-[304px] w-full min-w-[220px] flex-col overflow-hidden rounded-lg border border-cyan-300/18 bg-[#07111f] shadow-[0_18px_44px_-26px_rgba(0,0,0,0.9)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/45 hover:shadow-[0_24px_54px_-28px_rgba(34,211,238,0.55)]">
-      <Link to={href} className="relative block h-[146px] overflow-hidden bg-[#0a1324]">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(34,211,238,0.22),transparent_34%),linear-gradient(135deg,rgba(147,51,234,0.22),transparent_36%),linear-gradient(180deg,transparent_42%,rgba(3,7,18,0.72))]" />
-        <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.08)_46%,transparent_54%),radial-gradient(circle_at_12%_18%,rgba(255,0,92,0.45)_0_1px,transparent_2px),radial-gradient(circle_at_82%_30%,rgba(34,211,238,0.45)_0_1px,transparent_2px)]" />
+    <article className="group flex h-full min-h-[304px] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60">
+      <Link to={href} className="relative block h-[146px] overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_20%,rgba(139,92,246,0.16),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.12),transparent_34%)]" />
         <div className="relative flex h-full w-full items-center justify-center">
-            {product.cover_image ? (
-              <img
-                src={product.cover_image}
-                alt={product.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-cyan-200/55">
-                <Boxes size={48} />
-              </div>
-            )}
+          {product.cover_image ? (
+            <img
+              src={product.cover_image}
+              alt={product.title}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-700">
+              <Boxes size={48} />
+            </div>
+          )}
         </div>
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {hasDiscount ? (
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-md border border-violet-300/35 bg-violet-500/35 px-2 py-1 text-[10px] font-black text-violet-50 shadow-[0_0_20px_rgba(139,92,246,0.22)] backdrop-blur">
+            <span className="inline-flex items-center gap-1 rounded-md border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-black text-violet-700 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-200">
               <Star size={11} strokeWidth={3} /> Popüler
             </span>
           )}
         </div>
       </Link>
 
-      <div className="relative flex flex-1 flex-col justify-between p-3.5">
+      <div className="flex flex-1 flex-col justify-between p-3.5">
         <div>
-          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/75">
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-violet-600 dark:text-violet-300">
             <TypeIcon size={11} />
             <span>{typeMeta.label}</span>
           </div>
 
           <Link to={href}>
-            <h3 className="line-clamp-2 min-h-[42px] text-[15px] font-black leading-snug text-white transition-colors group-hover:text-cyan-100">
+            <h3 className="line-clamp-2 min-h-[42px] text-[15px] font-black leading-snug text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300">
               {product.title}
             </h3>
           </Link>
 
-          <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-300">
+          <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 dark:text-slate-400">
             {product.delivery_type === 'automatic' ? (
-              <Zap size={13} className="text-emerald-300" strokeWidth={3} />
+              <Zap size={13} className="text-emerald-500 dark:text-emerald-300" strokeWidth={3} />
             ) : (
-              <ShieldCheck size={13} className="text-lime-300" strokeWidth={3} />
+              <ShieldCheck size={13} className="text-lime-600 dark:text-lime-300" strokeWidth={3} />
             )}
             <span>{product.delivery_type === 'automatic' ? 'Anında teslimat' : 'Güvenli alışveriş'}</span>
           </div>
@@ -201,12 +200,12 @@ export default function ProductCard({ product, compact = false }) {
           <div className="mb-2 flex items-end justify-between gap-2">
             <div>
               {hasDiscount ? (
-                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
+                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500">
                   <span className="line-through">{formatPrice(basePrice)} {'\u20BA'}</span>
-                  <BadgePercent size={12} className="text-fuchsia-300" />
+                  <BadgePercent size={12} className="text-fuchsia-500 dark:text-fuchsia-300" />
                 </div>
               ) : null}
-              <div className="text-[22px] font-black leading-none text-white">
+              <div className="text-[22px] font-black leading-none text-slate-900 dark:text-white">
                 {'\u20BA'} {formatPrice(currentPrice).replace(',00', '')}
               </div>
             </div>
@@ -216,7 +215,7 @@ export default function ProductCard({ product, compact = false }) {
             type="button"
             onClick={handleAddToCart}
             disabled={isOutOfStock}
-            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_12px_28px_-16px_rgba(56,189,248,0.9)] transition-all duration-300 hover:from-violet-600 hover:via-fuchsia-600 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-700 disabled:via-slate-700 disabled:to-slate-700 disabled:text-slate-300"
+            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_14px_28px_-18px_rgba(124,58,237,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:from-violet-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:text-white disabled:shadow-none dark:disabled:from-slate-700 dark:disabled:to-slate-700 dark:disabled:text-slate-300"
           >
             {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
           </button>

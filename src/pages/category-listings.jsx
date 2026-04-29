@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Clock3, Gift, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
+import { ChevronDown, Clock3, Gift, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -32,7 +32,7 @@ function CategoryCard({ cat }) {
         )}
 
         <div className="absolute left-3 top-3 rounded-full bg-black/55 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-white">
-          {cat.node_type === 'container' ? 'Klasor' : (isProduct ? 'Site Urunu' : 'Ilan')}
+          {cat.node_type === 'container' ? 'Klasör' : (isProduct ? 'Site Ürünü' : 'İlan')}
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center px-3">
@@ -52,32 +52,30 @@ function ProductCategoryView({ category, products, sort, setSort }) {
 
   return (
     <div className="space-y-5">
-      <section className="relative overflow-hidden rounded-[18px] border border-cyan-300/20 bg-[#050b17] shadow-[0_24px_70px_-48px_rgba(34,211,238,0.6)]">
+      <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         {heroImage ? (
           <>
             <div
               className="absolute inset-0"
               style={{
-                WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.82) 68%, black 100%)',
-                maskImage: 'linear-gradient(to right, rgba(0,0,0,0.06) 0%, rgba(0,0,0,0.18) 18%, rgba(0,0,0,0.48) 40%, rgba(0,0,0,0.82) 68%, black 100%)',
+                WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 22%, rgba(0,0,0,0.58) 54%, black 100%)',
+                maskImage: 'linear-gradient(to right, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.22) 22%, rgba(0,0,0,0.58) 54%, black 100%)',
               }}
             >
               <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-[#050b17] via-[#050b17]/88 via-[36%] to-[#050b17]/45" />
+            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/92 via-[42%] to-white/60 dark:from-slate-900 dark:via-slate-900/92 dark:to-slate-900/65" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(147,51,234,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.24),transparent_32%),linear-gradient(135deg,#050b17,#081426)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.16),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.14),transparent_32%),linear-gradient(135deg,#ffffff,#f8fafc)] dark:bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.22),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(6,182,212,0.18),transparent_32%),linear-gradient(135deg,#0f172a,#020617)]" />
         )}
 
-        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(90deg,rgba(34,211,238,0.14)_1px,transparent_1px),linear-gradient(0deg,rgba(147,51,234,0.13)_1px,transparent_1px)] [background-size:44px_44px]" />
-
-        <div className="relative min-h-[184px] px-5 py-6 sm:px-7 sm:py-8">
+        <div className="relative min-h-[176px] px-5 py-6 sm:px-7 sm:py-8">
           <div className="min-w-0 max-w-3xl">
-            <h1 className="text-2xl font-black text-white sm:text-3xl">
+            <h1 className="text-2xl font-black text-slate-950 dark:text-white sm:text-3xl">
               {category.name}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-300">
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-600 dark:text-slate-300">
               Site ürünlerini hızlı teslimat, net fiyat ve güvenli ödeme akışıyla tek vitrinde incele.
             </p>
           </div>
@@ -85,38 +83,38 @@ function ProductCategoryView({ category, products, sort, setSort }) {
       </section>
 
       {products.length === 0 ? (
-        <div className="rounded-[18px] border border-dashed border-cyan-300/20 bg-[#07111f] px-6 py-16 text-center shadow-sm">
+        <div className="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="mb-4 text-5xl">Ürün</div>
-          <p className="text-lg font-extrabold text-white">Bu kategoride gösterilecek site ürünü yok.</p>
-          <p className="mt-2 text-sm font-semibold text-slate-400">Ürünler eklendiğinde bu alan market vitrini olarak dolacak.</p>
+          <p className="text-lg font-extrabold text-slate-900 dark:text-white">Bu kategoride gösterilecek site ürünü yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-500 dark:text-slate-400">Ürünler eklendiğinde bu alan market vitrini olarak dolacak.</p>
         </div>
       ) : (
-        <section className="overflow-hidden rounded-[18px] border border-cyan-300/20 bg-[#040a14] p-3 shadow-[0_24px_80px_-58px_rgba(34,211,238,0.65)] sm:p-4">
-          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-cyan-300/15 bg-[#08111f]/90 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:flex-row lg:items-center lg:justify-between">
+        <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
+          <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60 lg:flex-row lg:items-center lg:justify-between">
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-              <div className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/30 bg-[#0b1626] px-3 text-xs font-bold text-slate-200">
+              <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                 <PackageCheck size={15} className="text-slate-400" /> Teslimat Türü <span className="ml-auto text-slate-400">Tümü</span>
               </div>
-              <div className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/30 bg-[#0b1626] px-3 text-xs font-bold text-slate-200">
+              <div className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
                 <Gift size={15} className="text-slate-400" /> Stok <span className="ml-auto text-slate-400">Aktif</span>
               </div>
-              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-violet-400/50 bg-violet-600/20 px-3 text-xs font-black text-violet-100 shadow-[0_0_20px_rgba(139,92,246,0.18)]">
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-3 text-xs font-black text-violet-700 transition hover:border-violet-300 hover:bg-violet-100 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-200">
                 <Star size={15} /> Popüler
               </button>
-              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-fuchsia-400/45 bg-fuchsia-600/18 px-3 text-xs font-black text-fuchsia-100">
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-fuchsia-200 bg-fuchsia-50 px-3 text-xs font-black text-fuchsia-700 transition hover:border-fuchsia-300 hover:bg-fuchsia-100 dark:border-fuchsia-400/25 dark:bg-fuchsia-400/10 dark:text-fuchsia-200">
                 <Sparkles size={15} /> İndirimli
               </button>
-              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-cyan-400/45 bg-cyan-500/14 px-3 text-xs font-black text-cyan-100">
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-cyan-200 bg-cyan-50 px-3 text-xs font-black text-cyan-700 transition hover:border-cyan-300 hover:bg-cyan-100 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200">
                 <Zap size={15} /> Hızlı Teslimat
               </button>
             </div>
 
-            <label className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/35 bg-[#0b1626] px-3 text-xs font-bold text-slate-300">
+            <label className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
               Sırala:
               <select
                 value={sort}
                 onChange={(event) => setSort(event.target.value)}
-                className="min-w-[132px] appearance-none bg-transparent pr-5 text-sm font-black text-white outline-none"
+                className="min-w-[132px] appearance-none bg-transparent pr-5 text-sm font-black text-slate-900 outline-none dark:text-white"
               >
                 <option value="featured">Öne Çıkan</option>
                 <option value="newest">Yeni Ürünler</option>
@@ -133,18 +131,18 @@ function ProductCategoryView({ category, products, sort, setSort }) {
             ))}
           </div>
 
-          <div className="mt-4 grid gap-3 rounded-xl border border-cyan-300/18 bg-[#06101e] px-4 py-4 sm:grid-cols-3">
-            <div className="flex items-center justify-center gap-3 text-slate-200">
-              <Clock3 size={30} className="text-violet-400 drop-shadow-[0_0_14px_rgba(139,92,246,0.65)]" />
-              <div><div className="text-sm font-black text-white">7/24 Destek</div><div className="text-xs text-slate-400">Her zaman yanınızdayız</div></div>
+          <div className="mt-4 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/70 sm:grid-cols-3">
+            <div className="flex items-center justify-center gap-3 text-slate-700 dark:text-slate-200">
+              <Clock3 size={30} className="text-violet-500 dark:text-violet-300" />
+              <div><div className="text-sm font-black text-slate-900 dark:text-white">7/24 Destek</div><div className="text-xs text-slate-500 dark:text-slate-400">Her zaman yanınızdayız</div></div>
             </div>
-            <div className="flex items-center justify-center gap-3 border-cyan-300/15 text-slate-200 sm:border-x">
-              <ShieldCheck size={32} className="text-cyan-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.65)]" />
-              <div><div className="text-sm font-black text-white">Güvenli Ödeme</div><div className="text-xs text-slate-400">256-bit SSL ile korunur</div></div>
+            <div className="flex items-center justify-center gap-3 border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-200 sm:border-x">
+              <ShieldCheck size={32} className="text-cyan-500 dark:text-cyan-300" />
+              <div><div className="text-sm font-black text-slate-900 dark:text-white">Güvenli Ödeme</div><div className="text-xs text-slate-500 dark:text-slate-400">256-bit SSL ile korunur</div></div>
             </div>
-            <div className="flex items-center justify-center gap-3 text-slate-200">
-              <Zap size={32} className="text-fuchsia-400 drop-shadow-[0_0_14px_rgba(217,70,239,0.65)]" />
-              <div><div className="text-sm font-black text-white">Anında Teslimat</div><div className="text-xs text-slate-400">Siparişler saniyeler içinde teslim edilir</div></div>
+            <div className="flex items-center justify-center gap-3 text-slate-700 dark:text-slate-200">
+              <Zap size={32} className="text-fuchsia-500 dark:text-fuchsia-300" />
+              <div><div className="text-sm font-black text-slate-900 dark:text-white">Anında Teslimat</div><div className="text-xs text-slate-500 dark:text-slate-400">Siparişler saniyeler içinde teslim edilir</div></div>
             </div>
           </div>
         </section>
@@ -288,7 +286,7 @@ export default function CategoryListingsPage() {
 
       {!category ? (
         <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-400 shadow-sm">
-          Kategori bulunamadi.
+          Kategori bulunamadı.
         </div>
       ) : category.node_type === 'container' ? (
         <>
@@ -312,7 +310,7 @@ export default function CategoryListingsPage() {
           </div>
 
           <div className="rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm font-semibold text-violet-700">
-            Bu kategori bir klasor gorevi gorur. Devam etmek icin alt kategorilerden birini sec.
+            Bu kategori bir klasör görevi görür. Devam etmek için alt kategorilerden birini seç.
           </div>
 
           <div className="grid [grid-template-columns:repeat(auto-fill,minmax(160px,1fr))] gap-4">
@@ -355,9 +353,9 @@ export default function CategoryListingsPage() {
                       onChange={(e) => setAttrFilters((prev) => ({ ...prev, [attr.slug]: e.target.value }))}
                       className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                     >
-                      <option value="">{attr.name}: Tumu</option>
+                      <option value="">{attr.name}: Tümü</option>
                       <option value="Evet">Evet</option>
-                      <option value="Hayir">Hayir</option>
+                      <option value="Hayır">Hayır</option>
                     </select>
                   );
                 }
@@ -369,7 +367,7 @@ export default function CategoryListingsPage() {
                       onChange={(e) => setAttrFilters((prev) => ({ ...prev, [attr.slug]: e.target.value }))}
                       className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                     >
-                      <option value="">{attr.name}: Tumu</option>
+                      <option value="">{attr.name}: Tümü</option>
                       {(attr.options || []).map((option) => (
                         <option key={option} value={option}>{option}</option>
                       ))}
@@ -395,7 +393,7 @@ export default function CategoryListingsPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Ilanlarda ara..."
+                placeholder="İlanlarda ara..."
                 className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
               />
             </div>
@@ -409,18 +407,18 @@ export default function CategoryListingsPage() {
             </div>
             {user ? (
               <Link to="/create" className="flex items-center gap-2 whitespace-nowrap rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-violet-500">
-                <Plus size={15} /> Ilan Ekle
+                <Plus size={15} /> İlan Ekle
               </Link>
             ) : null}
           </div>
 
           {filteredListings.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
-              <div className="mb-3 text-5xl">Dukkan</div>
-              <p className="mb-1 text-lg font-semibold">Bu kategoride henuz ilan yok.</p>
+              <div className="mb-3 text-5xl">Dükkan</div>
+              <p className="mb-1 text-lg font-semibold">Bu kategoride henüz ilan yok.</p>
               {user ? (
                 <Link to="/create" className="text-sm font-bold text-violet-600 hover:underline">
-                  Ilk ilani sen ekle
+                  İlk ilanı sen ekle
                 </Link>
               ) : null}
             </div>
