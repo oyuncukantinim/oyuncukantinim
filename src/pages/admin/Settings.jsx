@@ -27,6 +27,24 @@ import { formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from 
 const DEFAULT_LISTING_IMAGE_WIDTH = 1500;
 const DEFAULT_LISTING_IMAGE_HEIGHT = 1000;
 
+const IMAGE_PREVIEW_META = {
+  default_avatar: {
+    recommendedSize: '512x512 px',
+    frameClass: 'h-24 w-24',
+    imageClass: 'h-full w-full object-cover',
+  },
+  default_profile_banner: {
+    recommendedSize: '1500x300 px',
+    frameClass: 'aspect-[5/1] w-full max-w-md',
+    imageClass: 'h-full w-full object-cover',
+  },
+  default_listing_image: {
+    recommendedSize: '1500x1000 px',
+    frameClass: 'aspect-[3/2] w-full max-w-xs',
+    imageClass: 'h-full w-full object-cover',
+  },
+};
+
 const SETTINGS_TABS = [
   {
     id: 'general',
@@ -370,6 +388,7 @@ async function resizeDefaultListingImage(file) {
 
 function SettingField({ field, value, onChange, onUpload, onRemove, imageUploading }) {
   const fileInputRef = useRef(null);
+  const imagePreviewMeta = field.type === 'image' ? IMAGE_PREVIEW_META[field.key] : null;
 
   if (field.type === 'toggle') {
     return (
@@ -394,10 +413,18 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
   }
 
   if (field.type === 'image') {
+    const previewFrameClass = imagePreviewMeta?.frameClass || 'min-h-24 w-full';
+    const previewImageClass = imagePreviewMeta?.imageClass || 'max-h-20 w-auto max-w-full object-contain';
+
     return (
       <div className="border-b border-slate-100 py-3 last:border-0">
         <label className="mb-1.5 block text-sm font-semibold text-slate-700">{field.label}</label>
         {field.desc ? <div className="mb-2 text-xs leading-5 text-slate-400">{field.desc}</div> : null}
+        {imagePreviewMeta?.recommendedSize ? (
+          <div className="mb-2 inline-flex rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-[11px] font-bold text-violet-700">
+            Önerilen boyut: {imagePreviewMeta.recommendedSize}
+          </div>
+        ) : null}
 
         <div className="space-y-3">
           <input
@@ -423,12 +450,14 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
 
           {value ? (
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className={`flex items-center justify-center bg-slate-50 ${field.key === 'default_listing_image' ? 'aspect-[3/2] p-0' : 'px-4 py-4'}`}>
+              <div className="flex items-center justify-center bg-slate-50 px-4 py-4">
+                <div className={`overflow-hidden rounded-xl border border-slate-200 bg-white ${previewFrameClass}`}>
                 <img
                   src={value}
                   alt={field.label}
-                  className={field.key === 'default_listing_image' ? 'h-full w-full object-cover' : 'max-h-20 w-auto max-w-full object-contain'}
+                  className={previewImageClass}
                 />
+                </div>
               </div>
               <div className="flex gap-2 border-t border-slate-200 bg-white p-3">
                 <button
@@ -455,7 +484,7 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={imageUploading}
-              className="flex h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 transition-all hover:border-violet-400 hover:bg-violet-50 disabled:opacity-50"
+              className="flex min-h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-5 text-center transition-all hover:border-violet-400 hover:bg-violet-50 disabled:opacity-50"
             >
               {imageUploading ? (
                 <>
@@ -467,6 +496,9 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
                   <ImageIcon size={22} className="text-slate-400" />
                   <span className="text-xs font-semibold text-slate-500">Görsel yüklemek için tıkla</span>
                   <span className="text-[10px] text-slate-400">PNG, SVG, WebP veya JPG kullanabilirsin.</span>
+                  {imagePreviewMeta?.recommendedSize ? (
+                    <span className="text-[10px] font-bold text-violet-500">Önerilen: {imagePreviewMeta.recommendedSize}</span>
+                  ) : null}
                 </>
               )}
             </button>
