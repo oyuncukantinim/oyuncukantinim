@@ -10,14 +10,13 @@ const DOPING_META = {
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
-const CATEGORY_CHIP_BASE = 'inline-flex items-center rounded-full border border-neon-cyan/20 bg-neon-cyan/10 font-bold text-cyan-700';
-
 export default function ListingCard({ listing, compact = false, dense = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
   const listingUrl = listingSlug(listing.title, listing.id);
   const sellerVerified = Number(listing.seller_is_verified_store) === 1;
+  const isInstantDelivery = listing.delivery_type === 'stock';
 
   const ringClass = activeTypes.includes('vitrine')
     ? DOPING_META.vitrine.ring
@@ -59,7 +58,6 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         {/* Sağ: Detaylar */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-3">
           <div className="min-w-0">
-            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{listing.category_name || listing.category || listing.type}</span>
             <Link to={listingUrl}>
               <h3
                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -68,6 +66,11 @@ export default function ListingCard({ listing, compact = false, dense = false, f
                 {listing.title}
               </h3>
             </Link>
+            {isInstantDelivery ? (
+              <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[9px] font-black text-cyan-700">
+                <Zap size={10} strokeWidth={2.5} /> Anında Teslimat
+              </div>
+            ) : null}
           </div>
 
           <div className="flex items-center justify-between gap-2">
@@ -99,10 +102,9 @@ export default function ListingCard({ listing, compact = false, dense = false, f
 
   const cardPad = dense ? 'p-2.5' : 'p-4';
   const imgMb = dense ? 'mb-2' : 'mb-4';
-  const badgeMb = dense ? 'mb-2' : 'mb-3';
   const titleCls = dense
-    ? 'mb-2.5 text-[13px] leading-snug'
-    : 'mb-3 text-[15px] leading-snug';
+    ? 'text-[13px] leading-snug'
+    : 'text-[15px] leading-snug';
   const sellerBox = dense ? 'mb-2.5 gap-2 rounded-xl p-2' : 'mb-4 gap-2.5 rounded-xl p-2.5';
   const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-8 w-8 text-lg';
   const sellerNameCls = dense ? 'text-[11px]' : 'text-xs';
@@ -146,12 +148,6 @@ export default function ListingCard({ listing, compact = false, dense = false, f
           ) : null}
         </div>
 
-        <div className={badgeMb}>
-          <span className={`${CATEGORY_CHIP_BASE} ${dense ? 'px-1.5 py-0 text-[9px] leading-4' : 'px-2 py-0.5 text-[10px]'}`}>
-            {listing.category_name || listing.category || listing.type}
-          </span>
-        </div>
-
         <h3
           style={{
             display: '-webkit-box',
@@ -162,6 +158,12 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         >
           {listing.title}
         </h3>
+
+        {isInstantDelivery ? (
+          <div className={`${dense ? 'mt-1.5' : 'mt-2'} inline-flex items-center gap-1 rounded-full border border-cyan-200 bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-700`}>
+            <Zap size={11} strokeWidth={2.5} /> Anında Teslimat
+          </div>
+        ) : null}
       </Link>
 
       <div className={`${sellerBox} flex min-w-0 items-center bg-surface-100`}>
