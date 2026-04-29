@@ -157,7 +157,7 @@ function HomeAdBanner({ imageUrl, linkUrl, altText }) {
   if (!imageUrl) return null;
   const banner = (
     <div className="group relative mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_22px_60px_-34px_rgba(15,23,42,0.65)] transition-transform hover:-translate-y-0.5 dark:border-slate-800">
-      <div className="aspect-[9/1] w-full overflow-hidden">
+      <div className="aspect-[72/7] w-full overflow-hidden">
         <img
           src={imageUrl}
           alt={altText || 'Ana sayfa reklam banner'}

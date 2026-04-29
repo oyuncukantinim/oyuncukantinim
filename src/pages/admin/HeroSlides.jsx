@@ -45,8 +45,8 @@ const BG_RECOMMENDED_HEIGHT = 460;
 const BG_RECOMMENDED_SIZE_LABEL = '1920x460px';
 const TAB_ICON_RECOMMENDED_SIZE = 48;
 const HOME_BANNER_WIDTH = 1440;
-const HOME_BANNER_HEIGHT = 160;
-const HOME_BANNER_SIZE_LABEL = '1440x160px';
+const HOME_BANNER_HEIGHT = 140;
+const HOME_BANNER_SIZE_LABEL = '1440x140px';
 const HERO_ADMIN_TABS = [
   { id: 'slides', label: 'Slide Kartları' },
   { id: 'backgrounds', label: 'Arka Plan Havuzu' },
@@ -363,7 +363,7 @@ export default function AdminHeroSlides() {
     const outputType = 'image/webp';
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 1));
     if (!blob) {
-      throw new Error('Banner görseli 1440x160px tuvale dönüştürülemedi.');
+      throw new Error('Banner görseli 1440x140px tuvale dönüştürülemedi.');
     }
 
     const baseName = String(file.name || 'ana-sayfa-reklam-banner')
@@ -583,7 +583,7 @@ export default function AdminHeroSlides() {
       if (prevUrl && prevUrl !== url) {
         try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
       }
-      showToast('Banner 1440x160px olarak hazırlandı.');
+      showToast('Banner 1440x140px olarak hazırlandı.');
     } catch (err) {
       showToast(err.message || 'Banner yüklenemedi.');
     } finally {
@@ -810,7 +810,7 @@ export default function AdminHeroSlides() {
                     </span>
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    Ana sayfada Son İlanlar bölümünün altında tek yatay reklam alanı olarak görünür. Görsel 9:1 oranda tam sığdırılır.
+                    Ana sayfada Son İlanlar bölümünün altında tek yatay reklam alanı olarak görünür. Görsel 72:7 oranda tam sığdırılır.
                   </div>
                 </div>
               </div>
@@ -827,7 +827,7 @@ export default function AdminHeroSlides() {
 
             <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div>
-                <div className="relative flex aspect-[9/1] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                <div className="relative flex aspect-[72/7] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-950">
                   {homeBanner.image_url ? (
                     <img src={homeBanner.image_url} alt="" className="h-full w-full object-cover" />
                   ) : (
