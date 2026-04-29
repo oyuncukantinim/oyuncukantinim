@@ -41,6 +41,7 @@ const RATIO_TOLERANCE = 0.25; // accepts 16:10 / 3:2 / 21:9 gracefully
 const BG_RECOMMENDED_WIDTH = 1920;
 const BG_RECOMMENDED_HEIGHT = 460;
 const BG_RECOMMENDED_SIZE_LABEL = '1920x460px';
+const TAB_ICON_RECOMMENDED_SIZE = 48;
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -279,6 +280,43 @@ export default function AdminHeroSlides() {
     });
   };
 
+  const resizeTabIconToCanvas = async (file) => {
+    const img = await loadImageFromFile(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = TAB_ICON_RECOMMENDED_SIZE;
+    canvas.height = TAB_ICON_RECOMMENDED_SIZE;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Sekme görsel işleme başlatılamadı.');
+    }
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, TAB_ICON_RECOMMENDED_SIZE, TAB_ICON_RECOMMENDED_SIZE);
+
+    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? file.type : 'image/webp';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 0.92));
+    if (!blob) {
+      throw new Error('Sekme görseli 48x48px tuvale dönüştürülemedi.');
+    }
+
+    const baseName = String(file.name || 'slider-sekme-gorseli')
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^\w.-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'slider-sekme-gorseli';
+    const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    const outputExt = outputType === 'image/jpeg'
+      ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
+      : outputType.replace('image/', '');
+
+    return new File([blob], `${baseName}.${outputExt}`, {
+      type: outputType,
+      lastModified: Date.now(),
+    });
+  };
+
   const handleImageUpload = async (slide, file) => {
     if (!file) return;
     setBusyTarget(slide._key, 'image');
@@ -337,8 +375,9 @@ export default function AdminHeroSlides() {
     if (!file) return;
     setBusyTarget(slide._key, 'icon');
     try {
+      const preparedFile = await resizeTabIconToCanvas(file);
       const prevUrl = slide.icon_url || '';
-      const url = await adminUploadImage(file, 'hero-slider-icons');
+      const url = await adminUploadImage(preparedFile, 'hero-slider-icons');
       updateSlide(slide._key, { icon_url: url });
       if (prevUrl && prevUrl !== url) {
         try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
