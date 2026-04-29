@@ -360,8 +360,8 @@ export default function AdminHeroSlides() {
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, HOME_BANNER_WIDTH, HOME_BANNER_HEIGHT);
 
-    const outputType = 'image/png';
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType));
+    const outputType = 'image/webp';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 1));
     if (!blob) {
       throw new Error('Banner görseli 1440x160px tuvale dönüştürülemedi.');
     }
@@ -371,7 +371,7 @@ export default function AdminHeroSlides() {
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || 'ana-sayfa-reklam-banner';
-    const outputExt = 'png';
+    const outputExt = 'webp';
 
     return new File([blob], `${baseName}.${outputExt}`, {
       type: outputType,
