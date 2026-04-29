@@ -20,6 +20,7 @@ import {
   adminUploadImage,
 } from '../../lib/adminApi';
 import { productSlug } from '../../lib/api';
+import useSiteBrand from '../../hooks/useSiteBrand';
 
 const PRODUCT_TYPE_OPTIONS = [
   { value: 'digital_code', label: 'Dijital Kod' },
@@ -572,16 +573,17 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
   );
 }
 
-function ProductListCard({ product, onEdit, onDelete }) {
+function ProductListCard({ product, onEdit, onDelete, fallbackImage = '' }) {
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
+  const coverImage = product.cover_image || fallbackImage;
 
   return (
     <article className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-[118px_minmax(0,1fr)]">
         <div className="relative bg-slate-100">
-          {product.cover_image ? (
-            <img src={product.cover_image} alt={product.title} className="h-full w-full object-contain p-2 md:min-h-[118px]" />
+          {coverImage ? (
+            <img src={coverImage} alt={product.title} className="h-full w-full object-contain p-2 md:min-h-[118px]" />
           ) : (
             <div className="flex h-full min-h-[118px] items-center justify-center bg-gradient-to-br from-violet-100 to-cyan-100 text-violet-400">
               <Package size={22} />
@@ -649,6 +651,7 @@ function ProductListCard({ product, onEdit, onDelete }) {
   );
 }
 export default function AdminProducts() {
+  const { defaultListingImage } = useSiteBrand();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
@@ -831,7 +834,7 @@ export default function AdminProducts() {
         ) : (
           <div className="space-y-4">
             {products.map((product) => (
-              <ProductListCard key={product.id} product={product} onEdit={openEdit} onDelete={handleDelete} />
+              <ProductListCard key={product.id} product={product} fallbackImage={defaultListingImage} onEdit={openEdit} onDelete={handleDelete} />
             ))}
           </div>
         )}
