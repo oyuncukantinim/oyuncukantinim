@@ -159,11 +159,7 @@ export default function HeroSlider() {
   const desktopImageUrl = current?.image_url || '';
   const hasImage = Boolean(desktopImageUrl);
   const titleLength = currentTitle.length;
-  const titleSizeClass = titleLength > 72
-    ? 'text-[1.18rem] sm:text-[1.95rem] md:text-[2.45rem] lg:text-[2.9rem]'
-    : titleLength > 48
-      ? 'text-[1.34rem] sm:text-[2.35rem] md:text-[2.85rem] lg:text-[3.35rem]'
-      : 'text-[1.56rem] sm:text-4xl md:text-5xl lg:text-6xl';
+  const titleScale = Math.max(0.56, Math.min(1, 44 / Math.max(titleLength, 44)));
 
   // Pick a stable background once per mount. Prefer the dedicated backgrounds
   // pool; fall back to slide images if the admin hasn't uploaded any yet.
@@ -332,7 +328,7 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-start gap-1.5 overflow-hidden px-4 pb-14 pt-5 sm:max-w-[640px] sm:justify-center sm:gap-3 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-start gap-1.5 overflow-hidden px-4 pb-14 pt-5 sm:max-w-[640px] sm:justify-center sm:gap-2.5 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
@@ -347,17 +343,25 @@ export default function HeroSlider() {
                 </div>
               ) : <div />}
 
-              <h1 className={`${titleSizeClass} max-w-[11.5rem] break-words font-black leading-[0.92] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:max-w-none sm:leading-[0.98]`}>
+              <h1
+                style={{
+                  '--hero-title-scale': titleScale,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                }}
+                className="max-w-[11.5rem] shrink overflow-hidden break-words text-[calc(1.56rem*var(--hero-title-scale))] font-black leading-[0.92] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:max-w-none sm:text-[calc(2.25rem*var(--hero-title-scale))] sm:leading-[0.98] md:text-[calc(3rem*var(--hero-title-scale))] lg:text-[calc(3.75rem*var(--hero-title-scale))]"
+              >
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="line-clamp-2 max-w-[11.5rem] break-words text-[10px] font-semibold leading-[1.3] text-white/85 sm:line-clamp-3 sm:max-w-lg sm:text-base sm:leading-relaxed md:text-lg">
+                <p className="line-clamp-2 max-w-[11.5rem] shrink-0 break-words text-[10px] font-semibold leading-[1.3] text-white/85 sm:max-w-lg sm:text-sm sm:leading-relaxed md:text-base lg:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
 
-              <div className="mt-1.5 flex flex-wrap items-center gap-2 sm:mt-2 sm:gap-2.5">
+              <div className="mt-1.5 flex shrink-0 flex-wrap items-center gap-2 sm:mt-2 sm:gap-2.5">
                 {current.cta_label ? (
                   <Link
                     to={current.cta_url || '/market'}

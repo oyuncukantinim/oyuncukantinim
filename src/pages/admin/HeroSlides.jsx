@@ -216,20 +216,12 @@ export default function AdminHeroSlides() {
       throw new Error('Görsel işleme başlatılamadı.');
     }
 
-    ctx.fillStyle = '#020617';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const scale = Math.min(RECOMMENDED_WIDTH / img.naturalWidth, RECOMMENDED_HEIGHT / img.naturalHeight);
-    const drawWidth = Math.round(img.naturalWidth * scale);
-    const drawHeight = Math.round(img.naturalHeight * scale);
-    const dx = Math.round((RECOMMENDED_WIDTH - drawWidth) / 2);
-    const dy = Math.round((RECOMMENDED_HEIGHT - drawHeight) / 2);
-
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+    ctx.drawImage(img, 0, 0, RECOMMENDED_WIDTH, RECOMMENDED_HEIGHT);
 
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.92));
+    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? file.type : 'image/webp';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 0.92));
     if (!blob) {
       throw new Error('Görsel 1350x440px tuvale dönüştürülemedi.');
     }
@@ -239,9 +231,13 @@ export default function AdminHeroSlides() {
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || 'slider-gorseli';
+    const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    const outputExt = outputType === 'image/jpeg'
+      ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
+      : outputType.replace('image/', '');
 
-    return new File([blob], `${baseName}-1350x440.webp`, {
-      type: 'image/webp',
+    return new File([blob], `${baseName}.${outputExt}`, {
+      type: outputType,
       lastModified: Date.now(),
     });
   };
