@@ -185,21 +185,81 @@ export default function AdminHeroSlides() {
       }
     });
 
+  const loadImageFromFile = (file) =>
+    new Promise((resolve, reject) => {
+      if (!file || !file.type?.startsWith('image/')) {
+        reject(new Error('Lütfen geçerli bir görsel seçin.'));
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Görsel okunamadı.'));
+      };
+      img.src = url;
+    });
+
+  const resizeSlideImageToCanvas = async (file) => {
+    const img = await loadImageFromFile(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = RECOMMENDED_WIDTH;
+    canvas.height = RECOMMENDED_HEIGHT;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Görsel işleme başlatılamadı.');
+    }
+
+    ctx.fillStyle = '#020617';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const scale = Math.min(RECOMMENDED_WIDTH / img.naturalWidth, RECOMMENDED_HEIGHT / img.naturalHeight);
+    const drawWidth = Math.round(img.naturalWidth * scale);
+    const drawHeight = Math.round(img.naturalHeight * scale);
+    const dx = Math.round((RECOMMENDED_WIDTH - drawWidth) / 2);
+    const dy = Math.round((RECOMMENDED_HEIGHT - drawHeight) / 2);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, dx, dy, drawWidth, drawHeight);
+
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.92));
+    if (!blob) {
+      throw new Error('Görsel 1350x440px tuvale dönüştürülemedi.');
+    }
+
+    const baseName = String(file.name || 'slider-gorseli')
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^\w.-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'slider-gorseli';
+
+    return new File([blob], `${baseName}-1350x440.webp`, {
+      type: 'image/webp',
+      lastModified: Date.now(),
+    });
+  };
+
   const handleImageUpload = async (slide, file) => {
     if (!file) return;
     setBusyTarget(slide._key, 'image');
     try {
-      // Capture local dimensions + size before upload for instant feedback.
-      const dims = await readLocalDimensions(file);
+      const preparedFile = await resizeSlideImageToCanvas(file);
       const prevUrl = slide.image_url || '';
-      const url = await adminUploadImage(file, 'hero-slider');
+      const url = await adminUploadImage(preparedFile, 'hero-slider');
       updateSlide(slide._key, { image_url: url });
       setImageMeta((prev) => ({
         ...prev,
         [slide._key]: {
-          width: dims?.width ?? null,
-          height: dims?.height ?? null,
-          bytes: file.size,
+          width: RECOMMENDED_WIDTH,
+          height: RECOMMENDED_HEIGHT,
+          bytes: preparedFile.size,
         },
       }));
       if (prevUrl && prevUrl !== url) {
