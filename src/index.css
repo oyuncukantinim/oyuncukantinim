@@ -17,16 +17,16 @@
   }
 
   html.theme-dark {
-    --ok-bg: #101827;
-    --ok-panel: #182235;
-    --ok-panel-soft: #202c42;
-    --ok-panel-muted: #2b3850;
-    --ok-text: #edf2f7;
+    --ok-bg: #162033;
+    --ok-panel: #202c42;
+    --ok-panel-soft: #2a3852;
+    --ok-panel-muted: #35445f;
+    --ok-text: #f1f5f9;
     --ok-heading: #ffffff;
-    --ok-muted: #b7c2d5;
-    --ok-subtle: #8796ad;
-    --ok-border: rgba(170, 184, 204, 0.24);
-    --ok-border-soft: rgba(170, 184, 204, 0.15);
+    --ok-muted: #c1cad8;
+    --ok-subtle: #95a4b8;
+    --ok-border: rgba(184, 196, 214, 0.27);
+    --ok-border-soft: rgba(184, 196, 214, 0.17);
   }
 
   body {
@@ -128,12 +128,12 @@ html.theme-dark ::-webkit-scrollbar-thumb {
 }
 
 html.theme-dark .card {
-  box-shadow: 0 18px 40px rgba(3, 7, 18, 0.18);
+  box-shadow: 0 18px 40px rgba(3, 7, 18, 0.15);
 }
 
 html.theme-dark .card:hover {
   border-color: rgba(139, 92, 246, 0.34);
-  box-shadow: 0 20px 50px rgba(3, 7, 18, 0.34), 0 0 0 1px rgba(139, 92, 246, 0.08);
+  box-shadow: 0 20px 50px rgba(3, 7, 18, 0.28), 0 0 0 1px rgba(139, 92, 246, 0.08);
 }
 
 .seller-achievements-hero {
@@ -148,21 +148,21 @@ html.theme-dark .seller-achievements-hero {
   border-color: rgba(139, 92, 246, 0.28) !important;
   background:
     radial-gradient(circle at 92% 4%, rgba(34, 211, 238, 0.18), transparent 15rem),
-    linear-gradient(135deg, #101827 0%, rgba(67, 34, 124, 0.78) 54%, rgba(14, 70, 96, 0.72) 100%) !important;
-  box-shadow: 0 22px 55px rgba(3, 7, 18, 0.34), inset 0 0 0 1px rgba(255, 255, 255, 0.045);
+    linear-gradient(135deg, #162033 0%, rgba(79, 46, 141, 0.76) 54%, rgba(18, 82, 112, 0.70) 100%) !important;
+  box-shadow: 0 22px 55px rgba(3, 7, 18, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.055);
 }
 
 html.theme-dark .achievement-card {
-  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.035) !important;
+  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.20), inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
 }
 
 html.theme-dark .theme-soft-action {
-  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.24), 0 0 22px rgba(139, 92, 246, 0.13) !important;
+  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.20), 0 0 22px rgba(139, 92, 246, 0.13) !important;
 }
 
 html.theme-dark .admin-verified-store-card {
   background:
-    linear-gradient(135deg, rgba(6, 95, 70, 0.28), rgba(24, 34, 53, 0.92)) !important;
+    linear-gradient(135deg, rgba(6, 95, 70, 0.28), rgba(32, 44, 66, 0.92)) !important;
   border-color: rgba(52, 211, 153, 0.26) !important;
   box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.035);
 }
@@ -393,12 +393,12 @@ html.theme-dark [class~="from-slate-100"],
 html.theme-dark [class~="from-slate-200"],
 html.theme-dark [class~="from-zinc-50"] {
   --tw-gradient-from: var(--ok-panel) var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(24, 34, 53, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(32, 44, 66, 0) var(--tw-gradient-to-position) !important;
 }
 
 html.theme-dark [class~="via-white"],
 html.theme-dark [class~="via-slate-900"] {
-  --tw-gradient-to: rgba(32, 44, 66, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(42, 56, 82, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--ok-panel-soft) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }
 
@@ -440,7 +440,7 @@ html.theme-dark [class~="via-amber-50"],
 html.theme-dark [class~="via-emerald-50"],
 html.theme-dark [class~="via-cyan-50"],
 html.theme-dark [class~="via-purple-50"] {
-  --tw-gradient-stops: var(--tw-gradient-from), rgba(32, 44, 66, 0.72) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), rgba(42, 56, 82, 0.72) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }
 
 html.theme-dark [class~="to-violet-50"],
