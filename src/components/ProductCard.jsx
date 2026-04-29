@@ -13,7 +13,7 @@ import {
   Wrench,
   Zap,
 } from 'lucide-react';
-import { productSlug } from '../lib/api';
+import { productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
 
 const PRODUCT_TYPE_META = {
@@ -69,7 +69,7 @@ export default function ProductCard({ product, compact = false }) {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
 
-  const href = product.product_path ? `/product/${product.product_path}` : productSlug(product.title, product.id);
+  const href = productPath(product);
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;

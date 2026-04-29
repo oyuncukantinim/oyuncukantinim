@@ -12,7 +12,7 @@ import {
   User,
   Wrench,
 } from 'lucide-react';
-import { getProduct, idFromSlug, productSlug } from '../lib/api';
+import { getProduct, idFromSlug, productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
 import Breadcrumb from '../components/Breadcrumb';
 
@@ -134,7 +134,7 @@ export default function ProductDetailPage() {
       image: product.cover_image || '',
       product_id: product.id,
       seller: 'OyuncuKantinim',
-      path: product.product_path ? `/product/${product.product_path}` : productSlug(product.title, product.id),
+      path: productPath(product),
     });
   };
 
@@ -196,7 +196,7 @@ export default function ProductDetailPage() {
             </h1>
 
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600 dark:text-slate-300">
-              {product.short_description || 'Bu �r�n i�in detayl� a��klama a�a��da yer al�r.'}
+              {product.short_description || 'Bu ürün için detaylı açıklama aşağıda yer alır.'}
             </p>
           </div>
 
@@ -247,7 +247,7 @@ export default function ProductDetailPage() {
                 >
                   {isUnavailable ? (
                     <>
-                      <Lock size={15} strokeWidth={3} /> Sat�n Al�namaz
+                      <Lock size={15} strokeWidth={3} /> Satın Alınamaz
                     </>
                   ) : (
                     <>
@@ -262,10 +262,10 @@ export default function ProductDetailPage() {
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
-        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">�r�n A��klamas�</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Ürün Açıklaması</h2>
         <div className="mt-3 h-[2px] w-12 rounded-full bg-violet-600 dark:bg-violet-400" />
         <div className="mt-5 whitespace-pre-line text-sm font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-[15px]">
-          {product.description || 'Detayl� a��klama yak�nda burada g�r�necek.'}
+          {product.description || 'Detaylı açıklama yakında burada görünecek.'}
         </div>
       </section>
     </div>

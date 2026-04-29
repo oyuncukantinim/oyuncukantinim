@@ -55,19 +55,19 @@ const normalizeTurkishText = (value, fallback = '') => {
   if (!text) return fallback;
 
   return text
-    .replaceAll('Ä°', 'İ')
-    .replaceAll('Ä±', 'ı')
-    .replaceAll('Ã¼', 'ü')
-    .replaceAll('Ãœ', 'Ü')
-    .replaceAll('Ã¶', 'ö')
-    .replaceAll('Ã–', 'Ö')
-    .replaceAll('Ã§', 'ç')
-    .replaceAll('Ã‡', 'Ç')
-    .replaceAll('ÅŸ', 'ş')
-    .replaceAll('Åž', 'Ş')
-    .replaceAll('ÄŸ', 'ğ')
-    .replaceAll('Äž', 'Ğ')
-    .replaceAll('â‚º', '₺');
+    .replaceAll('\u00c4\u00b0', 'İ')
+    .replaceAll('\u00c4\u00b1', 'ı')
+    .replaceAll('\u00c3\u00bc', 'ü')
+    .replaceAll('\u00c3\u0152', 'Ü')
+    .replaceAll('\u00c3\u00b6', 'ö')
+    .replaceAll('\u00c3\u2013', 'Ö')
+    .replaceAll('\u00c3\u00a7', 'ç')
+    .replaceAll('\u00c3\u2021', 'Ç')
+    .replaceAll('\u00c5\u0178', 'ş')
+    .replaceAll('\u00c5\u017d', 'Ş')
+    .replaceAll('\u00c4\u0178', 'ğ')
+    .replaceAll('\u00c4\u017d', 'Ğ')
+    .replaceAll('\u00e2\u201a\u00ba', '₺');
 };
 
 const fmtDate = (value) => (value ? new Date(value).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Tarih yok');

@@ -75,34 +75,38 @@ function invalidatePublicCache(actions = []) {
   }
 }
 
-// /listing/minecraft-hesabi-123 formatında slug üretir
-export function listingSlug(title, id) {
-  const slug = title
-    .replace(/İ/g, 'i').replace(/I/g, 'i')
-    .replace(/Ğ/g, 'g').replace(/Ü/g, 'u').replace(/Ş/g, 's')
-    .replace(/Ö/g, 'o').replace(/Ç/g, 'c')
+function makeSlug(title) {
+  return String(title || '')
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'i')
+    .replace(/ı/g, 'i')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
-    .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
-    .replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ç/g, 'c')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
+
+export function productPath(product) {
+  const id = product?.id ?? product?.product_id;
+  const rawPath = String(product?.product_path || '').trim();
+  const rawSlug = id ? rawPath.replace(new RegExp(`-${id}$`), '') : rawPath;
+  const slug = makeSlug(rawSlug || product?.slug || product?.title || 'product') || 'product';
+  return `/product/${slug}-${id}`;
+}
+
+// /listing/minecraft-hesabi-123 formatında slug üretir
+export function listingSlug(title, id) {
+  const slug = makeSlug(title) || 'listing';
   return `/listing/${slug}-${id}`;
 }
 
 export function productSlug(title, id) {
-  const slug = title
-    .replace(/Ä°/g, 'i').replace(/I/g, 'i')
-    .replace(/Ä/g, 'g').replace(/Ãœ/g, 'u').replace(/Å/g, 's')
-    .replace(/Ã–/g, 'o').replace(/Ã‡/g, 'c')
-    .toLowerCase()
-    .replace(/ÄŸ/g, 'g').replace(/Ã¼/g, 'u').replace(/ÅŸ/g, 's')
-    .replace(/Ä±/g, 'i').replace(/Ã¶/g, 'o').replace(/Ã§/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+  const slug = makeSlug(title) || 'product';
   return `/product/${slug}-${id}`;
 }
 
-// Slug'dan id'yi çıkarır: "minecraft-hesabi-123" → "123"
+// Slug'dan id'yi çıkarır: "minecraft-hesabi-123" -> "123"
 export function idFromSlug(slug) {
   return slug.split('-').pop();
 }

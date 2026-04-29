@@ -62,7 +62,7 @@ export default async function middleware(request) {
       const data = await res.json();
       if (data.status === 'success' && data.data) {
         const l = data.data;
-        title = `${l.title} — ${SITE_NAME}`;
+        title = `${l.title} - ${SITE_NAME}`;
         desc  = l.description
           ? l.description.slice(0, 200)
           : `${Number(l.price).toFixed(2)} ₺ · ${l.category_name || ''}`;
@@ -88,7 +88,7 @@ export default async function middleware(request) {
       const data = await res.json();
       if (data.status === 'success' && data.data?.seller) {
         const s = data.data.seller;
-        title = `${s.username} — ${SITE_NAME}`;
+        title = `${s.username} - ${SITE_NAME}`;
         desc  = s.bio
           ? s.bio.slice(0, 200)
           : `${s.total_sales ?? 0} satış · ${s.review_count ?? 0} değerlendirme`;

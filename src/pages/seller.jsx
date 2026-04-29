@@ -322,7 +322,7 @@ export default function SellerPage() {
             </div>
           ) : (
             <div className="rounded-3xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400 shadow-sm">
-              Bu satÄ±cÄ±nÄ±n henÃ¼z gÃ¶rÃ¼nÃ¼r bir baÅŸarÄ±mÄ± bulunmuyor.
+              Bu satıcının henüz görünür bir başarımı bulunmuyor.
             </div>
           )}
         </div>
