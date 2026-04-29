@@ -17,16 +17,16 @@
   }
 
   html.theme-dark {
-    --ok-bg: #080a12;
-    --ok-panel: #111827;
-    --ok-panel-soft: #151b2e;
-    --ok-panel-muted: #1f2937;
-    --ok-text: #e5e7eb;
-    --ok-heading: #f8fafc;
-    --ok-muted: #a3aec2;
-    --ok-subtle: #718096;
-    --ok-border: rgba(148, 163, 184, 0.20);
-    --ok-border-soft: rgba(148, 163, 184, 0.12);
+    --ok-bg: #101827;
+    --ok-panel: #182235;
+    --ok-panel-soft: #202c42;
+    --ok-panel-muted: #2b3850;
+    --ok-text: #edf2f7;
+    --ok-heading: #ffffff;
+    --ok-muted: #b7c2d5;
+    --ok-subtle: #8796ad;
+    --ok-border: rgba(170, 184, 204, 0.24);
+    --ok-border-soft: rgba(170, 184, 204, 0.15);
   }
 
   body {
@@ -128,12 +128,12 @@ html.theme-dark ::-webkit-scrollbar-thumb {
 }
 
 html.theme-dark .card {
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 18px 40px rgba(3, 7, 18, 0.18);
 }
 
 html.theme-dark .card:hover {
   border-color: rgba(139, 92, 246, 0.34);
-  box-shadow: 0 20px 50px rgba(12, 16, 32, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.08);
+  box-shadow: 0 20px 50px rgba(3, 7, 18, 0.34), 0 0 0 1px rgba(139, 92, 246, 0.08);
 }
 
 .seller-achievements-hero {
@@ -147,22 +147,22 @@ html.theme-dark .card:hover {
 html.theme-dark .seller-achievements-hero {
   border-color: rgba(139, 92, 246, 0.28) !important;
   background:
-    radial-gradient(circle at 92% 4%, rgba(34, 211, 238, 0.16), transparent 15rem),
-    linear-gradient(135deg, #080a12 0%, rgba(46, 16, 101, 0.82) 54%, rgba(8, 47, 73, 0.76) 100%) !important;
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(255, 255, 255, 0.035);
+    radial-gradient(circle at 92% 4%, rgba(34, 211, 238, 0.18), transparent 15rem),
+    linear-gradient(135deg, #101827 0%, rgba(67, 34, 124, 0.78) 54%, rgba(14, 70, 96, 0.72) 100%) !important;
+  box-shadow: 0 22px 55px rgba(3, 7, 18, 0.34), inset 0 0 0 1px rgba(255, 255, 255, 0.045);
 }
 
 html.theme-dark .achievement-card {
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.025) !important;
+  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.24), inset 0 0 0 1px rgba(255, 255, 255, 0.035) !important;
 }
 
 html.theme-dark .theme-soft-action {
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.30), 0 0 22px rgba(139, 92, 246, 0.13) !important;
+  box-shadow: 0 16px 34px rgba(3, 7, 18, 0.24), 0 0 22px rgba(139, 92, 246, 0.13) !important;
 }
 
 html.theme-dark .admin-verified-store-card {
   background:
-    linear-gradient(135deg, rgba(6, 95, 70, 0.26), rgba(17, 24, 39, 0.92)) !important;
+    linear-gradient(135deg, rgba(6, 95, 70, 0.28), rgba(24, 34, 53, 0.92)) !important;
   border-color: rgba(52, 211, 153, 0.26) !important;
   box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.035);
 }
@@ -393,12 +393,12 @@ html.theme-dark [class~="from-slate-100"],
 html.theme-dark [class~="from-slate-200"],
 html.theme-dark [class~="from-zinc-50"] {
   --tw-gradient-from: var(--ok-panel) var(--tw-gradient-from-position) !important;
-  --tw-gradient-to: rgba(17, 24, 39, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(24, 34, 53, 0) var(--tw-gradient-to-position) !important;
 }
 
 html.theme-dark [class~="via-white"],
 html.theme-dark [class~="via-slate-900"] {
-  --tw-gradient-to: rgba(21, 27, 46, 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-to: rgba(32, 44, 66, 0) var(--tw-gradient-to-position) !important;
   --tw-gradient-stops: var(--tw-gradient-from), var(--ok-panel-soft) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }
 
@@ -440,7 +440,7 @@ html.theme-dark [class~="via-amber-50"],
 html.theme-dark [class~="via-emerald-50"],
 html.theme-dark [class~="via-cyan-50"],
 html.theme-dark [class~="via-purple-50"] {
-  --tw-gradient-stops: var(--tw-gradient-from), rgba(21, 27, 46, 0.72) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), rgba(32, 44, 66, 0.72) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }
 
 html.theme-dark [class~="to-violet-50"],
