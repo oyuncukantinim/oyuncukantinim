@@ -3,10 +3,8 @@ import { Link } from 'react-router-dom';
 import {
   BadgePercent,
   Boxes,
-  Clock3,
   Flame,
   Package,
-  ShieldCheck,
   ShoppingCart,
   Star,
   Tag,
@@ -38,20 +36,16 @@ function getMaxProductQuantity(product) {
   return stock;
 }
 
-function InstantBadge({ delivery, estimated }) {
+function InstantBadge({ delivery }) {
   if (delivery === 'automatic') {
     return (
       <span className="inline-flex items-center gap-1 rounded-md border border-cyan-200 bg-cyan-50 px-2 py-1 text-[10px] font-black text-cyan-700 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200">
-        <Zap size={11} strokeWidth={3} /> Hızlı Teslimat
+        <Zap size={11} strokeWidth={3} /> Anında Teslimat
       </span>
     );
   }
 
-  return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] font-black text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200">
-      <Clock3 size={11} strokeWidth={3} /> {estimated || 'Manuel'}
-    </span>
-  );
+  return null;
 }
 
 function DiscountChip({ price, salePrice }) {
@@ -186,14 +180,12 @@ export default function ProductCard({ product, compact = false }) {
             </h3>
           </Link>
 
-          <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 dark:text-slate-400">
-            {product.delivery_type === 'automatic' ? (
+          {product.delivery_type === 'automatic' ? (
+            <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-500 dark:text-slate-400">
               <Zap size={13} className="text-emerald-500 dark:text-emerald-300" strokeWidth={3} />
-            ) : (
-              <ShieldCheck size={13} className="text-lime-600 dark:text-lime-300" strokeWidth={3} />
-            )}
-            <span>{product.delivery_type === 'automatic' ? 'Anında teslimat' : 'Güvenli alışveriş'}</span>
-          </div>
+              <span>Anında teslimat</span>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-3">
