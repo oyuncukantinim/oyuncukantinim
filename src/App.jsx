@@ -11,62 +11,49 @@ import SiteBrand from './components/SiteBrand';
 import { getSiteSettings } from './lib/api';
 import ErrorBoundary from './components/ErrorBoundary';
 
-const LAZY_LOAD_TIMEOUT_MS = 8000;
-
-function lazyWithTimeout(importer, label) {
-  return lazy(() => Promise.race([
-    importer(),
-    new Promise((_, reject) => {
-      window.setTimeout(() => {
-        reject(new Error(`Sayfa modulu zaman asimina ugradi: ${label}`));
-      }, LAZY_LOAD_TIMEOUT_MS);
-    }),
-  ]));
-}
-
 
 // Kullanıcı sayfaları — lazy
-const Home                = lazyWithTimeout(() => import('./pages/home'), 'home');
-const MarketPage          = lazyWithTimeout(() => import('./pages/market'), 'market');
-const ListingDetailPage   = lazyWithTimeout(() => import('./pages/listing-detail'), 'listing-detail');
-const ProductDetailPage   = lazyWithTimeout(() => import('./pages/product-detail'), 'product-detail');
-const CartPage            = lazyWithTimeout(() => import('./pages/cart'), 'cart');
-const LoginPage           = lazyWithTimeout(() => import('./pages/login'), 'login');
-const ProfilePage         = lazyWithTimeout(() => import('./pages/profile'), 'profile');
-const CreatePage          = lazyWithTimeout(() => import('./pages/create'), 'create');
-const MessagesPage        = lazyWithTimeout(() => import('./pages/messages'), 'messages');
-const NotificationsPage   = lazyWithTimeout(() => import('./pages/notifications'), 'notifications');
-const SupportPage         = lazyWithTimeout(() => import('./pages/support'), 'support');
-const SellerPage          = lazyWithTimeout(() => import('./pages/seller'), 'seller');
-const CategoriesPage      = lazyWithTimeout(() => import('./pages/categories'), 'categories');
-const CategoryListingsPage = lazyWithTimeout(() => import('./pages/category-listings'), 'category-listings');
-const FinancePage         = lazyWithTimeout(() => import('./pages/finance'), 'finance');
-const StoreApplicationPage = lazyWithTimeout(() => import('./pages/magaza-basvuru'), 'magaza-basvuru');
-const Error403Page        = lazyWithTimeout(() => import('./pages/error-403'), 'error-403');
-const Error404Page        = lazyWithTimeout(() => import('./pages/error-404'), 'error-404');
+const Home                = lazy(() => import('./pages/home'));
+const MarketPage          = lazy(() => import('./pages/market'));
+const ListingDetailPage   = lazy(() => import('./pages/listing-detail'));
+const ProductDetailPage   = lazy(() => import('./pages/product-detail'));
+const CartPage            = lazy(() => import('./pages/cart'));
+const LoginPage           = lazy(() => import('./pages/login'));
+const ProfilePage         = lazy(() => import('./pages/profile'));
+const CreatePage          = lazy(() => import('./pages/create'));
+const MessagesPage        = lazy(() => import('./pages/messages'));
+const NotificationsPage   = lazy(() => import('./pages/notifications'));
+const SupportPage         = lazy(() => import('./pages/support'));
+const SellerPage          = lazy(() => import('./pages/seller'));
+const CategoriesPage      = lazy(() => import('./pages/categories'));
+const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
+const FinancePage         = lazy(() => import('./pages/finance'));
+const StoreApplicationPage = lazy(() => import('./pages/magaza-basvuru'));
+const Error403Page        = lazy(() => import('./pages/error-403'));
+const Error404Page        = lazy(() => import('./pages/error-404'));
 
 // Admin sayfaları — lazy (ayrı chunk)
-const AdminLogin         = lazyWithTimeout(() => import('./pages/admin/Login'), 'admin/login');
-const AdminDashboard     = lazyWithTimeout(() => import('./pages/admin/Dashboard'), 'admin/dashboard');
-const AdminUsers         = lazyWithTimeout(() => import('./pages/admin/Users'), 'admin/users');
-const AdminListings      = lazyWithTimeout(() => import('./pages/admin/Listings'), 'admin/listings');
-const AdminOrders        = lazyWithTimeout(() => import('./pages/admin/Orders'), 'admin/orders');
-const AdminReviews       = lazyWithTimeout(() => import('./pages/admin/Reviews'), 'admin/reviews');
-const AdminCategories    = lazyWithTimeout(() => import('./pages/admin/Categories'), 'admin/categories');
-const AdminProducts      = lazyWithTimeout(() => import('./pages/admin/Products'), 'admin/products');
-const AdminProductOrders = lazyWithTimeout(() => import('./pages/admin/ProductOrders'), 'admin/product-orders');
-const AdminDoping        = lazyWithTimeout(() => import('./pages/admin/Doping'), 'admin/doping');
-const AdminAnnouncements = lazyWithTimeout(() => import('./pages/admin/Announcements'), 'admin/announcements');
-const AdminMessages      = lazyWithTimeout(() => import('./pages/admin/Messages'), 'admin/messages');
-const AdminSupport       = lazyWithTimeout(() => import('./pages/admin/Support'), 'admin/support');
-const AdminSettings      = lazyWithTimeout(() => import('./pages/admin/Settings'), 'admin/settings');
-const AdminHeroSlides    = lazyWithTimeout(() => import('./pages/admin/HeroSlides'), 'admin/hero-slides');
-const AdminFinance       = lazyWithTimeout(() => import('./pages/admin/Finance'), 'admin/finance');
-const AdminPaymentManagement = lazyWithTimeout(() => import('./pages/admin/PaymentManagement'), 'admin/payment-management');
-const AdminDevNotes      = lazyWithTimeout(() => import('./pages/admin/DevNotes'), 'admin/dev-notes');
-const AdminLogs          = lazyWithTimeout(() => import('./pages/admin/AdminLogs'), 'admin/logs');
-const AdminStoreManagement = lazyWithTimeout(() => import('./pages/admin/StoreManagement'), 'admin/store-management');
-const AdminXpManagement = lazyWithTimeout(() => import('./pages/admin/XpManagement'), 'admin/xp-management');
+const AdminLogin         = lazy(() => import('./pages/admin/Login'));
+const AdminDashboard     = lazy(() => import('./pages/admin/Dashboard'));
+const AdminUsers         = lazy(() => import('./pages/admin/Users'));
+const AdminListings      = lazy(() => import('./pages/admin/Listings'));
+const AdminOrders        = lazy(() => import('./pages/admin/Orders'));
+const AdminReviews       = lazy(() => import('./pages/admin/Reviews'));
+const AdminCategories    = lazy(() => import('./pages/admin/Categories'));
+const AdminProducts      = lazy(() => import('./pages/admin/Products'));
+const AdminProductOrders = lazy(() => import('./pages/admin/ProductOrders'));
+const AdminDoping        = lazy(() => import('./pages/admin/Doping'));
+const AdminAnnouncements = lazy(() => import('./pages/admin/Announcements'));
+const AdminMessages      = lazy(() => import('./pages/admin/Messages'));
+const AdminSupport       = lazy(() => import('./pages/admin/Support'));
+const AdminSettings      = lazy(() => import('./pages/admin/Settings'));
+const AdminHeroSlides    = lazy(() => import('./pages/admin/HeroSlides'));
+const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
+const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
+const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
+const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
+const AdminStoreManagement = lazy(() => import('./pages/admin/StoreManagement'));
+const AdminXpManagement = lazy(() => import('./pages/admin/XpManagement'));
 
 function PageLoader() {
   return (
@@ -315,48 +302,38 @@ function SiteLayout() {
   );
 }
 
-function AppRoutes() {
-  const location = useLocation();
-
-  return (
-    <ErrorBoundary resetKey={location.pathname}>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
-          <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
-          <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
-          <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
-          <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
-          <Route path="/admin/products" element={<AdminRoute><AdminProducts /></AdminRoute>} />
-          <Route path="/admin/product-orders" element={<AdminRoute><AdminProductOrders /></AdminRoute>} />
-          <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
-          <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
-          <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
-          <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
-          <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
-          <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
-          <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
-          <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
-          <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
-          <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />
-          <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
-          <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
-          <Route path="/*" element={<SiteLayout />} />
-        </Routes>
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
-
 export default function App() {
   return (
     <BrowserRouter>
       <AdminAuthProvider>
         <AuthProvider>
           <CartProvider>
-            <AppRoutes />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
+                <Route path="/admin/listings" element={<AdminRoute><AdminListings /></AdminRoute>} />
+                <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+                <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
+                <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+                <Route path="/admin/products" element={<AdminRoute><AdminProducts /></AdminRoute>} />
+                <Route path="/admin/product-orders" element={<AdminRoute><AdminProductOrders /></AdminRoute>} />
+                <Route path="/admin/doping" element={<AdminRoute><AdminDoping /></AdminRoute>} />
+                <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
+                  <Route path="/admin/messages" element={<AdminRoute><AdminMessages /></AdminRoute>} />
+                  <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
+                  <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+                  <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
+                  <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+                <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
+                <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
+                <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />
+                <Route path="/admin/dev-notes" element={<AdminRoute><AdminDevNotes /></AdminRoute>} />
+                <Route path="/admin/logs" element={<AdminRoute><AdminLogs /></AdminRoute>} />
+                <Route path="/*" element={<ErrorBoundary><SiteLayout /></ErrorBoundary>} />
+              </Routes>
+            </Suspense>
           </CartProvider>
         </AuthProvider>
       </AdminAuthProvider>
