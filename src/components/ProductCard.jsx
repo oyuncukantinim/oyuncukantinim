@@ -229,7 +229,7 @@ export default function ProductCard({ product, compact = false }) {
               type="button"
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className="inline-flex min-w-[138px] items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-md transition-all duration-300 hover:bg-violet-700 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-white disabled:shadow-none dark:disabled:bg-slate-800 dark:disabled:text-slate-400"
+              className="inline-flex min-w-[138px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-lime-400 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_12px_26px_-14px_rgba(34,211,238,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:from-cyan-400 hover:via-emerald-400 hover:to-lime-300 hover:shadow-[0_16px_34px_-16px_rgba(16,185,129,0.95)] disabled:cursor-not-allowed disabled:bg-none disabled:bg-amber-500 disabled:text-white disabled:shadow-none disabled:hover:translate-y-0 dark:disabled:bg-amber-600 dark:disabled:text-white"
             >
               <ShoppingCart size={12} strokeWidth={3} /> {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
             </button>
