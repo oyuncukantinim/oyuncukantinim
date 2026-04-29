@@ -393,8 +393,9 @@ export default function Home() {
                 title="Güvenli"
                 aria-label="Güvenli"
               >
-                <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" />
-                <span className="absolute inset-[-5px] -z-10 rounded-full bg-cyan-400/20 blur-md" />
+                <span className="absolute -right-2 top-1 h-1 w-3 rotate-[-18deg] rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+                <span className="absolute -right-2 top-3.5 h-1 w-4 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
+                <span className="absolute -right-2 bottom-1 h-1 w-3 rotate-[18deg] rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
                 <ShieldCheck size={16} strokeWidth={3} />
               </span>
             }
