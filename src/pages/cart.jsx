@@ -162,7 +162,7 @@ export default function CartPage() {
                 className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:border-violet-200 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/40"
               >
                 <div className="grid gap-4 p-4 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:items-center">
-                  <Link to={item.path || '#'} className="relative h-24 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 sm:h-20">
+                  <Link to={item.path || '#'} className="relative aspect-[3/2] w-28 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 sm:w-[88px]">
                     {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
                       <img src={item.image} alt="" className="h-full w-full object-cover" />
                     ) : (

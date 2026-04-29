@@ -113,7 +113,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const footerTopCls = dense ? 'pt-2' : 'pt-3';
   const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
   const imageFallbackSize = dense ? 26 : 40;
-  const imageAspectCls = dense ? 'aspect-[16/10]' : 'aspect-[4/3]';
+  const imageAspectCls = 'aspect-[3/2]';
 
   return (
     <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>

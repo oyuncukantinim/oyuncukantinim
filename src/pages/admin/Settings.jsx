@@ -24,6 +24,9 @@ import AdminLayout from '../../components/AdminLayout';
 import { adminDeleteUploadedImage, adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
 import { formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../../lib/doping';
 
+const DEFAULT_LISTING_IMAGE_WIDTH = 1500;
+const DEFAULT_LISTING_IMAGE_HEIGHT = 1000;
+
 const SETTINGS_TABS = [
   {
     id: 'general',
@@ -85,7 +88,7 @@ const SETTINGS_TABS = [
         fields: [
           { key: 'default_avatar', label: 'Varsayılan Avatar', type: 'image', placeholder: 'https://...', desc: 'Profil fotoğrafı olmayan kullanıcılar için kullanılır.' },
           { key: 'default_profile_banner', label: 'Varsayılan Profil Bannerı', type: 'image', placeholder: 'https://...', desc: 'Banner eklememiş profillerde görünür.' },
-          { key: 'default_listing_image', label: 'Varsayılan İlan Görseli', type: 'image', placeholder: 'https://...', desc: 'Görseli olmayan ilan kartlarında bu görsel gösterilir.' },
+          { key: 'default_listing_image', label: 'Varsayılan İlan Görseli', type: 'image', placeholder: 'https://...', desc: 'Görseli olmayan ilanlarda gösterilir. Yüklenen görsel 1500x1000 px WebP olarak hazırlanır.' },
         ],
       },
       {
@@ -313,6 +316,58 @@ function isUploadedSiteImage(url) {
   }
 }
 
+const loadImageFile = (file) =>
+  new Promise((resolve, reject) => {
+    if (!file || !file.type?.startsWith('image/')) {
+      reject(new Error('Lütfen geçerli bir görsel seçin.'));
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(img);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Görsel okunamadı.'));
+    };
+    img.src = url;
+  });
+
+async function resizeDefaultListingImage(file) {
+  const img = await loadImageFile(file);
+  const canvas = document.createElement('canvas');
+  canvas.width = DEFAULT_LISTING_IMAGE_WIDTH;
+  canvas.height = DEFAULT_LISTING_IMAGE_HEIGHT;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) {
+    throw new Error('Görsel işleme başlatılamadı.');
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0, DEFAULT_LISTING_IMAGE_WIDTH, DEFAULT_LISTING_IMAGE_HEIGHT);
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 1));
+  if (!blob) {
+    throw new Error('Varsayılan ilan görseli 1500x1000 px tuvale dönüştürülemedi.');
+  }
+
+  const baseName = String(file.name || 'varsayilan-ilan-gorseli')
+    .replace(/\.[^.]+$/, '')
+    .replace(/[^\w.-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || 'varsayilan-ilan-gorseli';
+
+  return new File([blob], `${baseName}.webp`, {
+    type: 'image/webp',
+    lastModified: Date.now(),
+  });
+}
+
 function SettingField({ field, value, onChange, onUpload, onRemove, imageUploading }) {
   const fileInputRef = useRef(null);
 
@@ -368,8 +423,12 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
 
           {value ? (
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="flex items-center justify-center bg-slate-50 px-4 py-4">
-                <img src={value} alt={field.label} className="max-h-20 w-auto max-w-full object-contain" />
+              <div className={`flex items-center justify-center bg-slate-50 ${field.key === 'default_listing_image' ? 'aspect-[3/2] p-0' : 'px-4 py-4'}`}>
+                <img
+                  src={value}
+                  alt={field.label}
+                  className={field.key === 'default_listing_image' ? 'h-full w-full object-cover' : 'max-h-20 w-auto max-w-full object-contain'}
+                />
               </div>
               <div className="flex gap-2 border-t border-slate-200 bg-white p-3">
                 <button
@@ -675,7 +734,8 @@ export default function AdminSettings() {
   const handleUpload = async (key, file) => {
     setImageUploading(key);
     try {
-      const url = await adminUploadImage(file, 'branding', { preserveOriginal: key === 'site_favicon' });
+      const uploadFile = key === 'default_listing_image' ? await resizeDefaultListingImage(file) : file;
+      const url = await adminUploadImage(uploadFile, 'branding', { preserveOriginal: key === 'site_favicon' });
       set(key, url);
       showToast('Görsel yüklendi.');
     } catch (error) {
@@ -692,6 +752,10 @@ export default function AdminSettings() {
         await adminDeleteUploadedImage(url);
       }
       set(key, '');
+      if (key === 'default_listing_image') {
+        await adminSaveSettings({ default_listing_image: '' });
+        setInitialSettings((current) => ({ ...current, default_listing_image: '' }));
+      }
       showToast('Görsel kaldırıldı.');
     } catch (error) {
       showToast(error.message);

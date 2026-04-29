@@ -235,20 +235,20 @@ export default function ListingDetailPage() {
                     <button
                       key={idx}
                       onClick={() => setActiveImg(idx)}
-                      className={`relative h-16 w-full flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 ${
+                      className={`relative aspect-[3/2] w-full flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all duration-200 ${
                         idx === activeImg
                           ? 'border-violet-500 shadow-md shadow-violet-200 dark:shadow-violet-900/40'
                           : 'border-transparent opacity-60 hover:border-slate-300 hover:opacity-100 dark:hover:border-slate-700'
                       }`}
                     >
-                      <img src={img} alt="" className="h-full w-full object-contain bg-slate-50 dark:bg-slate-800" />
+                      <img src={img} alt="" className="h-full w-full object-cover bg-slate-50 dark:bg-slate-800" />
                     </button>
                   ))}
                 </div>
               ) : null}
 
               {/* Main image */}
-              <div className="relative mx-auto aspect-[1536/1024] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
+              <div className="relative mx-auto aspect-[3/2] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
                 {images.length > 0 ? (
                   <>
                     <button
@@ -260,7 +260,7 @@ export default function ListingDetailPage() {
                       <img
                         src={images[activeImg]}
                         alt={listing.title}
-                        className="h-full w-full object-contain transition-transform duration-500 group-hover/zoom:scale-[1.02]"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover/zoom:scale-[1.02]"
                       />
                       <span className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-slate-700 opacity-0 shadow-md backdrop-blur transition-opacity duration-300 group-hover/zoom:opacity-100">
                         <Maximize2 size={15} />
@@ -321,7 +321,7 @@ export default function ListingDetailPage() {
                       idx === activeImg ? 'border-violet-500' : 'border-transparent opacity-60'
                     }`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-contain bg-slate-50 dark:bg-slate-800" />
+                    <img src={img} alt="" className="h-full w-full object-cover bg-slate-50 dark:bg-slate-800" />
                   </button>
                 ))}
               </div>
@@ -695,9 +695,9 @@ export default function ListingDetailPage() {
                   key={idx}
                   type="button"
                   onClick={() => setActiveImg(idx)}
-                  className={`h-14 w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${idx === activeImg ? 'border-white opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}
+                  className={`aspect-[3/2] w-20 flex-shrink-0 overflow-hidden rounded-xl border-2 transition-all ${idx === activeImg ? 'border-white opacity-100' : 'border-transparent opacity-60 hover:opacity-90'}`}
                 >
-                  <img src={img} alt="" className="h-full w-full object-contain bg-slate-900" />
+                  <img src={img} alt="" className="h-full w-full object-cover bg-slate-900" />
                 </button>
               ))}
             </div>

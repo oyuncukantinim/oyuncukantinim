@@ -1342,7 +1342,7 @@ export default function ProfilePage() {
                     const gridRingClass = gridDopingTypes.includes('vitrine') ? 'ring-2 ring-amber-400/60' : gridDopingTypes.includes('featured') ? 'ring-2 ring-violet-500/60' : '';
                     return (
                     <div key={listing.id} className={`group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-md ${gridRingClass}`}>
-                      <div className="relative aspect-[4/3] overflow-hidden bg-slate-50">
+                      <div className="relative aspect-[3/2] overflow-hidden bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage)
                           ? <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"/>
                           : <div className="flex h-full w-full items-center justify-center text-slate-300"><ImageIcon size={26}/></div>
@@ -1402,7 +1402,7 @@ export default function ProfilePage() {
                     const listBorderClass = listDopingTypes.includes('vitrine') ? 'border-l-4 border-l-amber-400' : listDopingTypes.includes('featured') ? 'border-l-4 border-l-violet-500' : '';
                     return (
                     <div key={listing.id} className={`flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-violet-200 hover:shadow-md ${listBorderClass}`}>
-                      <div className="relative h-16 w-[88px] flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
+                      <div className="relative aspect-[3/2] w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50">
                         {getListingCoverImage(listing, defaultListingImage) ? (
                           <img src={getListingCoverImage(listing, defaultListingImage)} alt="" className="w-full h-full object-cover"/>
                         ) : (
@@ -1549,7 +1549,7 @@ export default function ProfilePage() {
                     return (
                       <div key={fav.fav_id} className="flex items-center gap-4 bg-gray-50 rounded-2xl p-3 border border-gray-100">
                         {/* Kapak */}
-                        <div className="w-16 h-12 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
+                        <div className="aspect-[3/2] w-16 bg-gray-200 rounded-xl overflow-hidden flex-shrink-0">
                           {coverImg ? <img src={coverImg} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><ImageIcon size={18}/></div>}
                         </div>
                         {/* Bilgi */}
@@ -3316,7 +3316,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   )}
                   <div className="overflow-hidden rounded-xl border border-gray-100 bg-gray-50">
                     {img ? (
-                      <img src={img} alt={`Görsel ${idx + 1}`} className="h-28 w-full object-contain" />
+                      <img src={img} alt={`Görsel ${idx + 1}`} className="aspect-[3/2] w-full object-cover" />
                     ) : (
                       <div className="flex h-28 items-center justify-center px-3 text-center text-xs font-bold text-gray-400">
                         Henüz görsel seçilmedi
