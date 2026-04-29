@@ -60,7 +60,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         </Link>
 
         {/* Sağ: Detaylar */}
-        <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-1.5">
+        <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-1">
           <div className="min-w-0">
             <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{listing.category_name || listing.category || listing.type}</span>
             <Link to={listingUrl}>
@@ -100,7 +100,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
     );
   }
 
-  const cardPad = dense ? 'p-1' : 'p-2';
+  const cardPad = dense ? 'p-0.5' : 'p-1';
   const imgMb = dense ? 'mb-2' : 'mb-4';
   const badgeMb = dense ? 'mb-2' : 'mb-3';
   const titleCls = dense
