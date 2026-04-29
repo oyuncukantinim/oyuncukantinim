@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock3, Gift, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -47,12 +47,12 @@ function CategoryCard({ cat }) {
   );
 }
 
-function ProductCategoryView({ category, products }) {
+function ProductCategoryView({ category, products, sort, setSort }) {
   const heroImage = category.banner_image || category.image || '';
 
   return (
-    <div className="space-y-6">
-      <section className="relative overflow-hidden rounded-[28px] border border-slate-200 bg-[linear-gradient(135deg,#faf7ff,#f2f7ff)] shadow-sm dark:border-slate-800 dark:bg-[linear-gradient(135deg,rgba(139,92,246,0.08),rgba(56,189,248,0.06))]">
+    <div className="space-y-5">
+      <section className="relative overflow-hidden rounded-[18px] border border-cyan-300/20 bg-[#050b17] shadow-[0_24px_70px_-48px_rgba(34,211,238,0.6)]">
         {heroImage ? (
           <>
             <div
@@ -64,36 +64,90 @@ function ProductCategoryView({ category, products }) {
             >
               <img src={heroImage} alt={category.name} className="h-full w-full object-cover object-center" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 via-[28%] to-white/0 dark:from-slate-950 dark:via-slate-950/82 dark:via-[28%] dark:to-slate-950/0" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#050b17] via-[#050b17]/88 via-[36%] to-[#050b17]/45" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.22),transparent_38%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.18),transparent_34%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(139,92,246,0.28),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(34,211,238,0.2),transparent_28%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(147,51,234,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.24),transparent_32%),linear-gradient(135deg,#050b17,#081426)]" />
         )}
 
-        <div className="relative min-h-[220px] px-5 py-6 sm:px-6 sm:py-7">
+        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(90deg,rgba(34,211,238,0.14)_1px,transparent_1px),linear-gradient(0deg,rgba(147,51,234,0.13)_1px,transparent_1px)] [background-size:44px_44px]" />
+
+        <div className="relative min-h-[184px] px-5 py-6 sm:px-7 sm:py-8">
           <div className="min-w-0 max-w-3xl">
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
+            <h1 className="text-2xl font-black text-white sm:text-3xl">
               {category.name}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-              Bu kategoride site urunleri hizli tarama ve net fiyat odakli bir deneyimle listelenir.
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-300">
+              Site ürünlerini hızlı teslimat, net fiyat ve güvenli ödeme akışıyla tek vitrinde incele.
             </p>
           </div>
         </div>
       </section>
 
       {products.length === 0 ? (
-        <div className="rounded-[24px] border border-dashed border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="mb-4 text-5xl">Urun</div>
-          <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">Bu kategoride gosterilecek site urunu yok.</p>
-          <p className="mt-2 text-sm font-semibold text-slate-400 dark:text-slate-500">Urunler eklendiginde bu alan yatay market listesi olarak dolacak.</p>
+        <div className="rounded-[18px] border border-dashed border-cyan-300/20 bg-[#07111f] px-6 py-16 text-center shadow-sm">
+          <div className="mb-4 text-5xl">Ürün</div>
+          <p className="text-lg font-extrabold text-white">Bu kategoride gösterilecek site ürünü yok.</p>
+          <p className="mt-2 text-sm font-semibold text-slate-400">Ürünler eklendiğinde bu alan market vitrini olarak dolacak.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <section className="overflow-hidden rounded-[18px] border border-cyan-300/20 bg-[#040a14] p-3 shadow-[0_24px_80px_-58px_rgba(34,211,238,0.65)] sm:p-4">
+          <div className="mb-4 flex flex-col gap-3 rounded-xl border border-cyan-300/15 bg-[#08111f]/90 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] lg:flex-row lg:items-center lg:justify-between">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+              <div className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/30 bg-[#0b1626] px-3 text-xs font-bold text-slate-200">
+                <PackageCheck size={15} className="text-slate-400" /> Teslimat Türü <span className="ml-auto text-slate-400">Tümü</span>
+              </div>
+              <div className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/30 bg-[#0b1626] px-3 text-xs font-bold text-slate-200">
+                <Gift size={15} className="text-slate-400" /> Stok <span className="ml-auto text-slate-400">Aktif</span>
+              </div>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-violet-400/50 bg-violet-600/20 px-3 text-xs font-black text-violet-100 shadow-[0_0_20px_rgba(139,92,246,0.18)]">
+                <Star size={15} /> Popüler
+              </button>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-fuchsia-400/45 bg-fuchsia-600/18 px-3 text-xs font-black text-fuchsia-100">
+                <Sparkles size={15} /> İndirimli
+              </button>
+              <button type="button" className="inline-flex h-10 items-center justify-center gap-2 rounded-md border border-cyan-400/45 bg-cyan-500/14 px-3 text-xs font-black text-cyan-100">
+                <Zap size={15} /> Hızlı Teslimat
+              </button>
+            </div>
+
+            <label className="inline-flex h-10 items-center gap-2 rounded-md border border-slate-500/35 bg-[#0b1626] px-3 text-xs font-bold text-slate-300">
+              Sırala:
+              <select
+                value={sort}
+                onChange={(event) => setSort(event.target.value)}
+                className="min-w-[132px] appearance-none bg-transparent pr-5 text-sm font-black text-white outline-none"
+              >
+                <option value="featured">Öne Çıkan</option>
+                <option value="newest">Yeni Ürünler</option>
+                <option value="price-asc">Fiyat Artan</option>
+                <option value="price-desc">Fiyat Azalan</option>
+              </select>
+              <ChevronDown size={14} className="pointer-events-none -ml-5 text-slate-400" />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-3 rounded-xl border border-cyan-300/18 bg-[#06101e] px-4 py-4 sm:grid-cols-3">
+            <div className="flex items-center justify-center gap-3 text-slate-200">
+              <Clock3 size={30} className="text-violet-400 drop-shadow-[0_0_14px_rgba(139,92,246,0.65)]" />
+              <div><div className="text-sm font-black text-white">7/24 Destek</div><div className="text-xs text-slate-400">Her zaman yanınızdayız</div></div>
+            </div>
+            <div className="flex items-center justify-center gap-3 border-cyan-300/15 text-slate-200 sm:border-x">
+              <ShieldCheck size={32} className="text-cyan-300 drop-shadow-[0_0_14px_rgba(34,211,238,0.65)]" />
+              <div><div className="text-sm font-black text-white">Güvenli Ödeme</div><div className="text-xs text-slate-400">256-bit SSL ile korunur</div></div>
+            </div>
+            <div className="flex items-center justify-center gap-3 text-slate-200">
+              <Zap size={32} className="text-fuchsia-400 drop-shadow-[0_0_14px_rgba(217,70,239,0.65)]" />
+              <div><div className="text-sm font-black text-white">Anında Teslimat</div><div className="text-xs text-slate-400">Siparişler saniyeler içinde teslim edilir</div></div>
+            </div>
+          </div>
+        </section>
       )}
     </div>
   );
@@ -268,7 +322,7 @@ export default function CategoryListingsPage() {
           </div>
         </>
       ) : category.content_type === 'product' ? (
-        <ProductCategoryView category={category} products={products} />
+        <ProductCategoryView category={category} products={products} sort={sort} setSort={setSort} />
       ) : (
         <>
           <div className="card overflow-hidden">

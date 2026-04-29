@@ -1,13 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  BadgePercent,
   Boxes,
   Clock3,
   Flame,
-  Minus,
   Package,
-  Plus,
+  ShieldCheck,
   ShoppingCart,
+  Star,
   Tag,
   User,
   Wrench,
@@ -40,14 +41,14 @@ function getMaxProductQuantity(product) {
 function InstantBadge({ delivery, estimated }) {
   if (delivery === 'automatic') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
-        <Zap size={11} strokeWidth={3} /> Aninda Teslim
+      <span className="inline-flex items-center gap-1 rounded-md border border-cyan-300/35 bg-cyan-400/25 px-2 py-1 text-[10px] font-black text-cyan-50 shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur">
+        <Zap size={11} strokeWidth={3} /> Hızlı Teslimat
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-amber-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
+    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/30 bg-amber-400/20 px-2 py-1 text-[10px] font-black text-amber-50 backdrop-blur">
       <Clock3 size={11} strokeWidth={3} /> {estimated || 'Manuel'}
     </span>
   );
@@ -59,21 +60,20 @@ function DiscountChip({ price, salePrice }) {
   if (pct <= 0) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-rose-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm">
-      <Flame size={11} strokeWidth={3} /> -{pct}%
+    <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-300/35 bg-fuchsia-500/35 px-2 py-1 text-[10px] font-black text-fuchsia-50 shadow-[0_0_20px_rgba(217,70,239,0.22)] backdrop-blur">
+      <Flame size={11} strokeWidth={3} /> İndirimli
     </span>
   );
 }
 
 export default function ProductCard({ product, compact = false }) {
   const { addToCart } = useCart();
-  const [quantity, setQuantity] = useState(1);
 
   const href = productPath(product);
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
-  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Urun', icon: Tag };
+  const typeMeta = PRODUCT_TYPE_META[product.product_type] || { label: 'Ürün', icon: Tag };
   const TypeIcon = typeMeta.icon;
   const maxQuantity = useMemo(() => getMaxProductQuantity(product), [product]);
   const isOutOfStock = product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1;
@@ -84,7 +84,7 @@ export default function ProductCard({ product, compact = false }) {
       itemType: 'product',
       title: product.title,
       price: currentPrice,
-      quantity,
+      quantity: 1,
       maxQuantity,
       image: product.cover_image || '',
       product_id: product.id,
@@ -92,13 +92,6 @@ export default function ProductCard({ product, compact = false }) {
       path: href,
     });
   };
-
-  const increment = () => setQuantity((prev) => {
-    const next = prev + 1;
-    return maxQuantity ? Math.min(next, maxQuantity) : next;
-  });
-
-  const decrement = () => setQuantity((prev) => Math.max(1, prev - 1));
 
   if (compact) {
     return (
@@ -152,90 +145,83 @@ export default function ProductCard({ product, compact = false }) {
   }
 
   return (
-    <div className="scroll-optimized-card group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]">
-      <div className="relative flex flex-col sm:flex-row">
-        <Link to={href} className="h-24 w-full bg-white dark:bg-slate-900 sm:h-auto sm:w-[158px] sm:flex-shrink-0 lg:w-[176px]">
-          <div className="flex h-full w-full items-center justify-start px-2 py-2 sm:px-2.5 sm:py-2.5">
+    <article className="group relative flex h-full min-h-[304px] w-full min-w-[220px] flex-col overflow-hidden rounded-lg border border-cyan-300/18 bg-[#07111f] shadow-[0_18px_44px_-26px_rgba(0,0,0,0.9)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/45 hover:shadow-[0_24px_54px_-28px_rgba(34,211,238,0.55)]">
+      <Link to={href} className="relative block h-[146px] overflow-hidden bg-[#0a1324]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(34,211,238,0.22),transparent_34%),linear-gradient(135deg,rgba(147,51,234,0.22),transparent_36%),linear-gradient(180deg,transparent_42%,rgba(3,7,18,0.72))]" />
+        <div className="absolute inset-0 opacity-45 [background-image:linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.08)_46%,transparent_54%),radial-gradient(circle_at_12%_18%,rgba(255,0,92,0.45)_0_1px,transparent_2px),radial-gradient(circle_at_82%_30%,rgba(34,211,238,0.45)_0_1px,transparent_2px)]" />
+        <div className="relative flex h-full w-full items-center justify-center">
             {product.cover_image ? (
-              <div className="flex h-full min-h-[92px] w-full items-center justify-start overflow-hidden">
-                <img
-                  src={product.cover_image}
-                  alt={product.title}
-                  className="h-full w-full object-contain object-left transition-transform duration-500 group-hover:scale-[1.02]"
-                  loading="lazy"
-                />
-              </div>
+              <img
+                src={product.cover_image}
+                alt={product.title}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                loading="lazy"
+              />
             ) : (
-              <div className="flex h-full min-h-[92px] w-full items-center justify-center text-slate-300 dark:text-slate-700">
-                <Boxes size={34} />
+              <div className="flex h-full w-full items-center justify-center text-cyan-200/55">
+                <Boxes size={48} />
               </div>
             )}
+        </div>
+        <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {hasDiscount ? (
+            <DiscountChip price={basePrice} salePrice={product.sale_price} />
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-md border border-violet-300/35 bg-violet-500/35 px-2 py-1 text-[10px] font-black text-violet-50 shadow-[0_0_20px_rgba(139,92,246,0.22)] backdrop-blur">
+              <Star size={11} strokeWidth={3} /> Popüler
+            </span>
+          )}
+        </div>
+      </Link>
+
+      <div className="relative flex flex-1 flex-col justify-between p-3.5">
+        <div>
+          <div className="mb-2 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-200/75">
+            <TypeIcon size={11} />
+            <span>{typeMeta.label}</span>
           </div>
-        </Link>
 
-        <div className="flex flex-1 flex-col justify-between gap-1.5 p-2.5 sm:p-3">
-          <div>
-            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-violet-600 dark:text-violet-300">
-              <TypeIcon size={11} />
-              <span>{typeMeta.label}</span>
-            </div>
+          <Link to={href}>
+            <h3 className="line-clamp-2 min-h-[42px] text-[15px] font-black leading-snug text-white transition-colors group-hover:text-cyan-100">
+              {product.title}
+            </h3>
+          </Link>
 
-            <Link to={href}>
-              <h3 className="mt-1 line-clamp-2 text-[14px] font-black leading-tight text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300 sm:text-[15px]">
-                {product.title}
-              </h3>
-            </Link>
-
-            <p className="mt-1 line-clamp-2 text-[12px] font-medium leading-4.5 text-slate-500 dark:text-slate-400">
-              {product.short_description || product.description || 'Detayli aciklama urun sayfasinda yer alir.'}
-            </p>
+          <div className="mt-2 flex items-center gap-1.5 text-[12px] font-semibold text-slate-300">
+            {product.delivery_type === 'automatic' ? (
+              <Zap size={13} className="text-emerald-300" strokeWidth={3} />
+            ) : (
+              <ShieldCheck size={13} className="text-lime-300" strokeWidth={3} />
+            )}
+            <span>{product.delivery_type === 'automatic' ? 'Anında teslimat' : 'Güvenli alışveriş'}</span>
           </div>
         </div>
 
-        <div className="border-t border-slate-100 bg-white px-2.5 py-2.5 dark:border-slate-800 dark:bg-slate-900 sm:flex sm:min-w-[308px] sm:items-center sm:border-t-0 sm:px-3 lg:min-w-[348px]">
-          <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-[110px]">
+        <div className="mt-3">
+          <div className="mb-2 flex items-end justify-between gap-2">
+            <div>
               {hasDiscount ? (
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 dark:text-slate-500">
+                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-slate-500">
                   <span className="line-through">{formatPrice(basePrice)} {'\u20BA'}</span>
-                  <DiscountChip price={basePrice} salePrice={product.sale_price} />
+                  <BadgePercent size={12} className="text-fuchsia-300" />
                 </div>
               ) : null}
-              <div className="mt-1 text-xl font-black leading-none text-emerald-600 dark:text-emerald-400 sm:text-2xl">
-                {formatPrice(currentPrice)} {'\u20BA'}
+              <div className="text-[22px] font-black leading-none text-white">
+                {'\u20BA'} {formatPrice(currentPrice).replace(',00', '')}
               </div>
             </div>
-
-            <div className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1.5 dark:border-slate-700 dark:bg-slate-950/70">
-              <button
-                type="button"
-                onClick={decrement}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                <Minus size={12} />
-              </button>
-              <span className="min-w-[22px] text-center text-xs font-extrabold text-slate-900 dark:text-white">{quantity}</span>
-              <button
-                type="button"
-                onClick={increment}
-                disabled={Boolean(maxQuantity) && quantity >= maxQuantity}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                <Plus size={12} />
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className="inline-flex min-w-[138px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-cyan-500 via-emerald-500 to-lime-400 px-3 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-slate-950 shadow-[0_12px_26px_-14px_rgba(34,211,238,0.9)] transition-all duration-300 hover:-translate-y-0.5 hover:from-cyan-400 hover:via-emerald-400 hover:to-lime-300 hover:shadow-[0_16px_34px_-16px_rgba(16,185,129,0.95)] disabled:cursor-not-allowed disabled:bg-none disabled:bg-amber-500 disabled:text-white disabled:shadow-none disabled:hover:translate-y-0 dark:disabled:bg-amber-600 dark:disabled:text-white"
-            >
-              <ShoppingCart size={12} strokeWidth={3} /> {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'}
-            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-md bg-gradient-to-r from-violet-700 via-purple-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_12px_28px_-16px_rgba(56,189,248,0.9)] transition-all duration-300 hover:from-violet-600 hover:via-fuchsia-600 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-700 disabled:via-slate-700 disabled:to-slate-700 disabled:text-slate-300"
+          >
+            {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
+          </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
