@@ -7,7 +7,6 @@ import {
   MessageCircle,
   Plus,
   Search,
-  ShieldCheck,
   ShoppingCart,
   Users,
   X,
@@ -30,7 +29,6 @@ const NAV_LINKS = [
 
 const TOP_STRIPS = [
   { icon: Zap, label: 'Anında teslimat' },
-  { icon: ShieldCheck, label: 'Oyuncu Kantinim Güvenli Alışveriş' },
   { icon: LifeBuoy, label: '7/24 destek' },
 ];
 
@@ -584,10 +582,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             })}
           </div>
 
-          <div className="hidden items-center gap-2 xl:flex">
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">Oyuncu pazarı</span>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold text-slate-700">Oyuncu Kantinim Güvenli Alışveriş</span>
-          </div>
         </div>
       </div>
 
