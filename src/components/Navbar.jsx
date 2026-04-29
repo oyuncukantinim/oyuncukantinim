@@ -639,8 +639,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             </div>
 
             <div className="space-y-2 border-t border-slate-100 pt-3">
-              <ThemeToggle showLabel className="w-full justify-center" />
-
               <Link
                 to="/create"
                 onClick={() => setMobileOpen(false)}
