@@ -61,7 +61,7 @@ function DiscountChip({ price, salePrice }) {
 
   return (
     <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[10px] font-black text-fuchsia-700 dark:border-fuchsia-400/25 dark:bg-fuchsia-400/10 dark:text-fuchsia-200">
-      <Flame size={11} strokeWidth={3} /> İndirimli
+      <Flame size={11} strokeWidth={3} /> -%{pct}
     </span>
   );
 }
