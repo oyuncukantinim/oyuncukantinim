@@ -131,6 +131,7 @@ export default function HeroSlider() {
     const cachedBgs = readCache(CACHE_KEY_BGS);
     return cachedBgs && cachedBgs.length ? Math.random() : 0;
   });
+  const touchStartRef = useRef(null);
 
   useEffect(() => {
     Promise.allSettled([getHeroSlides(), getHeroBackgrounds()])
@@ -157,7 +158,10 @@ export default function HeroSlider() {
   const currentTitle = String(current?.title || '').trim();
   const hasTitle = currentTitle.length > 0;
   const desktopImageUrl = current?.image_url || '';
-  const hasImage = Boolean(desktopImageUrl);
+  const mobileImageUrl = current?.mobile_image_url || '';
+  const cardImageUrl = mobileImageUrl || desktopImageUrl;
+  const desktopArtUrl = desktopImageUrl || mobileImageUrl;
+  const hasImage = Boolean(cardImageUrl || desktopArtUrl);
   const titleLength = currentTitle.length;
   const titleScale = Math.max(0.56, Math.min(1, 44 / Math.max(titleLength, 44)));
 
@@ -166,7 +170,7 @@ export default function HeroSlider() {
   const backgroundUrl = useMemo(() => {
     const pool = backgrounds.length
       ? backgrounds
-      : slides.map((s) => s.image_url).filter(Boolean);
+      : slides.map((s) => s.image_url || s.mobile_image_url).filter(Boolean);
     if (!pool.length) return '';
     const idx = Math.floor(bgSeed * pool.length) % pool.length;
     return pool[idx];
@@ -188,6 +192,27 @@ export default function HeroSlider() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [total]);
+
+  const handleCardTouchStart = (event) => {
+    const touch = event.touches?.[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setPaused(true);
+  };
+
+  const handleCardTouchEnd = (event) => {
+    const start = touchStartRef.current;
+    const touch = event.changedTouches?.[0];
+    touchStartRef.current = null;
+    setPaused(false);
+    if (!start || !touch || total < 2) return;
+
+    const deltaX = touch.clientX - start.x;
+    const deltaY = touch.clientY - start.y;
+    if (Math.abs(deltaX) < 44 || Math.abs(deltaX) < Math.abs(deltaY) * 1.15) return;
+
+    setIndex((i) => (deltaX < 0 ? (i + 1) % total : (i - 1 + total) % total));
+  };
 
   if (!loaded) {
     return (
@@ -256,7 +281,9 @@ export default function HeroSlider() {
         {/* ----- Card ----- */}
         <div
           key={`card-${current.id || index}`}
-          className="relative mx-auto w-full overflow-hidden rounded-[22px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+          className="relative mx-auto w-full touch-pan-y overflow-hidden rounded-[22px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+          onTouchStart={handleCardTouchStart}
+          onTouchEnd={handleCardTouchEnd}
         >
           {/* Left accent bar (matches active slide color) */}
           {hasTitle ? (
@@ -272,19 +299,30 @@ export default function HeroSlider() {
           {/* Card background: accent gradient tinted by slide, with image art overlay.
               Aspect ratio ~3.5:1 on desktop so it stays cinematic & wide like the ref. */}
           <div
-            className={`relative flex h-[210px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
+            className={`relative flex h-[238px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
+            {cardImageUrl ? (
+              <img
+                key={`mobile-art-${current.id || index}`}
+                src={cardImageUrl}
+                alt=""
+                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover md:hidden"
+                loading="eager"
+                decoding="async"
+              />
+            ) : null}
+
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/0 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/38 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
             ) : null}
 
             {/* Slide hero art (right side) */}
-            {desktopImageUrl && hasTitle ? (
+            {desktopArtUrl && hasTitle ? (
               <div
                 key={`art-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-y-0 right-0 hidden w-[55%] md:block"
                 style={{
-                  backgroundImage: `url("${desktopImageUrl}")`,
+                  backgroundImage: `url("${desktopArtUrl}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center right',
                   maskImage:
@@ -295,12 +333,12 @@ export default function HeroSlider() {
               />
             ) : null}
 
-            {desktopImageUrl && !hasTitle ? (
+            {desktopArtUrl && !hasTitle ? (
               <div
                 key={`art-full-${current.id || index}`}
                 className="hs-card-art pointer-events-none absolute inset-0 hidden md:block"
                 style={{
-                  backgroundImage: `url("${desktopImageUrl}")`,
+                  backgroundImage: `url("${desktopArtUrl}")`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                 }}
@@ -309,7 +347,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/24 via-slate-950/06 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/86 via-slate-950/52 to-slate-950/14 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
@@ -328,7 +366,7 @@ export default function HeroSlider() {
             {hasTitle ? (
               <div
                 key={`text-${current.id || index}`}
-                className="hs-text relative z-10 flex h-full w-full max-w-[56%] flex-col justify-start gap-1.5 overflow-hidden px-4 pb-14 pt-5 sm:max-w-[640px] sm:justify-center sm:gap-2.5 sm:px-10 sm:py-12 md:px-14 md:py-16"
+                className="hs-text relative z-10 flex h-full w-full max-w-full flex-col justify-start gap-1.5 overflow-hidden px-4 pb-14 pt-5 sm:max-w-[640px] sm:justify-center sm:gap-2.5 sm:px-10 sm:py-12 md:px-14 md:py-16"
               >
               {current.eyebrow ? (
                 <div>
@@ -350,13 +388,13 @@ export default function HeroSlider() {
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: 'vertical',
                 }}
-                className="max-w-[11.5rem] shrink overflow-hidden break-words text-[calc(1.56rem*var(--hero-title-scale))] font-black leading-[0.92] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:max-w-none sm:text-[calc(2.25rem*var(--hero-title-scale))] sm:leading-[0.98] md:text-[calc(3rem*var(--hero-title-scale))] lg:text-[calc(3.75rem*var(--hero-title-scale))]"
+                className="max-w-full shrink overflow-hidden break-words text-[calc(1.5rem*var(--hero-title-scale))] font-black leading-[0.96] tracking-tight text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:max-w-none sm:text-[calc(2.25rem*var(--hero-title-scale))] sm:leading-[0.98] md:text-[calc(3rem*var(--hero-title-scale))] lg:text-[calc(3.75rem*var(--hero-title-scale))]"
               >
                 {current.title || 'Başlığınızı buraya ekleyin'}
               </h1>
 
               {current.subtitle ? (
-                <p className="line-clamp-2 max-w-[11.5rem] shrink-0 break-words text-[10px] font-semibold leading-[1.3] text-white/85 sm:max-w-lg sm:text-sm sm:leading-relaxed md:text-base lg:text-lg">
+                <p className="line-clamp-2 max-w-full shrink-0 break-words text-[10px] font-semibold leading-[1.3] text-white/85 sm:max-w-lg sm:text-sm sm:leading-relaxed md:text-base lg:text-lg">
                   {current.subtitle}
                 </p>
               ) : <div />}
@@ -390,7 +428,7 @@ export default function HeroSlider() {
             role="tablist"
             aria-label="Slayt seçici"
           >
-            <div className="flex items-stretch justify-between overflow-hidden rounded-b-[22px] bg-slate-950/55 ring-1 ring-black/10 dark:bg-slate-950/62">
+            <div className="flex snap-x items-stretch gap-1 overflow-x-auto overscroll-x-contain rounded-b-[22px] bg-slate-950/55 px-1 py-1 ring-1 ring-black/10 [scrollbar-width:none] dark:bg-slate-950/62 sm:gap-0 sm:overflow-hidden sm:px-0 sm:py-0 [&::-webkit-scrollbar]:hidden">
               {slides.map((slide, i) => {
                 const active = i === index;
                 const tabHex = extractAccentHex(slide.accent_color);
@@ -403,7 +441,7 @@ export default function HeroSlider() {
                     aria-selected={active}
                     aria-label={title}
                     onClick={() => setIndex(i)}
-                    className={`group/tab relative flex min-w-[58px] flex-1 items-center justify-center px-2 py-1 transition-all duration-300 sm:min-w-[72px] ${
+                    className={`group/tab relative flex min-w-[62px] flex-[0_0_62px] snap-center items-center justify-center rounded-xl px-1.5 py-1.5 transition-all duration-300 sm:min-w-[72px] sm:flex-1 sm:rounded-none sm:px-2 sm:py-1 ${
                       active
                         ? 'shadow-lg'
                         : 'bg-slate-950/34 text-white/82 hover:bg-slate-950/48 dark:bg-slate-950/42 dark:text-white/80 dark:hover:bg-slate-950/56'
@@ -417,7 +455,7 @@ export default function HeroSlider() {
                     {/* Icon — acts as the tab header itself */}
                     <span
                       className={`flex items-center justify-center transition-transform duration-300 ${
-                        active ? 'h-10 w-10 scale-105 sm:h-12 sm:w-12' : 'h-8 w-8 sm:h-10 sm:w-10 group-hover/tab:scale-105'
+                        active ? 'h-9 w-9 scale-105 sm:h-12 sm:w-12' : 'h-8 w-8 sm:h-10 sm:w-10 group-hover/tab:scale-105'
                       }`}
                       style={active ? {
                         filter: `drop-shadow(0 0 8px ${tabHex}) drop-shadow(0 0 18px color-mix(in srgb, ${tabHex} 55%, transparent))`,
