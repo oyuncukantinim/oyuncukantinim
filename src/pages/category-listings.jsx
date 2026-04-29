@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Clock3, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
+import { Clock3, Plus, Search, ShieldCheck, SlidersHorizontal, Zap } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -49,22 +49,6 @@ function CategoryCard({ cat }) {
 
 function ProductCategoryView({ category, products }) {
   const heroImage = category.banner_image || category.image || '';
-  const [highlightFilter, setHighlightFilter] = useState('all');
-
-  const visibleProducts = useMemo(() => products.filter((product) => {
-    const hasDiscount = Number(product.sale_price || 0) > 0 && Number(product.sale_price) < Number(product.price || 0);
-    const delivery = String(product.delivery_type || '').toLowerCase();
-    const isFast = delivery === 'automatic'
-      || delivery === 'stock'
-      || delivery === 'stok'
-      || Number(product.is_automatic_delivery || 0) === 1
-      || Number(product.available_stock_count || 0) > 0;
-
-    if (highlightFilter === 'discount' && !hasDiscount) return false;
-    if (highlightFilter === 'fast' && !isFast) return false;
-
-    return true;
-  }), [highlightFilter, products]);
 
   return (
     <div className="space-y-5">
@@ -106,52 +90,11 @@ function ProductCategoryView({ category, products }) {
         </div>
       ) : (
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
-          <div className="mb-4 rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60">
-            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setHighlightFilter('all')}
-                  className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-black transition ${highlightFilter === 'all' ? 'border-violet-300 bg-violet-600 text-white shadow-sm dark:border-violet-400/40' : 'border-slate-200 bg-white text-slate-700 hover:border-violet-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200'}`}
-                >
-                  <Star size={15} /> Tümü
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHighlightFilter('discount')}
-                  className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-black transition ${highlightFilter === 'discount' ? 'border-fuchsia-300 bg-fuchsia-600 text-white shadow-sm dark:border-fuchsia-400/40' : 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700 hover:border-fuchsia-300 dark:border-fuchsia-400/25 dark:bg-fuchsia-400/10 dark:text-fuchsia-200'}`}
-                >
-                  <Sparkles size={15} /> İndirimli
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setHighlightFilter('fast')}
-                  className={`inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-3 text-xs font-black transition ${highlightFilter === 'fast' ? 'border-cyan-300 bg-cyan-600 text-white shadow-sm dark:border-cyan-400/40' : 'border-cyan-200 bg-cyan-50 text-cyan-700 hover:border-cyan-300 dark:border-cyan-400/25 dark:bg-cyan-400/10 dark:text-cyan-200'}`}
-                >
-                  <Zap size={15} /> Hızlı
-                </button>
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-            {visibleProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-
-          {visibleProducts.length === 0 ? (
-            <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-10 text-center dark:border-slate-700 dark:bg-slate-950/70">
-              <p className="text-sm font-black text-slate-900 dark:text-white">Seçili filtrelere uygun ürün bulunamadı.</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setHighlightFilter('all');
-                }}
-                className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-black text-white transition hover:bg-violet-500"
-              >
-                Filtreleri Temizle
-              </button>
-            </div>
-          ) : null}
 
           <div className="mt-4 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-slate-950/70 sm:grid-cols-3">
             <div className="flex items-center justify-center gap-3 text-slate-700 dark:text-slate-200">
