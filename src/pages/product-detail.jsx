@@ -158,7 +158,7 @@ export default function ProductDetailPage() {
                         : 'border-slate-200 opacity-70 hover:opacity-100 dark:border-slate-700'
                     }`}
                   >
-                    <img src={image} alt="" className="h-full w-full object-cover" />
+                    <img src={image} alt="" className="h-full w-full object-contain bg-slate-50 dark:bg-slate-950" />
                   </button>
                 ))}
               </div>
@@ -167,7 +167,7 @@ export default function ProductDetailPage() {
             <div className="order-1 flex-1 sm:order-2">
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-slate-50 dark:bg-slate-950">
                 {currentImage ? (
-                  <img src={currentImage} alt={product.title} className="h-full w-full object-cover" />
+                  <img src={currentImage} alt={product.title} className="h-full w-full object-contain p-2" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center text-slate-300 dark:text-slate-700">
                     <Boxes size={64} />

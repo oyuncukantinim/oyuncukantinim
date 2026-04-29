@@ -119,7 +119,7 @@ export default function PopularGamesManager({ onToast }) {
   };
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-5xl">
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function PopularGamesManager({ onToast }) {
             Henüz kategori eklenmemiş. "Kategori Ekle" butonuna tıklayın.
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="grid gap-3 p-4 md:grid-cols-2">
             {games.map((game, idx) => {
               const fileInputId = `popular-game-image-${game.id}`;
               const isBusy = busyId === game.id;
@@ -174,7 +174,7 @@ export default function PopularGamesManager({ onToast }) {
                     handleDrop(idx);
                     setDropIdx(null);
                   }}
-                  className={`flex items-center gap-3 px-4 py-3 transition-all ${dragIdx === idx ? 'opacity-40' : ''} ${dropIdx === idx && dragIdx !== idx ? 'border-l-4 border-l-violet-400 bg-violet-50' : ''}`}
+                  className={`flex min-w-0 items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-3 transition-all hover:border-violet-200 hover:bg-white hover:shadow-sm ${dragIdx === idx ? 'opacity-40' : ''} ${dropIdx === idx && dragIdx !== idx ? 'border-l-4 border-l-violet-400 bg-violet-50' : ''}`}
                 >
                   <GripVertical size={16} className="shrink-0 cursor-grab text-gray-300" />
 
@@ -234,30 +234,32 @@ export default function PopularGamesManager({ onToast }) {
                         value={game.category_slug || ''}
                         onChange={(event) => updateGame(game.id, 'category_slug', event.target.value)}
                         placeholder="kategori-url"
-                        className="w-40 rounded-xl border border-gray-200 px-3 py-1.5 text-xs focus:border-violet-400 focus:outline-none"
+                        className="w-32 rounded-xl border border-gray-200 px-3 py-1.5 text-xs focus:border-violet-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  <select
-                    value={game.color}
-                    onChange={(event) => updateGame(game.id, 'color', event.target.value)}
-                    className="shrink-0 rounded-xl border border-gray-200 bg-white px-2 py-2 text-xs focus:border-violet-400 focus:outline-none"
-                  >
-                    {COLOR_OPTIONS.map((color) => (
-                      <option key={color.value} value={color.value}>
-                        {color.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="flex shrink-0 flex-col items-end gap-2">
+                    <select
+                      value={game.color}
+                      onChange={(event) => updateGame(game.id, 'color', event.target.value)}
+                      className="w-24 rounded-xl border border-gray-200 bg-white px-2 py-2 text-xs focus:border-violet-400 focus:outline-none"
+                    >
+                      {COLOR_OPTIONS.map((color) => (
+                        <option key={color.value} value={color.value}>
+                          {color.label}
+                        </option>
+                      ))}
+                    </select>
 
-                  <button
-                    onClick={() => removeGame(game)}
-                    disabled={isBusy}
-                    className="shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                    <button
+                      onClick={() => removeGame(game)}
+                      disabled={isBusy}
+                      className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
               );
             })}

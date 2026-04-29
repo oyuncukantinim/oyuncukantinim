@@ -272,6 +272,9 @@ export async function adminUploadImage(file, folder = 'misc', options = {}) {
   if (options.preserveOriginal) {
     url.searchParams.set('preserve_original', '1');
   }
+  if (options.variant) {
+    url.searchParams.set('variant', options.variant);
+  }
 
   const formData = new FormData();
   formData.append('image', file);

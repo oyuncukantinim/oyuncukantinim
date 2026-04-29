@@ -118,10 +118,8 @@ export default function AdminCategories() {
   const [toast, setToast] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
   const [bannerUploading, setBannerUploading] = useState(false);
-  const [heroUploading, setHeroUploading] = useState(false);
   const fileInputRef = useRef(null);
   const bannerFileInputRef = useRef(null);
-  const heroFileInputRef = useRef(null);
 
   // Category modal
   const [catModal, setCatModal] = useState(false);
@@ -324,7 +322,15 @@ export default function AdminCategories() {
     if (duplicate) { showToast('Bu URL zaten kullanılıyor.'); return; }
     setCatSaving(true);
     try {
-      await adminSaveCategory({ ...catForm, slug, id: editCat?.id || null, parent_id: catForm.parent_id || null });
+      await adminSaveCategory({
+        ...catForm,
+        slug,
+        id: editCat?.id || null,
+        parent_id: catForm.parent_id || null,
+        hero_title: '',
+        hero_subtitle: '',
+        hero_image: '',
+      });
       showToast(editCat ? 'Kategori güncellendi.' : 'Kategori oluşturuldu.');
       setCatModal(false); loadCategories();
     } catch (e) { showToast(e.message); }
@@ -679,15 +685,9 @@ export default function AdminCategories() {
               </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
-              <div className="col-span-1">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">İkon</label>
-                <input value={catForm.icon} onChange={e => setCatForm(f => ({...f, icon: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-center text-2xl focus:outline-none focus:border-violet-400" />
-              </div>
-              <div className="col-span-3">
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Adı *</label>
-                <input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Hesap Satışı" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
-              </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1.5">Kategori Adı *</label>
+              <input value={catForm.name} onChange={e => setCatForm(f => ({...f, name: e.target.value, slug: slugify(e.target.value)}))} placeholder="Örn: Hesap Satışı" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
             </div>
 
             <div>
@@ -760,77 +760,6 @@ export default function AdminCategories() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Hero Başlığı</label>
-                    <input value={catForm.hero_title} onChange={e => setCatForm(f => ({...f, hero_title: e.target.value}))} placeholder="Örn: Resmi Valorant Ürünleri" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Hero Alt Metni</label>
-                    <input value={catForm.hero_subtitle} onChange={e => setCatForm(f => ({...f, hero_subtitle: e.target.value}))} placeholder="Kategori üst açıklaması" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="mb-1.5 flex items-center justify-between gap-3">
-                    <label className="block text-xs font-bold text-gray-600">Hero Görseli</label>
-                    <span className="text-[10px] font-semibold text-gray-400">Kategori üst alanı için</span>
-                  </div>
-                  <input
-                    ref={heroFileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setHeroUploading(true);
-                      try {
-                        const url = await adminUploadImage(file, 'categories', { preserveOriginal: true });
-                        setCatForm(f => ({ ...f, hero_image: url }));
-                        showToast('Hero görseli yüklendi.');
-                      } catch (err) {
-                        showToast(err.message);
-                      } finally {
-                        setHeroUploading(false);
-                        e.target.value = '';
-                      }
-                    }}
-                  />
-
-                  {catForm.hero_image ? (
-                    <div className="relative h-36 w-full overflow-hidden rounded-xl border border-gray-200 bg-slate-100 group">
-                      <img src={catForm.hero_image} alt="" className="w-full h-full object-contain" />
-                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-all group-hover:bg-black/40 group-hover:opacity-100">
-                        <button type="button" onClick={() => heroFileInputRef.current?.click()} className="bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
-                          <Upload size={12} /> Değiştir
-                        </button>
-                        <button type="button" onClick={() => setCatForm(f => ({ ...f, hero_image: '' }))} className="bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
-                          <X size={12} /> Kaldır
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => heroFileInputRef.current?.click()}
-                      disabled={heroUploading}
-                      className="w-full h-32 border-2 border-dashed border-emerald-200 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-emerald-400 hover:bg-white transition-all disabled:opacity-50"
-                    >
-                      {heroUploading ? (
-                        <>
-                          <Loader2 size={22} className="text-emerald-500 animate-spin" />
-                          <span className="text-xs text-gray-500 font-semibold">Yükleniyor...</span>
-                        </>
-                      ) : (
-                        <>
-                          <ImageIcon size={22} className="text-gray-400" />
-                          <span className="text-xs text-gray-500 font-semibold">Hero görseli seç</span>
-                        </>
-                      )}
-                    </button>
-                  )}
-                </div>
               </div>
             )}
 
@@ -849,7 +778,7 @@ export default function AdminCategories() {
                   if (!file) return;
                   setImageUploading(true);
                   try {
-                    const url = await adminUploadImage(file, 'categories');
+                    const url = await adminUploadImage(file, 'categories', { variant: 'category_image' });
                     setCatForm(f => ({ ...f, image: url }));
                     showToast('Kategori Görseli yüklendi.');
                   } catch (err) {
@@ -897,7 +826,7 @@ export default function AdminCategories() {
                     <>
                       <ImageIcon size={22} className="text-gray-400" />
                       <span className="text-xs text-gray-500 font-semibold">Kategori Görseli seç veya sürükle</span>
-                      <span className="text-[10px] text-gray-400">JPG, PNG, GIF → otomatik WebP</span>
+                      <span className="text-[10px] text-gray-400">160x250px WebP olarak kaydedilir</span>
                     </>
                   )}
                 </button>
@@ -919,7 +848,7 @@ export default function AdminCategories() {
                   if (!file) return;
                   setBannerUploading(true);
                   try {
-                    const url = await adminUploadImage(file, 'categories', { preserveOriginal: true });
+                    const url = await adminUploadImage(file, 'categories', { variant: 'category_banner' });
                     setCatForm(f => ({ ...f, banner_image: url }));
                     showToast('Banner yüklendi.');
                   } catch (err) {
@@ -967,7 +896,7 @@ export default function AdminCategories() {
                     <>
                       <ImageIcon size={22} className="text-gray-400" />
                       <span className="text-xs text-gray-500 font-semibold">Banner seç veya sürükle</span>
-                      <span className="text-[10px] text-gray-400">Kategori detay üst bloğunda görünür</span>
+                      <span className="text-[10px] text-gray-400">1600x400px WebP olarak kaydedilir</span>
                     </>
                   )}
                 </button>

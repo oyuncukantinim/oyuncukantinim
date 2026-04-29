@@ -48,7 +48,7 @@ function CategoryCard({ cat }) {
 }
 
 function ProductCategoryView({ category, products }) {
-  const heroImage = category.hero_image || category.banner_image || category.image || '';
+  const heroImage = category.banner_image || category.image || '';
 
   return (
     <div className="space-y-6">
@@ -73,10 +73,10 @@ function ProductCategoryView({ category, products }) {
         <div className="relative min-h-[220px] px-5 py-6 sm:px-6 sm:py-7">
           <div className="min-w-0 max-w-3xl">
             <h1 className="text-2xl font-black text-slate-900 dark:text-white sm:text-3xl">
-              {category.hero_title || category.name}
+              {category.name}
             </h1>
             <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-400">
-              {category.hero_subtitle || 'Bu kategoride site urunleri daha kompakt yatay bloklar halinde listelenir. Hedef, e-pin sitelerindeki gibi hizli tarama ve net fiyat odakli bir deneyim sunmaktir.'}
+              Bu kategoride site urunleri hizli tarama ve net fiyat odakli bir deneyimle listelenir.
             </p>
           </div>
         </div>
