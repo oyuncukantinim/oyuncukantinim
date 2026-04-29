@@ -175,11 +175,6 @@ export default function CartPage() {
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-black ${isProduct ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-200' : 'bg-violet-50 text-violet-700 dark:bg-violet-400/10 dark:text-violet-200'}`}>
                         {isProduct ? 'Site Ürünü' : 'İlan'}
                       </span>
-                      {item.maxQuantity ? (
-                        <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-black text-slate-500 dark:bg-slate-800 dark:text-slate-300">
-                          Stok: {item.maxQuantity}
-                        </span>
-                      ) : null}
                     </div>
                     <Link to={item.path || '#'}>
                       <h2 className="mt-2 line-clamp-2 text-base font-black leading-snug text-slate-950 transition hover:text-violet-600 dark:text-white dark:hover:text-violet-300">
