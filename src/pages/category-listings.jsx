@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronDown, Clock3, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
+import { ChevronDown, Clock3, Gift, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -50,18 +50,22 @@ function CategoryCard({ cat }) {
 function ProductCategoryView({ category, products, sort, setSort }) {
   const heroImage = category.banner_image || category.image || '';
   const [deliveryFilter, setDeliveryFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState('active');
   const [highlightFilter, setHighlightFilter] = useState('all');
 
   const visibleProducts = useMemo(() => products.filter((product) => {
     const hasDiscount = Number(product.sale_price || 0) > 0 && Number(product.sale_price) < Number(product.price || 0);
     const isFast = product.delivery_type === 'automatic';
+    const inStock = product.delivery_type !== 'automatic' || Number(product.is_in_stock) === 1;
 
     if (deliveryFilter !== 'all' && product.delivery_type !== deliveryFilter) return false;
+    if (stockFilter === 'active' && !inStock) return false;
+    if (stockFilter === 'out' && inStock) return false;
     if (highlightFilter === 'discount' && !hasDiscount) return false;
     if (highlightFilter === 'fast' && !isFast) return false;
 
     return true;
-  }), [deliveryFilter, highlightFilter, products]);
+  }), [deliveryFilter, highlightFilter, products, stockFilter]);
 
   return (
     <div className="space-y-5">
@@ -105,7 +109,7 @@ function ProductCategoryView({ category, products, sort, setSort }) {
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
           <div className="mb-4 rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60">
             <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
                 <label className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                   <PackageCheck size={15} className="text-slate-400" />
                   <span className="whitespace-nowrap">Teslimat</span>
@@ -117,6 +121,21 @@ function ProductCategoryView({ category, products, sort, setSort }) {
                     <option value="all">Tümü</option>
                     <option value="automatic">Hızlı</option>
                     <option value="manual">Manuel</option>
+                  </select>
+                  <ChevronDown size={14} className="pointer-events-none -ml-5 text-slate-400" />
+                </label>
+
+                <label className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                  <Gift size={15} className="text-slate-400" />
+                  <span>Stok</span>
+                  <select
+                    value={stockFilter}
+                    onChange={(event) => setStockFilter(event.target.value)}
+                    className="ml-auto min-w-0 flex-1 appearance-none bg-transparent pr-5 text-right text-sm font-black text-slate-900 outline-none dark:text-white"
+                  >
+                    <option value="active">Aktif</option>
+                    <option value="all">Tümü</option>
+                    <option value="out">Stok Yok</option>
                   </select>
                   <ChevronDown size={14} className="pointer-events-none -ml-5 text-slate-400" />
                 </label>
@@ -176,6 +195,7 @@ function ProductCategoryView({ category, products, sort, setSort }) {
                 type="button"
                 onClick={() => {
                   setDeliveryFilter('all');
+                  setStockFilter('active');
                   setHighlightFilter('all');
                 }}
                 className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-black text-white transition hover:bg-violet-500"
