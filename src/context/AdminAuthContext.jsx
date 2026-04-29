@@ -3,6 +3,19 @@ import { useLocation } from 'react-router-dom';
 import { adminLogout as adminLogoutRequest, adminMe } from '../lib/adminApi';
 import { AdminAuthContext } from './adminAuthContextStore';
 
+const ADMIN_AUTH_TIMEOUT_MS = 10000;
+
+function withTimeout(promise, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error(message)), ADMIN_AUTH_TIMEOUT_MS);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => {
+    window.clearTimeout(timer);
+  });
+}
+
 export function AdminAuthProvider({ children }) {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
@@ -13,7 +26,7 @@ export function AdminAuthProvider({ children }) {
   const refreshAdmin = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await adminMe();
+      const response = await withTimeout(adminMe(), 'Admin oturum kontrolu zaman asimina ugradi.');
       const nextUser = response.data || null;
       setAdminUser(nextUser);
       return nextUser;
