@@ -233,43 +233,9 @@ export default function Home() {
     <div>
       <HeroSlider />
 
-      {/* ============  ÖNE ÇIKAN ÜRÜNLER  ============ */}
-      {hasFeaturedProductsSection && (
-        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
-          <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
-          <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
-
-          <SectionHeader
-            eyebrow="Site Ürünleri"
-            title="Öne Çıkan Ürünler"
-            icon={ShoppingBag}
-            accent="from-violet-500 via-fuchsia-500 to-cyan-500"
-            count={featuredProducts.length || null}
-            countLabel="Ürün"
-            action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
-          />
-
-          <div className="min-h-[304px]">
-            {featuredProducts.length > 0 ? (
-              <div className={PRODUCT_GRID_CLASS}>
-                {featuredProducts.slice(0, 12).map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            ) : (
-              <div className={PRODUCT_GRID_CLASS}>
-                {Array.from({ length: 6 }).map((_, index) => (
-                  <HomeCardSkeleton key={`featured-product-skeleton-${index}`} className="h-[304px]" />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
       {/* ============  POPÜLER KATEGORİLER  ============ */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (
-        <section className={`relative z-10 ${hasFeaturedProductsSection ? 'mt-10 sm:mt-12' : '-mt-32 sm:-mt-36 lg:-mt-40'}`}>
+        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
           {/* Ambient background accent */}
           <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />
@@ -403,6 +369,40 @@ export default function Home() {
           altText={homeAdBannerAltText}
         />
       ) : null}
+
+      {/* ============  ÖNE ÇIKAN ÜRÜNLER  ============ */}
+      {hasFeaturedProductsSection && (
+        <section className="relative z-10 mt-10 sm:mt-12">
+          <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
+
+          <SectionHeader
+            eyebrow="Site Ürünleri"
+            title="Öne Çıkan Ürünler"
+            icon={ShoppingBag}
+            accent="from-violet-500 via-fuchsia-500 to-cyan-500"
+            count={featuredProducts.length || null}
+            countLabel="Ürün"
+            action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
+          />
+
+          <div className="min-h-[304px]">
+            {featuredProducts.length > 0 ? (
+              <div className={PRODUCT_GRID_CLASS}>
+                {featuredProducts.slice(0, 12).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className={PRODUCT_GRID_CLASS}>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <HomeCardSkeleton key={`featured-product-skeleton-${index}`} className="h-[304px]" />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
