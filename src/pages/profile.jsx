@@ -3158,8 +3158,6 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     }));
   };
   const deliveryType = listing.delivery_type === 'stock' ? 'stock' : 'manual';
-  const stockCount = stocks.filter((stock) => stock.content.trim()).length;
-  const soldStockCount = (listing.stocks || []).filter((stock) => Number(stock.is_sold) === 1).length;
 
   const handleSave = () => {
     onSave({
@@ -3362,17 +3360,14 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-extrabold text-cyan-900">Stok Kalemleri</h3>
-                  <p className="text-xs text-cyan-700 mt-0.5">Satılmış {soldStockCount} stok korunur, burada aktif stoklar düzenlenir.</p>
+                  <p className="text-xs text-cyan-700 mt-0.5">Satılmış stoklar korunur, burada aktif stoklar düzenlenir.</p>
                 </div>
-                <span className="text-xs text-cyan-700 bg-white px-2 py-1 rounded-full border border-cyan-100 font-bold">
-                  {stockCount}/{stockItemMaxCount}
-                </span>
               </div>
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {stocks.map((stock, idx) => (
                   <div key={idx} className="bg-white rounded-xl p-3 border border-cyan-100">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-gray-500">Stok #{idx + 1}</span>
+                      <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
                       {stocks.length > 1 ? (
                         <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400">
                           <Trash2 size={13} />

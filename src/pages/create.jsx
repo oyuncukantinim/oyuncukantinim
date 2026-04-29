@@ -207,7 +207,7 @@ export default function CreatePage() {
         throw new Error(`Manuel teslimat süresi en fazla ${manualDeliveryMaxHours} saat olabilir.`);
       }
       if (deliveryType === 'stock' && validStocks.length > stockItemMaxCount) {
-        throw new Error(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
+        throw new Error('İzin verilen stok satırı sınırını aşıyorsun.');
       }
       const res = await addListing({
         title,
@@ -286,7 +286,7 @@ export default function CreatePage() {
 
   const addStock       = () => {
     if (stocks.length >= stockItemMaxCount) {
-      showToast(`En fazla ${stockItemMaxCount} stok satırı ekleyebilirsin.`);
+      showToast('Daha fazla stok satırı ekleyemezsin.');
       return;
     }
     setStocks(s => [...s, { content: '' }]);
@@ -631,13 +631,12 @@ export default function CreatePage() {
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
-                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{stocks.filter(s => s.content.trim()).length}/{stockItemMaxCount} adet</span>
                 </div>
                 <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                   {stocks.map((stock, idx) => (
                     <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-200">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-gray-500">Stok #{idx + 1}</span>
+                        <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
                         {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400"><Trash2 size={13} /></button>}
                       </div>
                       <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />

@@ -161,7 +161,6 @@ export default function ListingDetailPage() {
     : listing.delivery_hours
       ? (listing.delivery_hours < 24 ? listing.delivery_hours + ' saat' : Math.floor(listing.delivery_hours / 24) + ' gün')
       : 'Manuel';
-  const stockCount = Math.max(0, Number(listing.stock_count || 0));
   const sellerRating = Number(listing.seller_avg_rating || listing.rating || 5).toFixed(1);
   const sellerReviewCount = Number(listing.seller_review_count || 0);
   const sellerSalesCount = Number(listing.seller_total_sales || 0);
@@ -607,8 +606,8 @@ export default function ListingDetailPage() {
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300">
                     <Tag size={16} />
                   </div>
-                  <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Stok</div>
-                  <div className="text-xs font-black text-slate-700 dark:text-slate-200">{stockCount} adet</div>
+                  <div className="mt-2 text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Teslimat</div>
+                  <div className="text-xs font-black text-slate-700 dark:text-slate-200">Hazır</div>
                 </div>
               ) : null}
               <div className="group rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
