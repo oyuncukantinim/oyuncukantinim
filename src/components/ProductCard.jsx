@@ -104,7 +104,7 @@ export default function ProductCard({ product, compact = false }) {
     return (
       <Link
         to={href}
-        className="group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
+        className="scroll-optimized-card group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]"
       >
         <div className="relative aspect-[5/4] w-full overflow-hidden bg-white dark:bg-slate-900">
           {product.cover_image ? (
@@ -152,7 +152,7 @@ export default function ProductCard({ product, compact = false }) {
   }
 
   return (
-    <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]">
+    <div className="scroll-optimized-card group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60 dark:hover:shadow-[0_18px_40px_-15px_rgba(139,92,246,0.4)]">
       <div className="relative flex flex-col sm:flex-row">
         <Link to={href} className="h-24 w-full bg-white dark:bg-slate-900 sm:h-auto sm:w-[158px] sm:flex-shrink-0 lg:w-[176px]">
           <div className="flex h-full w-full items-center justify-start px-2 py-2 sm:px-2.5 sm:py-2.5">

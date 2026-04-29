@@ -219,7 +219,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const buildCategorySlug = (category) => `${category.slug}-${category.id}`;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/92 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-[0_6px_22px_rgba(15,23,42,0.05)]">
       <div className="hidden border-b border-slate-200 bg-slate-950 text-slate-200 md:block">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 lg:gap-5">

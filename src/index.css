@@ -674,3 +674,11 @@ html.theme-dark .theme-toggle:hover {
   border-color: rgba(6, 182, 212, 0.28);
   color: #67e8f9;
 }
+
+@supports (content-visibility: auto) {
+  main .card,
+  main .scroll-optimized-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 320px;
+  }
+}
