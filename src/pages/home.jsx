@@ -53,6 +53,7 @@ function SectionHeader({
   count,
   countLabel,
   action,
+  titleAddon,
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -75,9 +76,12 @@ function SectionHeader({
               </>
             ) : null}
           </div>
-          <h2 className="mt-0.5 text-2xl font-black tracking-tight text-slate-900 sm:text-[26px]">
-            {title}
-          </h2>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2">
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 sm:text-[26px]">
+              {title}
+            </h2>
+            {titleAddon}
+          </div>
         </div>
       </div>
       {action}
@@ -383,6 +387,12 @@ export default function Home() {
             accent="from-violet-500 via-fuchsia-500 to-cyan-500"
             count={featuredProducts.length || null}
             countLabel="Ürün"
+            titleAddon={
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm ring-1 ring-white/70 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200">
+                <ShieldCheck size={12} strokeWidth={3} />
+                Güvenli
+              </span>
+            }
             action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
           />
 
