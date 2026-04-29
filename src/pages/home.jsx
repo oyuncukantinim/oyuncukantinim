@@ -400,33 +400,19 @@ export default function Home() {
                   aria-hidden="true"
                 >
                   <path
-                    d="M20 3.5 26.8 7 34.1 9.2 36 16.8 36 23.2 34.1 30.8 26.8 33 20 36.5 13.2 33 5.9 30.8 4 23.2 4 16.8 5.9 9.2 13.2 7 20 3.5Z"
+                    d="M20 5.5 31 10.2V19.4C31 27.1 26.4 32.5 20 34.8 13.6 32.5 9 27.1 9 19.4V10.2L20 5.5Z"
                     stroke="currentColor"
                     strokeWidth="2.2"
                     strokeLinejoin="round"
                     className="[filter:drop-shadow(0_0_7px_rgba(52,211,153,0.95))]"
                   />
                   <path
-                    d="M20 9.5 28.8 13.2V20.4C28.8 26.2 24.9 29.8 20 31.2 15.1 29.8 11.2 26.2 11.2 20.4V13.2L20 9.5Z"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                    className="opacity-90 [filter:drop-shadow(0_0_5px_rgba(52,211,153,0.9))]"
-                  />
-                  <path
-                    d="m15.1 20.5 3.3 3.3 6.9-7.4"
+                    d="m14.8 20.7 3.7 3.7 7.4-8.1"
                     stroke="currentColor"
                     strokeWidth="2.4"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     className="[filter:drop-shadow(0_0_6px_rgba(52,211,153,1))]"
-                  />
-                  <path
-                    d="M8.3 6.8 5.4 4M31.7 6.8 34.6 4M8.3 33.2 5.4 36M31.7 33.2 34.6 36"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    className="opacity-75 [filter:drop-shadow(0_0_5px_rgba(52,211,153,0.9))]"
                   />
                 </svg>
               </span>
