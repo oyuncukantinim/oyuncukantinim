@@ -71,6 +71,14 @@ function DiscountChip({ price, salePrice }) {
   );
 }
 
+function FeaturedChip() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-amber-300/80 bg-amber-500/90 px-2 py-1 text-[10px] font-black text-white shadow-[0_10px_24px_-12px_rgba(245,158,11,0.9)] backdrop-blur-sm dark:border-amber-300/50 dark:bg-amber-400/85 dark:text-slate-950">
+      <Star size={11} strokeWidth={3} /> Öne Çıkan
+    </span>
+  );
+}
+
 export default function ProductCard({ product, compact = false }) {
   const { addToCart, cart, removeFromCart, updateCartQuantity } = useCart();
 
@@ -86,6 +94,7 @@ export default function ProductCard({ product, compact = false }) {
   const cartItem = cart.find((item) => item.itemType === 'product' && String(item.id) === String(product.id));
   const cartQuantity = Number(cartItem?.quantity || 0);
   const canIncrease = !cartItem || !Number.isFinite(Number(maxQuantity)) || Number(maxQuantity) <= 0 || cartQuantity < Number(maxQuantity);
+  const isFeatured = Number(product.is_featured || 0) === 1;
 
   const handleAddToCart = () => {
     addToCart({
@@ -139,6 +148,7 @@ export default function ProductCard({ product, compact = false }) {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/70 to-transparent dark:from-slate-900 dark:via-slate-900/70" />
 
           <div className="absolute left-2.5 top-3 flex flex-wrap gap-1.5">
+            {isFeatured ? <FeaturedChip /> : null}
             <InstantBadge product={product} />
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
           </div>
@@ -189,13 +199,14 @@ export default function ProductCard({ product, compact = false }) {
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/72 to-transparent dark:from-slate-900 dark:via-slate-900/72" />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+          {isFeatured ? <FeaturedChip /> : null}
           {hasDiscount ? (
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
-          ) : (
+          ) : !isFeatured ? (
             <span className="inline-flex items-center gap-1 rounded-md border border-violet-200 bg-violet-50 px-2 py-1 text-[10px] font-black text-violet-700 dark:border-violet-400/25 dark:bg-violet-400/10 dark:text-violet-200">
               <Star size={11} strokeWidth={3} /> Popüler
             </span>
-          )}
+          ) : null}
         </div>
       </Link>
 

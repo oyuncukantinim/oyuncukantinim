@@ -3,17 +3,20 @@ import { Link } from 'react-router-dom';
 import {
   ChevronRight,
   Flame,
+  ShoppingBag,
   ShieldCheck,
   Sparkles,
   Trophy,
 } from 'lucide-react';
-import { getListings, getPopularGames } from '../lib/api';
+import { getListings, getPopularGames, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
+import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
 
 const LISTING_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
+const PRODUCT_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
 const CATEGORY_STAR_FIELD_STYLE = {
   backgroundImage: [
     'radial-gradient(circle at 16% 22%, rgba(255,255,255,0.95) 0 1px, transparent 1.8px)',
@@ -193,8 +196,10 @@ export default function Home() {
     homeAdBannerActive,
   } = useSiteBrand();
   const [listings, setListings] = useState([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
   const [popularGames, setPopularGames] = useState([]);
   const [listingsLoaded, setListingsLoaded] = useState(false);
+  const [featuredProductsLoaded, setFeaturedProductsLoaded] = useState(false);
   const [popularGamesLoaded, setPopularGamesLoaded] = useState(false);
 
   useEffect(() => {
@@ -207,6 +212,11 @@ export default function Home() {
       .then((r) => setPopularGames(r.data || []))
       .catch(() => {})
       .finally(() => setPopularGamesLoaded(true));
+
+    getProducts({ featured: 1, limit: 12, sort: 'featured' })
+      .then((r) => setFeaturedProducts(r.data || []))
+      .catch(() => {})
+      .finally(() => setFeaturedProductsLoaded(true));
   }, []);
 
   const vitrineListings = useMemo(
@@ -217,14 +227,49 @@ export default function Home() {
     () => listings.filter((listing) => !hasListingDopingType(listing, 'vitrine')),
     [listings],
   );
+  const hasFeaturedProductsSection = featuredProducts.length > 0 || !featuredProductsLoaded;
 
   return (
     <div>
       <HeroSlider />
 
+      {/* ============  ÖNE ÇIKAN ÜRÜNLER  ============ */}
+      {hasFeaturedProductsSection && (
+        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
+          <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
+          <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
+
+          <SectionHeader
+            eyebrow="Site Ürünleri"
+            title="Öne Çıkan Ürünler"
+            icon={ShoppingBag}
+            accent="from-violet-500 via-fuchsia-500 to-cyan-500"
+            count={featuredProducts.length || null}
+            countLabel="Ürün"
+            action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
+          />
+
+          <div className="min-h-[304px]">
+            {featuredProducts.length > 0 ? (
+              <div className={PRODUCT_GRID_CLASS}>
+                {featuredProducts.slice(0, 12).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            ) : (
+              <div className={PRODUCT_GRID_CLASS}>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <HomeCardSkeleton key={`featured-product-skeleton-${index}`} className="h-[304px]" />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ============  POPÜLER KATEGORİLER  ============ */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (
-        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
+        <section className={`relative z-10 ${hasFeaturedProductsSection ? 'mt-10 sm:mt-12' : '-mt-32 sm:-mt-36 lg:-mt-40'}`}>
           {/* Ambient background accent */}
           <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />

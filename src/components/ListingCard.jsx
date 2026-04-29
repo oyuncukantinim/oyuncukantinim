@@ -12,6 +12,16 @@ const DOPING_META = {
 
 const CATEGORY_CHIP_BASE = 'inline-flex items-center rounded-full border border-neon-cyan/20 bg-neon-cyan/10 font-bold text-cyan-700';
 
+function formatCategoryLabel(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return text
+    .split(/[/-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toLocaleUpperCase('tr-TR') + part.slice(1))
+    .join(' ');
+}
+
 export default function ListingCard({ listing, compact = false, dense = false, fallbackImage = '' }) {
   const coverImg = getListingCoverImage(listing, fallbackImage);
   const activeTypes = getListingActiveDopingTypes(listing);
@@ -19,6 +29,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const listingUrl = listingSlug(listing.title, listing.id);
   const sellerVerified = Number(listing.seller_is_verified_store) === 1;
   const isVitrine = activeTypes.includes('vitrine');
+  const categoryLabel = listing.category_name || formatCategoryLabel(listing.category || listing.category_slug || listing.type);
 
   const ringClass = isVitrine
     ? DOPING_META.vitrine.ring
@@ -62,7 +73,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         {/* Sağ: Detaylar */}
         <div className="flex min-w-0 flex-1 flex-col justify-between gap-1 p-1">
           <div className="min-w-0">
-            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{listing.category_name || listing.category || listing.type}</span>
+            <span className={`${CATEGORY_CHIP_BASE} mb-1 px-1.5 py-0 text-[9px] leading-4`}>{categoryLabel}</span>
             <Link to={listingUrl}>
               <h3
                 style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
@@ -153,7 +164,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         <Link to={listingUrl} className="block">
         <div className={badgeMb}>
           <span className={`${CATEGORY_CHIP_BASE} ${dense ? 'px-1.5 py-0 text-[9px] leading-4' : 'px-2 py-0.5 text-[10px]'}`}>
-            {listing.category_name || listing.category || listing.type}
+            {categoryLabel}
           </span>
         </div>
 

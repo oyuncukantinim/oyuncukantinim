@@ -6,6 +6,7 @@ import {
   Package,
   Plus,
   Search,
+  Star,
   Trash2,
   X,
 } from 'lucide-react';
@@ -55,6 +56,7 @@ const DEFAULT_FORM = {
   gallery: [],
   badge_text: '',
   estimated_delivery_text: '',
+  is_featured: false,
   stock_visibility: true,
   sort_order: 0,
   seo_title: '',
@@ -181,6 +183,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
       gallery: existingGallery,
       badge_text: product.badge_text || '',
       estimated_delivery_text: product.estimated_delivery_text || '',
+      is_featured: Number(product.is_featured || 0) === 1,
       stock_visibility: Number(product.stock_visibility) === 1,
       sort_order: product.sort_order || 0,
       seo_title: product.seo_title || '',
@@ -504,6 +507,16 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
               <button type="button" onClick={() => setForm((prev) => ({ ...prev, stock_visibility: !prev.stock_visibility }))} className={`inline-flex rounded-xl px-3 py-2 text-xs font-black ${form.stock_visibility ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
                 {form.stock_visibility ? 'Stok bilgisi gorunur' : 'Stok bilgisi gizli'}
               </button>
+              <button
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, is_featured: !prev.is_featured }))}
+                className={`ml-2 inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-black ${
+                  form.is_featured ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-200' : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                <Star size={13} fill={form.is_featured ? 'currentColor' : 'none'} />
+                {form.is_featured ? 'Öne Çıkan Ürün' : 'Öne Çıkanlarda Göster'}
+              </button>
             </div>
 
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
@@ -585,6 +598,14 @@ function ProductListCard({ product, onEdit, onDelete }) {
                 <span>{PRODUCT_TYPE_OPTIONS.find((item) => item.value === product.product_type)?.label || product.product_type}</span>
                 <span>{'\u2022'}</span>
                 <span>{DELIVERY_TYPE_OPTIONS.find((item) => item.value === product.delivery_type)?.label || product.delivery_type}</span>
+                {Number(product.is_featured || 0) === 1 ? (
+                  <>
+                    <span>{'\u2022'}</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-amber-700 ring-1 ring-amber-100">
+                      <Star size={10} fill="currentColor" /> Öne Çıkan
+                    </span>
+                  </>
+                ) : null}
               </div>
               <div>
                 <h3 className="line-clamp-1 text-[15px] font-extrabold leading-tight text-gray-900">{product.title}</h3>
