@@ -1,9 +1,9 @@
 ﻿import { useState, useEffect } from 'react';
-import { useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
   X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight, Gamepad2,
-  Upload, Image as ImageIcon, Loader2, FolderTree, Layers3, Boxes, Sparkles
+  Upload, Image as ImageIcon, Loader2, FolderTree, Layers3
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import PopularGamesManager from '../../components/admin/PopularGamesManager';
@@ -71,22 +71,6 @@ const TAB_ITEMS = [
   { key: 'popular', label: 'Popüler Kategoriler', icon: Gamepad2, tone: 'from-orange-500 to-rose-500' },
   { key: 'types', label: 'Kategori Türleri', icon: Layers3, tone: 'from-cyan-500 to-blue-500' },
 ];
-
-function StatCard({ label, value, icon: Icon, tone }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/55">{label}</p>
-          <p className="mt-1 text-2xl font-black text-white">{value}</p>
-        </div>
-        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
-          <Icon size={19} strokeWidth={2.5} />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function getTypeColorMeta(value) {
   return TYPE_COLOR_OPTIONS.find((option) => option.value === value) || {
@@ -488,66 +472,31 @@ export default function AdminCategories() {
     if (Number(category.id) === Number(editCat?.id)) return false;
     return category.node_type === 'container';
   });
-  const categoryStats = useMemo(() => {
-    const containerCount = categories.filter((category) => category.node_type === 'container').length;
-    const productCount = categories.filter((category) => category.content_type === 'product').length;
-    const listingCount = categories.filter((category) => category.content_type === 'listing').length;
-    return [
-      { label: 'Toplam', value: categories.length, icon: FolderTree, tone: 'from-violet-500 to-fuchsia-500' },
-      { label: 'Klasör', value: containerCount, icon: Layers3, tone: 'from-slate-500 to-slate-700' },
-      { label: 'İlan', value: listingCount, icon: Tag, tone: 'from-blue-500 to-cyan-500' },
-      { label: 'Site Ürünü', value: productCount, icon: Boxes, tone: 'from-emerald-500 to-lime-400' },
-    ];
-  }, [categories]);
 
   return (
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="mb-6 overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_22px_70px_-35px_rgba(15,23,42,0.9)]">
-        <div className="relative px-5 py-5 sm:px-6 sm:py-6">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,rgba(139,92,246,0.38),transparent_28%),radial-gradient(circle_at_94%_12%,rgba(34,211,238,0.22),transparent_26%)]" />
-          <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-2xl">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200">
-                <Sparkles size={12} />
-                Kategori Merkezi
-              </div>
-              <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">Kategori Yönetimi</h2>
-              <p className="mt-2 text-sm font-semibold leading-6 text-slate-300">
-                Klasör, ilan ve site ürünü kategorilerini tek ağaçta yönetin; türleri ve ana sayfa vitrinini ayrı sekmelerden düzenleyin.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[520px]">
-              {categoryStats.map((stat) => (
-                <StatCard key={stat.label} {...stat} />
-              ))}
-            </div>
-          </div>
-
-          <div className="relative mt-6 grid gap-2 rounded-2xl border border-white/10 bg-white/10 p-1.5 sm:grid-cols-3">
-            {TAB_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const active = activeTab === item.key;
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  onClick={() => setActiveTab(item.key)}
-                  className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition-all ${
-                    active
-                      ? `bg-gradient-to-r ${item.tone} text-white shadow-lg`
-                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                  }`}
-                >
-                  <Icon size={16} />
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <div className="mb-5 grid gap-2 rounded-[22px] border border-slate-200 bg-white p-1.5 shadow-sm sm:grid-cols-3">
+        {TAB_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const active = activeTab === item.key;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setActiveTab(item.key)}
+              className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-black transition-all ${
+                active
+                  ? `bg-gradient-to-r ${item.tone} text-white shadow-lg`
+                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              <Icon size={16} />
+              {item.label}
+            </button>
+          );
+        })}
       </div>
 
       {activeTab === 'categories' ? (
