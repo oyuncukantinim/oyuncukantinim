@@ -60,12 +60,6 @@ const CATEGORY_ROLE_OPTIONS = [
   },
 ];
 
-const PRODUCT_LAYOUT_OPTIONS = [
-  { value: 'editorial', label: 'Editoryal Vitrin' },
-  { value: 'catalog', label: 'Katalog Grid' },
-  { value: 'compact', label: 'Kompakt Raf' },
-];
-
 const TAB_ITEMS = [
   { key: 'categories', label: 'Kategori Ağacı', icon: FolderTree, tone: 'from-violet-500 to-fuchsia-500' },
   { key: 'popular', label: 'Popüler Kategoriler', icon: Gamepad2, tone: 'from-orange-500 to-rose-500' },
@@ -449,7 +443,6 @@ export default function AdminCategories() {
               {cat.attribute_count > 0 && <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-600">{cat.attribute_count} özellik</span>}
               {cat.content_type === 'listing' && cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-black text-orange-600">%{cat.commission_rate}</span>}
               {cat.content_type === 'listing' && cat.min_price !== null && cat.min_price !== undefined && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">Min {cat.min_price}₺</span>}
-              {cat.content_type === 'product' && cat.layout_variant && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">{cat.layout_variant}</span>}
             </div>
             <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-slate-400">
               <span className="rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-[11px] text-slate-500">/{cat.slug}</span>
@@ -473,7 +466,6 @@ export default function AdminCategories() {
 
   const selectedRoleMeta = getCategoryRoleMeta(catForm);
   const isListingCategory = selectedRoleMeta.key === 'listing';
-  const isProductCategory = selectedRoleMeta.key === 'product';
   const parentOptions = categories.filter((category) => {
     if (Number(category.id) === Number(editCat?.id)) return false;
     return category.node_type === 'container';
@@ -725,41 +717,6 @@ export default function AdminCategories() {
                   <label className="block text-xs font-bold text-gray-600 mb-1.5">Min. Fiyat (₺)</label>
                   <input type="number" step="0.01" min="0" value={catForm.min_price} onChange={e => setCatForm(f => ({...f, min_price: e.target.value}))} placeholder="Yok" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-violet-400" />
                 </div>
-              </div>
-            )}
-
-            {isProductCategory && (
-              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 space-y-4">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Liste Tasarımı</label>
-                    <select value={catForm.layout_variant} onChange={e => setCatForm(f => ({ ...f, layout_variant: e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-400">
-                      {PRODUCT_LAYOUT_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-600 mb-1.5">Vurgu Rengi</label>
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-                      {TYPE_COLOR_OPTIONS.map((option) => {
-                        const active = catForm.accent_color === option.value;
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => setCatForm(f => ({ ...f, accent_color: option.value }))}
-                            className={`rounded-xl border p-1.5 transition-all ${active ? 'border-emerald-400 bg-white shadow-sm' : 'border-gray-200 bg-white hover:border-emerald-300'}`}
-                            title={option.label}
-                          >
-                            <div className={`h-6 rounded-lg bg-gradient-to-r ${option.value}`} />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-
               </div>
             )}
 

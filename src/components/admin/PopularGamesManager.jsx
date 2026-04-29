@@ -119,7 +119,7 @@ export default function PopularGamesManager({ onToast }) {
   };
 
   return (
-    <div className="max-w-5xl">
+    <div className="w-full">
       <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
           <div className="flex items-center gap-2">
@@ -151,7 +151,7 @@ export default function PopularGamesManager({ onToast }) {
             Henüz kategori eklenmemiş. "Kategori Ekle" butonuna tıklayın.
           </div>
         ) : (
-          <div className="grid gap-3 p-4 md:grid-cols-2">
+          <div className="grid gap-4 p-4 xl:grid-cols-2">
             {games.map((game, idx) => {
               const fileInputId = `popular-game-image-${game.id}`;
               const isBusy = busyId === game.id;
@@ -174,28 +174,35 @@ export default function PopularGamesManager({ onToast }) {
                     handleDrop(idx);
                     setDropIdx(null);
                   }}
-                  className={`flex min-w-0 items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-3 transition-all hover:border-violet-200 hover:bg-white hover:shadow-sm ${dragIdx === idx ? 'opacity-40' : ''} ${dropIdx === idx && dragIdx !== idx ? 'border-l-4 border-l-violet-400 bg-violet-50' : ''}`}
+                  className={`min-w-0 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 transition-all hover:border-violet-200 hover:bg-white hover:shadow-sm ${dragIdx === idx ? 'opacity-40' : ''} ${dropIdx === idx && dragIdx !== idx ? 'border-l-4 border-l-violet-400 bg-violet-50' : ''}`}
                 >
-                  <GripVertical size={16} className="shrink-0 cursor-grab text-gray-300" />
+                  <div className="flex items-center gap-3">
+                    <GripVertical size={16} className="shrink-0 cursor-grab text-gray-300" />
 
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br ${game.color}`}>
-                    {game.image_url ? (
-                      <img src={game.image_url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <ImageIcon size={18} className="text-white/70" />
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${game.color}`}>
+                      {game.image_url ? (
+                        <img src={game.image_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageIcon size={20} className="text-white/70" />
+                      )}
+                    </div>
                     <input
                       value={game.name}
                       onChange={(event) => updateGame(game.id, 'name', event.target.value)}
                       placeholder="Kategori adı..."
-                      className="w-full rounded-xl border border-gray-200 px-3 py-1.5 text-sm focus:border-violet-400 focus:outline-none"
+                      className="min-w-0 flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                     />
+                    <button
+                      onClick={() => removeGame(game)}
+                      disabled={isBusy}
+                      className="shrink-0 rounded-xl p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
 
-                    <div className="flex gap-1.5">
-                      <div className="flex flex-1 items-center gap-2 rounded-xl border border-gray-200 px-2 py-1.5">
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_150px]">
+                      <div className="flex min-w-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-2 py-2">
                         <input
                           id={fileInputId}
                           type="file"
@@ -234,32 +241,21 @@ export default function PopularGamesManager({ onToast }) {
                         value={game.category_slug || ''}
                         onChange={(event) => updateGame(game.id, 'category_slug', event.target.value)}
                         placeholder="kategori-url"
-                        className="w-32 rounded-xl border border-gray-200 px-3 py-1.5 text-xs focus:border-violet-400 focus:outline-none"
+                        className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs focus:border-violet-400 focus:outline-none"
                       />
-                    </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-col items-end gap-2">
-                    <select
-                      value={game.color}
-                      onChange={(event) => updateGame(game.id, 'color', event.target.value)}
-                      className="w-24 rounded-xl border border-gray-200 bg-white px-2 py-2 text-xs focus:border-violet-400 focus:outline-none"
-                    >
-                      {COLOR_OPTIONS.map((color) => (
-                        <option key={color.value} value={color.value}>
-                          {color.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    <button
-                      onClick={() => removeGame(game)}
-                      disabled={isBusy}
-                      className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
+                  <select
+                    value={game.color}
+                    onChange={(event) => updateGame(game.id, 'color', event.target.value)}
+                    className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs focus:border-violet-400 focus:outline-none"
+                  >
+                    {COLOR_OPTIONS.map((color) => (
+                      <option key={color.value} value={color.value}>
+                        {color.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               );
             })}
