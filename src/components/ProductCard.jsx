@@ -65,7 +65,7 @@ function DiscountChip({ price, salePrice }) {
   if (pct <= 0) return null;
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-200 bg-fuchsia-50 px-2 py-1 text-[10px] font-black text-fuchsia-700 dark:border-fuchsia-400/25 dark:bg-fuchsia-400/10 dark:text-fuchsia-200">
+    <span className="inline-flex items-center gap-1 rounded-md border border-fuchsia-300/80 bg-fuchsia-600/90 px-2 py-1 text-[10px] font-black text-white shadow-[0_10px_24px_-12px_rgba(192,38,211,0.9)] backdrop-blur-sm dark:border-fuchsia-300/50 dark:bg-fuchsia-500/85 dark:text-white">
       <Flame size={11} strokeWidth={3} /> -%{pct}
     </span>
   );
@@ -127,7 +127,7 @@ export default function ProductCard({ product, compact = false }) {
             <img
               src={product.cover_image}
               alt={product.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
@@ -135,6 +135,8 @@ export default function ProductCard({ product, compact = false }) {
               <Boxes size={42} />
             </div>
           )}
+
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-white via-white/70 to-transparent dark:from-slate-900 dark:via-slate-900/70" />
 
           <div className="absolute left-2.5 top-3 flex flex-wrap gap-1.5">
             <InstantBadge product={product} />
@@ -176,7 +178,7 @@ export default function ProductCard({ product, compact = false }) {
             <img
               src={product.cover_image}
               alt={product.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-contain p-2 transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
@@ -185,6 +187,7 @@ export default function ProductCard({ product, compact = false }) {
             </div>
           )}
         </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/72 to-transparent dark:from-slate-900 dark:via-slate-900/72" />
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {hasDiscount ? (
             <DiscountChip price={basePrice} salePrice={product.sale_price} />
