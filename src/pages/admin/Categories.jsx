@@ -1,9 +1,9 @@
 ﻿import { useState, useEffect } from 'react';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   Plus, Pencil, Trash2, ChevronRight, ChevronDown,
   X, GripVertical, Tag, Filter, ToggleLeft, ToggleRight, Gamepad2,
-  Upload, Image as ImageIcon, Loader2
+  Upload, Image as ImageIcon, Loader2, FolderTree, Layers3, Boxes, Sparkles
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import PopularGamesManager from '../../components/admin/PopularGamesManager';
@@ -65,6 +65,28 @@ const PRODUCT_LAYOUT_OPTIONS = [
   { value: 'catalog', label: 'Katalog Grid' },
   { value: 'compact', label: 'Kompakt Raf' },
 ];
+
+const TAB_ITEMS = [
+  { key: 'categories', label: 'Kategori Ağacı', icon: FolderTree, tone: 'from-violet-500 to-fuchsia-500' },
+  { key: 'popular', label: 'Popüler Kategoriler', icon: Gamepad2, tone: 'from-orange-500 to-rose-500' },
+  { key: 'types', label: 'Kategori Türleri', icon: Layers3, tone: 'from-cyan-500 to-blue-500' },
+];
+
+function StatCard({ label, value, icon: Icon, tone }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-sm">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/55">{label}</p>
+          <p className="mt-1 text-2xl font-black text-white">{value}</p>
+        </div>
+        <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${tone} text-white shadow-lg`}>
+          <Icon size={19} strokeWidth={2.5} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function getTypeColorMeta(value) {
   return TYPE_COLOR_OPTIONS.find((option) => option.value === value) || {
@@ -388,8 +410,14 @@ export default function AdminCategories() {
     const kids = children(cat.id);
     const isExpanded = expanded[cat.id];
     const roleMeta = getCategoryRoleMeta(cat);
+    const roleTone = roleMeta.key === 'product'
+      ? 'from-emerald-500 to-cyan-500'
+      : roleMeta.key === 'container'
+        ? 'from-slate-500 to-slate-700'
+        : 'from-violet-500 to-fuchsia-500';
+    const typeMeta = cat.type_id ? typesList.find(x => x.id == cat.type_id) : null;
     return (
-      <div>
+      <div className="px-3">
         <div
           draggable={true}
           onDragStart={() => setDragId(cat.id)}
@@ -397,40 +425,55 @@ export default function AdminCategories() {
           onDragOver={e => { e.preventDefault(); setDropTarget(cat.id); }}
           onDragLeave={() => setDropTarget(null)}
           onDrop={() => { handleDrop(cat); setDropTarget(null); }}
-          className={`flex items-center gap-2 py-2.5 px-4 hover:bg-gray-50 group border-b border-gray-50 cursor-default transition-all ${depth > 0 ? 'bg-gray-50/50' : ''} ${dragId === cat.id ? 'opacity-40' : ''} ${dropTarget === cat.id && dragId !== cat.id ? 'border-l-4 border-l-violet-400 bg-violet-50/30' : ''}`}
-          style={{ paddingLeft: `${16 + depth * 24}px` }}
+          className={`group my-2 flex items-center gap-3 rounded-2xl border px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/40 hover:shadow-md ${depth > 0 ? 'bg-slate-50/80' : 'bg-white'} ${dragId === cat.id ? 'opacity-40' : ''} ${dropTarget === cat.id && dragId !== cat.id ? 'border-violet-400 bg-violet-50 shadow-md' : 'border-slate-100'}`}
+          style={{ marginLeft: `${depth * 22}px` }}
         >
-          <button className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 flex-shrink-0 p-0.5">
-            <GripVertical size={14} />
+          <button className="shrink-0 cursor-grab rounded-xl p-1.5 text-slate-300 transition-colors hover:bg-white hover:text-slate-500 active:cursor-grabbing">
+            <GripVertical size={15} />
           </button>
-          <div className="w-4 flex-shrink-0">
-            {kids.length > 0 && (
-              <button onClick={() => setExpanded(e => ({ ...e, [cat.id]: !e[cat.id] }))} className="text-gray-400 hover:text-gray-700">
-                {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-              </button>
+
+          <button
+            type="button"
+            disabled={kids.length === 0}
+            onClick={() => setExpanded(e => ({ ...e, [cat.id]: !e[cat.id] }))}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-slate-100 bg-white text-slate-400 transition-colors hover:border-violet-200 hover:text-violet-600 disabled:opacity-30"
+          >
+            {kids.length > 0 ? (isExpanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />) : <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
+          </button>
+
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br ${roleTone} text-xl text-white shadow-sm`}>
+            {cat.image ? (
+              <img src={cat.image} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span>{cat.icon || '🎮'}</span>
             )}
           </div>
-                    <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-800 text-sm">{cat.name}</span>
-              {!cat.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${roleMeta.badgeClass}`}>{roleMeta.label}</span>
-              {kids.length > 0 && <span className="text-[10px] text-gray-400">{kids.length} alt kategori</span>}
-              {cat.attribute_count > 0 && <span className="text-[10px] bg-violet-100 text-violet-600 px-1.5 py-0.5 rounded-full font-bold">{cat.attribute_count} özellik</span>}
-              {cat.type_id && (() => { const t = typesList.find(x => x.id == cat.type_id); return t ? <span className="text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-bold">{t.name}</span> : null; })()}
-              {cat.content_type === 'listing' && cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-bold">%{cat.commission_rate}</span>}
-              {cat.content_type === 'listing' && cat.min_price !== null && cat.min_price !== undefined && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded-full font-bold">Min {cat.min_price}₺</span>}
-              {cat.content_type === 'product' && cat.layout_variant && <span className="text-[10px] bg-emerald-50 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold">{cat.layout_variant}</span>}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="truncate text-sm font-black text-slate-900">{cat.name}</span>
+              {!cat.is_active && <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-black text-slate-500">Pasif</span>}
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${roleMeta.badgeClass}`}>{roleMeta.label}</span>
+              {typeMeta ? <span className="rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-black text-purple-600">{typeMeta.name}</span> : null}
+              {kids.length > 0 && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">{kids.length} alt</span>}
+              {cat.attribute_count > 0 && <span className="rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-black text-cyan-600">{cat.attribute_count} özellik</span>}
+              {cat.content_type === 'listing' && cat.commission_rate !== null && cat.commission_rate !== undefined && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[10px] font-black text-orange-600">%{cat.commission_rate}</span>}
+              {cat.content_type === 'listing' && cat.min_price !== null && cat.min_price !== undefined && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">Min {cat.min_price}₺</span>}
+              {cat.content_type === 'product' && cat.layout_variant && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-600">{cat.layout_variant}</span>}
             </div>
-            <div className="text-xs text-gray-400">URL: {cat.slug}</div>
+            <div className="mt-1 flex min-w-0 items-center gap-2 text-xs text-slate-400">
+              <span className="rounded-lg bg-slate-100 px-2 py-0.5 font-mono text-[11px] text-slate-500">/{cat.slug}</span>
+              <span>#{cat.sort_order}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+          <div className="flex shrink-0 items-center gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
             {cat.content_type === 'listing' && cat.node_type === 'sellable' ? (
-              <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="p-1.5 rounded-lg hover:bg-violet-50 text-gray-400 hover:text-violet-600"><Filter size={13} /></button>
+              <button onClick={() => openAttrPanel(cat)} title="Özellikler" className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-violet-100 hover:text-violet-700"><Filter size={14} /></button>
             ) : null}
-            <button onClick={() => openNewCat(cat.id)} title="Alt Kategori Ekle" className="p-1.5 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-600"><Plus size={13} /></button>
-            <button onClick={() => openEditCat(cat)} title="Düzenle" className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-            <button onClick={() => handleDeleteCat(cat)} title="Sil" className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+            <button onClick={() => openNewCat(cat.id)} title="Alt Kategori Ekle" className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-emerald-100 hover:text-emerald-700"><Plus size={14} /></button>
+            <button onClick={() => openEditCat(cat)} title="Düzenle" className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-blue-100 hover:text-blue-700"><Pencil size={14} /></button>
+            <button onClick={() => handleDeleteCat(cat)} title="Sil" className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-red-100 hover:text-red-600"><Trash2 size={14} /></button>
           </div>
         </div>
         {isExpanded && kids.map(k => <CategoryRow key={k.id} cat={k} depth={depth + 1} />)}
@@ -445,124 +488,148 @@ export default function AdminCategories() {
     if (Number(category.id) === Number(editCat?.id)) return false;
     return category.node_type === 'container';
   });
+  const categoryStats = useMemo(() => {
+    const containerCount = categories.filter((category) => category.node_type === 'container').length;
+    const productCount = categories.filter((category) => category.content_type === 'product').length;
+    const listingCount = categories.filter((category) => category.content_type === 'listing').length;
+    return [
+      { label: 'Toplam', value: categories.length, icon: FolderTree, tone: 'from-violet-500 to-fuchsia-500' },
+      { label: 'Klasör', value: containerCount, icon: Layers3, tone: 'from-slate-500 to-slate-700' },
+      { label: 'İlan', value: listingCount, icon: Tag, tone: 'from-blue-500 to-cyan-500' },
+      { label: 'Site Ürünü', value: productCount, icon: Boxes, tone: 'from-emerald-500 to-lime-400' },
+    ];
+  }, [categories]);
 
   return (
     <AdminLayout>
       {toast && <div className="fixed top-4 right-4 z-50 bg-gray-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl">{toast}</div>}
 
-      <div className="mb-6 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="text-lg font-extrabold text-gray-800">Kategori Yönetimi</h2>
-            <p className="text-sm text-gray-400">Klasör, ilan ve site ürünü kategorilerini aynı ağaçta yönetin; popüler kategori vitrini de burada kalsın.</p>
+      <div className="mb-6 overflow-hidden rounded-[28px] border border-slate-800 bg-slate-950 shadow-[0_22px_70px_-35px_rgba(15,23,42,0.9)]">
+        <div className="relative px-5 py-5 sm:px-6 sm:py-6">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_0%,rgba(139,92,246,0.38),transparent_28%),radial-gradient(circle_at_94%_12%,rgba(34,211,238,0.22),transparent_26%)]" />
+          <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-2xl">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] text-cyan-200">
+                <Sparkles size={12} />
+                Kategori Merkezi
+              </div>
+              <h2 className="text-2xl font-black tracking-tight text-white sm:text-3xl">Kategori Yönetimi</h2>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-300">
+                Klasör, ilan ve site ürünü kategorilerini tek ağaçta yönetin; türleri ve ana sayfa vitrinini ayrı sekmelerden düzenleyin.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[520px]">
+              {categoryStats.map((stat) => (
+                <StatCard key={stat.label} {...stat} />
+              ))}
+            </div>
           </div>
-          <div className="inline-flex rounded-2xl bg-gray-100 p-1.5">
-            <button
-              type="button"
-              onClick={() => setActiveTab('categories')}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-                activeTab === 'categories'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Tag size={16} />
-              Kategoriler
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('popular')}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-                activeTab === 'popular'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Gamepad2 size={16} />
-              Popüler Kategoriler
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('types')}
-              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
-                activeTab === 'types'
-                  ? 'bg-white text-violet-700 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Tag size={16} />
-              Kategori Türleri
-            </button>
+
+          <div className="relative mt-6 grid gap-2 rounded-2xl border border-white/10 bg-white/10 p-1.5 sm:grid-cols-3">
+            {TAB_ITEMS.map((item) => {
+              const Icon = item.icon;
+              const active = activeTab === item.key;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  onClick={() => setActiveTab(item.key)}
+                  className={`flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-black transition-all ${
+                    active
+                      ? `bg-gradient-to-r ${item.tone} text-white shadow-lg`
+                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <Icon size={16} />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {activeTab === 'categories' ? (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(380px,0.85fr)]">
             {/* Kategori Ağacı */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)]">
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4">
                 <div className="flex items-center gap-2">
-                  <Tag size={18} className="text-violet-600" />
-                  <h3 className="font-extrabold text-gray-800">Kategoriler</h3>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                    <FolderTree size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-900">Kategori Ağacı</h3>
+                    <p className="text-xs font-semibold text-slate-400">Sürükle bırak ile aynı seviyede sıralayın.</p>
+                  </div>
                 </div>
-                <button onClick={() => openNewCat()} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                <button onClick={() => openNewCat()} className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-violet-200 transition-all hover:-translate-y-0.5 hover:shadow-violet-300">
                   <Plus size={13} /> Yeni Kategori
                 </button>
               </div>
-              <div>
+              <div className="max-h-[680px] overflow-y-auto py-2">
                 {roots.length === 0
-                  ? <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz kategori yok.</div>
+                  ? <div className="px-5 py-14 text-center text-sm font-semibold text-slate-400">Henüz kategori yok.</div>
                   : roots.map(cat => <CategoryRow key={cat.id} cat={cat} />)
                 }
               </div>
             </div>
 
             {/* Özellik Editörü */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)]">
+              <div className="flex items-center justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-cyan-50/80 to-white px-5 py-4">
                 <div className="flex items-center gap-2">
-                  <Filter size={18} className="text-violet-600" />
-                  <h3 className="font-extrabold text-gray-800">
-                    {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
-                  </h3>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
+                    <Filter size={18} />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-900">
+                      {attrCat ? `"${attrCat.name}" Özellikleri` : 'Özellik Filtreleri'}
+                    </h3>
+                    <p className="text-xs font-semibold text-slate-400">İlan kategorileri için filtre alanlarını yönetin.</p>
+                  </div>
                 </div>
                 {attrCat && attrCat.content_type === 'listing' && attrCat.node_type === 'sellable' && (
-                  <button onClick={openNewAttr} className="flex items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+                  <button onClick={openNewAttr} className="flex items-center gap-1.5 rounded-2xl bg-cyan-600 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-cyan-100 transition-colors hover:bg-cyan-500">
                     <Plus size={13} /> Özellik Ekle
                   </button>
                 )}
               </div>
 
               {!attrCat ? (
-                <div className="px-5 py-12 text-center text-gray-400">
-                  <Filter size={32} className="mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">Bir kategoriye tıklayarak <br /> özelliklerini düzenleyebilirsiniz.</p>
+                <div className="px-5 py-16 text-center text-slate-400">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-slate-100">
+                    <Filter size={26} className="opacity-60" />
+                  </div>
+                  <p className="text-sm font-semibold">Bir ilan kategorisinin filtrelerini düzenlemek için sol listeden kategori seçin.</p>
                 </div>
               ) : !(attrCat.content_type === 'listing' && attrCat.node_type === 'sellable') ? (
-                <div className="px-5 py-10 text-center text-gray-400">
-                  <Filter size={32} className="mx-auto mb-3 opacity-30" />
-                  <p className="text-sm font-semibold">Bu kategori için ilan filtresi kullanılmıyor.</p>
-                  <p className="mt-1 text-xs">Özellik alanları sadece kullanıcı ilanı kategorilerinde aktif.</p>
+                <div className="px-5 py-14 text-center text-slate-400">
+                  <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-3xl bg-amber-50 text-amber-600">
+                    <Filter size={26} />
+                  </div>
+                  <p className="text-sm font-bold text-slate-600">Bu kategori için ilan filtresi kullanılmıyor.</p>
+                  <p className="mt-1 text-xs font-semibold">Özellik alanları sadece kullanıcı ilanı kategorilerinde aktif.</p>
                 </div>
               ) : attrs.length === 0 ? (
-                <div className="px-5 py-8 text-center text-gray-400 text-sm">Bu kategoriye henüz özellik eklenmemiş.</div>
+                <div className="px-5 py-12 text-center text-sm font-semibold text-slate-400">Bu kategoriye henüz özellik eklenmemiş.</div>
               ) : (
-                <div className="divide-y divide-gray-50">
+                <div className="divide-y divide-slate-100">
                   {attrs.map(attr => (
-                    <div key={attr.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
-                      <GripVertical size={14} className="text-gray-300 flex-shrink-0" />
+                    <div key={attr.id} className="group flex items-center gap-3 px-4 py-3 transition-colors hover:bg-cyan-50/40">
+                      <GripVertical size={14} className="flex-shrink-0 text-slate-300" />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-800 text-sm">{attr.name}</span>
-                          <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold">
+                          <span className="text-sm font-black text-slate-800">{attr.name}</span>
+                          <span className="rounded-lg bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">
                             {ATTR_TYPES.find(t => t.value === attr.type)?.label || attr.type}
                           </span>
-                          {attr.is_required == 1 && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold">Zorunlu</span>}
-                          {attr.is_filterable == 1 && <span className="text-[10px] bg-cyan-100 text-cyan-600 px-1.5 py-0.5 rounded font-bold">Filtreli</span>}
+                          {attr.is_required == 1 && <span className="rounded-lg bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-600">Zorunlu</span>}
+                          {attr.is_filterable == 1 && <span className="rounded-lg bg-cyan-100 px-1.5 py-0.5 text-[10px] font-bold text-cyan-600">Filtreli</span>}
                         </div>
-                        <div className="text-xs text-gray-400">{attr.slug}</div>
+                        <div className="mt-1 font-mono text-xs text-slate-400">/{attr.slug}</div>
                         {Array.isArray(attr.options) && attr.options.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {attr.options.slice(0,5).map(o => (
@@ -575,9 +642,9 @@ export default function AdminCategories() {
                           <div className="text-xs text-gray-400 mt-0.5">{attr.options.min} — {attr.options.max}</div>
                         )}
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => openEditAttr(attr)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-                        <button onClick={() => handleDeleteAttr(attr.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                      <div className="flex gap-1 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
+                        <button onClick={() => openEditAttr(attr)} className="rounded-xl p-2 text-slate-400 hover:bg-blue-100 hover:text-blue-700"><Pencil size={14} /></button>
+                        <button onClick={() => handleDeleteAttr(attr.id)} className="rounded-xl p-2 text-slate-400 hover:bg-red-100 hover:text-red-600"><Trash2 size={14} /></button>
                       </div>
                     </div>
                   ))}
@@ -587,41 +654,42 @@ export default function AdminCategories() {
           </div>
         </>
       ) : activeTab === 'types' ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_18px_55px_-38px_rgba(15,23,42,0.45)]">
+          <div className="flex items-center justify-between gap-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/80 to-white px-5 py-4">
             <div className="flex items-center gap-2">
-              <Tag size={18} className="text-purple-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <Layers3 size={18} />
+              </div>
               <div>
-                <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
-                <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
+                <h3 className="font-extrabold text-slate-900">Kategori Türleri</h3>
+                <p className="text-xs font-semibold text-slate-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin.</p>
               </div>
             </div>
-            <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+            <button onClick={openNewType} className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-2.5 text-xs font-black text-white shadow-lg shadow-blue-100 transition-all hover:-translate-y-0.5">
               <Plus size={13} /> Yeni Tür
             </button>
           </div>
           {typesList.length === 0 ? (
-            <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
+            <div className="px-5 py-14 text-center text-sm font-semibold text-slate-400">Henüz tür yok.</div>
           ) : (
-            <div className="divide-y divide-gray-50">
+            <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
               {typesList.map(type => (
-                <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
-                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
+                <div key={type.id} className="group flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-3 transition-all hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-md">
+                  <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${type.color} text-lg text-white shadow-sm`}>
                     {type.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
-                      {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
-                      <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
+                      <span className="truncate text-sm font-black text-slate-900">{type.name}</span>
+                      {!type.is_active && <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-500">Pasif</span>}
                     </div>
-                    <div className="text-xs text-gray-400">
-                      URL: {type.slug} · {getTypeColorMeta(type.color).label}
+                    <div className="mt-1 text-xs font-semibold text-slate-400">
+                      /{type.slug} · {getTypeColorMeta(type.color).label} · #{type.sort_order}
                     </div>
                   </div>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-                    <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                  <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => openEditType(type)} className="rounded-xl p-2 text-slate-400 hover:bg-blue-100 hover:text-blue-700"><Pencil size={14} /></button>
+                    <button onClick={() => handleDeleteType(type)} className="rounded-xl p-2 text-slate-400 hover:bg-red-100 hover:text-red-600"><Trash2 size={14} /></button>
                   </div>
                 </div>
               ))}
