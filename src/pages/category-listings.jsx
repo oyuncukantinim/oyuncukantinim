@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronDown, Clock3, PackageCheck, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
+import { Clock3, Plus, Search, ShieldCheck, SlidersHorizontal, Sparkles, Star, Zap } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getCategories, getCategoryAttributes, getListings, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
@@ -47,9 +47,8 @@ function CategoryCard({ cat }) {
   );
 }
 
-function ProductCategoryView({ category, products, sort, setSort }) {
+function ProductCategoryView({ category, products }) {
   const heroImage = category.banner_image || category.image || '';
-  const [deliveryFilter, setDeliveryFilter] = useState('all');
   const [highlightFilter, setHighlightFilter] = useState('all');
 
   const visibleProducts = useMemo(() => products.filter((product) => {
@@ -61,13 +60,11 @@ function ProductCategoryView({ category, products, sort, setSort }) {
       || Number(product.is_automatic_delivery || 0) === 1
       || Number(product.available_stock_count || 0) > 0;
 
-    if (deliveryFilter === 'automatic' && !isFast) return false;
-    if (deliveryFilter === 'manual' && isFast) return false;
     if (highlightFilter === 'discount' && !hasDiscount) return false;
     if (highlightFilter === 'fast' && !isFast) return false;
 
     return true;
-  }), [deliveryFilter, highlightFilter, products]);
+  }), [highlightFilter, products]);
 
   return (
     <div className="space-y-5">
@@ -110,40 +107,7 @@ function ProductCategoryView({ category, products, sort, setSort }) {
       ) : (
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-4">
           <div className="mb-4 rounded-2xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950/60">
-            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <label className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                  <PackageCheck size={15} className="text-slate-400" />
-                  <span className="whitespace-nowrap">Teslimat</span>
-                  <select
-                    value={deliveryFilter}
-                    onChange={(event) => setDeliveryFilter(event.target.value)}
-                    className="ml-auto min-w-0 flex-1 appearance-none bg-transparent pr-5 text-right text-sm font-black text-slate-900 outline-none dark:text-white"
-                  >
-                    <option value="all">Tümü</option>
-                    <option value="automatic">Hızlı</option>
-                    <option value="manual">Manuel</option>
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none -ml-5 text-slate-400" />
-                </label>
-
-                <label className="inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                  Sırala:
-                  <select
-                    value={sort}
-                    onChange={(event) => setSort(event.target.value)}
-                    className="ml-auto min-w-0 flex-1 appearance-none bg-transparent pr-5 text-right text-sm font-black text-slate-900 outline-none dark:text-white"
-                  >
-                    <option value="featured">Öne Çıkan</option>
-                    <option value="newest">Yeni Ürünler</option>
-                    <option value="price-asc">Fiyat Artan</option>
-                    <option value="price-desc">Fiyat Azalan</option>
-                  </select>
-                  <ChevronDown size={14} className="pointer-events-none -ml-5 text-slate-400" />
-                </label>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap lg:justify-end">
+            <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setHighlightFilter('all')}
@@ -165,7 +129,6 @@ function ProductCategoryView({ category, products, sort, setSort }) {
                 >
                   <Zap size={15} /> Hızlı
                 </button>
-              </div>
             </div>
           </div>
 
@@ -181,7 +144,6 @@ function ProductCategoryView({ category, products, sort, setSort }) {
               <button
                 type="button"
                 onClick={() => {
-                  setDeliveryFilter('all');
                   setHighlightFilter('all');
                 }}
                 className="mt-3 rounded-xl bg-violet-600 px-4 py-2 text-xs font-black text-white transition hover:bg-violet-500"
@@ -380,7 +342,7 @@ export default function CategoryListingsPage() {
           </div>
         </>
       ) : category.content_type === 'product' ? (
-        <ProductCategoryView category={category} products={products} sort={sort} setSort={setSort} />
+        <ProductCategoryView category={category} products={products} />
       ) : (
         <>
           <div className="card overflow-hidden">
