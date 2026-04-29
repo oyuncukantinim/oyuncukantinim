@@ -8,13 +8,13 @@ import ProductCard from '../components/ProductCard';
 import Breadcrumb from '../components/Breadcrumb';
 import useSiteBrand from '../hooks/useSiteBrand';
 
-function idFromCatSlug(slug) {
-  const match = slug?.match(/-(\d+)$/);
-  return match ? parseInt(match[1], 10) : null;
+function buildCatSlug(cat) {
+  return cat.slug || cat.id;
 }
 
-function buildCatSlug(cat) {
-  return `${cat.slug}-${cat.id}`;
+function legacyIdFromCatSlug(slug) {
+  const match = slug?.match(/-(\d+)$/);
+  return match ? parseInt(match[1], 10) : null;
 }
 
 function CategoryCard({ cat }) {
@@ -103,7 +103,6 @@ export default function CategoryListingsPage() {
   const { catSlug } = useParams();
   const { user } = useAuth();
   const { defaultListingImage } = useSiteBrand();
-  const catId = idFromCatSlug(catSlug);
 
   const [category, setCategory] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -116,14 +115,18 @@ export default function CategoryListingsPage() {
   const [sort, setSort] = useState('newest');
 
   useEffect(() => {
-    if (!catId) return;
+    if (!catSlug) return;
     setLoading(true);
     setSearch('');
 
     getCategories()
       .then((response) => {
         const safeCategories = response.data || [];
-        const found = safeCategories.find((item) => String(item.id) === String(catId)) || null;
+        const legacyId = legacyIdFromCatSlug(catSlug);
+        const found = safeCategories.find((item) => item.slug === catSlug)
+          || (legacyId ? safeCategories.find((item) => String(item.id) === String(legacyId)) : null)
+          || null;
+        const categoryId = found?.id;
         setCategories(safeCategories);
         setCategory(found);
 
@@ -144,7 +147,7 @@ export default function CategoryListingsPage() {
         }
 
         if (found.content_type === 'product') {
-          return getProducts({ category_id: catId, sort }).then((productResponse) => {
+          return getProducts({ category_id: categoryId, sort }).then((productResponse) => {
             setProducts(productResponse.data || []);
             setListings([]);
             setCatAttrs([]);
@@ -153,8 +156,8 @@ export default function CategoryListingsPage() {
         }
 
         return Promise.all([
-          getListings({ category_id: catId, sort }).then((listingResponse) => listingResponse.data || []),
-          getCategoryAttributes(catId).then((attrResponse) => attrResponse.data || []),
+          getListings({ category_id: categoryId, sort }).then((listingResponse) => listingResponse.data || []),
+          getCategoryAttributes(categoryId).then((attrResponse) => attrResponse.data || []),
         ]).then(([listingItems, attrs]) => {
           const safeAttrs = (attrs || []).filter((attr) => attr.is_filterable);
           const nextFilters = {};
@@ -168,11 +171,11 @@ export default function CategoryListingsPage() {
         });
       })
       .finally(() => setLoading(false));
-  }, [catId, sort]);
+  }, [catSlug, sort]);
 
   const childCats = useMemo(
-    () => categories.filter((item) => String(item.parent_id) === String(catId)),
-    [categories, catId],
+    () => categories.filter((item) => String(item.parent_id) === String(category?.id || '')),
+    [categories, category],
   );
 
   const breadcrumb = useMemo(() => {

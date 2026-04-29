@@ -216,7 +216,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       .slice(0, 5);
   }, [categories, searchQuery]);
 
-  const buildCategorySlug = (category) => `${category.slug}-${category.id}`;
+  const buildCategorySlug = (category) => category.slug || category.id;
 
   return (
     <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-[0_6px_22px_rgba(15,23,42,0.05)]">

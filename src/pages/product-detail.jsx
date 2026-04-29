@@ -115,7 +115,7 @@ export default function ProductDetailPage() {
     product.category_name
       ? {
           label: product.category_name,
-          to: product.category_id ? `/categories/${product.category_slug}-${product.category_id}` : '/categories',
+          to: product.category_slug ? `/categories/${product.category_slug}` : '/categories',
         }
       : null,
     { label: product.title },

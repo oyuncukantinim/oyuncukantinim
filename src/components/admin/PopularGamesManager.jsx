@@ -233,7 +233,7 @@ export default function PopularGamesManager({ onToast }) {
                       <input
                         value={game.category_slug || ''}
                         onChange={(event) => updateGame(game.id, 'category_slug', event.target.value)}
-                        placeholder="slug-id (ör: fortnite-12)"
+                        placeholder="kategori-url"
                         className="w-40 rounded-xl border border-gray-200 px-3 py-1.5 text-xs focus:border-violet-400 focus:outline-none"
                       />
                     </div>
@@ -268,7 +268,7 @@ export default function PopularGamesManager({ onToast }) {
       <p className="mt-3 px-1 text-xs text-gray-400">
         Ana sayfada görünecek popüler kategorileri düzenleyebilirsiniz. Sıralamak için sürükleyip bırakın.
         Görselleri doğrudan yükleyin; raster görseller otomatik optimize edilip WebP olarak kaydedilir.
-        Kategori slug formatı: <strong>slug-id</strong> (ör: fortnite-12).
+        Kategori URL alanına admin kategorilerinde belirlenen linki yazın.
       </p>
     </div>
   );

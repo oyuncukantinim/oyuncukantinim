@@ -193,9 +193,7 @@ export default function ListingDetailPage() {
           (listing.category_name || listing.category)
             ? {
                 label: listing.category_name || listing.category,
-                to: listing.category_id
-                  ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}`
-                  : '/categories',
+                to: listing.category_slug ? `/categories/${listing.category_slug}` : '/categories',
               }
             : null,
           { label: listing.title },
@@ -209,7 +207,7 @@ export default function ListingDetailPage() {
           <div className="ld-fade-up rounded-3xl border border-slate-100 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <Link
-                to={listing.category_id ? `/categories/${listing.category_slug || listing.category}-${listing.category_id}` : '/categories'}
+                to={listing.category_slug ? `/categories/${listing.category_slug}` : '/categories'}
                 className="inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[11px] font-black text-violet-700 transition-colors hover:bg-violet-100 dark:border-violet-900/40 dark:bg-violet-950/40 dark:text-violet-300"
               >
                 <Tag size={10} /> {listing.category_name || listing.category}

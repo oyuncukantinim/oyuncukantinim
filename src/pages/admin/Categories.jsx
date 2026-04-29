@@ -42,7 +42,6 @@ const CATEGORY_ROLE_OPTIONS = [
     label: 'Klasör',
     node_type: 'container',
     content_type: 'neutral',
-    description: 'Ana başlık gibi davranır, içine ürün veya ilan eklenmez.',
     badgeClass: 'bg-slate-100 text-slate-700',
   },
   {
@@ -50,7 +49,6 @@ const CATEGORY_ROLE_OPTIONS = [
     label: 'İlan Kategorisi',
     node_type: 'sellable',
     content_type: 'listing',
-    description: 'Kullanıcıların ilan açacağı satış kategorisi.',
     badgeClass: 'bg-violet-100 text-violet-700',
   },
   {
@@ -58,7 +56,6 @@ const CATEGORY_ROLE_OPTIONS = [
     label: 'Site Ürünü Kategorisi',
     node_type: 'sellable',
     content_type: 'product',
-    description: 'Sadece sitenin kendi ürünlerinin listeleneceği kategori.',
     badgeClass: 'bg-emerald-100 text-emerald-700',
   },
 ];
@@ -312,10 +309,16 @@ export default function AdminCategories() {
   };
 
   const handleSaveCat = async () => {
-    if (!catForm.name) { showToast('İsim gerekli.'); return; }
+    const slug = String(catForm.slug || '').trim();
+    if (!catForm.name || !slug) { showToast('İsim ve URL gerekli.'); return; }
+    const duplicate = categories.find((category) => (
+      String(category.slug || '').trim().toLowerCase() === slug.toLowerCase()
+      && Number(category.id) !== Number(editCat?.id || 0)
+    ));
+    if (duplicate) { showToast('Bu URL zaten kullanılıyor.'); return; }
     setCatSaving(true);
     try {
-      await adminSaveCategory({ ...catForm, id: editCat?.id || null, parent_id: catForm.parent_id || null });
+      await adminSaveCategory({ ...catForm, slug, id: editCat?.id || null, parent_id: catForm.parent_id || null });
       showToast(editCat ? 'Kategori güncellendi.' : 'Kategori oluşturuldu.');
       setCatModal(false); loadCategories();
     } catch (e) { showToast(e.message); }
@@ -478,6 +481,18 @@ export default function AdminCategories() {
               <Gamepad2 size={16} />
               Popüler Kategoriler
             </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('types')}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-bold transition-all ${
+                activeTab === 'types'
+                  ? 'bg-white text-violet-700 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Tag size={16} />
+              Kategori Türleri
+            </button>
           </div>
         </div>
       </div>
@@ -570,50 +585,49 @@ export default function AdminCategories() {
               )}
             </div>
           </div>
-
-          {/* Kategori Türleri Paneli */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Tag size={18} className="text-purple-600" />
-                <div>
-                  <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
-                  <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
-                </div>
+        </>
+      ) : activeTab === 'types' ? (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Tag size={18} className="text-purple-600" />
+              <div>
+                <h3 className="font-extrabold text-gray-800">Kategori Türleri</h3>
+                <p className="text-xs text-gray-400">Hesap, E-Pin, Item, Boost vb. türleri yönetin</p>
               </div>
-              <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
-                <Plus size={13} /> Yeni Tür
-              </button>
             </div>
-            {typesList.length === 0 ? (
-              <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
-            ) : (
-              <div className="divide-y divide-gray-50">
-                {typesList.map(type => (
-                  <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
-                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
-                      {type.icon}
+            <button onClick={openNewType} className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-colors">
+              <Plus size={13} /> Yeni Tür
+            </button>
+          </div>
+          {typesList.length === 0 ? (
+            <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz tür yok.</div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {typesList.map(type => (
+                <div key={type.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/50 group">
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${type.color} flex items-center justify-center text-white text-sm flex-shrink-0`}>
+                    {type.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
+                      {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
+                      <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-gray-800 text-sm">{type.name}</span>
-                        {!type.is_active && <span className="text-[10px] bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full font-bold">Pasif</span>}
-                        <span className="text-[10px] text-gray-400">#{type.sort_order}</span>
-                      </div>
-                        <div className="text-xs text-gray-400">
-                        URL: {type.slug} · {getTypeColorMeta(type.color).label}
-                        </div>
-                    </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
-                      <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                    <div className="text-xs text-gray-400">
+                      URL: {type.slug} · {getTypeColorMeta(type.color).label}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onClick={() => openEditType(type)} className="p-1.5 rounded-lg hover:bg-blue-50 text-gray-400 hover:text-blue-600"><Pencil size={13} /></button>
+                    <button onClick={() => handleDeleteType(type)} className="p-1.5 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500"><Trash2 size={13} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : (
         <PopularGamesManager onToast={showToast} />
       )}
@@ -642,7 +656,6 @@ export default function AdminCategories() {
                         <span className="text-sm font-black text-gray-800">{role.label}</span>
                         {active ? <span className="rounded-full bg-violet-600 px-2 py-0.5 text-[10px] font-black text-white">Seçili</span> : null}
                       </div>
-                      <p className="mt-1 text-[11px] font-semibold leading-5 text-gray-500">{role.description}</p>
                     </button>
                   );
                 })}
