@@ -14,6 +14,17 @@ import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
 
 const LISTING_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
+const CATEGORY_STAR_FIELD_STYLE = {
+  backgroundImage: [
+    'radial-gradient(circle at 16% 22%, rgba(255,255,255,0.95) 0 1px, transparent 1.8px)',
+    'radial-gradient(circle at 76% 18%, rgba(255,255,255,0.75) 0 1px, transparent 1.6px)',
+    'radial-gradient(circle at 84% 48%, rgba(255,255,255,0.82) 0 1.2px, transparent 2px)',
+    'radial-gradient(circle at 28% 68%, rgba(216,180,254,0.9) 0 1px, transparent 1.8px)',
+    'radial-gradient(circle at 62% 78%, rgba(103,232,249,0.82) 0 1px, transparent 1.8px)',
+    'radial-gradient(circle at 44% 34%, rgba(255,255,255,0.62) 0 0.8px, transparent 1.5px)',
+  ].join(','),
+  backgroundSize: '88px 88px, 112px 112px, 96px 96px, 120px 120px, 104px 104px, 72px 72px',
+};
 
 function HomeCardSkeleton({ className = '' }) {
   return (
@@ -91,14 +102,16 @@ function CategoryCard({ game, index }) {
   return (
     <Link
       to={game.category_slug ? `/categories/${game.category_slug}` : `/market?game=${encodeURIComponent(game.name)}`}
-      className={`group relative overflow-hidden rounded-[18px] bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} p-[1.5px] shadow-[0_16px_34px_-20px_rgba(15,23,42,0.85)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(139,92,246,0.65)]`}
+      className={`group relative overflow-hidden rounded-[18px] bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} p-[1.5px] shadow-[0_16px_34px_-20px_rgba(15,23,42,0.85),0_0_22px_-12px_rgba(168,85,247,0.95)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(139,92,246,0.65),0_0_30px_-10px_rgba(217,70,239,0.9)]`}
     >
       {/* Shimmer sweep on hover */}
       <span className="pointer-events-none absolute inset-0 z-20 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-[120%]" />
 
       <div className="relative flex h-full min-h-[132px] w-full flex-col items-center justify-center overflow-hidden rounded-[16px] bg-slate-950 px-3 py-4 text-center">
-        <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-30`} />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.08),rgba(2,6,23,0.72))]" />
+        <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-24`} />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_24%,rgba(216,180,254,0.36),transparent_29%),radial-gradient(circle_at_22%_12%,rgba(59,130,246,0.34),transparent_34%),radial-gradient(circle_at_82%_24%,rgba(236,72,153,0.26),transparent_32%),linear-gradient(180deg,rgba(15,23,42,0.16),rgba(2,6,23,0.76))]" />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={CATEGORY_STAR_FIELD_STYLE} />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.08)_42%,transparent_56%)] opacity-60" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
         {/* HOT badge */}
         {isHot ? (
@@ -110,7 +123,8 @@ function CategoryCard({ game, index }) {
 
         {/* Image / Emoji with halo */}
         <div className="relative mb-2">
-          <div className={`pointer-events-none absolute inset-0 -m-4 rounded-2xl bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-70 blur-xl transition-opacity duration-300 group-hover:opacity-100`} />
+          <div className={`pointer-events-none absolute inset-0 -m-5 rounded-full bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-75 blur-2xl transition-opacity duration-300 group-hover:opacity-100`} />
+          <div className="pointer-events-none absolute inset-0 -m-3 rounded-full bg-white/12 blur-lg" />
           {game.image_url ? (
             <img
               src={game.image_url}
