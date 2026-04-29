@@ -388,9 +388,13 @@ export default function Home() {
             count={featuredProducts.length || null}
             countLabel="Ürün"
             titleAddon={
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700 shadow-sm ring-1 ring-white/70 dark:border-emerald-400/25 dark:bg-emerald-400/10 dark:text-emerald-200">
-                <ShieldCheck size={12} strokeWidth={3} />
-                Güvenli
+              <span
+                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 text-emerald-600 shadow-[0_12px_26px_-18px_rgba(16,185,129,0.95),0_0_0_1px_rgba(255,255,255,0.85)_inset] ring-1 ring-emerald-100/80 dark:border-emerald-400/25 dark:from-emerald-400/15 dark:via-slate-950 dark:to-cyan-400/10 dark:text-emerald-200 dark:ring-emerald-400/15"
+                title="Güvenli"
+                aria-label="Güvenli"
+              >
+                <span className="absolute inset-1 rounded-full border border-emerald-300/35" />
+                <ShieldCheck size={16} strokeWidth={3} />
               </span>
             }
             action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
