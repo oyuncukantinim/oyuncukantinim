@@ -389,11 +389,12 @@ export default function Home() {
             countLabel="Ürün"
             titleAddon={
               <span
-                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-cyan-50 text-emerald-600 shadow-[0_12px_26px_-18px_rgba(16,185,129,0.95),0_0_0_1px_rgba(255,255,255,0.85)_inset] ring-1 ring-emerald-100/80 dark:border-emerald-400/25 dark:from-emerald-400/15 dark:via-slate-950 dark:to-cyan-400/10 dark:text-emerald-200 dark:ring-emerald-400/15"
+                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/70 bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 text-white shadow-[0_0_14px_rgba(16,185,129,0.72),0_0_26px_rgba(34,211,238,0.42)] dark:border-emerald-300/45 dark:from-emerald-400 dark:via-cyan-300 dark:to-emerald-500 dark:text-slate-950 dark:shadow-[0_0_18px_rgba(52,211,153,0.82),0_0_34px_rgba(34,211,238,0.5)]"
                 title="Güvenli"
                 aria-label="Güvenli"
               >
-                <span className="absolute inset-1 rounded-full border border-emerald-300/35" />
+                <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-emerald-400/40" />
+                <span className="absolute inset-[-5px] -z-10 rounded-full bg-cyan-400/20 blur-md" />
                 <ShieldCheck size={16} strokeWidth={3} />
               </span>
             }
