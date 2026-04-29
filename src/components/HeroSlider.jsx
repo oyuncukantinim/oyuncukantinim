@@ -159,9 +159,8 @@ export default function HeroSlider() {
   const hasTitle = currentTitle.length > 0;
   const desktopImageUrl = current?.image_url || '';
   const mobileImageUrl = current?.mobile_image_url || '';
-  const cardImageUrl = mobileImageUrl || desktopImageUrl;
   const desktopArtUrl = desktopImageUrl || mobileImageUrl;
-  const hasImage = Boolean(cardImageUrl || desktopArtUrl);
+  const hasImage = Boolean(desktopArtUrl);
   const titleLength = currentTitle.length;
   const titleScale = Math.max(0.56, Math.min(1, 44 / Math.max(titleLength, 44)));
 
@@ -301,19 +300,8 @@ export default function HeroSlider() {
           <div
             className={`relative flex h-[238px] overflow-hidden ${hasTitle ? `bg-gradient-to-br ${current.accent_color || 'from-violet-700 via-purple-700 to-cyan-600'}` : 'bg-slate-950'} sm:h-[330px] md:h-[440px]`}
           >
-            {cardImageUrl ? (
-              <img
-                key={`mobile-art-${current.id || index}`}
-                src={cardImageUrl}
-                alt=""
-                className="hs-card-art pointer-events-none absolute inset-0 h-full w-full object-cover md:hidden"
-                loading="eager"
-                decoding="async"
-              />
-            ) : null}
-
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/38 md:bg-slate-950/55' : 'bg-slate-950/30 md:bg-slate-950/55'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-slate-950/10 md:bg-slate-950/55' : 'bg-slate-950/24 md:bg-slate-950/55'}`} />
             ) : null}
 
             {/* Slide hero art (right side) */}
@@ -347,7 +335,7 @@ export default function HeroSlider() {
 
             {/* Left→right darkening for legibility */}
             {hasTitle ? (
-              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/86 via-slate-950/52 to-slate-950/14 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/88 via-slate-950/52 to-slate-950/12 md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
+              <div className={`pointer-events-none absolute inset-0 ${hasImage ? 'bg-gradient-to-r from-slate-950/18 via-slate-950/08 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent' : 'bg-gradient-to-r from-slate-950/42 via-slate-950/18 to-transparent md:from-slate-950/80 md:via-slate-950/35 md:to-transparent'}`} />
             ) : null}
 
             {/* Subtle dot texture inside card */}
@@ -424,7 +412,7 @@ export default function HeroSlider() {
         {/* ----- Tabs ----- */}
         {total > 1 ? (
           <div
-            className="relative z-20 mx-auto -mt-[44px] w-full sm:-mt-[56px] lg:-mt-[56px]"
+            className="relative z-20 mx-auto -mt-[56px] w-full"
             role="tablist"
             aria-label="Slayt seçici"
           >
