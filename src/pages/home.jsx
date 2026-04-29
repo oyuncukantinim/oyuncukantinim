@@ -389,14 +389,14 @@ export default function Home() {
             countLabel="Ürün"
             titleAddon={
               <span
-                className="relative inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-300/70 bg-gradient-to-br from-emerald-400 via-cyan-400 to-emerald-500 text-white shadow-[0_0_14px_rgba(16,185,129,0.72),0_0_26px_rgba(34,211,238,0.42)] dark:border-emerald-300/45 dark:from-emerald-400 dark:via-cyan-300 dark:to-emerald-500 dark:text-slate-950 dark:shadow-[0_0_18px_rgba(52,211,153,0.82),0_0_34px_rgba(34,211,238,0.5)]"
+                className="relative inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_0_16px_rgba(34,211,238,0.75)] dark:text-slate-950"
                 title="Güvenli"
                 aria-label="Güvenli"
               >
-                <span className="absolute -right-2 top-1 h-1 w-3 rotate-[-18deg] rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
-                <span className="absolute -right-2 top-3.5 h-1 w-4 rounded-full bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.9)]" />
-                <span className="absolute -right-2 bottom-1 h-1 w-3 rotate-[18deg] rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
-                <ShieldCheck size={16} strokeWidth={3} />
+                <span className="absolute inset-0 bg-gradient-to-br from-cyan-300 via-emerald-400 to-violet-500 shadow-[0_0_18px_rgba(34,211,238,0.55),0_0_30px_rgba(16,185,129,0.35)] [clip-path:polygon(50%_0%,88%_12%,100%_50%,88%_88%,50%_100%,12%_88%,0%_50%,12%_12%)]" />
+                <span className="absolute inset-[3px] bg-slate-950/18 ring-1 ring-white/45 [clip-path:polygon(50%_0%,86%_14%,100%_50%,86%_86%,50%_100%,14%_86%,0%_50%,14%_14%)] dark:bg-white/28 dark:ring-slate-950/20" />
+                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)] dark:bg-slate-950/70" />
+                <ShieldCheck size={17} strokeWidth={3} className="relative" />
               </span>
             }
             action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
