@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetProductOrderLogs, adminGetProductOrders, adminUpdateProductOrder } from '../../lib/adminApi';
+import useSiteBrand from '../../hooks/useSiteBrand';
 
 const DELIVERY_STATUS_MAP = {
   0: { label: 'Teslimat Bekleniyor', color: 'orange', icon: Clock },
@@ -51,6 +52,7 @@ function DeliveryBadge({ status }) {
 }
 
 function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
+  const { defaultListingImage } = useSiteBrand();
   const [deliveryStatus, setDeliveryStatus] = useState(Number(order.delivery_status ?? 0));
   const [deliveryNote, setDeliveryNote] = useState(order.delivery_note || '');
   const [deliveryContent, setDeliveryContent] = useState(order.delivery_content || '');
@@ -68,6 +70,8 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
       })
       .finally(() => setLogsLoading(false));
   }, [order.id]);
+
+  const productImage = order.product_cover_image || order.product_image || defaultListingImage;
 
   const save = async () => {
     setLoading(true);
@@ -108,9 +112,9 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
           <div className="space-y-5">
             <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 space-y-3">
               <div className="flex items-start gap-3">
-                {order.product_cover_image || order.product_image ? (
+                {productImage ? (
                   <img
-                    src={order.product_cover_image || order.product_image}
+                    src={productImage}
                     alt={order.product_title}
                     className="h-20 w-20 rounded-2xl object-cover"
                   />

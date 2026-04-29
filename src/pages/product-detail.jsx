@@ -15,6 +15,7 @@ import {
 import { getProduct, idFromSlug, productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
 import Breadcrumb from '../components/Breadcrumb';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const PRODUCT_TYPE_META = {
   digital_code: { label: 'Dijital Kod', icon: Tag },
@@ -49,6 +50,7 @@ export default function ProductDetailPage() {
   const id = idFromSlug(slug);
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { defaultListingImage } = useSiteBrand();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
@@ -85,8 +87,9 @@ export default function ProductDetailPage() {
         if (image && !list.includes(image)) list.push(image);
       }
     }
+    if (list.length === 0 && defaultListingImage) list.push(defaultListingImage);
     return list;
-  }, [product]);
+  }, [defaultListingImage, product]);
 
   if (loading) {
     return (
@@ -103,7 +106,7 @@ export default function ProductDetailPage() {
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
   const discountPercent = getDiscountPercent(basePrice, product.sale_price);
   const isUnavailable = product.status !== 'active' || (product.delivery_type === 'automatic' && Number(product.is_in_stock) !== 1);
-  const currentImage = images[activeImage] || product.cover_image || '';
+  const currentImage = images[activeImage] || product.cover_image || defaultListingImage || '';
   const typeMeta = PRODUCT_TYPE_META[product.product_type] || PRODUCT_TYPE_META.digital_code;
   const TypeIcon = typeMeta.icon;
   const maxQuantity = getMaxProductQuantity(product);
@@ -131,7 +134,7 @@ export default function ProductDetailPage() {
       price: currentPrice,
       quantity,
       maxQuantity,
-      image: product.cover_image || '',
+      image: product.cover_image || defaultListingImage || '',
       product_id: product.id,
       seller: 'OyuncuKantinim',
       path: productPath(product),

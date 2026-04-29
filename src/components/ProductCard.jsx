@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 const PRODUCT_TYPE_META = {
   digital_code: { label: 'Dijital Kod', icon: Tag },
@@ -81,8 +82,10 @@ function FeaturedChip() {
 
 export default function ProductCard({ product, compact = false }) {
   const { addToCart, cart, removeFromCart, updateCartQuantity } = useCart();
+  const { defaultListingImage } = useSiteBrand();
 
   const href = productPath(product);
+  const coverImage = product.cover_image || defaultListingImage;
   const currentPrice = Number(product.current_price ?? product.sale_price ?? product.price ?? 0);
   const basePrice = Number(product.price ?? 0);
   const hasDiscount = product.sale_price && Number(product.sale_price) > 0 && Number(product.sale_price) < basePrice;
@@ -104,7 +107,7 @@ export default function ProductCard({ product, compact = false }) {
       price: currentPrice,
       quantity: 1,
       maxQuantity,
-      image: product.cover_image || '',
+      image: coverImage || '',
       product_id: product.id,
       seller: 'OyuncuKantinim',
       path: href,
@@ -132,9 +135,9 @@ export default function ProductCard({ product, compact = false }) {
         className="scroll-optimized-card group relative block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/60"
       >
         <div className="relative aspect-[3/2] w-full overflow-hidden bg-slate-50 dark:bg-slate-950">
-          {product.cover_image ? (
+          {coverImage ? (
             <img
-              src={product.cover_image}
+              src={coverImage}
               alt={product.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
@@ -184,9 +187,9 @@ export default function ProductCard({ product, compact = false }) {
       <Link to={href} className="relative block aspect-[3/2] overflow-hidden bg-slate-50 dark:bg-slate-950">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_20%,rgba(139,92,246,0.16),transparent_36%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.12),transparent_34%)]" />
         <div className="relative flex h-full w-full items-center justify-center">
-          {product.cover_image ? (
+          {coverImage ? (
             <img
-              src={product.cover_image}
+              src={coverImage}
               alt={product.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"

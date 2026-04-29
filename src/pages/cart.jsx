@@ -17,6 +17,7 @@ import {
 import { useCart } from '../context/useCart';
 import { useAuth } from '../context/useAuth';
 import { createOrder } from '../lib/api';
+import useSiteBrand from '../hooks/useSiteBrand';
 
 function formatMoney(value) {
   return `${Number(value || 0).toLocaleString('tr-TR', {
@@ -28,6 +29,7 @@ function formatMoney(value) {
 export default function CartPage() {
   const { cart, removeFromCart, updateCartQuantity, clearCart, cartTotal, cartCount, showToast } = useCart();
   const { user, refreshUser } = useAuth();
+  const { defaultListingImage } = useSiteBrand();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
 
@@ -155,6 +157,7 @@ export default function CartPage() {
             const lineTotal = Number(item.price || 0) * quantity;
             const isProduct = item.itemType === 'product';
             const canIncrease = !item.maxQuantity || quantity < Number(item.maxQuantity);
+            const imageSrc = item.image || (isProduct ? defaultListingImage : '');
 
             return (
               <article
@@ -163,8 +166,8 @@ export default function CartPage() {
               >
                 <div className="grid gap-4 p-4 sm:grid-cols-[88px_minmax(0,1fr)_auto] sm:items-center">
                   <Link to={item.path || '#'} className="relative aspect-[3/2] w-28 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-950 sm:w-[88px]">
-                    {item.image && typeof item.image === 'string' && item.image.startsWith('http') ? (
-                      <img src={item.image} alt="" className="h-full w-full object-cover" />
+                    {imageSrc ? (
+                      <img src={imageSrc} alt="" className="h-full w-full object-cover" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-sm font-black text-slate-400">OK</div>
                     )}
