@@ -389,14 +389,46 @@ export default function Home() {
             countLabel="Ürün"
             titleAddon={
               <span
-                className="relative inline-flex h-9 w-9 items-center justify-center text-white drop-shadow-[0_0_16px_rgba(34,211,238,0.75)] dark:text-slate-950"
+                className="inline-flex h-10 w-10 items-center justify-center text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]"
                 title="Güvenli"
                 aria-label="Güvenli"
               >
-                <span className="absolute inset-0 bg-gradient-to-br from-cyan-300 via-emerald-400 to-violet-500 shadow-[0_0_18px_rgba(34,211,238,0.55),0_0_30px_rgba(16,185,129,0.35)] [clip-path:polygon(50%_0%,88%_12%,100%_50%,88%_88%,50%_100%,12%_88%,0%_50%,12%_12%)]" />
-                <span className="absolute inset-[3px] bg-slate-950/18 ring-1 ring-white/45 [clip-path:polygon(50%_0%,86%_14%,100%_50%,86%_86%,50%_100%,14%_86%,0%_50%,14%_14%)] dark:bg-white/28 dark:ring-slate-950/20" />
-                <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)] dark:bg-slate-950/70" />
-                <ShieldCheck size={17} strokeWidth={3} className="relative" />
+                <svg
+                  viewBox="0 0 40 40"
+                  className="h-full w-full overflow-visible"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 3.5 26.8 7 34.1 9.2 36 16.8 36 23.2 34.1 30.8 26.8 33 20 36.5 13.2 33 5.9 30.8 4 23.2 4 16.8 5.9 9.2 13.2 7 20 3.5Z"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinejoin="round"
+                    className="[filter:drop-shadow(0_0_7px_rgba(52,211,153,0.95))]"
+                  />
+                  <path
+                    d="M20 9.5 28.8 13.2V20.4C28.8 26.2 24.9 29.8 20 31.2 15.1 29.8 11.2 26.2 11.2 20.4V13.2L20 9.5Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                    className="opacity-90 [filter:drop-shadow(0_0_5px_rgba(52,211,153,0.9))]"
+                  />
+                  <path
+                    d="m15.1 20.5 3.3 3.3 6.9-7.4"
+                    stroke="currentColor"
+                    strokeWidth="2.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="[filter:drop-shadow(0_0_6px_rgba(52,211,153,1))]"
+                  />
+                  <path
+                    d="M8.3 6.8 5.4 4M31.7 6.8 34.6 4M8.3 33.2 5.4 36M31.7 33.2 34.6 36"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    className="opacity-75 [filter:drop-shadow(0_0_5px_rgba(52,211,153,0.9))]"
+                  />
+                </svg>
               </span>
             }
             action={<PillLink to="/categories" accent="from-violet-500 to-cyan-500" />}
