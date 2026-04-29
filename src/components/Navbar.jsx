@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Plus,
   Search,
+  ShieldCheck,
   ShoppingCart,
   Users,
   X,
@@ -29,6 +30,7 @@ const NAV_LINKS = [
 
 const TOP_STRIPS = [
   { icon: Zap, label: 'Anında teslimat' },
+  { icon: ShieldCheck, label: 'Oyuncu Kantinim Güvenli Alışveriş' },
   { icon: LifeBuoy, label: '7/24 destek' },
 ];
 
