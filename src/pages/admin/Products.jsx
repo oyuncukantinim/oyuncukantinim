@@ -501,9 +501,6 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                 </div>
               </div>
 
-              <button type="button" onClick={() => setForm((prev) => ({ ...prev, stock_visibility: !prev.stock_visibility }))} className={`inline-flex rounded-xl px-3 py-2 text-xs font-black ${form.stock_visibility ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600'}`}>
-                {form.stock_visibility ? 'Stok bilgisi gorunur' : 'Stok bilgisi gizli'}
-              </button>
             </div>
 
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
@@ -593,11 +590,11 @@ function ProductListCard({ product, onEdit, onDelete }) {
             </div>
 
             <div className="flex flex-col gap-2 md:items-end">
-              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-gray-500 md:justify-end">
-                <span className="rounded-full bg-slate-100 px-2 py-0.5">Aktif stok: {Number(product.available_stock_count || 0)}</span>
-                <span className="rounded-full bg-slate-100 px-2 py-0.5">Toplam satir: {Number(product.inventory_count || 0)}</span>
-                {product.badge_text ? <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">{product.badge_text}</span> : null}
-              </div>
+              {product.badge_text ? (
+                <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold text-gray-500 md:justify-end">
+                  <span className="rounded-full bg-violet-50 px-2 py-0.5 text-violet-700">{product.badge_text}</span>
+                </div>
+              ) : null}
               <div className="flex items-center gap-2.5">
                 <div className="text-right">
                   {product.sale_price ? <div className="text-[11px] font-bold text-gray-300 line-through">{money(basePrice)}</div> : null}

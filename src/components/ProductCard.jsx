@@ -263,7 +263,7 @@ export default function ProductCard({ product, compact = false }) {
               disabled={isOutOfStock}
               className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-3 text-[12px] font-black text-white shadow-[0_14px_28px_-18px_rgba(124,58,237,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:from-violet-500 hover:to-sky-400 disabled:cursor-not-allowed disabled:from-slate-400 disabled:to-slate-500 disabled:text-white disabled:shadow-none dark:disabled:from-slate-700 dark:disabled:to-slate-700 dark:disabled:text-slate-300"
             >
-              {isOutOfStock ? 'Stok Yok' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
+              {isOutOfStock ? 'Satın Alınamaz' : 'Sepete Ekle'} <ShoppingCart size={16} strokeWidth={2.6} />
             </button>
           )}
         </div>
