@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
+import { getCategories, getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
@@ -33,8 +33,6 @@ const TOP_STRIPS = [
   { icon: ShieldCheck, label: 'Oyuncu Kantinim Güvenli Alışveriş' },
   { icon: LifeBuoy, label: '7/24 destek' },
 ];
-
-const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
 function formatPrice(value) {
   return `${Number(value || 0).toFixed(2)} ₺`;
@@ -57,12 +55,31 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const [categories, setCategories] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
+  const [searchSeedsLoaded, setSearchSeedsLoaded] = useState(false);
 
   const cartTimeout = useRef(null);
   const searchRef = useRef(null);
   const desktopSearchInputRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
   const debounceRef = useRef(null);
+
+  const loadSearchSeeds = useCallback(() => {
+    if (searchSeedsLoaded) return;
+
+    setSearchSeedsLoaded(true);
+    Promise.allSettled([
+      getListings({ limit: 4, status: 'active' }),
+      getCategories(),
+    ]).then(([listingResponse, categoryResponse]) => {
+      if (listingResponse.status === 'fulfilled') {
+        setRecommendedListings(listingResponse.value.data || []);
+      }
+
+      if (categoryResponse.status === 'fulfilled') {
+        setCategories(categoryResponse.value.data || []);
+      }
+    });
+  }, [searchSeedsLoaded]);
 
   useEffect(() => {
     if (!user) {
@@ -119,17 +136,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   }, [location.pathname, user]);
 
   useEffect(() => {
-    getListings({ limit: 4, status: 'active' })
-      .then((response) => setRecommendedListings(response.data || []))
-      .catch(() => {});
-
-    fetch(`${API_URL}?action=get_categories_tree`)
-      .then((response) => response.json())
-      .then((json) => setCategories(json.data || []))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
     const handleClick = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setDesktopSearchFocused(false);
@@ -149,6 +155,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       return undefined;
     }
 
+    loadSearchSeeds();
     setSearchLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
@@ -162,7 +169,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     }, 350);
 
     return () => clearTimeout(debounceRef.current);
-  }, [searchQuery]);
+  }, [loadSearchSeeds, searchQuery]);
 
   const closeSearch = () => {
     setDesktopSearchFocused(false);
@@ -271,7 +278,10 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 ref={desktopSearchInputRef}
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                onFocus={() => setDesktopSearchFocused(true)}
+                onFocus={() => {
+                  setDesktopSearchFocused(true);
+                  loadSearchSeeds();
+                }}
                 onKeyDown={handleSearchKeyDown}
                 placeholder="İlan, oyun veya kategori ara..."
                 className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
@@ -595,6 +605,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   ref={mobileSearchInputRef}
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
+                  onFocus={loadSearchSeeds}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter') submitSearch();
                   }}

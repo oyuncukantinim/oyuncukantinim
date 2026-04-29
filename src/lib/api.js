@@ -1,4 +1,5 @@
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
+const PUBLIC_CACHE_PREFIX = 'ok_public_api_v2:';
 const memoryCache = new Map();
 const pendingRequests = new Map();
 
@@ -19,16 +20,39 @@ function readCached(cacheKey, ttl) {
 
   const now = Date.now();
   const memoryEntry = memoryCache.get(cacheKey);
-  if (!memoryEntry) return null;
-  if (now - memoryEntry.ts >= ttl) {
+  if (memoryEntry) {
+    if (now - memoryEntry.ts < ttl) return memoryEntry.data;
     memoryCache.delete(cacheKey);
+  }
+
+  try {
+    const raw = typeof sessionStorage !== 'undefined'
+      ? sessionStorage.getItem(`${PUBLIC_CACHE_PREFIX}${cacheKey}`)
+      : null;
+    if (!raw) return null;
+    const entry = JSON.parse(raw);
+    if (!entry || typeof entry.ts !== 'number') return null;
+    if (now - entry.ts >= ttl) {
+      sessionStorage.removeItem(`${PUBLIC_CACHE_PREFIX}${cacheKey}`);
+      return null;
+    }
+    memoryCache.set(cacheKey, { ts: entry.ts, data: entry.data });
+    return entry.data;
+  } catch {
     return null;
   }
-  return memoryEntry.data;
 }
 
 function writeCached(cacheKey, data) {
-  memoryCache.set(cacheKey, { ts: Date.now(), data });
+  const entry = { ts: Date.now(), data };
+  memoryCache.set(cacheKey, entry);
+  try {
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.setItem(`${PUBLIC_CACHE_PREFIX}${cacheKey}`, JSON.stringify(entry));
+    }
+  } catch {
+    // Storage can be full or disabled. Memory cache still covers this tab.
+  }
 }
 
 function invalidatePublicCache(actions = []) {
@@ -37,6 +61,17 @@ function invalidatePublicCache(actions = []) {
 
   for (const key of Array.from(memoryCache.keys())) {
     if (prefixes.some((prefix) => key.includes(prefix))) memoryCache.delete(key);
+  }
+
+  try {
+    if (typeof sessionStorage === 'undefined') return;
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = sessionStorage.key(index);
+      if (!key || !key.startsWith(PUBLIC_CACHE_PREFIX)) continue;
+      if (prefixes.some((prefix) => key.includes(prefix))) sessionStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore storage access errors.
   }
 }
 
@@ -83,7 +118,7 @@ async function request(action, options = {}) {
     query = {},
     body,
     auth = false,
-    cache = 'no-store',
+    cache,
     ttl = 0,
     invalidateActions = [],
   } = options;
@@ -99,15 +134,17 @@ async function request(action, options = {}) {
   }
 
   const headers = { 'Content-Type': 'application/json' };
+  const requestCache = cache ?? (auth || method !== 'GET' ? 'no-store' : 'default');
 
   const doRequest = async () => {
-    const response = await fetch(`${API_URL}?${search.toString()}`, {
+    const fetchOptions = {
       method,
-      cache,
+      cache: requestCache,
       credentials: 'include',
       headers,
       body: body ? JSON.stringify(body) : undefined,
-    });
+    };
+    const response = await fetch(`${API_URL}?${search.toString()}`, fetchOptions);
 
     const data = await response.json().catch(() => ({
       status: 'error',
@@ -164,15 +201,15 @@ export function logout() {
 }
 
 export function getSiteSettings() {
-  return request('get_site_settings', { ttl: 30 * 1000 });
+  return request('get_site_settings', { ttl: 5 * 60 * 1000 });
 }
 
 export function getHeroSlides() {
-  return request('get_hero_slides', { ttl: 30 * 1000 });
+  return request('get_hero_slides', { ttl: 5 * 60 * 1000 });
 }
 
 export function getHeroBackgrounds() {
-  return request('get_hero_backgrounds', { ttl: 30 * 1000 });
+  return request('get_hero_backgrounds', { ttl: 5 * 60 * 1000 });
 }
 
 // --- PROFILE ---
@@ -271,34 +308,34 @@ export function submitStoreApplication(userNote = '') {
 
 // --- LISTINGS ---
 export function getListings(query = {}) {
-  return request('get_listings', { query, ttl: 20 * 1000 });
+  return request('get_listings', { query, ttl: 60 * 1000 });
 }
 
 export function getProducts(query = {}) {
-  return request('get_products', { query, ttl: 20 * 1000 });
+  return request('get_products', { query, ttl: 60 * 1000 });
 }
 
 export function getCategories() {
-  return request('get_categories_tree', { ttl: 30 * 1000 });
+  return request('get_categories_tree', { ttl: 5 * 60 * 1000 });
 }
 
 export function getPopularGames() {
-  return request('get_popular_games', { ttl: 30 * 1000 });
+  return request('get_popular_games', { ttl: 5 * 60 * 1000 });
 }
 
 export function getCategoryAttributes(categoryId) {
   return request('get_category_attributes', {
     query: { category_id: categoryId },
-    ttl: 30 * 1000,
+    ttl: 5 * 60 * 1000,
   });
 }
 
 export function getListing(id) {
-  return request('get_listing', { query: { id }, ttl: 20 * 1000 });
+  return request('get_listing', { query: { id }, ttl: 60 * 1000 });
 }
 
 export function getProduct(id) {
-  return request('get_product', { query: { id }, ttl: 20 * 1000 });
+  return request('get_product', { query: { id }, ttl: 60 * 1000 });
 }
 
 export function getMyListings() {

@@ -174,7 +174,7 @@ function SiteLayout() {
   const location = useLocation();
   const { adminUser, loading: adminLoading, checked: adminChecked, refreshAdmin } = useAdminAuth();
   const [siteState, setSiteState] = useState({
-    checked: false,
+    checked: true,
     maintenance: false,
     announcement: { active: false, text: '' },
     siteName: 'Oyuncu Kantinim',

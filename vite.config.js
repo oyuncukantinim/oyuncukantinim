@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { beasties } from 'vite-plugin-beasties'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 // Build-time LCP optimization: fetch the hero backgrounds pool and inject a
 // <link rel="preload" as="image" fetchpriority="high"> for the first URL into
@@ -42,13 +46,14 @@ export default defineConfig({
       options: {
         preload: 'swap',          // remaining CSS is loaded async, applied once ready
         inlineFonts: true,        // inline small font-face rules used above the fold
-        pruneSource: true,        // strip inlined rules from the external stylesheet
+        pruneSource: false,       // keep CSS emission stable across local/CI builds
         mergeStylesheets: true,   // fewer <style> / <link> tags in the HTML
         logLevel: 'warn',
       },
     }),
   ],
   build: {
+    outDir: resolve(__dirname, 'dist'),
     cssCodeSplit: true,
     modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 600,
