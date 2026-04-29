@@ -17,8 +17,10 @@ import {
 import AdminLayout from '../../components/AdminLayout';
 import {
   adminDeleteUploadedImage,
+  adminGetSettings,
   adminGetHeroBackgrounds,
   adminGetHeroSlides,
+  adminSaveSettings,
   adminSaveHeroBackgrounds,
   adminSaveHeroSlides,
   adminUploadImage,
@@ -42,6 +44,14 @@ const BG_RECOMMENDED_WIDTH = 1920;
 const BG_RECOMMENDED_HEIGHT = 460;
 const BG_RECOMMENDED_SIZE_LABEL = '1920x460px';
 const TAB_ICON_RECOMMENDED_SIZE = 48;
+const HOME_BANNER_WIDTH = 1440;
+const HOME_BANNER_HEIGHT = 240;
+const HOME_BANNER_SIZE_LABEL = '1440x240px';
+const HERO_ADMIN_TABS = [
+  { id: 'slides', label: 'Slide Kartları' },
+  { id: 'backgrounds', label: 'Arka Plan Havuzu' },
+  { id: 'banner', label: 'Reklam Banner' },
+];
 
 const ACCENT_PRESETS = [
   { label: 'Neon Mor', value: 'from-violet-600 via-purple-600 to-cyan-500' },
@@ -78,6 +88,15 @@ export default function AdminHeroSlides() {
   const [backgrounds, setBackgrounds] = useState([]); // [{ _key, image_url }]
   const [bgBusy, setBgBusy] = useState(false);
   const [bgSaving, setBgSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('slides');
+  const [bannerBusy, setBannerBusy] = useState(false);
+  const [bannerSaving, setBannerSaving] = useState(false);
+  const [homeBanner, setHomeBanner] = useState({
+    image_url: '',
+    link_url: '',
+    alt_text: '',
+    is_active: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
@@ -96,8 +115,8 @@ export default function AdminHeroSlides() {
   };
 
   useEffect(() => {
-    Promise.allSettled([adminGetHeroSlides(), adminGetHeroBackgrounds()])
-      .then(([slidesRes, bgRes]) => {
+    Promise.allSettled([adminGetHeroSlides(), adminGetHeroBackgrounds(), adminGetSettings()])
+      .then(([slidesRes, bgRes, settingsRes]) => {
         if (slidesRes.status === 'fulfilled') {
           const data = Array.isArray(slidesRes.value.data) ? slidesRes.value.data : [];
           const mapped = data.map((slide, i) => ({
@@ -125,6 +144,15 @@ export default function AdminHeroSlides() {
             _key: `bg-${b.id || i}-${Math.random()}`,
             image_url: b.image_url || '',
           })));
+        }
+        if (settingsRes.status === 'fulfilled') {
+          const settings = settingsRes.value.data || {};
+          setHomeBanner({
+            image_url: settings.home_ad_banner_image_url || '',
+            link_url: settings.home_ad_banner_link_url || '',
+            alt_text: settings.home_ad_banner_alt_text || '',
+            is_active: Number(settings.home_ad_banner_active || 0) ? 1 : 0,
+          });
         }
       })
       .finally(() => setLoading(false));
@@ -306,6 +334,43 @@ export default function AdminHeroSlides() {
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || 'slider-sekme-gorseli';
+    const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
+    const outputExt = outputType === 'image/jpeg'
+      ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
+      : outputType.replace('image/', '');
+
+    return new File([blob], `${baseName}.${outputExt}`, {
+      type: outputType,
+      lastModified: Date.now(),
+    });
+  };
+
+  const resizeHomeBannerToCanvas = async (file) => {
+    const img = await loadImageFromFile(file);
+    const canvas = document.createElement('canvas');
+    canvas.width = HOME_BANNER_WIDTH;
+    canvas.height = HOME_BANNER_HEIGHT;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Banner görsel işleme başlatılamadı.');
+    }
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, HOME_BANNER_WIDTH, HOME_BANNER_HEIGHT);
+
+    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? file.type : 'image/webp';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 0.92));
+    if (!blob) {
+      throw new Error('Banner görseli 1440x240px tuvale dönüştürülemedi.');
+    }
+
+    const baseName = String(file.name || 'ana-sayfa-reklam-banner')
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^\w.-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'ana-sayfa-reklam-banner';
     const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
     const outputExt = outputType === 'image/jpeg'
       ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
@@ -506,6 +571,59 @@ export default function AdminHeroSlides() {
     }
   };
 
+  const updateHomeBanner = (patch) => {
+    setHomeBanner((current) => ({ ...current, ...patch }));
+  };
+
+  const uploadHomeBanner = async (file) => {
+    if (!file) return;
+    setBannerBusy(true);
+    try {
+      const preparedFile = await resizeHomeBannerToCanvas(file);
+      const prevUrl = homeBanner.image_url || '';
+      const url = await adminUploadImage(preparedFile, 'home-ad-banner');
+      updateHomeBanner({ image_url: url });
+      if (prevUrl && prevUrl !== url) {
+        try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
+      }
+      showToast('Banner 1440x240px olarak hazırlandı.');
+    } catch (err) {
+      showToast(err.message || 'Banner yüklenemedi.');
+    } finally {
+      setBannerBusy(false);
+    }
+  };
+
+  const removeHomeBanner = async () => {
+    if (!homeBanner.image_url) return;
+    setBannerBusy(true);
+    try {
+      await adminDeleteUploadedImage(homeBanner.image_url);
+      showToast('Banner görseli kaldırıldı.');
+    } catch {
+      showToast('Banner kaldırıldı (dosya silinemedi).');
+    }
+    updateHomeBanner({ image_url: '' });
+    setBannerBusy(false);
+  };
+
+  const saveHomeBanner = async () => {
+    setBannerSaving(true);
+    try {
+      await adminSaveSettings({
+        home_ad_banner_image_url: homeBanner.image_url || '',
+        home_ad_banner_link_url: homeBanner.link_url || '',
+        home_ad_banner_alt_text: homeBanner.alt_text || '',
+        home_ad_banner_active: homeBanner.is_active ? '1' : '0',
+      });
+      showToast('Reklam banner kaydedildi.');
+    } catch (err) {
+      showToast(err.message || 'Banner kaydedilemedi.');
+    } finally {
+      setBannerSaving(false);
+    }
+  };
+
   return (
     <AdminLayout>
       {toast ? (
@@ -530,7 +648,7 @@ export default function AdminHeroSlides() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className={`items-center gap-2 ${activeTab === 'slides' ? 'flex' : 'hidden'}`}>
               <button
                 type="button"
                 onClick={addSlide}
@@ -548,12 +666,51 @@ export default function AdminHeroSlides() {
                 {saving ? 'Kaydediliyor…' : 'Kaydet'}
               </button>
             </div>
+            {activeTab === 'backgrounds' ? (
+              <button
+                type="button"
+                onClick={saveBackgrounds}
+                disabled={bgSaving}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-2 text-xs font-black text-white shadow-md transition hover:-translate-y-0.5 disabled:opacity-60 dark:from-slate-700 dark:to-slate-800"
+              >
+                {bgSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                Kaydet
+              </button>
+            ) : null}
+            {activeTab === 'banner' ? (
+              <button
+                type="button"
+                onClick={saveHomeBanner}
+                disabled={bannerSaving}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-2 text-xs font-black text-white shadow-md transition hover:-translate-y-0.5 disabled:opacity-60"
+              >
+                {bannerSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                Banner Kaydet
+              </button>
+            ) : null}
+          </div>
+
+          <div className="relative mt-5 grid gap-2 rounded-2xl border border-white/60 bg-white/70 p-1.5 shadow-sm dark:border-slate-800 dark:bg-slate-950/40 sm:grid-cols-3">
+            {HERO_ADMIN_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`rounded-xl px-3 py-2 text-xs font-black transition ${
+                  activeTab === tab.id
+                    ? 'bg-slate-950 text-white shadow-md dark:bg-white dark:text-slate-950'
+                    : 'text-slate-600 hover:bg-white dark:text-slate-300 dark:hover:bg-slate-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
         </div>
 
         {/* ============== Background pool manager ============== */}
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className={`overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 ${activeTab === 'backgrounds' ? '' : 'hidden'}`}>
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 text-white">
@@ -638,15 +795,115 @@ export default function AdminHeroSlides() {
           )}
         </div>
 
-        {loading ? (
+        {activeTab === 'banner' ? (
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 dark:border-slate-800 dark:bg-slate-900/60">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 text-white">
+                  <ImageIcon size={16} />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-1.5 text-sm font-black text-slate-800 dark:text-white">
+                    Son İlanlar Altı Reklam Banner
+                    <span className="rounded-md bg-slate-900 px-1.5 py-0.5 text-[10px] font-black tracking-wider text-white dark:bg-slate-700">
+                      {HOME_BANNER_SIZE_LABEL}
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                    Ana sayfada Son İlanlar bölümünün altında tek yatay reklam alanı olarak görünür. Görsel 6:1 oranda tam sığdırılır.
+                  </div>
+                </div>
+              </div>
+              <label className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-white">
+                <input
+                  type="checkbox"
+                  checked={!!homeBanner.is_active}
+                  onChange={(event) => updateHomeBanner({ is_active: event.target.checked ? 1 : 0 })}
+                  className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                />
+                Aktif
+              </label>
+            </div>
+
+            <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div>
+                <div className="relative flex aspect-[6/1] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                  {homeBanner.image_url ? (
+                    <img src={homeBanner.image_url} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-slate-400">
+                      <ImageIcon size={28} />
+                      <span className="text-xs font-black uppercase tracking-wider">{HOME_BANNER_SIZE_LABEL}</span>
+                    </div>
+                  )}
+                  {bannerBusy ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-white">
+                      <Loader2 className="animate-spin" size={22} />
+                    </div>
+                  ) : null}
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <input
+                    id="home-ad-banner-upload"
+                    type="file"
+                    accept="image/*,.webp"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      uploadHomeBanner(file);
+                      event.target.value = '';
+                    }}
+                  />
+                  <label
+                    htmlFor="home-ad-banner-upload"
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white shadow-sm transition hover:bg-violet-500"
+                  >
+                    <Upload size={13} />
+                    {homeBanner.image_url ? 'Görsel Değiştir' : 'Görsel Yükle'}
+                  </label>
+                  {homeBanner.image_url ? (
+                    <button
+                      type="button"
+                      onClick={removeHomeBanner}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300"
+                    >
+                      <X size={13} /> Kaldır
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Field label="Tıklama Linki">
+                  <input
+                    value={homeBanner.link_url}
+                    onChange={(event) => updateHomeBanner({ link_url: event.target.value })}
+                    placeholder="/market veya https://..."
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </Field>
+                <Field label="Alternatif Metin">
+                  <input
+                    value={homeBanner.alt_text}
+                    onChange={(event) => updateHomeBanner({ alt_text: event.target.value })}
+                    placeholder="Reklam açıklaması"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                  />
+                </Field>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {activeTab === 'slides' && loading ? (
           <div className="flex h-40 items-center justify-center text-slate-400">
             <Loader2 size={22} className="animate-spin" />
           </div>
-        ) : slides.length === 0 ? (
+        ) : activeTab === 'slides' && slides.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
             Henüz slide yok. <button className="font-black text-violet-600 hover:underline" onClick={addSlide}>Bir tane ekle</button>.
           </div>
-        ) : (
+        ) : activeTab === 'slides' ? (
           <div className="space-y-4">
             {slides.map((slide, idx) => {
               const isImageBusy = busyKey === `${slide._key}:image`;
@@ -907,7 +1164,7 @@ export default function AdminHeroSlides() {
               );
             })}
           </div>
-        )}
+        ) : null}
 
         <p className="px-1 text-[11px] text-slate-400 dark:text-slate-500">
           Slide'ları yukarı/aşağı okları ile sırala. Gizli slide'lar ana sayfada görünmez.

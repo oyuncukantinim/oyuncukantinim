@@ -153,10 +153,45 @@ function CategoryCard({ game, index }) {
   );
 }
 
+function HomeAdBanner({ imageUrl, linkUrl, altText }) {
+  if (!imageUrl) return null;
+  const banner = (
+    <div className="group relative mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_22px_60px_-34px_rgba(15,23,42,0.65)] transition-transform hover:-translate-y-0.5 dark:border-slate-800">
+      <div className="aspect-[6/1] w-full overflow-hidden">
+        <img
+          src={imageUrl}
+          alt={altText || 'Ana sayfa reklam banner'}
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]"
+          loading="lazy"
+        />
+      </div>
+      <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
+    </div>
+  );
+
+  if (!linkUrl) return banner;
+  const isExternal = /^https?:\/\//i.test(linkUrl);
+  return isExternal ? (
+    <a href={linkUrl} target="_blank" rel="noopener noreferrer" aria-label={altText || 'Reklam'}>
+      {banner}
+    </a>
+  ) : (
+    <Link to={linkUrl} aria-label={altText || 'Reklam'}>
+      {banner}
+    </Link>
+  );
+}
+
 /* =========  Main  ========= */
 
 export default function Home() {
-  const { defaultListingImage } = useSiteBrand();
+  const {
+    defaultListingImage,
+    homeAdBannerImageUrl,
+    homeAdBannerLinkUrl,
+    homeAdBannerAltText,
+    homeAdBannerActive,
+  } = useSiteBrand();
   const [listings, setListings] = useState([]);
   const [popularGames, setPopularGames] = useState([]);
   const [listingsLoaded, setListingsLoaded] = useState(false);
@@ -315,6 +350,14 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      {homeAdBannerActive && homeAdBannerImageUrl ? (
+        <HomeAdBanner
+          imageUrl={homeAdBannerImageUrl}
+          linkUrl={homeAdBannerLinkUrl}
+          altText={homeAdBannerAltText}
+        />
+      ) : null}
     </div>
   );
 }

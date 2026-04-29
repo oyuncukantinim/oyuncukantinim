@@ -25,11 +25,12 @@ export default function ListingCard({ listing, compact = false, dense = false, f
     : activeTypes.includes('featured')
       ? DOPING_META.featured.ring
       : '';
+  const ringWidthClass = isVitrine ? 'ring-1' : 'ring-2';
   const vitrineFrameClass = isVitrine ? 'ok-vitrine-card' : '';
 
   if (compact) {
     return (
-      <article className={`card group flex flex-row overflow-hidden p-0 ${vitrineFrameClass} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
+      <article className={`card group flex flex-row overflow-hidden p-0 ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>
         {/* Sol: Fotoğraf */}
         <Link to={listingUrl} className="relative w-36 shrink-0 self-stretch overflow-hidden rounded-l-2xl bg-surface-100 sm:w-40">
           {coverImg ? (
@@ -115,7 +116,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const imageAspectCls = dense ? 'aspect-[16/10]' : 'aspect-[4/3]';
 
   return (
-    <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${vitrineFrameClass} ${hasDoping ? `ring-2 ${ringClass}` : ''}`}>
+    <article className={`card group flex h-full flex-col overflow-hidden ${cardPad} ${vitrineFrameClass} ${hasDoping ? `${ringWidthClass} ${ringClass}` : ''}`}>
       <Link to={listingUrl} className="block">
         <div className={`relative ${imgMb} ${imageAspectCls} w-full overflow-hidden rounded-xl bg-surface-100`}>
           {coverImg ? (
