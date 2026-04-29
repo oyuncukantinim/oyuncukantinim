@@ -45,8 +45,8 @@ const BG_RECOMMENDED_HEIGHT = 460;
 const BG_RECOMMENDED_SIZE_LABEL = '1920x460px';
 const TAB_ICON_RECOMMENDED_SIZE = 48;
 const HOME_BANNER_WIDTH = 1440;
-const HOME_BANNER_HEIGHT = 240;
-const HOME_BANNER_SIZE_LABEL = '1440x240px';
+const HOME_BANNER_HEIGHT = 160;
+const HOME_BANNER_SIZE_LABEL = '1440x160px';
 const HERO_ADMIN_TABS = [
   { id: 'slides', label: 'Slide Kartları' },
   { id: 'backgrounds', label: 'Arka Plan Havuzu' },
@@ -360,10 +360,10 @@ export default function AdminHeroSlides() {
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, HOME_BANNER_WIDTH, HOME_BANNER_HEIGHT);
 
-    const outputType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ? file.type : 'image/webp';
-    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType, 0.92));
+    const outputType = 'image/png';
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, outputType));
     if (!blob) {
-      throw new Error('Banner görseli 1440x240px tuvale dönüştürülemedi.');
+      throw new Error('Banner görseli 1440x160px tuvale dönüştürülemedi.');
     }
 
     const baseName = String(file.name || 'ana-sayfa-reklam-banner')
@@ -371,10 +371,7 @@ export default function AdminHeroSlides() {
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '') || 'ana-sayfa-reklam-banner';
-    const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
-    const outputExt = outputType === 'image/jpeg'
-      ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
-      : outputType.replace('image/', '');
+    const outputExt = 'png';
 
     return new File([blob], `${baseName}.${outputExt}`, {
       type: outputType,
@@ -586,7 +583,7 @@ export default function AdminHeroSlides() {
       if (prevUrl && prevUrl !== url) {
         try { await adminDeleteUploadedImage(prevUrl); } catch { /* ignore */ }
       }
-      showToast('Banner 1440x240px olarak hazırlandı.');
+      showToast('Banner 1440x160px olarak hazırlandı.');
     } catch (err) {
       showToast(err.message || 'Banner yüklenemedi.');
     } finally {
@@ -604,6 +601,9 @@ export default function AdminHeroSlides() {
       showToast('Banner kaldırıldı (dosya silinemedi).');
     }
     updateHomeBanner({ image_url: '' });
+    try {
+      await adminSaveSettings({ home_ad_banner_image_url: '' });
+    } catch { /* ignore */ }
     setBannerBusy(false);
   };
 
@@ -810,7 +810,7 @@ export default function AdminHeroSlides() {
                     </span>
                   </div>
                   <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    Ana sayfada Son İlanlar bölümünün altında tek yatay reklam alanı olarak görünür. Görsel 6:1 oranda tam sığdırılır.
+                    Ana sayfada Son İlanlar bölümünün altında tek yatay reklam alanı olarak görünür. Görsel 9:1 oranda tam sığdırılır.
                   </div>
                 </div>
               </div>
@@ -827,7 +827,7 @@ export default function AdminHeroSlides() {
 
             <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_320px]">
               <div>
-                <div className="relative flex aspect-[6/1] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-950">
+                <div className="relative flex aspect-[9/1] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-100 dark:border-slate-700 dark:bg-slate-950">
                   {homeBanner.image_url ? (
                     <img src={homeBanner.image_url} alt="" className="h-full w-full object-cover" />
                   ) : (
