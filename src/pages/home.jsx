@@ -91,15 +91,18 @@ function CategoryCard({ game, index }) {
   return (
     <Link
       to={game.category_slug ? `/categories/${game.category_slug}` : `/market?game=${encodeURIComponent(game.name)}`}
-      className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} p-[2px] shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_40px_-12px_rgba(139,92,246,0.55)]`}
+      className={`group relative overflow-hidden rounded-[18px] bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} p-[1.5px] shadow-[0_16px_34px_-20px_rgba(15,23,42,0.85)] ring-1 ring-white/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_44px_-18px_rgba(139,92,246,0.65)]`}
     >
       {/* Shimmer sweep on hover */}
-      <span className="pointer-events-none absolute inset-0 z-20 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-[120%]" />
+      <span className="pointer-events-none absolute inset-0 z-20 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-[120%]" />
 
-      <div className="relative flex h-full w-full flex-col items-center justify-center rounded-2xl bg-white/95 px-3 py-4 text-center backdrop-blur-sm">
+      <div className="relative flex h-full min-h-[132px] w-full flex-col items-center justify-center overflow-hidden rounded-[16px] bg-slate-950 px-3 py-4 text-center">
+        <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-30`} />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(255,255,255,0.22),transparent_30%),linear-gradient(180deg,rgba(15,23,42,0.08),rgba(2,6,23,0.72))]" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 via-slate-950/70 to-transparent" />
         {/* HOT badge */}
         {isHot ? (
-          <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white shadow-md">
+          <div className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-widest text-white shadow-md">
             <Flame size={8} strokeWidth={3} />
             Hot
           </div>
@@ -107,24 +110,24 @@ function CategoryCard({ game, index }) {
 
         {/* Image / Emoji with halo */}
         <div className="relative mb-2">
-          <div className={`pointer-events-none absolute inset-0 -m-2 rounded-2xl bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-60`} />
+          <div className={`pointer-events-none absolute inset-0 -m-4 rounded-2xl bg-gradient-to-br ${game.color || 'from-violet-500 to-fuchsia-500'} opacity-70 blur-xl transition-opacity duration-300 group-hover:opacity-100`} />
           {game.image_url ? (
             <img
               src={game.image_url}
               alt={game.name}
-              className="relative h-12 w-12 rounded-xl object-contain transition-transform duration-300 group-hover:scale-110"
+              className="relative h-16 w-16 object-contain drop-shadow-[0_10px_18px_rgba(0,0,0,0.45)] transition-transform duration-300 group-hover:scale-110"
             />
           ) : (
-            <span className="relative block text-4xl transition-transform duration-300 group-hover:scale-110">
+            <span className="relative block text-5xl drop-shadow-[0_10px_18px_rgba(0,0,0,0.45)] transition-transform duration-300 group-hover:scale-110">
               {game.emoji || '🎮'}
             </span>
           )}
         </div>
 
-        <span className="text-sm font-black leading-tight text-slate-900">{game.name}</span>
+        <span className="relative text-sm font-black leading-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.75)]">{game.name}</span>
 
         {/* Bottom accent line */}
-        <div className={`mt-2 h-0.5 w-0 rounded-full bg-gradient-to-r ${game.color || 'from-violet-500 to-fuchsia-500'} transition-all duration-500 group-hover:w-8`} />
+        <div className={`relative mt-2 h-0.5 w-0 rounded-full bg-gradient-to-r ${game.color || 'from-violet-500 to-fuchsia-500'} transition-all duration-500 group-hover:w-8`} />
       </div>
     </Link>
   );
