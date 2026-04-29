@@ -6,7 +6,7 @@ import { getListingActiveDopingTypes } from '../lib/doping';
 import UserAvatar from './UserAvatar';
 
 const DOPING_META = {
-  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'ring-yellow-400/85 shadow-[0_0_0_1px_rgba(250,204,21,0.55),0_18px_42px_-24px_rgba(250,204,21,0.95)]' },
+  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'border-yellow-300/90 ring-yellow-300/95 ring-offset-2 ring-offset-slate-950 shadow-[0_0_0_1px_rgba(250,204,21,0.75),0_0_28px_-8px_rgba(250,204,21,0.95),0_18px_42px_-22px_rgba(250,204,21,0.95)] dark:border-yellow-300' },
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
