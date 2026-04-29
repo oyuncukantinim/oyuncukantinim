@@ -110,7 +110,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const avatarCls = dense ? 'h-6 w-6 text-[12px]' : 'h-8 w-8 text-lg';
   const sellerNameCls = dense ? 'text-[11px]' : 'text-xs';
   const priceCls = dense ? 'text-sm' : 'text-xl';
-  const footerTopCls = dense ? 'pt-2' : 'pt-3';
+  const footerTopCls = dense ? 'pt-1.5' : 'pt-2';
   const detailBtnCls = dense ? 'min-h-[24px] text-[10px] px-2 py-0.5' : 'min-h-[36px] text-xs';
   const imageFallbackSize = dense ? 26 : 40;
   const imageAspectCls = 'aspect-[3/2]';
