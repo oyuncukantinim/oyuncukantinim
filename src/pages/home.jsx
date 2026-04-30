@@ -391,6 +391,7 @@ export default function Home() {
               <span
                 className="inline-flex h-10 w-10 items-center justify-center text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.9)]"
                 title="Güvenli"
+                role="img"
                 aria-label="Güvenli"
               >
                 <svg
