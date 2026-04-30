@@ -323,6 +323,10 @@ export function getProducts(query = {}) {
   return request('get_products', { query, ttl: 60 * 1000 });
 }
 
+export function getHomePageData() {
+  return request('get_home_page_data', { ttl: 60 * 1000 });
+}
+
 export function getCategories() {
   return request('get_categories_tree', { ttl: 60 * 1000 });
 }

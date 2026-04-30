@@ -8,7 +8,7 @@ import {
   Sparkles,
   Trophy,
 } from 'lucide-react';
-import { getListings, getPopularGames, getProducts } from '../lib/api';
+import { getHomePageData, getListings, getPopularGames, getProducts } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
@@ -207,20 +207,37 @@ export default function Home() {
   const [popularGamesLoaded, setPopularGamesLoaded] = useState(false);
 
   useEffect(() => {
-    getListings({ limit: 32, status: 'active' })
-      .then((r) => setListings(r.data || []))
-      .catch(() => {})
-      .finally(() => setListingsLoaded(true));
+    let active = true;
+    const markLoaded = () => {
+      if (!active) return;
+      setListingsLoaded(true);
+      setPopularGamesLoaded(true);
+      setFeaturedProductsLoaded(true);
+    };
 
-    getPopularGames()
-      .then((r) => setPopularGames(r.data || []))
-      .catch(() => {})
-      .finally(() => setPopularGamesLoaded(true));
+    getHomePageData()
+      .then((response) => {
+        if (!active) return;
+        const data = response.data || {};
+        setListings(data.listings || []);
+        setPopularGames(data.popular_games || []);
+        setFeaturedProducts(data.featured_products || []);
+      })
+      .catch(() => (
+        Promise.allSettled([
+          getListings({ limit: 32 }),
+          getPopularGames(),
+          getProducts({ featured: 1, limit: 12 }),
+        ]).then(([listingResponse, popularResponse, productResponse]) => {
+          if (!active) return;
+          if (listingResponse.status === 'fulfilled') setListings(listingResponse.value.data || []);
+          if (popularResponse.status === 'fulfilled') setPopularGames(popularResponse.value.data || []);
+          if (productResponse.status === 'fulfilled') setFeaturedProducts(productResponse.value.data || []);
+        })
+      ))
+      .finally(markLoaded);
 
-    getProducts({ featured: 1, limit: 12, sort: 'featured' })
-      .then((r) => setFeaturedProducts(r.data || []))
-      .catch(() => {})
-      .finally(() => setFeaturedProductsLoaded(true));
+    return () => { active = false; };
   }, []);
 
   const vitrineListings = useMemo(
