@@ -303,7 +303,7 @@ export default function Home() {
             countLabel="İlan"
             action={
               <div className="flex items-center gap-2">
-                <span className="hidden items-center gap-1 rounded-full border border-amber-300/60 bg-amber-100/80 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-amber-800 shadow-sm sm:inline-flex">
+                <span className="hidden items-center gap-1 rounded-full border border-amber-500 bg-amber-200 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-amber-950 shadow-sm sm:inline-flex">
                   <Sparkles size={11} /> Premium
                 </span>
                 <PillLink to="/market" accent="from-amber-500 to-rose-500">

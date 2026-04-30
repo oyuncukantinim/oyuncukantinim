@@ -95,7 +95,7 @@
   }
 
   .badge-purple {
-    @apply badge bg-neon-purple/10 text-violet-700 border border-neon-purple/20;
+    @apply badge border border-violet-700 bg-violet-700 text-white;
   }
 
   .badge-cyan {
