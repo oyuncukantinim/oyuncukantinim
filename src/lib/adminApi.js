@@ -1,6 +1,51 @@
+import { invalidatePublicCache } from './api';
+
 const API_URL = 'https://api.oyuncukantinim.com.tr/api.php';
 
-async function adminRequest(action, { method = 'GET', body = null, query = {}, cache = 'default' } = {}) {
+const PUBLIC_CACHE_INVALIDATION = {
+  admin_update_listing: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_delete_listing: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_delete_listing_image: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_apply_listing_doping: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_clear_listing_doping: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_add_stocks: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_update_stock: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_delete_stock: ['get_listings', 'get_listing', 'get_seller_listings'],
+  admin_update_user: ['get_listings', 'get_listing', 'get_seller_listings', 'get_seller_reviews'],
+  admin_delete_user_media: ['get_listings', 'get_listing', 'get_seller_listings', 'get_seller_reviews'],
+  admin_upload_user_media: ['get_listings', 'get_listing', 'get_seller_listings', 'get_seller_reviews'],
+
+  admin_save_product: ['get_products', 'get_product'],
+  admin_delete_product: ['get_products', 'get_product'],
+  admin_update_product_order: ['get_products', 'get_product'],
+
+  admin_save_category: ['get_categories_tree', 'get_category_attributes', 'get_listings', 'get_listing', 'get_products', 'get_product', 'get_popular_games'],
+  admin_delete_category: ['get_categories_tree', 'get_category_attributes', 'get_listings', 'get_listing', 'get_products', 'get_product', 'get_popular_games'],
+  admin_reorder_categories: ['get_categories_tree', 'get_popular_games'],
+  admin_save_category_attribute: ['get_category_attributes'],
+  admin_delete_category_attribute: ['get_category_attributes'],
+  admin_save_category_type: ['get_categories_tree'],
+  admin_delete_category_type: ['get_categories_tree'],
+
+  admin_save_settings: ['get_site_settings'],
+  admin_save_popular_games: ['get_popular_games', 'get_categories_tree'],
+  admin_save_hero_slides: ['get_hero_slides'],
+  admin_save_hero_backgrounds: ['get_hero_backgrounds'],
+  admin_delete_uploaded_image: ['get_site_settings', 'get_hero_slides', 'get_hero_backgrounds', 'get_categories_tree', 'get_products', 'get_product'],
+  admin_save_store_badge: ['get_listing'],
+  admin_delete_store_badge: ['get_listing'],
+  admin_reorder_store_badges: ['get_listing'],
+};
+
+function invalidateAfterAdminAction(action, extraActions = []) {
+  const actions = [
+    ...(PUBLIC_CACHE_INVALIDATION[action] || []),
+    ...(Array.isArray(extraActions) ? extraActions : []),
+  ];
+  invalidatePublicCache([...new Set(actions)]);
+}
+
+async function adminRequest(action, { method = 'GET', body = null, query = {}, cache = 'default', invalidateActions = [] } = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
   Object.entries(query).forEach(([k, v]) => v !== undefined && v !== '' && url.searchParams.set(k, v));
@@ -24,10 +69,11 @@ async function adminRequest(action, { method = 'GET', body = null, query = {}, c
     throw new Error('Sunucu geçersiz yanıt döndürdü: ' + (text.slice(0, 200) || '(boş)'));
   }
   if (json.status !== 'success') throw new Error(json.message || 'Hata');
+  if (method !== 'GET') invalidateAfterAdminAction(action, invalidateActions);
   return json;
 }
 
-async function adminUploadRequest(action, file, fields = {}) {
+async function adminUploadRequest(action, file, fields = {}, invalidateActions = []) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
 
@@ -53,6 +99,7 @@ async function adminUploadRequest(action, file, fields = {}) {
     throw new Error('Sunucu gecersiz yanit dondurdu: ' + (text.slice(0, 200) || '(bos)'));
   }
   if (json.status !== 'success') throw new Error(json.message || 'Hata');
+  invalidateAfterAdminAction(action, invalidateActions);
   return json;
 }
 

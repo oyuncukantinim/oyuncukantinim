@@ -55,12 +55,16 @@ function writeCached(cacheKey, data) {
   }
 }
 
-function invalidatePublicCache(actions = []) {
+export function invalidatePublicCache(actions = []) {
   if (!Array.isArray(actions) || actions.length === 0) return;
   const prefixes = actions.map((action) => `action=${action}`);
 
   for (const key of Array.from(memoryCache.keys())) {
     if (prefixes.some((prefix) => key.includes(prefix))) memoryCache.delete(key);
+  }
+
+  for (const key of Array.from(pendingRequests.keys())) {
+    if (prefixes.some((prefix) => key.includes(prefix))) pendingRequests.delete(key);
   }
 
   try {
@@ -205,15 +209,15 @@ export function logout() {
 }
 
 export function getSiteSettings() {
-  return request('get_site_settings', { ttl: 5 * 60 * 1000 });
+  return request('get_site_settings', { ttl: 60 * 1000 });
 }
 
 export function getHeroSlides() {
-  return request('get_hero_slides', { ttl: 5 * 60 * 1000 });
+  return request('get_hero_slides', { ttl: 60 * 1000 });
 }
 
 export function getHeroBackgrounds() {
-  return request('get_hero_backgrounds', { ttl: 5 * 60 * 1000 });
+  return request('get_hero_backgrounds', { ttl: 60 * 1000 });
 }
 
 // --- PROFILE ---
@@ -320,17 +324,17 @@ export function getProducts(query = {}) {
 }
 
 export function getCategories() {
-  return request('get_categories_tree', { ttl: 5 * 60 * 1000 });
+  return request('get_categories_tree', { ttl: 60 * 1000 });
 }
 
 export function getPopularGames() {
-  return request('get_popular_games', { ttl: 5 * 60 * 1000 });
+  return request('get_popular_games', { ttl: 60 * 1000 });
 }
 
 export function getCategoryAttributes(categoryId) {
   return request('get_category_attributes', {
     query: { category_id: categoryId },
-    ttl: 5 * 60 * 1000,
+    ttl: 60 * 1000,
   });
 }
 
