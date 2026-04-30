@@ -163,7 +163,7 @@ function CategoryCard({ game, index }) {
 function HomeAdBanner({ imageUrl, linkUrl, altText }) {
   if (!imageUrl) return null;
   const banner = (
-    <div className="home-deferred-section group relative mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_22px_60px_-34px_rgba(15,23,42,0.65)] transition-transform hover:-translate-y-0.5 dark:border-slate-800">
+    <div className="group relative mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[0_22px_60px_-34px_rgba(15,23,42,0.65)] transition-transform hover:-translate-y-0.5 dark:border-slate-800">
       <div className="aspect-[72/7] w-full overflow-hidden">
         <img
           src={imageUrl}
@@ -239,7 +239,7 @@ export default function Home() {
 
       {/* ============  POPÜLER KATEGORİLER  ============ */}
       {(popularGames.length > 0 || !popularGamesLoaded) && (
-        <section className="home-deferred-section relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
+        <section className="relative z-10 -mt-32 sm:-mt-36 lg:-mt-40">
           {/* Ambient background accent */}
           <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-orange-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-red-500/10 blur-3xl" />
@@ -278,7 +278,7 @@ export default function Home() {
 
       {/* ============  VİTRİN İLANLAR (Premium)  ============ */}
       {(vitrineListings.length > 0 || !listingsLoaded) && (
-        <section className="home-deferred-section relative mt-10 sm:mt-12">
+        <section className="relative mt-10 sm:mt-12">
           {/* Premium spotlight bg */}
           <div className="pointer-events-none absolute -inset-x-4 -inset-y-6 -z-10 overflow-hidden rounded-[32px]">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-50/60 via-orange-50/40 to-rose-50/60" />
@@ -333,7 +333,7 @@ export default function Home() {
 
       {/* ============  SON İLANLAR (Fresh)  ============ */}
       {(recentListings.length > 0 || !listingsLoaded) && (
-        <section className="home-deferred-section relative mt-10 sm:mt-12">
+        <section className="relative mt-10 sm:mt-12">
           {/* Fresh ambient */}
           <div className="pointer-events-none absolute left-0 -top-4 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 top-10 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl" />
@@ -376,7 +376,7 @@ export default function Home() {
 
       {/* ============  ÖNE ÇIKAN ÜRÜNLER  ============ */}
       {hasFeaturedProductsSection && (
-        <section className="home-deferred-section relative z-10 mt-10 sm:mt-12">
+        <section className="relative z-10 mt-10 sm:mt-12">
           <div className="pointer-events-none absolute -left-10 top-8 h-40 w-40 rounded-full bg-violet-500/10 blur-3xl" />
           <div className="pointer-events-none absolute right-0 -top-4 h-32 w-32 rounded-full bg-cyan-500/10 blur-3xl" />
 
