@@ -2,12 +2,8 @@
 <html lang="tr" class="theme-dark dark" data-theme="dark" style="color-scheme: dark;">
   <head>
     <meta charset="UTF-8" />
-    <!-- Two preconnects: the credentialed one matches <img src> (no crossorigin
-         attr, used by the hero LCP background), the anonymous one matches
-         fetch() / CORS requests. Browsers keep separate connection pools per
-         credential mode so a single preconnect can't cover both. -->
-    <link rel="preconnect" href="https://api.oyuncukantinim.com.tr" />
-    <link rel="preconnect" href="https://api.oyuncukantinim.com.tr" crossorigin />
+    <!-- Keep API DNS warm without opening an early connection Lighthouse may flag as unused. -->
+    <link rel="dns-prefetch" href="//api.oyuncukantinim.com.tr" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Oyuncu Kantinim - Oyun Dunyasinin Yeni Kantini</title>
