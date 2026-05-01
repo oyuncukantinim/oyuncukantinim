@@ -475,7 +475,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     <div className="absolute right-0 top-full z-50 mt-2 w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
                       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                         <span className="text-sm font-extrabold text-slate-800">Bildirimler</span>
-                        <span className="text-xs font-bold text-slate-400">{unreadNotif > 0 ? `${unreadNotif} yeni` : 'Güncel'}</span>
+                        {unreadNotif > 0 ? <span className="text-xs font-bold text-slate-400">{unreadNotif} yeni</span> : null}
                       </div>
                       <div className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
                         {notificationPreviewLoading ? (

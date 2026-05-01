@@ -93,7 +93,7 @@ export default function AdminBalanceCoupons() {
   const [activeTab, setActiveTab] = useState('list');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('all');
-  const [kind, setKind] = useState('all');
+  const [kind, setKind] = useState('admin');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
