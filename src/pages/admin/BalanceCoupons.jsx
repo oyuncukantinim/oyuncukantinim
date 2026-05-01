@@ -18,8 +18,6 @@ const KIND_OPTIONS = [
 ];
 
 const defaultCreateForm = () => {
-  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  expires.setMinutes(expires.getMinutes() - expires.getTimezoneOffset());
   return {
     scope: 'recipient',
     recipient_username: '',
@@ -27,7 +25,7 @@ const defaultCreateForm = () => {
     title: '',
     amount: '',
     starts_at: '',
-    expires_at: expires.toISOString().slice(0, 16),
+    expires_at: '',
     max_uses: '1',
     per_user_limit: '1',
     require_verified_user: true,
@@ -56,6 +54,10 @@ function formatDate(value) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatEndDate(value) {
+  return value ? formatDate(value) : 'Sınırsız';
 }
 
 function StatusBadge({ status }) {
@@ -281,7 +283,8 @@ export default function AdminBalanceCoupons() {
                   </div>
                   <div>
                     <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Bitiş</label>
-                    <input type="datetime-local" value={createForm.expires_at} onChange={(e) => setForm('expires_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" required />
+                    <input type="datetime-local" value={createForm.expires_at} onChange={(e) => setForm('expires_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                    <p className="mt-1 text-[11px] font-semibold text-slate-400">Boş bırakırsan kupon sınırsız süreli olur.</p>
                   </div>
                 </div>
 
@@ -388,16 +391,17 @@ export default function AdminBalanceCoupons() {
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kapsam</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Tutar</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç-Bitiş Tarihi</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç Tarihi</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Bitiş Tarihi</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">İşlem</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Göz</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
                 ) : (data.coupons || []).length === 0 ? (
-                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
                 ) : (
                   data.coupons.map((coupon) => (
                     <tr key={coupon.id} className="border-t border-slate-100 align-top hover:bg-slate-50/60">
@@ -419,7 +423,9 @@ export default function AdminBalanceCoupons() {
                       <td className="px-4 py-3 text-right font-black text-emerald-600">{formatMoney(coupon.amount)}</td>
                       <td className="px-4 py-3 text-xs font-semibold text-slate-500">
                         <div className="flex items-center gap-1.5"><Clock size={12} /> {coupon.starts_at ? formatDate(coupon.starts_at) : 'Hemen'}</div>
-                        <div className="mt-1 text-slate-400">Bitiş: {formatDate(coupon.expires_at)}</div>
+                      </td>
+                      <td className="px-4 py-3 text-xs font-semibold text-slate-500">
+                        {formatEndDate(coupon.expires_at)}
                       </td>
                       <td className="px-4 py-3 text-right">
                         {coupon.status === 'active' ? (
@@ -526,7 +532,7 @@ export default function AdminBalanceCoupons() {
                 <h4 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400">Kurallar</h4>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <DetailField label="Başlangıç" value={selectedCoupon.starts_at ? formatDate(selectedCoupon.starts_at) : 'Hemen'} />
-                  <DetailField label="Bitiş" value={formatDate(selectedCoupon.expires_at)} />
+                  <DetailField label="Bitiş" value={formatEndDate(selectedCoupon.expires_at)} />
                   <DetailField label="Kullanıcı Limiti" value={selectedCoupon.per_user_limit || 1} />
                   <DetailField label="Hesap Yaşı Şartı" value={`${selectedCoupon.min_account_age_days || 0} gün`} />
                   <DetailField label="Doğrulama Şartı" value={Number(selectedCoupon.require_verified_user) === 1 ? 'Var' : 'Yok'} />
