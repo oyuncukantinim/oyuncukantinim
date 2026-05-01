@@ -234,6 +234,8 @@ export const adminGetUserTransactions = (user_id) =>
   adminRequest('admin_get_user_transactions', { query: { user_id } });
 export const adminGetBalanceCoupons = (params = {}) =>
   adminRequest('admin_get_balance_coupons', { query: params });
+export const adminCreateBalanceCoupon = (body) =>
+  adminRequest('admin_create_balance_coupon', { method: 'POST', body });
 export const adminCancelBalanceCoupon = (coupon_id) =>
   adminRequest('admin_cancel_balance_coupon', { method: 'POST', body: { coupon_id } });
 

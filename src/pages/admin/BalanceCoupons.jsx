@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Gift, RotateCcw, Search, ShieldCheck, TicketPercent, UserRound } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Gift, Plus, RotateCcw, Search, ShieldCheck, TicketPercent, UserRound, Users, WalletCards } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
-import { adminCancelBalanceCoupon, adminGetBalanceCoupons } from '../../lib/adminApi';
+import { adminCancelBalanceCoupon, adminCreateBalanceCoupon, adminGetBalanceCoupons } from '../../lib/adminApi';
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'Tümü' },
@@ -10,6 +10,31 @@ const STATUS_OPTIONS = [
   { value: 'cancelled', label: 'İptal' },
   { value: 'expired', label: 'Süresi Doldu' },
 ];
+
+const KIND_OPTIONS = [
+  { value: 'all', label: 'Tüm Kuponlar' },
+  { value: 'user_gift', label: 'Kullanıcı Hediyesi' },
+  { value: 'admin', label: 'Admin Kuponu' },
+];
+
+const defaultCreateForm = () => {
+  const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  expires.setMinutes(expires.getMinutes() - expires.getTimezoneOffset());
+  return {
+    scope: 'recipient',
+    recipient_username: '',
+    code: '',
+    title: '',
+    amount: '',
+    starts_at: '',
+    expires_at: expires.toISOString().slice(0, 16),
+    max_uses: '1',
+    per_user_limit: '1',
+    require_verified_user: true,
+    min_account_age_days: '0',
+    admin_note: '',
+  };
+};
 
 const STATUS_STYLE = {
   active: 'bg-cyan-50 text-cyan-700 border-cyan-100',
@@ -44,11 +69,15 @@ function StatusBadge({ status }) {
 
 export default function AdminBalanceCoupons() {
   const [data, setData] = useState({ coupons: [], total: 0, page: 1, pages: 1 });
+  const [activeTab, setActiveTab] = useState('list');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('all');
+  const [kind, setKind] = useState('all');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState(defaultCreateForm);
   const [toast, setToast] = useState('');
 
   const showToast = (message) => {
@@ -58,11 +87,11 @@ export default function AdminBalanceCoupons() {
 
   const load = useCallback(() => {
     setLoading(true);
-    adminGetBalanceCoupons({ page, status, search, limit: 30 })
+    adminGetBalanceCoupons({ page, status, kind, search, limit: 30 })
       .then((response) => setData(response.data || { coupons: [], total: 0, page: 1, pages: 1 }))
       .catch((error) => showToast(error.message))
       .finally(() => setLoading(false));
-  }, [page, search, status]);
+  }, [kind, page, search, status]);
 
   useEffect(() => {
     load();
@@ -88,6 +117,36 @@ export default function AdminBalanceCoupons() {
       showToast(error.message);
     } finally {
       setBusyId(null);
+    }
+  };
+
+  const setForm = (key, value) => {
+    setCreateForm((current) => ({ ...current, [key]: value }));
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setCreating(true);
+    try {
+      const payload = {
+        ...createForm,
+        amount: Number(createForm.amount),
+        max_uses: Number(createForm.max_uses || 1),
+        per_user_limit: Number(createForm.per_user_limit || 1),
+        min_account_age_days: Number(createForm.min_account_age_days || 0),
+        require_verified_user: Boolean(createForm.require_verified_user),
+      };
+      const response = await adminCreateBalanceCoupon(payload);
+      showToast(response.message || 'Kupon oluşturuldu.');
+      setCreateForm(defaultCreateForm());
+      setActiveTab('list');
+      setKind('admin');
+      setPage(1);
+      load();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -125,6 +184,129 @@ export default function AdminBalanceCoupons() {
           </div>
         </section>
 
+        <section className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="grid gap-2 sm:grid-cols-2">
+            {[
+              { id: 'list', label: 'Kupon Yönetimi', icon: TicketPercent },
+              { id: 'create', label: 'Admin Kuponu Oluştur', icon: Plus },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black transition ${
+                  activeTab === tab.id
+                    ? 'bg-slate-950 text-white shadow-lg shadow-slate-950/15'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {activeTab === 'create' ? (
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">Admin Bakiye Kuponu Oluştur</h2>
+                <p className="mt-1 text-sm font-semibold text-slate-500">Aynı kupon sistemi içinde genel veya tek kullanıcıya özel promosyon bakiyesi üret.</p>
+              </div>
+              <WalletCards className="text-violet-500" size={24} />
+            </div>
+
+            <form onSubmit={handleCreate} className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setCreateForm((current) => ({ ...current, scope: 'recipient', max_uses: '1', per_user_limit: '1' }))}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${createForm.scope === 'recipient' ? 'border-violet-400 bg-violet-50 text-violet-800' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                  >
+                    <UserRound size={18} />
+                    <div className="mt-2 font-black">Tek Kullanıcı</div>
+                    <p className="mt-1 text-xs font-semibold opacity-80">Sadece belirlenen kullanıcı adı kullanır.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCreateForm((current) => ({ ...current, scope: 'public' }))}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${createForm.scope === 'public' ? 'border-cyan-400 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                  >
+                    <Users size={18} />
+                    <div className="mt-2 font-black">Genel Kupon</div>
+                    <p className="mt-1 text-xs font-semibold opacity-80">Limit dahilinde uygun kullanıcılar kullanır.</p>
+                  </button>
+                </div>
+
+                {createForm.scope === 'recipient' ? (
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Alıcı Kullanıcı Adı</label>
+                    <input value={createForm.recipient_username} onChange={(e) => setForm('recipient_username', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="kullaniciadi" />
+                  </div>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Tutar</label>
+                    <input type="number" min="1" step="0.01" value={createForm.amount} onChange={(e) => setForm('amount', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Manuel Kod</label>
+                    <input value={createForm.code} onChange={(e) => setForm('code', e.target.value.toUpperCase())} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm font-black outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Boşsa otomatik" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlık</label>
+                  <input value={createForm.title} onChange={(e) => setForm('title', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Mayıs kampanyası, telafi kuponu..." />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç</label>
+                    <input type="datetime-local" value={createForm.starts_at} onChange={(e) => setForm('starts_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Bitiş</label>
+                    <input type="datetime-local" value={createForm.expires_at} onChange={(e) => setForm('expires_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" required />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Toplam Limit</label>
+                    <input type="number" min="1" value={createForm.max_uses} onChange={(e) => setForm('max_uses', e.target.value)} disabled={createForm.scope === 'recipient'} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none disabled:bg-slate-100 disabled:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Kullanıcı Limiti</label>
+                    <input type="number" min="1" value={createForm.per_user_limit} onChange={(e) => setForm('per_user_limit', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Hesap Yaşı</label>
+                    <input type="number" min="0" value={createForm.min_account_age_days} onChange={(e) => setForm('min_account_age_days', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Gün" />
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
+                  <input type="checkbox" checked={createForm.require_verified_user} onChange={(e) => setForm('require_verified_user', e.target.checked)} className="h-4 w-4 accent-emerald-600" />
+                  Sadece doğrulanmış kullanıcılar kullanabilsin
+                </label>
+
+                <textarea value={createForm.admin_note} onChange={(e) => setForm('admin_note', e.target.value)} rows={3} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Admin iç notu..." />
+
+                <button type="submit" disabled={creating} className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 text-sm font-black text-white shadow-lg shadow-violet-500/20 transition hover:brightness-110 disabled:opacity-60">
+                  <Plus size={16} /> Admin Kuponu Oluştur
+                </button>
+              </div>
+            </form>
+          </section>
+        ) : null}
+
+        {activeTab === 'list' ? (
+        <>
         <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             <label className="relative flex-1">
@@ -140,6 +322,23 @@ export default function AdminBalanceCoupons() {
               />
             </label>
             <div className="flex flex-wrap gap-2">
+              {KIND_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    setKind(option.value);
+                    setPage(1);
+                  }}
+                  className={`rounded-xl border px-3 py-2 text-xs font-black transition ${
+                    kind === option.value
+                      ? 'border-slate-900 bg-slate-950 text-white shadow-md shadow-slate-950/15'
+                      : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
               {STATUS_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -175,8 +374,9 @@ export default function AdminBalanceCoupons() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kod</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Gönderen</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tür</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kaynak</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı/Kapsam</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Tutar</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Durum</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tarih</th>
@@ -186,9 +386,9 @@ export default function AdminBalanceCoupons() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
                 ) : (data.coupons || []).length === 0 ? (
-                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
+                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
                 ) : (
                   data.coupons.map((coupon) => (
                     <tr key={coupon.id} className="border-t border-slate-100 align-top hover:bg-slate-50/60">
@@ -197,10 +397,17 @@ export default function AdminBalanceCoupons() {
                         <div className="mt-1 text-[11px] font-bold text-slate-400">#{coupon.id}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><UserRound size={13} /> {coupon.sender_username || '-'}</div>
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${coupon.coupon_kind === 'admin' ? 'bg-violet-50 text-violet-700' : 'bg-cyan-50 text-cyan-700'}`}>
+                          {coupon.coupon_kind === 'admin' ? 'Admin' : 'Kullanıcı'}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.recipient_username || '-'}</div>
+                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><UserRound size={13} /> {coupon.coupon_kind === 'admin' ? (coupon.admin_username || 'Admin') : (coupon.sender_username || '-')}</div>
+                        {coupon.title ? <div className="mt-1 max-w-[160px] truncate text-[11px] font-semibold text-slate-400">{coupon.title}</div> : null}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.scope === 'public' ? 'Genel' : (coupon.recipient_username || '-')}</div>
+                        {coupon.coupon_kind === 'admin' ? <div className="mt-1 text-[11px] font-semibold text-slate-400">{coupon.used_count || 0}/{coupon.max_uses || 1} kullanım</div> : null}
                       </td>
                       <td className="px-4 py-3 text-right font-black text-emerald-600">{formatMoney(coupon.amount)}</td>
                       <td className="px-4 py-3"><StatusBadge status={coupon.status} /></td>
@@ -260,6 +467,8 @@ export default function AdminBalanceCoupons() {
             </div>
           ) : null}
         </section>
+        </>
+        ) : null}
       </div>
     </AdminLayout>
   );
