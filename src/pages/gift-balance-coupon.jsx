@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AlertTriangle, CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, TicketPercent, Wallet } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, TicketPercent, Wallet } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
 import { cancelBalanceCoupon, createBalanceCoupon, getBalanceCoupons, redeemBalanceCoupon } from '../lib/api';
@@ -241,25 +241,56 @@ export default function GiftBalanceCouponPage() {
             </div>
           </div>
 
-          <form onSubmit={handleCreate} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-black">Kupon Oluştur</h2>
-                <p className="mt-1 text-xs font-semibold text-slate-400">Alıcı kullanıcı adı ile tek kişiye özel oluşturulur.</p>
+                <h2 className="text-lg font-black">Kupon Kullan</h2>
+                <p className="mt-1 text-xs font-semibold text-slate-400">Sana tanımlanan kodu bakiyene ekle.</p>
               </div>
-              <Gift className="text-violet-200" size={24} />
+              <TicketPercent className="text-emerald-200" size={24} />
             </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                value={redeemCode}
+                onChange={(event) => setRedeemCode(event.target.value.toUpperCase())}
+                placeholder="OK-XXXX-XXXX-XXXX"
+                className="h-12 flex-1 rounded-2xl border border-white/10 bg-slate-950/70 px-4 font-mono text-sm font-black text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/50 focus:ring-4 focus:ring-emerald-300/10"
+              />
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => handleRedeem()}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 text-sm font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:opacity-50"
+              >
+                <Wallet size={16} /> Kullan
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <form onSubmit={handleCreate}>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div>
+              <h2 className="font-black text-slate-900">Kupon Oluştur</h2>
+              <p className="text-xs font-semibold text-slate-500">Alıcı kullanıcı adı ile tek kişiye özel oluşturulur.</p>
+            </div>
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
+              <Gift size={20} />
+            </div>
+          </div>
             {!verified ? (
-              <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm font-semibold text-amber-100">
+              <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
                 Kupon oluşturmak için hesabınız doğrulanmış olmalı. Profilinizden e-posta veya kimlik doğrulamasını tamamlayın.
               </div>
             ) : null}
-            <div className="space-y-3">
+            <div className="grid gap-3 lg:grid-cols-[1fr_180px_auto]">
               <input
                 value={recipientUsername}
                 onChange={(event) => setRecipientUsername(event.target.value)}
                 placeholder="Alıcı kullanıcı adı"
-                className="h-12 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-300/10"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
               />
               <input
                 type="number"
@@ -268,65 +299,17 @@ export default function GiftBalanceCouponPage() {
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 placeholder="Tutar (₺)"
-                className="h-12 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-300/10"
+                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
               />
               <button
                 type="submit"
                 disabled={busy || !verified}
-                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 text-sm font-black text-white shadow-lg shadow-violet-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 text-sm font-black text-white shadow-lg shadow-violet-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={16} /> Hediye Kuponu Gönder
               </button>
             </div>
-          </form>
-        </div>
-      </section>
-
-      <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
-              <TicketPercent size={20} />
-            </div>
-            <div>
-              <h2 className="font-black text-slate-900">Kupon Kullan</h2>
-              <p className="text-xs font-semibold text-slate-500">Sana tanımlanan kodu bakiyene ekle.</p>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              value={redeemCode}
-              onChange={(event) => setRedeemCode(event.target.value.toUpperCase())}
-              placeholder="OK-XXXX-XXXX-XXXX"
-              className="h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm font-black text-slate-800 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
-            />
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => handleRedeem()}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white transition hover:bg-slate-800 disabled:opacity-50"
-            >
-              <Wallet size={16} /> Kullan
-            </button>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600">
-              <AlertTriangle size={20} />
-            </div>
-            <div>
-              <h2 className="font-black text-slate-900">Çalışma Kuralı</h2>
-              <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
-                Kupon tutarı oluşturma anında gönderen bakiyesinden düşer. Alıcı 24 saat içinde kullanmazsa veya gönderen aktif kuponu iptal ederse tutar gönderen bakiyesine iade edilir.
-              </p>
-              <Link to="/profile" className="mt-3 inline-flex text-sm font-black text-violet-600 hover:text-violet-700">
-                Profil sayfasına dön
-              </Link>
-            </div>
-          </div>
-        </div>
+        </form>
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-slate-900/10 bg-slate-950 shadow-2xl shadow-slate-950/15">
