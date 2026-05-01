@@ -390,7 +390,7 @@ export default function AdminBalanceCoupons() {
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tür</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kupon Kodu</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kapsam</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kullanım</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Tutar</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç Tarihi</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Bitiş Tarihi</th>
@@ -419,7 +419,7 @@ export default function AdminBalanceCoupons() {
                         <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.recipient_username || '-'}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-bold text-slate-700">{coupon.scope === 'public' ? 'Genel' : 'Tek kullanıcı'}</div>
+                        <div className="font-bold text-slate-700">{coupon.scope === 'public' ? 'Çoklu' : 'Tekil'}</div>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-emerald-600">{formatMoney(coupon.amount)}</td>
                       <td className="px-4 py-3 text-xs font-semibold text-slate-500">
