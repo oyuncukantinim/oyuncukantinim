@@ -41,7 +41,7 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
   const username = direction === 'sent' ? coupon.recipient_username : coupon.sender_username;
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 shadow-lg shadow-slate-950/15 backdrop-blur">
-      <div className="grid gap-3 lg:grid-cols-[minmax(150px,1fr)_130px_minmax(180px,1fr)_minmax(230px,1.25fr)_auto] lg:items-center">
+      <div className="grid gap-3 lg:grid-cols-[180px_120px_240px_280px_110px] lg:items-center xl:grid-cols-[220px_130px_280px_320px_120px]">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">{direction === 'sent' ? 'Alıcı' : 'Gönderen'}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -57,7 +57,18 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
 
         <div className="min-w-0 rounded-xl border border-violet-400/20 bg-violet-400/10 px-3 py-2">
           <p className="text-[10px] font-black uppercase tracking-wide text-violet-200">Kod</p>
-          <p className="truncate font-mono text-sm font-black text-white">{coupon.code}</p>
+          <div className="mt-0.5 flex min-w-0 items-center gap-2">
+            <p className="min-w-0 flex-1 truncate font-mono text-sm font-black text-white">{coupon.code}</p>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(coupon.code)}
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.07] text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
+              title="Kodu kopyala"
+              aria-label="Kodu kopyala"
+            >
+              <Copy size={13} />
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-1 text-xs font-semibold text-slate-300 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -66,13 +77,6 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
         </div>
 
         <div className="flex flex-wrap gap-2 lg:justify-end">
-          <button
-            type="button"
-            onClick={() => navigator.clipboard?.writeText(coupon.code)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 text-xs font-black text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
-          >
-            <Copy size={13} /> Kopyala
-          </button>
           {direction === 'sent' && active ? (
             <button
               type="button"

@@ -397,6 +397,7 @@ export default function AdminBalanceCoupons() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">ID</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Durum</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tür</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kupon Kodu</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı</th>
@@ -410,13 +411,16 @@ export default function AdminBalanceCoupons() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={10} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={11} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
                 ) : (data.coupons || []).length === 0 ? (
-                  <tr><td colSpan={10} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
+                  <tr><td colSpan={11} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
                 ) : (
                   data.coupons.map((coupon) => (
                     <tr key={coupon.id} className="border-t border-slate-100 align-top hover:bg-slate-50/60">
                       <td className="px-4 py-3 text-xs font-black text-slate-400">#{coupon.id}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={coupon.status} />
+                      </td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${coupon.coupon_kind === 'admin' ? 'bg-violet-50 text-violet-700' : 'bg-cyan-50 text-cyan-700'}`}>
                           {coupon.coupon_kind === 'admin' ? 'Admin' : 'Kullanıcı'}
