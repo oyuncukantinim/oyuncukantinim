@@ -41,7 +41,7 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
   const username = direction === 'sent' ? coupon.recipient_username : coupon.sender_username;
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 shadow-lg shadow-slate-950/15 backdrop-blur">
-      <div className="grid gap-3 lg:grid-cols-[180px_120px_240px_280px_110px] lg:items-center xl:grid-cols-[220px_130px_280px_320px_120px]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(110px,0.7fr)_minmax(0,1.45fr)_minmax(0,1.55fr)_minmax(96px,auto)] lg:items-center">
         <div className="min-w-0">
           <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">{direction === 'sent' ? 'Alıcı' : 'Gönderen'}</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -56,8 +56,7 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
         </div>
 
         <div className="min-w-0 rounded-xl border border-violet-400/20 bg-violet-400/10 px-3 py-2">
-          <p className="text-[10px] font-black uppercase tracking-wide text-violet-200">Kod</p>
-          <div className="mt-0.5 flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <p className="min-w-0 flex-1 truncate font-mono text-sm font-black text-white">{coupon.code}</p>
             <button
               type="button"
