@@ -40,7 +40,6 @@ export default function NotificationsPage() {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
   const [visibleCount, setVisibleCount] = useState(12);
   const [busyId, setBusyId] = useState(null);
 
@@ -101,14 +100,14 @@ export default function NotificationsPage() {
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
   const displayed = useMemo(
-    () => (filter === 'unread' ? notifications.filter((n) => !n.is_read) : notifications),
-    [filter, notifications]
+    () => notifications,
+    [notifications]
   );
   const visible = displayed.slice(0, visibleCount);
 
   useEffect(() => {
     setVisibleCount(12);
-  }, [filter, notifications.length]);
+  }, [notifications.length]);
 
   if (!user) return null;
 
@@ -170,25 +169,6 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 bg-white border border-gray-100 rounded-2xl p-1.5 shadow-sm">
-        {[{ id: 'all', label: 'Tümü', count: notifications.length }, { id: 'unread', label: 'Okunmamış', count: unreadCount }].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setFilter(tab.id)}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-bold transition-all ${
-              filter === tab.id ? 'bg-violet-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-50'
-            }`}
-          >
-            {tab.label}
-            {tab.count > 0 && (
-              <span className={`text-[11px] font-extrabold px-1.5 py-0.5 rounded-full ${filter === tab.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                {tab.count}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
-
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
@@ -198,9 +178,7 @@ export default function NotificationsPage() {
           <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-gray-100">
             <Bell size={28} className="text-gray-200" />
           </div>
-          <h3 className="font-extrabold text-gray-300 text-lg">
-            {filter === 'unread' ? 'Okunmamış bildirim yok' : 'Henüz bildirim yok'}
-          </h3>
+          <h3 className="font-extrabold text-gray-300 text-lg">Henüz bildirim yok</h3>
           <p className="text-sm text-gray-300 mt-1">Yeni bildirimler burada görünecek.</p>
         </div>
       ) : (

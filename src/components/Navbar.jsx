@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { getCategories, getListings, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
+import { getCategories, getListings, getNotifications, getUnreadCount, getUnreadNotificationsCount, listingSlug, markNotificationsRead } from '../lib/api';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
@@ -38,6 +38,15 @@ function formatPrice(value) {
   return `${Number(value || 0).toFixed(2)} ₺`;
 }
 
+function formatNotificationTime(value) {
+  if (!value) return '';
+  const diff = (Date.now() - new Date(String(value).replace(' ', 'T')).getTime()) / 1000;
+  if (diff < 60) return 'Az önce';
+  if (diff < 3600) return `${Math.floor(diff / 60)} dk önce`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} sa önce`;
+  return new Date(String(value).replace(' ', 'T')).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' });
+}
+
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
   const { user } = useAuth();
   const { cart } = useCart();
@@ -56,9 +65,13 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const [searchLoading, setSearchLoading] = useState(false);
   const [desktopSearchFocused, setDesktopSearchFocused] = useState(false);
   const [searchSeedsLoaded, setSearchSeedsLoaded] = useState(false);
+  const [notificationPreviewOpen, setNotificationPreviewOpen] = useState(false);
+  const [notificationPreviewLoading, setNotificationPreviewLoading] = useState(false);
+  const [recentNotifications, setRecentNotifications] = useState([]);
 
   const cartTimeout = useRef(null);
   const searchRef = useRef(null);
+  const notificationRef = useRef(null);
   const desktopSearchInputRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
   const debounceRef = useRef(null);
@@ -140,11 +153,26 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setDesktopSearchFocused(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setNotificationPreviewOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  const handleNotificationToggle = () => {
+    const nextOpen = !notificationPreviewOpen;
+    setNotificationPreviewOpen(nextOpen);
+    if (!nextOpen || !user) return;
+
+    setNotificationPreviewLoading(true);
+    getNotifications()
+      .then((response) => setRecentNotifications((response.data || []).slice(0, 3)))
+      .catch(() => setRecentNotifications([]))
+      .finally(() => setNotificationPreviewLoading(false));
+  };
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
@@ -427,19 +455,60 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     </span>
                   ) : null}
                 </Link>
-                <Link
-                  to="/notifications"
-                  aria-label="Bildirimlere git"
-                  title="Bildirimler"
-                  className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
-                >
-                  <Bell size={19} />
-                  {unreadNotif > 0 ? (
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
-                      {unreadNotif > 9 ? '9+' : unreadNotif}
-                    </span>
+                <div className="relative" ref={notificationRef}>
+                  <button
+                    type="button"
+                    onClick={handleNotificationToggle}
+                    aria-label="Bildirim önizlemesini aç"
+                    title="Bildirimler"
+                    className="relative rounded-2xl border border-slate-200 p-3 text-slate-500 transition-colors hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                  >
+                    <Bell size={19} />
+                    {unreadNotif > 0 ? (
+                      <span className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold text-white">
+                        {unreadNotif > 9 ? '9+' : unreadNotif}
+                      </span>
+                    ) : null}
+                  </button>
+
+                  {notificationPreviewOpen ? (
+                    <div className="absolute right-0 top-full z-50 mt-2 w-96 max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+                      <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+                        <span className="text-sm font-extrabold text-slate-800">Bildirimler</span>
+                        <span className="text-xs font-bold text-slate-400">{unreadNotif > 0 ? `${unreadNotif} yeni` : 'Güncel'}</span>
+                      </div>
+                      <div className="max-h-80 divide-y divide-slate-100 overflow-y-auto">
+                        {notificationPreviewLoading ? (
+                          <div className="px-4 py-8 text-center text-xs font-bold text-slate-400">Yükleniyor...</div>
+                        ) : recentNotifications.length === 0 ? (
+                          <div className="px-4 py-8 text-center text-xs font-bold text-slate-400">Henüz bildirim yok.</div>
+                        ) : (
+                          recentNotifications.map((notification) => (
+                            <div key={notification.id} className="flex gap-3 px-4 py-3">
+                              <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${notification.is_read ? 'bg-slate-200' : 'bg-red-500'}`} />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="truncate text-xs font-extrabold text-slate-800">{notification.title}</p>
+                                  <span className="shrink-0 text-[10px] font-bold text-slate-400">{formatNotificationTime(notification.created_at)}</span>
+                                </div>
+                                <p className="mt-1 line-clamp-2 text-xs font-semibold leading-5 text-slate-500">{notification.message}</p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                      <div className="border-t border-slate-100 bg-slate-50 px-4 py-3">
+                        <Link
+                          to="/notifications"
+                          onClick={() => setNotificationPreviewOpen(false)}
+                          className="flex h-10 items-center justify-center rounded-xl bg-slate-950 text-xs font-black text-white transition hover:bg-slate-800"
+                        >
+                          Tüm Bildirimler
+                        </Link>
+                      </div>
+                    </div>
                   ) : null}
-                </Link>
+                </div>
               </>
             ) : null}
 
