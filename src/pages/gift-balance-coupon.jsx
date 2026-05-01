@@ -107,6 +107,7 @@ export default function GiftBalanceCouponPage() {
   const [recipientUsername, setRecipientUsername] = useState('');
   const [amount, setAmount] = useState('');
   const [redeemCode, setRedeemCode] = useState('');
+  const [couponListTab, setCouponListTab] = useState('sent');
 
   const verified = Boolean(user?.email_verified_at || user?.is_verified_store || user?.identity_verified_at);
   const load = useCallback(async () => {
@@ -198,6 +199,25 @@ export default function GiftBalanceCouponPage() {
   };
 
   if (!user) return null;
+
+  const couponTabs = [
+    {
+      id: 'sent',
+      label: 'Gönderdiğim Kuponlar',
+      icon: Send,
+      count: data.sent.length,
+      empty: 'Henüz kupon göndermedin.',
+    },
+    {
+      id: 'received',
+      label: 'Bana Gelen Kuponlar',
+      icon: Gift,
+      count: data.received.length,
+      empty: 'Henüz kupon almadın.',
+    },
+  ];
+  const activeCouponTab = couponTabs.find((tab) => tab.id === couponListTab) || couponTabs[0];
+  const activeCoupons = data[couponListTab] || [];
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -307,32 +327,47 @@ export default function GiftBalanceCouponPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-900/10 bg-slate-950 p-5">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-black text-white"><Send size={18} className="text-cyan-300" /> Gönderdiğim Kuponlar</h2>
-          {loading ? (
-            <div className="py-10 text-center text-sm font-bold text-slate-400">Yükleniyor...</div>
-          ) : data.sent.length === 0 ? (
-            <div className="py-10 text-center text-sm font-bold text-slate-500">Henüz kupon göndermedin.</div>
-          ) : (
-            <div className="space-y-3">
-              {data.sent.map((coupon) => (
-                <CouponCard key={coupon.id} coupon={coupon} direction="sent" onCancel={handleCancel} onRedeem={handleRedeem} busy={busy} />
-              ))}
-            </div>
-          )}
+      <section className="overflow-hidden rounded-3xl border border-slate-900/10 bg-slate-950 shadow-2xl shadow-slate-950/15">
+        <div className="flex flex-col gap-4 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-white">Kuponlarım</h2>
+            <p className="mt-1 text-sm font-semibold text-slate-400">Gönderdiğin ve sana gelen bakiye kuponlarını tek yerden takip et.</p>
+          </div>
+          <div className="grid gap-2 rounded-2xl border border-white/10 bg-white/[0.05] p-1 sm:grid-cols-2">
+            {couponTabs.map((tab) => {
+              const Icon = tab.icon;
+              const active = couponListTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setCouponListTab(tab.id)}
+                  className={`flex items-center justify-center gap-2 rounded-xl px-3 py-2 text-xs font-black transition ${
+                    active
+                      ? 'bg-cyan-300 text-slate-950 shadow-lg shadow-cyan-950/30'
+                      : 'text-slate-300 hover:bg-white/[0.07] hover:text-white'
+                  }`}
+                >
+                  <Icon size={14} />
+                  {tab.label}
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] ${active ? 'bg-slate-950/15 text-slate-950' : 'bg-white/10 text-slate-300'}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-900/10 bg-slate-950 p-5">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-black text-white"><Gift size={18} className="text-violet-300" /> Bana Gelen Kuponlar</h2>
+        <div className="p-5">
           {loading ? (
-            <div className="py-10 text-center text-sm font-bold text-slate-400">Yükleniyor...</div>
-          ) : data.received.length === 0 ? (
-            <div className="py-10 text-center text-sm font-bold text-slate-500">Henüz kupon almadın.</div>
+            <div className="py-12 text-center text-sm font-bold text-slate-400">Yükleniyor...</div>
+          ) : activeCoupons.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-white/10 py-12 text-center text-sm font-bold text-slate-500">{activeCouponTab.empty}</div>
           ) : (
-            <div className="space-y-3">
-              {data.received.map((coupon) => (
-                <CouponCard key={coupon.id} coupon={coupon} direction="received" onCancel={handleCancel} onRedeem={handleRedeem} busy={busy} />
+            <div className="grid gap-3 lg:grid-cols-2">
+              {activeCoupons.map((coupon) => (
+                <CouponCard key={coupon.id} coupon={coupon} direction={couponListTab} onCancel={handleCancel} onRedeem={handleRedeem} busy={busy} />
               ))}
             </div>
           )}
