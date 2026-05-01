@@ -6,7 +6,7 @@ import {
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
   MapPin, History, ToggleLeft, ToggleRight, LayoutGrid, LayoutList, Search,
-  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload, Trophy
+  MessageSquarePlus, Heart, TrendingDown, TrendingUp, BarChart2, Shield, Zap, Upload, Trophy, Gift, TicketPercent
 } from 'lucide-react';
 
 const FinanceIcon = TrendingUp;
@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -600,6 +600,8 @@ export default function ProfilePage() {
   const profileBannerInputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
+  const [balancePanelTab, setBalancePanelTab] = useState('topup');
+  const [balanceCouponCode, setBalanceCouponCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', identity_number: '', birth_date: '', country: '', city: '', district: '', address: '' });
@@ -845,6 +847,26 @@ export default function ProfilePage() {
       setBalanceAmount('');
       showToast(amt.toFixed(2) + ' ₺ yüklendi!');
     } catch (err) { showToast(err.message); }
+  };
+
+  const handleRedeemBalanceCoupon = async () => {
+    const code = balanceCouponCode.trim();
+    if (!code) { showToast('Kupon kodu girin.'); return; }
+    setSaving(true);
+    try {
+      const res = await redeemBalanceCoupon(code);
+      updateUser({
+        ...user,
+        balance: Number(res.data.new_balance),
+        ...(res.data.new_withdrawable_balance !== undefined ? { withdrawable_balance: Number(res.data.new_withdrawable_balance) } : {}),
+      });
+      setBalanceCouponCode('');
+      showToast(res.message || 'Kupon bakiyenize eklendi.');
+    } catch (err) {
+      showToast(err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDeleteListing = async (listingId) => {
@@ -1250,6 +1272,12 @@ export default function ProfilePage() {
                 <tab.icon size={16} /> {tab.label}
               </button>
             ))}
+            <Link
+              to="/gift-balance-coupon"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-700"
+            >
+              <Gift size={16} /> Hediye Bakiye Kuponu
+            </Link>
             <div className="border-t border-gray-100 my-2" />
             <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all">
               <LogOut size={16} /> Çıkış Yap
@@ -1685,27 +1713,72 @@ export default function ProfilePage() {
 
           {/* BAKİYE */}
           {activeTab === 'balance' && (
-            <div className="max-w-md">
+            <div className="max-w-2xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
-              <div className="bg-gradient-to-br from-emerald-50 to-cyan-50 rounded-2xl p-6 border border-emerald-100 mb-5">
-                <div className="text-sm text-gray-500 mb-1">Mevcut Bakiye</div>
-                <div className="text-4xl font-extrabold text-emerald-600">{Number(user.balance || 0).toFixed(2)} ₺</div>
-              </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  {[50, 100, 250, 500, 1000, 2500].map(amt => (
-                    <button key={amt} onClick={() => setBalanceAmount(String(amt))}
-                      className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                      {amt} ₺
-                    </button>
-                  ))}
+              <div className="bg-gradient-to-br from-slate-950 via-violet-950 to-slate-950 rounded-3xl p-5 sm:p-6 border border-violet-200/20 mb-5 text-white overflow-hidden relative">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_82%_0%,rgba(168,85,247,0.18),transparent_30%)]" />
+                <div className="relative">
+                  <div className="text-sm text-slate-300 mb-1 font-bold">Mevcut Bakiye</div>
+                  <div className="text-4xl font-extrabold text-emerald-300">{Number(user.balance || 0).toFixed(2)} ₺</div>
                 </div>
-                <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
-                  placeholder="Özel tutar (₺)..." className="input-field" />
-                <button onClick={handleAddBalance} className="btn-primary w-full">
-                  <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
-                </button>
-                <p className="text-xs text-gray-400 text-center">Test aşamasında anlık yüklenir. Gerçek ödeme entegrasyonu yakında.</p>
+              </div>
+
+              <div className="mb-4 inline-flex rounded-2xl border border-gray-200 bg-gray-50 p-1">
+                {[
+                  { id: 'topup', label: 'Bakiye Yükle', icon: Wallet },
+                  { id: 'coupon', label: 'Kupon Kullan', icon: TicketPercent },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setBalancePanelTab(tab.id)}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black transition-all ${
+                      balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    <tab.icon size={15} /> {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                {balancePanelTab === 'topup' ? (
+                  <>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[50, 100, 250, 500, 1000, 2500].map(amt => (
+                        <button key={amt} onClick={() => setBalanceAmount(String(amt))}
+                          className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                          {amt} ₺
+                        </button>
+                      ))}
+                    </div>
+                    <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
+                      placeholder="Özel tutar (₺)..." className="input-field" />
+                    <button onClick={handleAddBalance} className="btn-primary w-full">
+                      <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
+                    </button>
+                    <p className="text-xs text-gray-400 text-center">Test aşamasında anlık yüklenir. Gerçek ödeme entegrasyonu yakında.</p>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
+                      <input
+                        type="text"
+                        value={balanceCouponCode}
+                        onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
+                        placeholder="OK-XXXX-XXXX-XXXX"
+                        className="input-field font-mono font-black"
+                      />
+                    </div>
+                    <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
+                      <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
+                    </button>
+                    <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
+                      <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -3157,6 +3230,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       [slug]: current.includes(opt) ? current.filter((item) => item !== opt) : [...current, opt],
     }));
   };
+
   const deliveryType = listing.delivery_type === 'stock' ? 'stock' : 'manual';
 
   const handleSave = () => {

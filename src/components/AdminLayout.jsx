@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
+  Gift,
   Images,
   LayoutDashboard,
   LifeBuoy,
@@ -66,6 +67,7 @@ const navGroups = [
     items: [
       { path: '/admin/payment-management', label: 'Ödeme Yönetimi', icon: Wallet, accent: 'from-emerald-500 to-green-600' },
       { path: '/admin/finance', label: 'Finansal', icon: Wallet, accent: 'from-teal-500 to-cyan-600' },
+      { path: '/admin/balance-coupons', label: 'Hediye Kuponlar', icon: Gift, accent: 'from-violet-500 to-cyan-500' },
     ],
   },
   {

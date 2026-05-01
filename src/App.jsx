@@ -20,6 +20,7 @@ const ProductDetailPage   = lazy(() => import('./pages/product-detail'));
 const CartPage            = lazy(() => import('./pages/cart'));
 const LoginPage           = lazy(() => import('./pages/login'));
 const ProfilePage         = lazy(() => import('./pages/profile'));
+const GiftBalanceCouponPage = lazy(() => import('./pages/gift-balance-coupon'));
 const CreatePage          = lazy(() => import('./pages/create'));
 const MessagesPage        = lazy(() => import('./pages/messages'));
 const NotificationsPage   = lazy(() => import('./pages/notifications'));
@@ -49,6 +50,7 @@ const AdminSupport       = lazy(() => import('./pages/admin/Support'));
 const AdminSettings      = lazy(() => import('./pages/admin/Settings'));
 const AdminHeroSlides    = lazy(() => import('./pages/admin/HeroSlides'));
 const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
+const AdminBalanceCoupons = lazy(() => import('./pages/admin/BalanceCoupons'));
 const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
 const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
 const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
@@ -272,9 +274,10 @@ function SiteLayout() {
             <Route path="/listing/:slug" element={<ListingDetailPage />} />
             <Route path="/product/:slug" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/create" element={<CreatePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/gift-balance-coupon" element={<GiftBalanceCouponPage />} />
+                <Route path="/create" element={<CreatePage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:userId" element={<MessagesPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
@@ -326,6 +329,7 @@ export default function App() {
                   <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
                   <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
                   <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
+                  <Route path="/admin/balance-coupons" element={<AdminRoute><AdminBalanceCoupons /></AdminRoute>} />
                 <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
                 <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
                 <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />

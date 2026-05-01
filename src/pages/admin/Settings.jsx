@@ -306,8 +306,16 @@ const SETTINGS_TABS = [
           { key: 'email_tpl_dispute_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba,</p><p>Sipariş #{order_id} için anlaşmazlık açıldı. Lütfen destek ekibimizle iletişime geçin.</p>' },
         ],
       },
+      {
+        section: 'Hediye Bakiye Kuponu',
+        fields: [
+          { key: 'email_tpl_balance_coupon_enabled', label: 'Hediye Kupon Maili Aktif', type: 'toggle', desc: 'Alıcıya hediye bakiye kuponu oluşturulduğunda e-posta gönderilir.' },
+          { key: 'email_tpl_balance_coupon_subject', label: 'Konu', type: 'text', placeholder: '{site_name} - Hediye bakiye kuponunuz var' },
+          { key: 'email_tpl_balance_coupon_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba {recipient_username},</p><p>{sender_username} size {amount} TL değerinde hediye bakiye kuponu gönderdi.</p><p>Kod: {coupon_code}</p><p>Son kullanım: {expires_at}</p>' },
+        ],
+      },
     ],
-    _note: 'Kullanılabilir değişkenler: {site_name} {order_id} {amount} {item_title} {buyer_name} {seller_name} {date}',
+    _note: '{site_name} {order_id} {amount} {item_title} {buyer_name} {seller_name} {date} {recipient_username} {sender_username} {coupon_code} {expires_at}',
   },
 ];
 
@@ -911,7 +919,7 @@ export default function AdminSettings() {
             {activeTabConfig._note ? (
               <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs text-violet-700 font-semibold">
                 <span className="font-extrabold">Kullanılabilir değişkenler: </span>
-                {'{site_name} {order_id} {amount} {item_title} {buyer_name} {seller_name} {date}'}
+                {activeTabConfig._note}
               </div>
             ) : null}
 

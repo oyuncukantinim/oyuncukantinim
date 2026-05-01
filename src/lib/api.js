@@ -441,6 +441,22 @@ export function addBalance(amount) {
   return request('add_balance', { method: 'POST', body: { amount }, auth: true });
 }
 
+export function getBalanceCoupons() {
+  return request('get_balance_coupons', { auth: true });
+}
+
+export function createBalanceCoupon(payload) {
+  return request('create_balance_coupon', { method: 'POST', body: payload, auth: true });
+}
+
+export function redeemBalanceCoupon(code) {
+  return request('redeem_balance_coupon', { method: 'POST', body: { code }, auth: true });
+}
+
+export function cancelBalanceCoupon(couponId) {
+  return request('cancel_balance_coupon', { method: 'POST', body: { coupon_id: couponId }, auth: true });
+}
+
 export function getPaymentOverview(query = {}) {
   return request('get_payment_overview', { query, auth: true });
 }
