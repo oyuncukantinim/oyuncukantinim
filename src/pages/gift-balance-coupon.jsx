@@ -40,34 +40,36 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
   const active = coupon.status === 'active';
   const username = direction === 'sent' ? coupon.recipient_username : coupon.sender_username;
   return (
-    <article className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.06] shadow-xl shadow-slate-950/20 backdrop-blur">
-      <div className="flex items-start justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-white/[0.08] to-transparent px-4 py-3">
+    <article className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 shadow-lg shadow-slate-950/15 backdrop-blur">
+      <div className="grid gap-3 lg:grid-cols-[minmax(150px,1fr)_130px_minmax(180px,1fr)_minmax(230px,1.25fr)_auto] lg:items-center">
+        <div className="min-w-0">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-cyan-200/80">{direction === 'sent' ? 'Alıcı' : 'Gönderen'}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h3 className="truncate text-sm font-black text-white">{username || '-'}</h3>
+            <StatusBadge status={coupon.status} />
+          </div>
+        </div>
+
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-cyan-200/80">{direction === 'sent' ? 'Alıcı' : 'Gönderen'}</p>
-          <h3 className="mt-1 text-base font-black text-white">{username || '-'}</h3>
+          <p className="text-[10px] font-black uppercase tracking-wide text-slate-500">Tutar</p>
+          <p className="text-lg font-black text-emerald-300">{formatMoney(coupon.amount)}</p>
         </div>
-        <StatusBadge status={coupon.status} />
-      </div>
-      <div className="space-y-4 px-4 py-4">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-xs font-bold text-slate-400">Tutar</p>
-            <p className="text-2xl font-black text-emerald-300">{formatMoney(coupon.amount)}</p>
-          </div>
-          <div className="rounded-2xl border border-violet-400/25 bg-violet-400/10 px-3 py-2 text-right">
-            <p className="text-[10px] font-black uppercase tracking-wide text-violet-200">Kod</p>
-            <p className="font-mono text-sm font-black text-white">{coupon.code}</p>
-          </div>
+
+        <div className="min-w-0 rounded-xl border border-violet-400/20 bg-violet-400/10 px-3 py-2">
+          <p className="text-[10px] font-black uppercase tracking-wide text-violet-200">Kod</p>
+          <p className="truncate font-mono text-sm font-black text-white">{coupon.code}</p>
         </div>
-        <div className="grid gap-2 text-xs font-semibold text-slate-300 sm:grid-cols-2">
-          <span className="inline-flex items-center gap-1.5"><Clock size={13} /> Oluşturma: {formatDate(coupon.created_at)}</span>
-          <span className="inline-flex items-center gap-1.5"><Clock size={13} /> Son: {formatDate(coupon.expires_at)}</span>
+
+        <div className="grid gap-1 text-xs font-semibold text-slate-300 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          <span className="inline-flex items-center gap-1.5"><Clock size={13} /> {formatDate(coupon.created_at)}</span>
+          <span className="inline-flex items-center gap-1.5"><Clock size={13} /> {formatDate(coupon.expires_at)}</span>
         </div>
-        <div className="flex flex-wrap gap-2">
+
+        <div className="flex flex-wrap gap-2 lg:justify-end">
           <button
             type="button"
             onClick={() => navigator.clipboard?.writeText(coupon.code)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-xs font-black text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 text-xs font-black text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
           >
             <Copy size={13} /> Kopyala
           </button>
@@ -76,9 +78,9 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
               type="button"
               disabled={busy}
               onClick={() => onCancel(coupon.id)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300/30 bg-rose-400/10 px-3 py-2 text-xs font-black text-rose-100 transition hover:bg-rose-400/20 disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-rose-300/30 bg-rose-400/10 px-3 text-xs font-black text-rose-100 transition hover:bg-rose-400/20 disabled:opacity-50"
             >
-              <RotateCcw size={13} /> İptal Et
+              <RotateCcw size={13} /> İptal
             </button>
           ) : null}
           {direction === 'received' && active ? (
@@ -86,9 +88,9 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
               type="button"
               disabled={busy}
               onClick={() => onRedeem(coupon.code)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 py-2 text-xs font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-3 text-xs font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:opacity-50"
             >
-              <CheckCircle size={13} /> Bakiyeye Ekle
+              <CheckCircle size={13} /> Ekle
             </button>
           ) : null}
         </div>
@@ -365,7 +367,7 @@ export default function GiftBalanceCouponPage() {
           ) : activeCoupons.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-white/10 py-12 text-center text-sm font-bold text-slate-500">{activeCouponTab.empty}</div>
           ) : (
-            <div className="grid gap-3 lg:grid-cols-2">
+            <div className="space-y-2">
               {activeCoupons.map((coupon) => (
                 <CouponCard key={coupon.id} coupon={coupon} direction={couponListTab} onCancel={handleCancel} onRedeem={handleRedeem} busy={busy} />
               ))}
