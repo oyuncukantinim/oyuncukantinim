@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Clock, Gift, Plus, RotateCcw, Search, ShieldCheck, TicketPercent, UserRound, Users, WalletCards } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock, Eye, Gift, Plus, RotateCcw, Search, ShieldCheck, TicketPercent, UserRound, Users, WalletCards, X } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminCancelBalanceCoupon, adminCreateBalanceCoupon, adminGetBalanceCoupons } from '../../lib/adminApi';
 
@@ -67,6 +67,15 @@ function StatusBadge({ status }) {
   );
 }
 
+function DetailField({ label, value }) {
+  return (
+    <div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+      <div className="text-[11px] font-black uppercase tracking-wide text-slate-400">{label}</div>
+      <div className="mt-1 text-sm font-black text-slate-800">{value || '-'}</div>
+    </div>
+  );
+}
+
 export default function AdminBalanceCoupons() {
   const [data, setData] = useState({ coupons: [], total: 0, page: 1, pages: 1 });
   const [activeTab, setActiveTab] = useState('list');
@@ -78,6 +87,7 @@ export default function AdminBalanceCoupons() {
   const [busyId, setBusyId] = useState(null);
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState(defaultCreateForm);
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [toast, setToast] = useState('');
 
   const showToast = (message) => {
@@ -373,56 +383,43 @@ export default function AdminBalanceCoupons() {
             <table className="w-full text-sm">
               <thead className="bg-slate-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kod</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tür</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kaynak</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı/Kapsam</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kupon Kodu</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Alıcı</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Kapsam</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Tutar</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Durum</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Tarih</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Log</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç-Bitiş Tarihi</th>
                   <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">İşlem</th>
+                  <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-slate-500">Göz</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Yükleniyor...</td></tr>
                 ) : (data.coupons || []).length === 0 ? (
-                  <tr><td colSpan={9} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-12 text-center font-bold text-slate-400">Kayıt bulunamadı.</td></tr>
                 ) : (
                   data.coupons.map((coupon) => (
                     <tr key={coupon.id} className="border-t border-slate-100 align-top hover:bg-slate-50/60">
-                      <td className="px-4 py-3">
-                        <div className="font-mono text-xs font-black text-slate-900">{coupon.code}</div>
-                        <div className="mt-1 text-[11px] font-bold text-slate-400">#{coupon.id}</div>
-                      </td>
                       <td className="px-4 py-3">
                         <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${coupon.coupon_kind === 'admin' ? 'bg-violet-50 text-violet-700' : 'bg-cyan-50 text-cyan-700'}`}>
                           {coupon.coupon_kind === 'admin' ? 'Admin' : 'Kullanıcı'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><UserRound size={13} /> {coupon.coupon_kind === 'admin' ? (coupon.admin_username || 'Admin') : (coupon.sender_username || '-')}</div>
-                        {coupon.title ? <div className="mt-1 max-w-[160px] truncate text-[11px] font-semibold text-slate-400">{coupon.title}</div> : null}
+                        <div className="font-mono text-xs font-black text-slate-900">{coupon.code}</div>
+                        <div className="mt-1 text-[11px] font-bold text-slate-400">#{coupon.id}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.scope === 'public' ? 'Genel' : (coupon.recipient_username || '-')}</div>
-                        {coupon.coupon_kind === 'admin' ? <div className="mt-1 text-[11px] font-semibold text-slate-400">{coupon.used_count || 0}/{coupon.max_uses || 1} kullanım</div> : null}
+                        <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.recipient_username || '-'}</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="font-bold text-slate-700">{coupon.scope === 'public' ? 'Genel' : 'Tek kullanıcı'}</div>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-emerald-600">{formatMoney(coupon.amount)}</td>
-                      <td className="px-4 py-3"><StatusBadge status={coupon.status} /></td>
                       <td className="px-4 py-3 text-xs font-semibold text-slate-500">
-                        <div className="flex items-center gap-1.5"><Clock size={12} /> {formatDate(coupon.created_at)}</div>
-                        <div className="mt-1 text-slate-400">Son: {formatDate(coupon.expires_at)}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="max-w-[260px] space-y-1">
-                          {(coupon.logs || []).slice(-3).map((log) => (
-                            <div key={log.id} className="rounded-xl bg-slate-50 px-2.5 py-1.5 text-[11px] font-semibold text-slate-500">
-                              <span className="font-black text-slate-700">{log.action}</span> · {log.actor_username || log.actor_type}
-                            </div>
-                          ))}
-                        </div>
+                        <div className="flex items-center gap-1.5"><Clock size={12} /> {coupon.starts_at ? formatDate(coupon.starts_at) : 'Hemen'}</div>
+                        <div className="mt-1 text-slate-400">Bitiş: {formatDate(coupon.expires_at)}</div>
                       </td>
                       <td className="px-4 py-3 text-right">
                         {coupon.status === 'active' ? (
@@ -437,6 +434,16 @@ export default function AdminBalanceCoupons() {
                         ) : (
                           <span className="text-xs font-bold text-slate-300">Kilitli</span>
                         )}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCoupon(coupon)}
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                          title="Kupon detayını görüntüle"
+                        >
+                          <Eye size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -470,6 +477,97 @@ export default function AdminBalanceCoupons() {
         </>
         ) : null}
       </div>
+
+      {selectedCoupon ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 px-4 py-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white/95 px-5 py-4 backdrop-blur">
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h3 className="font-mono text-lg font-black text-slate-950">{selectedCoupon.code}</h3>
+                  <StatusBadge status={selectedCoupon.status} />
+                  <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ${selectedCoupon.coupon_kind === 'admin' ? 'bg-violet-50 text-violet-700' : 'bg-cyan-50 text-cyan-700'}`}>
+                    {selectedCoupon.coupon_kind === 'admin' ? 'Admin kuponu' : 'Kullanıcı hediyesi'}
+                  </span>
+                </div>
+                <p className="mt-1 text-sm font-semibold text-slate-500">{selectedCoupon.title || 'Kupon detay formu'}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedCoupon(null)}
+                className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+              >
+                <X size={17} />
+              </button>
+            </div>
+
+            <div className="space-y-5 p-5">
+              <section>
+                <h4 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400">Özet</h4>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <DetailField label="Tutar" value={formatMoney(selectedCoupon.amount)} />
+                  <DetailField label="Durum" value={(STATUS_OPTIONS.find((item) => item.value === selectedCoupon.status) || {}).label || selectedCoupon.status} />
+                  <DetailField label="Oluşturma" value={formatDate(selectedCoupon.created_at)} />
+                  <DetailField label="Kullanım" value={`${selectedCoupon.used_count || 0}/${selectedCoupon.max_uses || 1}`} />
+                </div>
+              </section>
+
+              <section>
+                <h4 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400">Kapsam</h4>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <DetailField label="Kaynak" value={selectedCoupon.coupon_kind === 'admin' ? (selectedCoupon.admin_username || 'Admin') : (selectedCoupon.sender_username || '-')} />
+                  <DetailField label="Alıcı" value={selectedCoupon.recipient_username || '-'} />
+                  <DetailField label="Kapsam" value={selectedCoupon.scope === 'public' ? 'Genel' : 'Tek kullanıcı'} />
+                  <DetailField label="Admin Notu" value={selectedCoupon.admin_note || '-'} />
+                </div>
+              </section>
+
+              <section>
+                <h4 className="mb-3 text-sm font-black uppercase tracking-wide text-slate-400">Kurallar</h4>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <DetailField label="Başlangıç" value={selectedCoupon.starts_at ? formatDate(selectedCoupon.starts_at) : 'Hemen'} />
+                  <DetailField label="Bitiş" value={formatDate(selectedCoupon.expires_at)} />
+                  <DetailField label="Kullanıcı Limiti" value={selectedCoupon.per_user_limit || 1} />
+                  <DetailField label="Hesap Yaşı Şartı" value={`${selectedCoupon.min_account_age_days || 0} gün`} />
+                  <DetailField label="Doğrulama Şartı" value={Number(selectedCoupon.require_verified_user) === 1 ? 'Var' : 'Yok'} />
+                  <DetailField label="Aktiflik" value={Number(selectedCoupon.is_enabled) === 1 ? 'Aktif' : 'Pasif'} />
+                </div>
+              </section>
+
+              <section>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h4 className="text-sm font-black uppercase tracking-wide text-slate-400">Loglar</h4>
+                  {selectedCoupon.status === 'active' ? (
+                    <button
+                      type="button"
+                      disabled={busyId === selectedCoupon.id}
+                      onClick={() => handleCancel(selectedCoupon)}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+                    >
+                      <RotateCcw size={13} /> Kuponu İptal Et
+                    </button>
+                  ) : null}
+                </div>
+                <div className="space-y-2">
+                  {(selectedCoupon.logs || []).length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 py-6 text-center text-sm font-bold text-slate-400">Log kaydı yok.</div>
+                  ) : (
+                    selectedCoupon.logs.map((log) => (
+                      <div key={log.id} className="flex flex-col gap-1 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <div className="text-sm font-black text-slate-800">{log.action}</div>
+                          <div className="text-xs font-semibold text-slate-500">{log.note || log.actor_username || log.actor_type}</div>
+                        </div>
+                        <div className="text-xs font-bold text-slate-400">{formatDate(log.created_at)}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </AdminLayout>
   );
 }
