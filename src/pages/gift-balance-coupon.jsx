@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertTriangle, CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, TicketPercent, Wallet } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
@@ -109,9 +109,6 @@ export default function GiftBalanceCouponPage() {
   const [redeemCode, setRedeemCode] = useState('');
 
   const verified = Boolean(user?.email_verified_at || user?.is_verified_store || user?.identity_verified_at);
-  const activeSent = useMemo(() => data.sent.filter((coupon) => coupon.status === 'active').length, [data.sent]);
-  const activeReceived = useMemo(() => data.received.filter((coupon) => coupon.status === 'active').length, [data.received]);
-
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -204,37 +201,25 @@ export default function GiftBalanceCouponPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950 px-5 py-6 text-white shadow-2xl shadow-slate-950/20 sm:px-7">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-slate-950 px-5 py-5 text-white shadow-2xl shadow-slate-950/20 sm:px-6">
         <div className="pointer-events-none absolute inset-0 opacity-80">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.18),transparent_30%),radial-gradient(circle_at_85%_20%,rgba(139,92,246,0.24),transparent_26%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(2,6,23,0.98))]" />
-          <div className="absolute inset-0 bg-[linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.06)_48%,transparent_52%)]" />
         </div>
-        <div className="relative grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="relative grid gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div>
-            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-cyan-100">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-cyan-100">
               <ShieldCheck size={14} /> Güvenli Bakiye Transferi
             </div>
             <h1 className="text-2xl font-black sm:text-3xl">Hediye Bakiye Kuponu</h1>
-            <p className="mt-2 max-w-2xl text-sm font-semibold leading-6 text-slate-300">
+            <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-300">
               Kullanıcı adına özel kupon oluştur, bakiye 24 saat boyunca güvenli şekilde rezerve edilsin. Alıcı kullanmazsa tutar otomatik olarak sana döner.
             </p>
-            <div className="mt-5 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <p className="text-xs font-bold text-slate-400">Mevcut Bakiye</p>
-                <p className="mt-1 text-xl font-black text-emerald-300">{formatMoney(user.balance)}</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <p className="text-xs font-bold text-slate-400">Aktif Gönderim</p>
-                <p className="mt-1 text-xl font-black text-cyan-200">{activeSent}</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
-                <p className="text-xs font-bold text-slate-400">Kullanılabilir Kupon</p>
-                <p className="mt-1 text-xl font-black text-violet-200">{activeReceived}</p>
-              </div>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 text-sm font-black text-emerald-200">
+              <Wallet size={15} /> Bakiyen: {formatMoney(user.balance)}
             </div>
           </div>
 
-          <form onSubmit={handleCreate} className="rounded-3xl border border-white/10 bg-white/[0.07] p-5 backdrop-blur">
+          <form onSubmit={handleCreate} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-lg font-black">Kupon Oluştur</h2>
@@ -276,7 +261,7 @@ export default function GiftBalanceCouponPage() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
               <TicketPercent size={20} />
@@ -304,7 +289,7 @@ export default function GiftBalanceCouponPage() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-start gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-50 text-cyan-600">
               <AlertTriangle size={20} />
