@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, TicketPercent, Wallet } from 'lucide-react';
+import { CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, Wallet } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
 import { cancelBalanceCoupon, createBalanceCoupon, getBalanceCoupons, redeemBalanceCoupon } from '../lib/api';
@@ -111,7 +111,6 @@ export default function GiftBalanceCouponPage() {
   const [busy, setBusy] = useState(false);
   const [recipientUsername, setRecipientUsername] = useState('');
   const [amount, setAmount] = useState('');
-  const [redeemCode, setRedeemCode] = useState('');
   const [couponListTab, setCouponListTab] = useState('sent');
 
   const verified = Boolean(user?.email_verified_at || user?.is_verified_store || user?.identity_verified_at);
@@ -168,7 +167,7 @@ export default function GiftBalanceCouponPage() {
     }
   };
 
-  const handleRedeem = async (code = redeemCode) => {
+  const handleRedeem = async (code) => {
     const cleanCode = String(code || '').trim();
     if (!cleanCode) {
       showToast('Kupon kodu girin.');
@@ -178,7 +177,6 @@ export default function GiftBalanceCouponPage() {
     try {
       const response = await redeemBalanceCoupon(cleanCode);
       updateBalance(response.data);
-      setRedeemCode('');
       showToast(response.message || 'Kupon kullanıldı.');
       await load();
     } catch (error) {
@@ -244,47 +242,16 @@ export default function GiftBalanceCouponPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
+          <form onSubmit={handleCreate} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-lg font-black">Kupon Kullan</h2>
-                <p className="mt-1 text-xs font-semibold text-slate-400">Sana tanımlanan kodu bakiyene ekle.</p>
+                <h2 className="text-lg font-black">Kupon Oluştur</h2>
+                <p className="mt-1 text-xs font-semibold text-slate-400">Alıcı kullanıcı adı ile tek kişiye özel oluşturulur.</p>
               </div>
-              <TicketPercent className="text-emerald-200" size={24} />
+              <Gift className="text-violet-200" size={24} />
             </div>
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                value={redeemCode}
-                onChange={(event) => setRedeemCode(event.target.value.toUpperCase())}
-                placeholder="OK-XXXX-XXXX-XXXX"
-                className="h-12 flex-1 rounded-2xl border border-white/10 bg-slate-950/70 px-4 font-mono text-sm font-black text-white outline-none transition placeholder:text-slate-500 focus:border-emerald-300/50 focus:ring-4 focus:ring-emerald-300/10"
-              />
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => handleRedeem()}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-400 to-cyan-400 px-5 text-sm font-black text-slate-950 shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:opacity-50"
-              >
-                <Wallet size={16} /> Kullan
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <form onSubmit={handleCreate}>
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="font-black text-slate-900">Kupon Oluştur</h2>
-              <p className="text-xs font-semibold text-slate-500">Alıcı kullanıcı adı ile tek kişiye özel oluşturulur.</p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
-              <Gift size={20} />
-            </div>
-          </div>
             {!verified ? (
-              <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+              <div className="mb-4 rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm font-semibold text-amber-100">
                 Kupon oluşturmak için hesabınız doğrulanmış olmalı. Profilinizden e-posta veya kimlik doğrulamasını tamamlayın.
               </div>
             ) : null}
@@ -293,7 +260,7 @@ export default function GiftBalanceCouponPage() {
                 value={recipientUsername}
                 onChange={(event) => setRecipientUsername(event.target.value)}
                 placeholder="Alıcı kullanıcı adı"
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-300/10"
               />
               <input
                 type="number"
@@ -302,17 +269,18 @@ export default function GiftBalanceCouponPage() {
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 placeholder="Tutar (₺)"
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100"
+                className="h-12 w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 text-sm font-bold text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/50 focus:ring-4 focus:ring-cyan-300/10"
               />
               <button
                 type="submit"
                 disabled={busy || !verified}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 px-5 text-sm font-black text-white shadow-lg shadow-violet-500/20 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 px-5 text-sm font-black text-white shadow-lg shadow-violet-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Send size={16} /> Hediye Kuponu Gönder
               </button>
             </div>
-        </form>
+          </form>
+        </div>
       </section>
 
       <section className="overflow-hidden rounded-3xl border border-slate-900/10 bg-slate-950 shadow-2xl shadow-slate-950/15">
