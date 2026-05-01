@@ -39,6 +39,14 @@ function StatusBadge({ status }) {
 function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
   const active = coupon.status === 'active';
   const username = direction === 'sent' ? coupon.recipient_username : coupon.sender_username;
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(coupon.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  };
+
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 shadow-lg shadow-slate-950/15 backdrop-blur">
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(110px,0.7fr)_minmax(0,1.45fr)_minmax(0,1.55fr)_minmax(96px,auto)] lg:items-center">
@@ -60,12 +68,16 @@ function CouponCard({ coupon, direction, onCancel, onRedeem, busy }) {
             <p className="min-w-0 flex-1 truncate font-mono text-sm font-black text-white">{coupon.code}</p>
             <button
               type="button"
-              onClick={() => navigator.clipboard?.writeText(coupon.code)}
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.07] text-slate-100 transition hover:border-cyan-300/40 hover:bg-cyan-300/10"
-              title="Kodu kopyala"
-              aria-label="Kodu kopyala"
+              onClick={handleCopy}
+              className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border transition ${
+                copied
+                  ? 'border-emerald-300/50 bg-emerald-400/15 text-emerald-200'
+                  : 'border-white/10 bg-white/[0.07] text-slate-100 hover:border-cyan-300/40 hover:bg-cyan-300/10'
+              }`}
+              title={copied ? 'Kopyalandı' : 'Kodu kopyala'}
+              aria-label={copied ? 'Kopyalandı' : 'Kodu kopyala'}
             >
-              <Copy size={13} />
+              {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
             </button>
           </div>
         </div>
