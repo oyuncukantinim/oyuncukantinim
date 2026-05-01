@@ -172,16 +172,6 @@ export default function AdminBalanceCoupons() {
     }
   };
 
-  const createPreview = {
-    code: createForm.code.trim() || 'OTOMATIK',
-    title: createForm.title.trim() || 'Admin bakiye kuponu',
-    amount: createForm.amount ? formatMoney(createForm.amount) : '0.00 ₺',
-    scope: createForm.scope === 'public' ? 'Genel kupon' : 'Tek kullanıcı',
-    recipient: createForm.scope === 'public' ? 'Uygun kullanıcılar' : (createForm.recipient_username.trim() || 'Alıcı bekleniyor'),
-    usage: `${createForm.scope === 'recipient' ? 1 : (createForm.max_uses || 1)} toplam / kişi başı ${createForm.per_user_limit || 1}`,
-    date: createForm.expires_at ? formatDate(createForm.expires_at) : 'Sınırsız süreli',
-  };
-
   return (
     <AdminLayout>
       {toast ? <div className="fixed right-4 top-4 z-50 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white shadow-xl">{toast}</div> : null}
@@ -239,204 +229,101 @@ export default function AdminBalanceCoupons() {
         </section>
 
         {activeTab === 'create' ? (
-          <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="relative border-b border-slate-100 bg-slate-950 px-5 py-5 text-white">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_14%_20%,rgba(34,211,238,0.18),transparent_24%),radial-gradient(circle_at_88%_10%,rgba(139,92,246,0.24),transparent_28%)]" />
-              <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-cyan-200 shadow-lg shadow-cyan-500/10">
-                    <WalletCards size={23} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-black">Admin Bakiye Kuponu Oluştur</h2>
-                    <p className="mt-1 text-sm font-semibold text-slate-300">Genel kampanya veya tek kullanıcıya özel bakiye kuponunu kontrollü şekilde üret.</p>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.07] px-4 py-3">
-                  <div className="text-[11px] font-black uppercase tracking-wide text-cyan-200">Önizleme Tutarı</div>
-                  <div className="mt-1 text-2xl font-black text-white">{createPreview.amount}</div>
-                </div>
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-black text-slate-950">Admin Bakiye Kuponu Oluştur</h2>
+                <p className="mt-1 text-sm font-semibold text-slate-500">Aynı kupon sistemi içinde genel veya tek kullanıcıya özel promosyon bakiyesi üret.</p>
               </div>
+              <WalletCards className="text-violet-500" size={24} />
             </div>
 
-            <form onSubmit={handleCreate} className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_380px]">
-              <div className="space-y-5 p-5">
+            <form onSubmit={handleCreate} className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setCreateForm((current) => ({ ...current, scope: 'recipient', max_uses: '1', per_user_limit: '1' }))}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${createForm.scope === 'recipient' ? 'border-violet-400 bg-violet-50 text-violet-800' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                  >
+                    <UserRound size={18} />
+                    <div className="mt-2 font-black">Tek Kullanıcı</div>
+                    <p className="mt-1 text-xs font-semibold opacity-80">Sadece belirlenen kullanıcı adı kullanır.</p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCreateForm((current) => ({ ...current, scope: 'public' }))}
+                    className={`rounded-2xl border px-4 py-3 text-left transition ${createForm.scope === 'public' ? 'border-cyan-400 bg-cyan-50 text-cyan-800' : 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                  >
+                    <Users size={18} />
+                    <div className="mt-2 font-black">Genel Kupon</div>
+                    <p className="mt-1 text-xs font-semibold opacity-80">Limit dahilinde uygun kullanıcılar kullanır.</p>
+                  </button>
+                </div>
+
+                {createForm.scope === 'recipient' ? (
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Alıcı Kullanıcı Adı</label>
+                    <input value={createForm.recipient_username} onChange={(e) => setForm('recipient_username', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="kullaniciadi" />
+                  </div>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Tutar</label>
+                    <input type="number" min="1" step="0.01" value={createForm.amount} onChange={(e) => setForm('amount', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Manuel Kod</label>
+                    <input value={createForm.code} onChange={(e) => setForm('code', e.target.value.toUpperCase())} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 font-mono text-sm font-black outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Boşsa otomatik" />
+                  </div>
+                </div>
+
                 <div>
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-sm font-black uppercase tracking-wide text-slate-400">Kupon Tipi</h3>
-                      <p className="mt-1 text-sm font-semibold text-slate-500">Kimin kullanabileceğini belirle.</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => setCreateForm((current) => ({ ...current, scope: 'recipient', max_uses: '1', per_user_limit: '1' }))}
-                      className={`group rounded-2xl border p-4 text-left transition ${
-                        createForm.scope === 'recipient'
-                          ? 'border-violet-400 bg-violet-50 text-violet-900 shadow-lg shadow-violet-500/10'
-                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-violet-200 hover:bg-white'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm">
-                          <UserRound size={18} />
-                        </div>
-                        <span className={`h-3 w-3 rounded-full border ${createForm.scope === 'recipient' ? 'border-violet-500 bg-violet-500 shadow-[0_0_0_4px_rgba(139,92,246,0.14)]' : 'border-slate-300 bg-white'}`} />
-                      </div>
-                      <div className="mt-3 font-black">Tek Kullanıcı</div>
-                      <p className="mt-1 text-xs font-semibold opacity-80">Sadece belirlediğin kullanıcı adı kullanabilir.</p>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCreateForm((current) => ({ ...current, scope: 'public' }))}
-                      className={`group rounded-2xl border p-4 text-left transition ${
-                        createForm.scope === 'public'
-                          ? 'border-cyan-400 bg-cyan-50 text-cyan-900 shadow-lg shadow-cyan-500/10'
-                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-cyan-200 hover:bg-white'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-cyan-600 shadow-sm">
-                          <Users size={18} />
-                        </div>
-                        <span className={`h-3 w-3 rounded-full border ${createForm.scope === 'public' ? 'border-cyan-500 bg-cyan-500 shadow-[0_0_0_4px_rgba(6,182,212,0.14)]' : 'border-slate-300 bg-white'}`} />
-                      </div>
-                      <div className="mt-3 font-black">Genel Kupon</div>
-                      <p className="mt-1 text-xs font-semibold opacity-80">Limit dahilinde uygun kullanıcılar kullanır.</p>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="mb-4 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-violet-600 shadow-sm">
-                      <TicketPercent size={17} />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-slate-900">Kupon Bilgileri</h3>
-                      <p className="text-xs font-semibold text-slate-500">Kod, başlık ve bakiye tutarı.</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {createForm.scope === 'recipient' ? (
-                      <div className="sm:col-span-2">
-                        <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Alıcı Kullanıcı Adı</label>
-                        <input value={createForm.recipient_username} onChange={(e) => setForm('recipient_username', e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="kullaniciadi" />
-                      </div>
-                    ) : null}
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Tutar</label>
-                      <input type="number" min="1" step="0.01" value={createForm.amount} onChange={(e) => setForm('amount', e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="100" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Manuel Kod</label>
-                      <input value={createForm.code} onChange={(e) => setForm('code', e.target.value.toUpperCase())} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 font-mono text-sm font-black text-slate-900 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Boşsa otomatik" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlık</label>
-                      <input value={createForm.title} onChange={(e) => setForm('title', e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Mayıs kampanyası, telafi kuponu..." />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-3xl border border-slate-200 bg-white p-4">
-                  <div className="mb-4 flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950 text-cyan-200 shadow-sm">
-                      <Clock size={17} />
-                    </div>
-                    <div>
-                      <h3 className="font-black text-slate-900">Zamanlama</h3>
-                      <p className="text-xs font-semibold text-slate-500">Başlangıç ve bitiş zamanını belirle.</p>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç</label>
-                      <input type="datetime-local" value={createForm.starts_at} onChange={(e) => setForm('starts_at', e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
-                    </div>
-                    <div>
-                      <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Bitiş</label>
-                      <input type="datetime-local" value={createForm.expires_at} onChange={(e) => setForm('expires_at', e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
-                      <p className="mt-1 text-[11px] font-semibold text-slate-400">Boş bırakırsan kupon sınırsız süreli olur.</p>
-                    </div>
-                  </div>
+                  <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlık</label>
+                  <input value={createForm.title} onChange={(e) => setForm('title', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Mayıs kampanyası, telafi kuponu..." />
                 </div>
               </div>
 
-              <aside className="border-t border-slate-100 bg-slate-50 p-5 lg:border-l lg:border-t-0">
-                <div className="sticky top-5 space-y-4">
-                  <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-950 text-white shadow-xl shadow-slate-950/10">
-                    <div className="relative p-4">
-                      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_10%,rgba(34,211,238,0.22),transparent_26%),radial-gradient(circle_at_90%_35%,rgba(168,85,247,0.24),transparent_32%)]" />
-                      <div className="relative">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-[11px] font-black uppercase tracking-[0.2em] text-cyan-200">Kupon Önizleme</div>
-                            <div className="mt-2 font-mono text-lg font-black">{createPreview.code}</div>
-                          </div>
-                          <Gift className="text-violet-200" size={22} />
-                        </div>
-                        <div className="mt-5 text-3xl font-black">{createPreview.amount}</div>
-                        <div className="mt-2 text-sm font-semibold text-slate-300">{createPreview.title}</div>
-                        <div className="mt-4 grid gap-2 text-xs font-bold text-slate-300">
-                          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2">
-                            <span>Kapsam</span><span className="text-white">{createPreview.scope}</span>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2">
-                            <span>Alıcı</span><span className="text-right text-white">{createPreview.recipient}</span>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2">
-                            <span>Kullanım</span><span className="text-white">{createPreview.usage}</span>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] px-3 py-2">
-                            <span>Bitiş</span><span className="text-right text-white">{createPreview.date}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Başlangıç</label>
+                    <input type="datetime-local" value={createForm.starts_at} onChange={(e) => setForm('starts_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
                   </div>
-
-                  <div className="rounded-3xl border border-slate-200 bg-white p-4">
-                    <div className="mb-4 flex items-center gap-2">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-                        <ShieldCheck size={17} />
-                      </div>
-                      <div>
-                        <h3 className="font-black text-slate-900">Kullanım ve Güvenlik</h3>
-                        <p className="text-xs font-semibold text-slate-500">Limit ve doğrulama kuralları.</p>
-                      </div>
-                    </div>
-                    <div className="grid gap-3">
-                      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                        <div>
-                          <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Toplam Limit</label>
-                          <input type="number" min="1" value={createForm.max_uses} onChange={(e) => setForm('max_uses', e.target.value)} disabled={createForm.scope === 'recipient'} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition disabled:bg-slate-100 disabled:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Kullanıcı Limiti</label>
-                          <input type="number" min="1" value={createForm.per_user_limit} onChange={(e) => setForm('per_user_limit', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Hesap Yaşı</label>
-                          <input type="number" min="0" value={createForm.min_account_age_days} onChange={(e) => setForm('min_account_age_days', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Gün" />
-                        </div>
-                      </div>
-
-                      <label className="flex items-start gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
-                        <input type="checkbox" checked={createForm.require_verified_user} onChange={(e) => setForm('require_verified_user', e.target.checked)} className="mt-0.5 h-4 w-4 accent-emerald-600" />
-                        <span>Sadece doğrulanmış kullanıcılar kullanabilsin</span>
-                      </label>
-
-                      <textarea value={createForm.admin_note} onChange={(e) => setForm('admin_note', e.target.value)} rows={3} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Admin iç notu..." />
-
-                      <button type="submit" disabled={creating} className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 text-sm font-black text-white shadow-lg shadow-violet-500/20 transition hover:brightness-110 disabled:opacity-60">
-                        <Plus size={16} /> Admin Kuponu Oluştur
-                      </button>
-                    </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Bitiş</label>
+                    <input type="datetime-local" value={createForm.expires_at} onChange={(e) => setForm('expires_at', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                    <p className="mt-1 text-[11px] font-semibold text-slate-400">Boş bırakırsan kupon sınırsız süreli olur.</p>
                   </div>
                 </div>
-              </aside>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Toplam Limit</label>
+                    <input type="number" min="1" value={createForm.max_uses} onChange={(e) => setForm('max_uses', e.target.value)} disabled={createForm.scope === 'recipient'} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none disabled:bg-slate-100 disabled:text-slate-400 focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Kullanıcı Limiti</label>
+                    <input type="number" min="1" value={createForm.per_user_limit} onChange={(e) => setForm('per_user_limit', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Hesap Yaşı</label>
+                    <input type="number" min="0" value={createForm.min_account_age_days} onChange={(e) => setForm('min_account_age_days', e.target.value)} className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Gün" />
+                  </div>
+                </div>
+
+                <label className="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-black text-emerald-800">
+                  <input type="checkbox" checked={createForm.require_verified_user} onChange={(e) => setForm('require_verified_user', e.target.checked)} className="h-4 w-4 accent-emerald-600" />
+                  Sadece doğrulanmış kullanıcılar kullanabilsin
+                </label>
+
+                <textarea value={createForm.admin_note} onChange={(e) => setForm('admin_note', e.target.value)} rows={3} className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-100" placeholder="Admin iç notu..." />
+
+                <button type="submit" disabled={creating} className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-cyan-500 text-sm font-black text-white shadow-lg shadow-violet-500/20 transition hover:brightness-110 disabled:opacity-60">
+                  <Plus size={16} /> Admin Kuponu Oluştur
+                </button>
+              </div>
             </form>
           </section>
         ) : null}
