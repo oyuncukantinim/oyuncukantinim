@@ -60,6 +60,16 @@ function formatEndDate(value) {
   return value ? formatDate(value) : 'Sınırsız';
 }
 
+function formatUsageLimit(coupon) {
+  const usedCount = Number(coupon.used_count || 0);
+  const maxUses = Number(coupon.max_uses || 1);
+  const perUserLimit = Number(coupon.per_user_limit || 1);
+  return {
+    total: `${usedCount}/${maxUses}`,
+    perUser: `Kişi başı ${perUserLimit}`,
+  };
+}
+
 function StatusBadge({ status }) {
   const option = STATUS_OPTIONS.find((item) => item.value === status);
   return (
@@ -419,7 +429,8 @@ export default function AdminBalanceCoupons() {
                         <div className="inline-flex items-center gap-1.5 font-bold text-slate-700"><ShieldCheck size={13} /> {coupon.recipient_username || '-'}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-bold text-slate-700">{coupon.scope === 'public' ? 'Çoklu' : 'Tekil'}</div>
+                        <div className="font-black text-slate-700">{formatUsageLimit(coupon).total}</div>
+                        <div className="mt-1 text-[11px] font-bold text-slate-400">{formatUsageLimit(coupon).perUser}</div>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-emerald-600">{formatMoney(coupon.amount)}</td>
                       <td className="px-4 py-3 text-xs font-semibold text-slate-500">
