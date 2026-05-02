@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Clock, Filter, Folder, KeyRound, Plus, RotateCcw,
+  ChevronDown, Clock, Filter, Folder, KeyRound, Plus, RotateCcw,
   Search, ShieldCheck, SlidersHorizontal, Star, UserRound, Wifi, X, Zap,
 } from 'lucide-react';
 import { getListings, getCategories } from '../lib/api';
@@ -32,33 +32,6 @@ function ListingSkeleton() {
       </div>
     </div>
   );
-}
-
-function AnimatedCount({ value, loading }) {
-  const [displayed, setDisplayed] = useState(value);
-  const prev = useRef(value);
-
-  useEffect(() => {
-    if (loading) return;
-    if (prev.current === value) return;
-    const start = prev.current;
-    const end = value;
-    const diff = end - start;
-    const steps = Math.min(Math.abs(diff), 20);
-    let step = 0;
-    const timer = setInterval(() => {
-      step += 1;
-      setDisplayed(Math.round(start + (diff * step) / steps));
-      if (step >= steps) {
-        clearInterval(timer);
-        prev.current = end;
-      }
-    }, 20);
-    return () => clearInterval(timer);
-  }, [value, loading]);
-
-  if (loading) return <span className="animate-pulse">...</span>;
-  return <span>{displayed}</span>;
 }
 
 function FilterChip({ label, onRemove }) {
@@ -409,11 +382,6 @@ export default function MarketPage() {
             </p>
           </div>
           <div className="flex flex-col items-start gap-3 md:items-end">
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-left dark:border-emerald-500/25 dark:bg-emerald-500/10 md:text-right">
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-200">
-                <AnimatedCount value={total} loading={loading} /> ilan listelendi
-              </div>
-            </div>
             {user && (
               <Link
                 to="/create"
@@ -438,7 +406,7 @@ export default function MarketPage() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <div className="text-sm font-black text-slate-900 dark:text-white">
-                  <AnimatedCount value={total} loading={loading} /> ilan
+                  Pazar Akışı
                 </div>
                 <div className="mt-0.5 text-xs font-semibold text-slate-400">
                   Filtreler seçiliyse sonuçlar anlık olarak buna göre listelenir.
@@ -460,18 +428,22 @@ export default function MarketPage() {
                   )}
                 </button>
 
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-700 dark:bg-slate-800">
-                  <SlidersHorizontal size={16} className="text-slate-400" />
+                <label className="relative inline-flex h-11 items-center gap-2 rounded-2xl border border-violet-100 bg-white px-3 pr-9 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-violet-200 dark:border-slate-600/70 dark:bg-slate-800/85 dark:text-slate-100 dark:hover:border-violet-400/45">
+                  <SlidersHorizontal size={16} className="text-violet-500 dark:text-violet-300" />
+                  <span className="hidden text-[11px] font-black uppercase tracking-[0.14em] text-slate-400 dark:text-slate-300 sm:inline">
+                    Sırala
+                  </span>
                   <select
                     value={sort}
                     onChange={(e) => setSort(e.target.value)}
-                    className="bg-transparent text-sm font-semibold text-slate-700 outline-none dark:text-slate-100"
+                    className="min-w-[132px] appearance-none bg-transparent text-sm font-black text-slate-800 outline-none dark:text-white"
                   >
                     {SORT_OPTIONS.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                   </select>
-                </div>
+                  <ChevronDown size={15} className="pointer-events-none absolute right-3 text-slate-400 dark:text-slate-300" />
+                </label>
 
               </div>
             </div>
