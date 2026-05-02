@@ -133,7 +133,7 @@ async function fetchSeoData() {
 
 function baseMeta() {
   return {
-    title: 'Oyuncu Kantinim - Oyun Dünyasının Yeni Kantini',
+    title: 'Oyuncu Kantinim - Yenilikçi Oyuncu Alışveriş Platformu',
     description: 'E-pin, oyun ürünleri, güvenilir oyuncu pazarı ve hızlı teslimat fırsatlarını Oyuncu Kantinim’de keşfet.',
     path: '/',
     image: DEFAULT_IMAGE,

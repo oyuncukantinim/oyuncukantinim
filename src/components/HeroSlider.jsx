@@ -47,7 +47,7 @@ const DEFAULT_SLIDES = [
   {
     id: 'fallback-1',
     eyebrow: 'Hoşgeldin Oyuncu',
-    title: 'Oyun Dünyasının Yeni Kantini',
+    title: 'Yenilikçi Oyuncu Alışveriş Platformu',
     subtitle:
       'Güvenilir oyuncu pazarı, onaylı satıcılar ve anında teslimat garantisiyle oyun deneyimini bir üst seviyeye taşı.',
     cta_label: 'Oyuncu Pazarı',
