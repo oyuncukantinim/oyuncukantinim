@@ -32,23 +32,23 @@ const STEPS = [
 
 function StepBar({ current }) {
   return (
-    <div className="flex items-center justify-between mb-8">
+    <div className="mb-8 grid w-full grid-cols-3 items-start">
       {STEPS.map((step, i) => {
         const done   = current > step.id;
         const active = current === step.id;
         return (
-          <div key={step.id} className="flex-1 flex items-center">
-            <div className="flex flex-col items-center gap-1">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${done ? 'bg-emerald-500 text-white' : active ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'bg-gray-100 text-gray-400'}`}>
+          <div key={step.id} className="relative flex min-w-0 flex-col items-center">
+            {i < STEPS.length - 1 && (
+              <div className={`absolute left-[calc(50%+22px)] right-[calc(-50%+22px)] top-[18px] h-0.5 rounded-full ${done ? 'bg-emerald-400' : 'bg-gray-200'}`} />
+            )}
+            <div className="relative z-10 flex flex-col items-center gap-1 text-center">
+              <div className={`flex h-9 w-9 items-center justify-center rounded-xl transition-all ${done ? 'bg-emerald-500 text-white' : active ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/30' : 'bg-gray-100 text-gray-400'}`}>
                 {done ? <Check size={16} /> : <step.icon size={16} />}
               </div>
-              <span className={`text-xs font-bold hidden sm:block ${active ? 'text-violet-600' : done ? 'text-emerald-600' : 'text-gray-400'}`}>
+              <span className={`hidden max-w-[120px] text-xs font-bold leading-tight sm:block ${active ? 'text-violet-600' : done ? 'text-emerald-600' : 'text-gray-400'}`}>
                 {step.label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-2 mb-5 rounded-full ${done ? 'bg-emerald-400' : 'bg-gray-200'}`} />
-            )}
           </div>
         );
       })}
@@ -283,7 +283,7 @@ export default function CreatePage() {
         if (current > idx) return current - 1;
         return Math.min(current, images.length - 2);
       });
-      if (imageUrl) showToast('Görsel sunucudan silindi.');
+      if (imageUrl) showToast('Görsel Silindi');
     } catch (err) {
       showToast(err.message || 'Görsel silinemedi.');
     } finally {

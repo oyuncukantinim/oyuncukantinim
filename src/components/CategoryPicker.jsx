@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Check, ChevronRight, Search, X } from 'lucide-react';
 
 function CategoryCard({ category, selected, subtitle, onClick }) {
@@ -62,6 +62,20 @@ export default function CategoryPicker({ categories = [], value, onChange }) {
   };
 
   const visibleChildrenOf = (parentId) => childrenOf(parentId).filter((category) => allowsListing(category));
+
+  useEffect(() => {
+    if (!value || categories.length === 0) return;
+
+    const parentPath = [];
+    let current = categories.find((category) => category.id === value);
+
+    while (current?.parent_id) {
+      parentPath.unshift(current.parent_id);
+      current = categories.find((category) => category.id === current.parent_id);
+    }
+
+    setPath(parentPath);
+  }, [categories, value]);
 
   const normalizedSearch = search.trim().toLowerCase();
   const searchResults = !normalizedSearch
