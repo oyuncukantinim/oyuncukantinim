@@ -353,8 +353,7 @@ export default function Home() {
       )}
 
       {/* ============  VİTRİN İLANLAR (Premium)  ============ */}
-      {(vitrineListings.length > 0 || !listingsLoaded) && (
-        <section className="relative mt-10 sm:mt-12">
+      <section className="relative mt-10 sm:mt-12">
           {/* Premium spotlight bg */}
           <div className="pointer-events-none absolute -inset-x-4 -inset-y-6 -z-10 overflow-hidden rounded-[32px]">
             <div className="absolute inset-0 bg-gradient-to-br from-amber-50/60 via-orange-50/40 to-rose-50/60" />
@@ -390,7 +389,7 @@ export default function Home() {
           />
 
           <div className="min-h-[260px]">
-            {vitrineListings.length > 0 ? (
+            {listingsLoaded ? (
               <div className={LISTING_GRID_CLASS}>
                 {vitrinePreviewListings.slice(0, vitrineAdPosition).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
@@ -402,14 +401,13 @@ export default function Home() {
               </div>
             ) : (
               <div className={LISTING_GRID_CLASS}>
-                {Array.from({ length: 7 }).map((_, index) => (
+                {Array.from({ length: 6 }).map((_, index) => (
                   <HomeCardSkeleton key={`vitrine-skeleton-${index}`} className="h-[260px]" />
                 ))}
               </div>
             )}
           </div>
         </section>
-      )}
 
       {/* ============  SON İLANLAR (Fresh)  ============ */}
       {(recentListings.length > 0 || !listingsLoaded) && (
