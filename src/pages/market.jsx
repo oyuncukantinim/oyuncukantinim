@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronDown, Clock, Filter, Folder, KeyRound, Plus, RotateCcw,
@@ -268,6 +268,8 @@ export default function MarketPage() {
   const [draftFilters, setDraftFilters] = useState(EMPTY_FILTERS);
   const [categorySearch, setCategorySearch] = useState('');
   const [sort, setSort] = useState('newest');
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortMenuRef = useRef(null);
 
   const [listings, setListings] = useState([]);
   const [total, setTotal] = useState(0);
@@ -319,7 +321,19 @@ export default function MarketPage() {
 
   useEffect(() => { setPage(0); }, [filters, sort]);
 
+  useEffect(() => {
+    const closeSortMenu = (event) => {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(event.target)) {
+        setSortOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeSortMenu);
+    return () => document.removeEventListener('mousedown', closeSortMenu);
+  }, []);
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
+  const selectedSortLabel = SORT_OPTIONS.find((option) => option.value === sort)?.label || SORT_OPTIONS[0]?.label;
 
   const applyFilters = () => {
     setFilters({ ...draftFilters });
@@ -428,22 +442,54 @@ export default function MarketPage() {
                   )}
                 </button>
 
-                <label className="relative inline-flex h-11 items-center gap-2 rounded-2xl border border-violet-100 bg-white px-3 pr-9 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-violet-200 dark:border-slate-600/70 dark:bg-slate-800/85 dark:text-slate-100 dark:hover:border-violet-400/45">
-                  <SlidersHorizontal size={16} className="text-violet-500 dark:text-violet-300" />
-                  <span className="hidden text-[11px] font-black uppercase tracking-[0.14em] text-slate-400 dark:text-slate-300 sm:inline">
-                    Sırala
-                  </span>
-                  <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
-                    className="min-w-[132px] appearance-none bg-transparent text-sm font-black text-slate-800 outline-none dark:text-white"
+                <div ref={sortMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setSortOpen((open) => !open)}
+                    className="inline-flex h-11 min-w-[205px] items-center gap-2 rounded-2xl border border-violet-100 bg-white px-3 text-sm font-black text-slate-700 shadow-sm transition-colors hover:border-violet-200 dark:border-slate-600/70 dark:bg-slate-800/85 dark:text-slate-100 dark:hover:border-violet-400/45"
+                    aria-haspopup="listbox"
+                    aria-expanded={sortOpen}
                   >
-                    {SORT_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>{o.label}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={15} className="pointer-events-none absolute right-3 text-slate-400 dark:text-slate-300" />
-                </label>
+                    <SlidersHorizontal size={16} className="text-violet-500 dark:text-violet-300" />
+                    <span className="hidden text-[11px] font-black uppercase tracking-[0.14em] text-slate-400 dark:text-slate-300 sm:inline">
+                      Sırala
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-left text-slate-800 dark:text-white">
+                      {selectedSortLabel}
+                    </span>
+                    <ChevronDown size={15} className={`shrink-0 text-slate-400 transition-transform dark:text-slate-300 ${sortOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {sortOpen && (
+                    <div className="absolute right-0 z-30 mt-2 w-full min-w-[205px] overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl shadow-slate-900/10 dark:border-slate-600/70 dark:bg-slate-800 dark:shadow-black/30">
+                      <div className="max-h-64 overflow-y-auto" role="listbox" aria-label="Sıralama">
+                        {SORT_OPTIONS.map((option) => {
+                          const selected = option.value === sort;
+                          return (
+                            <button
+                              key={option.value}
+                              type="button"
+                              role="option"
+                              aria-selected={selected}
+                              onClick={() => {
+                                setSort(option.value);
+                                setSortOpen(false);
+                              }}
+                              className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-black transition-colors ${
+                                selected
+                                  ? 'bg-violet-50 text-violet-700 dark:bg-violet-500/20 dark:text-violet-100'
+                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-200 dark:hover:bg-slate-700/70 dark:hover:text-white'
+                              }`}
+                            >
+                              {option.label}
+                              {selected && <span className="h-2 w-2 rounded-full bg-violet-500 dark:bg-violet-300" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
 
               </div>
             </div>
