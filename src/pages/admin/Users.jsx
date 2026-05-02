@@ -969,7 +969,6 @@ export default function AdminUsers() {
                   </div>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-500">
                     <span>{detailUser.email}</span>
-                    <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} />
                   </div>
                   <div className="mt-1 text-xs text-slate-400">
                     #{detailUser.id} · Seviye {detailUser.level} · {fmtDateTime(detailUser.created_at)}
@@ -1191,13 +1190,8 @@ export default function AdminUsers() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   <InfoRow
                     icon={Mail}
-                    label="Mevcut E-posta"
-                    value={
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span>{detailUser.email}</span>
-                        <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} />
-                      </div>
-                    }
+                    label={<span className="inline-flex items-center gap-1.5">E-POSTA <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} /></span>}
+                    value={detailUser.email}
                   />
                   <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
                   <InfoRow icon={Monitor} label="Kayıt IP" value={detailUser.registration_ip || '—'} />
@@ -1562,7 +1556,7 @@ export default function AdminUsers() {
 
                 <div className="grid gap-3 sm:grid-cols-3">
                   <InfoRow icon={FileText} label="Ad Soyad" value={detailUser.full_name} />
-                  <InfoRow icon={Key} label="Kimlik No" value={detailUser.identity_number || '—'} />
+                  <InfoRow icon={Key} label="Kimlik No" value={detailUser.identity_summary?.identity_number || '—'} />
                   <InfoRow icon={Clock} label="Doğum Tarihi" value={detailUser.birth_date || '—'} />
                 </div>
 

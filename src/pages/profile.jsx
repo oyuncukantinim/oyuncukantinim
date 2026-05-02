@@ -724,6 +724,7 @@ export default function ProfilePage() {
   const identityApproved = identityOverview?.status === 'approved';
   const identityPending = identityOverview?.status === 'pending';
   const identityBaseline = identityOverview?.form_values || {};
+  const lockedIdentityInputClass = 'input-field disabled:cursor-not-allowed disabled:border-violet-100 disabled:bg-violet-50/80 disabled:text-slate-700 disabled:shadow-inner dark:disabled:border-violet-900/40 dark:disabled:bg-slate-900/80 dark:disabled:text-slate-200';
   const baselineFullName = identityBaseline.full_name ?? (user?.full_name || '');
   const baselineIdentityNumber = identityBaseline.identity_number ?? '';
   const baselineBirthDate = identityBaseline.birth_date ?? '';
@@ -1640,7 +1641,7 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                <VerifiedAchievementCard isVerified={Boolean(storeOverview?.identity_verified_at || storeOverview?.identity_status === 'approved')} />
+                <VerifiedAchievementCard isVerified={Boolean(storeOverview?.is_verified_store)} />
                 {(storeOverview?.badges || []).map((badge) => (
                   <AchievementCard key={badge.id} badge={badge} />
                 ))}
@@ -1973,7 +1974,7 @@ export default function ProfilePage() {
                       disabled={identityLockedFields.has('full_name')}
                       onChange={e => setPersonalInfo(f => ({...f, full_name: e.target.value}))}
                       placeholder="Adınız Soyadınız"
-                      className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                      className={lockedIdentityInputClass}
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -1986,17 +1987,17 @@ export default function ProfilePage() {
                         disabled={identityLockedFields.has('identity_number')}
                         onChange={e => setPersonalInfo(f => ({...f, identity_number: e.target.value.replace(/\D/g, '').slice(0, 20)}))}
                         placeholder="Kimlik numaran"
-                        className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className={lockedIdentityInputClass}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-bold text-gray-600 mb-1.5">Doğum Tarihi</label>
                       <input
-                        type="date"
+                        type={identityLockedFields.has('birth_date') ? 'text' : 'date'}
                         value={personalInfo.birth_date}
                         disabled={identityLockedFields.has('birth_date')}
                         onChange={e => setPersonalInfo(f => ({...f, birth_date: e.target.value}))}
-                        className="input-field disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className={lockedIdentityInputClass}
                       />
                     </div>
                   </div>

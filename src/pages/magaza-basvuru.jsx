@@ -119,7 +119,7 @@ export default function StoreApplicationPage() {
   const application = overview?.application;
   const appMeta = application ? statusMeta[application.status] : null;
   const AppIcon = appMeta?.icon || Clock;
-  const isVerified = Boolean(overview?.identity_verified_at || overview?.identity_status === 'approved');
+  const isVerified = Boolean(overview?.is_verified_store);
   const identityStatus = overview?.identity_status || 'none';
   const identityApproved = identityStatus === 'approved';
   const isPending = application?.status === 'pending';
