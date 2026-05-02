@@ -713,8 +713,7 @@ export default function ProfilePage() {
   const savedBannerImage = (user?.banner_image || '').trim();
   const profileHeaderBanner = savedBannerImage || defaultProfileBanner || '';
   const profileEditorBanner = normalizedBannerImage || defaultProfileBanner || '';
-  const userIdentityApproved = Boolean(user?.identity_verified_at || user?.identity_status === 'approved');
-  const canUploadProfileAvatar = userIdentityApproved;
+  const canUploadProfileAvatar = Number(user?.is_verified_store) === 1;
   const emailChanged = normalizedEmail !== (user?.email || '');
   const emailVerified = Boolean(user?.email_verified_at) && !emailChanged;
   const emailVerificationPending = pendingEmailVerification !== '' && pendingEmailVerification === normalizedEmail;
@@ -786,7 +785,7 @@ export default function ProfilePage() {
   const handleProfileAvatarUpload = async (file) => {
     if (!file) return;
     if (!canUploadProfileAvatar) {
-      showToast('Dosya profil resmi sadece kimliği onaylı satıcılar tarafından kullanılabilir.');
+      showToast('Dosya profil resmi sadece onaylı mağazalar tarafından kullanılabilir.');
       return;
     }
     setProfileAvatarUploading(true);
@@ -1803,12 +1802,12 @@ export default function ProfilePage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <label className="block text-sm font-bold text-gray-600">Avatar Seçimi</label>
-                        <p className="mt-1 text-xs text-gray-400">Kimlik onayın yoksa avatar listesinden seçim yapabilirsin.</p>
+                        <p className="mt-1 text-xs text-gray-400">Onaylı mağaza değilsen avatar listesinden seçim yapabilirsin.</p>
                       </div>
                       {canUploadProfileAvatar ? (
                         <span className="rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[11px] font-black text-emerald-700">Dosya hakkı açık</span>
                       ) : (
-                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-black text-slate-400">Kimlik onayı gerekli</span>
+                        <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-black text-slate-400">Onaylı mağaza gerekli</span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1932,7 +1931,7 @@ export default function ProfilePage() {
 
                   <div className="mt-5 space-y-3 text-sm text-gray-500">
                     <div className="bg-white/80 rounded-xl border border-white p-3">
-                      Profil resmi dosyası sadece kimliği onaylı satıcılara açıktır.
+                      Profil resmi dosyası sadece onaylı mağaza üyelerine açıktır.
                     </div>
                     <div className="bg-white/80 rounded-xl border border-white p-3">
                       Kullanıcı adı kayıt sonrası değiştirilemez.
