@@ -7,6 +7,7 @@ import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import { Table, TableRow, TableHeader, TableCell } from '@tiptap/extension-table';
 import TextAlign from '@tiptap/extension-text-align';
+import { TextStyle, FontSize } from '@tiptap/extension-text-style';
 import {
   AlignCenter,
   AlignLeft,
@@ -61,8 +62,11 @@ function ToolbarButton({ active = false, disabled = false, title, onClick, child
   );
 }
 
+const FONT_SIZE_OPTIONS = ['12', '14', '16', '18', '22'];
+
 export default function RichPageEditor({ value, onChange, onUploadImage, onDeleteManagedImage, pageId = 0 }) {
   const [uploading, setUploading] = useState(false);
+  const [activeFontSize, setActiveFontSize] = useState('16');
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [imageMode, setImageMode] = useState('upload');
   const [imageUrl, setImageUrl] = useState('');
@@ -77,6 +81,8 @@ export default function RichPageEditor({ value, onChange, onUploadImage, onDelet
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3, 4] } }),
+      TextStyle,
+      FontSize,
       Underline,
       Link.configure({
         openOnClick: false,
@@ -106,11 +112,15 @@ export default function RichPageEditor({ value, onChange, onUploadImage, onDelet
     onUpdate: ({ editor: currentEditor }) => {
       const html = currentEditor.getHTML();
       onChange(html);
+      setActiveFontSize(String(currentEditor.getAttributes('textStyle').fontSize || '').replace('px', '') || '16');
       const previous = managedImagesRef.current;
       const next = extractManagedImages(html);
       const removed = previous.filter((url) => !next.includes(url));
       managedImagesRef.current = next;
       removed.forEach((url) => onDeleteManagedImage?.(url, pageId));
+    },
+    onSelectionUpdate: ({ editor: currentEditor }) => {
+      setActiveFontSize(String(currentEditor.getAttributes('textStyle').fontSize || '').replace('px', '') || '16');
     },
   });
 
@@ -133,6 +143,12 @@ export default function RichPageEditor({ value, onChange, onUploadImage, onDelet
       return;
     }
     editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim(), target: '_blank' }).run();
+  };
+
+  const applyFontSize = (size) => {
+    const nextSize = FONT_SIZE_OPTIONS.includes(size) ? size : '16';
+    editor.chain().focus().setFontSize(`${nextSize}px`).run();
+    setActiveFontSize(nextSize);
   };
 
   const resetImageForm = () => {
@@ -205,8 +221,16 @@ export default function RichPageEditor({ value, onChange, onUploadImage, onDelet
         <ToolbarButton title="İleri al" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo2 size={16} /></ToolbarButton>
         <span className="mx-1 h-8 w-px bg-slate-200 dark:bg-slate-700" />
         <ToolbarButton title="Paragraf" active={editor.isActive('paragraph')} onClick={() => editor.chain().focus().setParagraph().run()}><Pilcrow size={16} /></ToolbarButton>
-        <ToolbarButton title="Başlık H2" active={editor.isActive('heading', { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>H2</ToolbarButton>
-        <ToolbarButton title="Başlık H3" active={editor.isActive('heading', { level: 3 })} onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>H3</ToolbarButton>
+        <select
+          value={activeFontSize}
+          onChange={(event) => applyFontSize(event.target.value)}
+          title="Metin boyutu"
+          className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-sm font-black text-slate-700 outline-none transition hover:border-violet-200 focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+        >
+          {FONT_SIZE_OPTIONS.map((size) => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
         <span className="mx-1 h-8 w-px bg-slate-200 dark:bg-slate-700" />
         <ToolbarButton title="Kalın" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}><Bold size={16} /></ToolbarButton>
         <ToolbarButton title="İtalik" active={editor.isActive('italic')} onClick={() => editor.chain().focus().toggleItalic().run()}><Italic size={16} /></ToolbarButton>
