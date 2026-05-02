@@ -448,9 +448,13 @@ export default function StoreApplicationPage() {
         </div>
         <div className="mb-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
           <VerifiedAchievementCard isVerified={identityApproved} forceUnlocked={identityApproved} />
-          {isVerified ? (overview.badges || []).map((badge) => (
-            <AchievementCard key={badge.id} badge={badge} forceUnlocked />
-          )) : null}
+          {(overview.badges || []).map((badge) => (
+            <AchievementCard
+              key={badge.id}
+              badge={{ ...badge, is_unlocked: isVerified ? badge.is_unlocked : false }}
+              forceUnlocked={isVerified}
+            />
+          ))}
           {(!overview.badges || overview.badges.length === 0) ? (
             <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-400">
               Henüz admin tarafından rozet oluşturulmamış.
