@@ -92,13 +92,26 @@ function FilterToggle({ checked, onChange, icon: Icon, label, accent = 'violet' 
 }
 
 function CategoryMark({ cat }) {
+  const normalizeImage = (value) => {
+    const path = String(value || '').trim();
+    if (!path) return '';
+    if (/^https?:\/\//i.test(path)) return path;
+    return `https://api.oyuncukantinim.com.tr/${path.replace(/^\/+/, '')}`;
+  };
   const icon = String(cat.icon || '').trim();
-  if (icon && /^https?:\/\//i.test(icon)) {
-    return <img src={icon} alt="" className="h-8 w-8 rounded-full object-cover" />;
+  const image = normalizeImage(cat.image || cat.image_url || cat.icon_url || (/^https?:\/\//i.test(icon) ? icon : ''));
+
+  if (image) {
+    return (
+      <span className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+        <img src={image} alt="" className="h-full w-full object-cover" loading="lazy" />
+      </span>
+    );
   }
+
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-base dark:bg-slate-800">
-      {icon || <Folder size={15} />}
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+      <Folder size={15} />
     </span>
   );
 }
@@ -134,7 +147,7 @@ function MarketFilterPanel({
             onChange={(e) => setCategorySearch(e.target.value)}
             placeholder="Kategori ara..."
           />
-          <div className="max-h-64 space-y-1 overflow-y-auto pr-1">
+          <div className="max-h-[18.5rem] space-y-1 overflow-y-scroll overscroll-contain pr-2" style={{ scrollbarGutter: 'stable' }}>
             <button
               type="button"
               onClick={() => setField('selectedCategoryId', '')}
