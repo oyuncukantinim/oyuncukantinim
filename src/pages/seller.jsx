@@ -321,14 +321,14 @@ export default function SellerPage() {
               ))}
             </div>
           ) : (
-            <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-50 p-8 text-center shadow-sm">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-200/30 blur-2xl" />
-              <div className="pointer-events-none absolute -bottom-12 left-10 h-28 w-28 rounded-full bg-violet-200/30 blur-2xl" />
-              <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-100 bg-white text-violet-600 shadow-sm">
+            <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-50 p-8 text-center shadow-sm dark:border-violet-500/20 dark:from-slate-950 dark:via-violet-950/55 dark:to-cyan-950/40 dark:shadow-black/25">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-200/30 blur-2xl dark:bg-cyan-400/15" />
+              <div className="pointer-events-none absolute -bottom-12 left-10 h-28 w-28 rounded-full bg-violet-200/30 blur-2xl dark:bg-violet-500/20" />
+              <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-100 bg-white text-violet-600 shadow-sm dark:border-white/10 dark:bg-white/10 dark:text-cyan-200">
                 <Trophy size={26} />
               </div>
-              <h3 className="relative mt-4 text-lg font-black text-slate-900">Rozet vitrini Onaylı Satıcılar için açılır</h3>
-              <p className="relative mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-500">
+              <h3 className="relative mt-4 text-lg font-black text-slate-900 dark:text-white">Rozet vitrini Onaylı Satıcılar için açılır</h3>
+              <p className="relative mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-500 dark:text-slate-300">
                 Satıcı kimliği ve mağaza onayı tamamlandığında başarımlar herkese açık şekilde burada sergilenir. Güven rozeti, satış rütbeleri ve özel başarımlar profili daha profesyonel gösterir.
               </p>
               {isOwnProfile ? (
