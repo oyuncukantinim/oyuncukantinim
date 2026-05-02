@@ -175,7 +175,7 @@ export default function AdminPages() {
             </div>
             <div>
               <h1 className="text-2xl font-black tracking-tight text-slate-950 dark:text-white">Sayfalar</h1>
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Kurumsal metinler, sözleşmeler ve özel içerik sayfaları.</p>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Sözleşme metinleri ve özel içerik sayfaları.</p>
             </div>
           </div>
           <button
@@ -331,7 +331,7 @@ export default function AdminPages() {
                 <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
                   <span>
                     <span className="block text-sm font-black text-emerald-800 dark:text-emerald-200">Sözleşme</span>
-                    <span className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-300/80">Footer Kurumsal sütununda gösterilir.</span>
+                    <span className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-300/80">Footer Sözleşme sütununda gösterilir.</span>
                   </span>
                   <input type="checkbox" checked={Boolean(form.is_contract)} onChange={(event) => updateField('is_contract', event.target.checked ? 1 : 0)} className="h-5 w-5 accent-emerald-600" />
                 </label>

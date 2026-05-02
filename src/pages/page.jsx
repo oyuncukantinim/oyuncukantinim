@@ -43,7 +43,7 @@ export default function Page() {
 
   useSeo({
     title: page?.seo_title || (page?.title ? `${page.title} - Oyuncu Kantinim` : 'Oyuncu Kantinim'),
-    description: page?.seo_description || page?.excerpt || 'Oyuncu Kantinim kurumsal sayfası.',
+    description: page?.seo_description || page?.excerpt || 'Oyuncu Kantinim sayfası.',
     canonical: page?.slug ? `/${page.slug}` : undefined,
   });
 
@@ -86,10 +86,10 @@ export default function Page() {
           {Number(page.is_contract) === 1 ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
               <ShieldCheck size={13} />
-              Kurumsal
+              Sözleşme
             </span>
           ) : null}
-          {page.updated_at ? (
+          {Number(page.is_contract) !== 1 && page.updated_at ? (
             <span className="inline-flex items-center gap-1.5">
               <CalendarDays size={13} />
               Son güncelleme: {formatDate(page.updated_at)}

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Building2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import SiteBrand from './SiteBrand';
 import { getContractPages } from '../lib/api';
 
@@ -56,8 +56,8 @@ export default function Footer({
           {contractPages.length > 0 ? (
             <div>
               <div className="mb-3 inline-flex items-center gap-2 text-xs font-black uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500">
-                <Building2 size={14} />
-                Kurumsal
+                <FileText size={14} />
+                Sözleşme
               </div>
               <div className="space-y-2 text-sm font-semibold text-gray-500 dark:text-slate-400">
                 {contractPages.map((page) => (
