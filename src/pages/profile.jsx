@@ -3459,15 +3459,15 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   <p className="text-xs text-cyan-700 mt-0.5">Satılmış stoklar korunur, burada aktif stoklar düzenlenir.</p>
                 </div>
               </div>
-              <div className="max-h-80 overflow-y-auto rounded-xl border border-cyan-100 bg-white">
+              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
                 {stocks.map((stock, idx) => (
-                  <div key={idx} className="relative border-b border-cyan-50 last:border-b-0">
+                  <div key={idx} className="relative rounded-xl border border-cyan-100 bg-white shadow-sm transition-colors focus-within:border-cyan-300 focus-within:bg-cyan-50/40">
                     {stocks.length > 1 && (
                       <button onClick={() => removeStock(idx)} className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500">
                         <Trash2 size={13} />
                       </button>
                     )}
-                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-cyan-50/50" />
+                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400" />
                   </div>
                 ))}
               </div>
