@@ -4,6 +4,8 @@ import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
 import UserAvatar from './UserAvatar';
+import { isIdentityVerified } from '../lib/identityVerification';
+import { IdentityVerifiedIcon } from './StoreBadges';
 
 const DOPING_META = {
   vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'border-yellow-300/95 ring-amber-300/85 ring-offset-2 ring-offset-white shadow-[0_0_0_1px_rgba(251,191,36,0.95),0_0_20px_-4px_rgba(245,158,11,0.95),0_18px_46px_-22px_rgba(180,83,9,0.95)] dark:border-yellow-300/95 dark:ring-yellow-300/90 dark:ring-offset-slate-950 dark:shadow-[0_0_0_1px_rgba(250,204,21,0.9),0_0_24px_-3px_rgba(250,204,21,0.95),0_20px_50px_-24px_rgba(250,204,21,0.85)]' },
@@ -28,6 +30,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const hasDoping = activeTypes.length > 0;
   const listingUrl = listingSlug(listing.title, listing.id);
   const sellerVerified = Number(listing.seller_is_verified_store) === 1;
+  const sellerIdentityVerified = isIdentityVerified(listing);
   const isVitrine = activeTypes.includes('vitrine');
   const categoryLabel = listing.category_name || formatCategoryLabel(listing.category || listing.category_slug || listing.type);
 
@@ -96,6 +99,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
                 className="inline-flex min-w-0 items-center gap-1 truncate text-xs font-bold text-gray-600 transition-colors hover:text-neon-purple"
               >
                 <span className="truncate">{listing.seller || 'Satıcı'}</span>
+                {sellerIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
                 {sellerVerified ? <BadgeCheck size={12} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
               </Link>
             </div>
@@ -191,6 +195,7 @@ export default function ListingCard({ listing, compact = false, dense = false, f
           className={`${sellerNameCls} inline-flex min-w-0 items-center gap-1 truncate font-bold text-gray-700 transition-colors hover:text-neon-purple`}
         >
           <span className="truncate">{listing.seller || 'Satıcı'}</span>
+          {sellerIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
           {sellerVerified ? <BadgeCheck size={dense ? 11 : 14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
         </Link>
       </div>

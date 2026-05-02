@@ -4,6 +4,8 @@ import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, Shop
 import { useAuth } from '../context/useAuth';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
 import UserAvatar from '../components/UserAvatar';
+import { IdentityVerifiedIcon } from '../components/StoreBadges';
+import { isIdentityVerified } from '../lib/identityVerification';
 
 const AVATAR_COLORS = [
   'from-violet-400 to-purple-500',
@@ -202,6 +204,7 @@ export default function MessagesPage() {
                     <div className="flex items-center justify-between mb-0.5">
                       <span className={`font-bold text-sm inline-flex items-center gap-1 ${isActive ? 'text-violet-700' : 'text-gray-800'}`}>
                         {conv.username}
+                        {isIdentityVerified(conv) ? <IdentityVerifiedIcon compact /> : null}
                         {Number(conv.is_verified_store) === 1 ? <BadgeCheck size={13} className="fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
                       </span>
                       <span className="text-[11px] text-gray-400 flex-shrink-0 ml-1">{formatTime(conv.last_message_time)}</span>
@@ -314,6 +317,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
   const [sendError, setSendError] = useState('');
   const [otherName, setOtherName] = useState(activeConversation?.username || fallbackUsername(userId));
   const [otherLastSeen, setOtherLastSeen] = useState(activeConversation?.last_seen || null);
+  const [otherIdentityVerified, setOtherIdentityVerified] = useState(isIdentityVerified(activeConversation));
   const [initialized, setInitialized] = useState(false);
   const inputRef = useRef(null);
   const messageListRef = useRef(null);
@@ -333,6 +337,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
       const other = msgs.find(m => String(m.sender_id) !== String(currentUser.id));
       setOtherName(otherUser?.username || other?.sender_name || activeConversation?.username || fallbackUsername(userId));
       setOtherLastSeen(otherUser?.last_seen || activeConversation?.last_seen || null);
+      setOtherIdentityVerified(isIdentityVerified(otherUser) || isIdentityVerified(activeConversation));
       if (isInitial) {
         setTimeout(() => {
           scrollMessagesToBottom('auto');
@@ -340,12 +345,13 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
         }, 50);
       }
     }).catch(() => {});
-  }, [userId, currentUser.id, activeConversation?.username, activeConversation?.last_seen]);
+  }, [userId, currentUser.id, activeConversation]);
 
   useEffect(() => {
     setOtherName(activeConversation?.username || fallbackUsername(userId));
     setOtherLastSeen(activeConversation?.last_seen || null);
-  }, [activeConversation?.username, activeConversation?.last_seen, userId]);
+    setOtherIdentityVerified(isIdentityVerified(activeConversation));
+  }, [activeConversation, userId]);
 
   useEffect(() => {
     setInitialized(false);
@@ -419,6 +425,7 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
               title={`${displayName} profiline git`}
             >
               <span className="truncate">{displayName}</span>
+              {otherIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
               {Number(activeConversation?.is_verified_store) === 1 ? <BadgeCheck size={14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
             </Link>
           ) : (

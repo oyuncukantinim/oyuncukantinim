@@ -37,6 +37,21 @@ export function VerifiedStoreIcon({ compact = false }) {
   );
 }
 
+export function IdentityVerifiedIcon({ compact = false }) {
+  const sizeClass = compact ? 'h-5 w-5' : 'h-6 w-6';
+  const iconSize = compact ? 13 : 15;
+
+  return (
+    <span
+      className={`inline-flex ${sizeClass} shrink-0 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 shadow-sm shadow-sky-100 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:shadow-sky-950/40`}
+      title="Kimlik Bilgileri Doğrulandı"
+      aria-label="Kimlik Bilgileri Doğrulandı"
+    >
+      <CheckCircle2 size={iconSize} className="fill-sky-500 text-white" />
+    </span>
+  );
+}
+
 export function StoreBadgeIcon({ badge, size = 'md' }) {
   if (!badge?.image_url) return null;
   const sizeClass = size === 'lg' ? 'h-10 w-10' : size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';

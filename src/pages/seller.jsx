@@ -25,7 +25,8 @@ import {
 } from '../lib/api';
 import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
-import { AchievementCard, VerifiedAchievementCard } from '../components/StoreBadges';
+import { AchievementCard, IdentityVerifiedIcon, VerifiedAchievementCard } from '../components/StoreBadges';
+import { isIdentityVerified } from '../lib/identityVerification';
 import UserAvatar from '../components/UserAvatar';
 
 function StarRating({ value, onChange, readonly = false }) {
@@ -184,6 +185,7 @@ export default function SellerPage() {
   ];
   const visibleAchievements = (seller.store_badges || []).filter((badge) => Boolean(badge?.is_unlocked));
   const canShowPublicAchievements = Boolean(seller.is_verified_store);
+  const sellerIdentityVerified = isIdentityVerified(seller);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -237,6 +239,7 @@ export default function SellerPage() {
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-1.5">
                 {seller.username}
+                {sellerIdentityVerified ? <IdentityVerifiedIcon compact={false} /> : null}
                 {Number(seller.is_verified_store) === 1 ? (
                   <BadgeCheck size={20} className="fill-emerald-500 text-white" aria-label="Onaylı Satıcı" />
                 ) : null}
@@ -399,8 +402,9 @@ export default function SellerPage() {
                 <div key={review.id} className="card p-5 flex gap-4">
                   <div className="flex flex-col items-center gap-1 flex-shrink-0 w-16 text-center">
                     <UserAvatar value={review.reviewer_avatar} fallback={defaultAvatar} className="w-10 h-10 bg-surface-100 rounded-xl flex items-center justify-center text-xl" iconSize={18} />
-                    <Link to={`/p/${review.reviewer_username}`} className="font-bold text-gray-700 hover:text-neon-purple text-[11px] leading-tight transition-colors line-clamp-2">
-                      {review.reviewer_username}
+                    <Link to={`/p/${review.reviewer_username}`} className="inline-flex max-w-full items-center justify-center gap-1 font-bold text-gray-700 hover:text-neon-purple text-[11px] leading-tight transition-colors">
+                      <span className="line-clamp-2 min-w-0">{review.reviewer_username}</span>
+                      {isIdentityVerified(review) ? <IdentityVerifiedIcon compact /> : null}
                     </Link>
                     <span className="text-[10px] text-gray-400">{formatDate(review.created_at)}</span>
                   </div>
@@ -450,7 +454,10 @@ export default function SellerPage() {
                 >
                   <UserAvatar value={follower.avatar} fallback={defaultAvatar} className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-2xl flex-shrink-0" iconSize={22} />
                   <div className="min-w-0">
-                    <div className="text-sm font-extrabold text-gray-800 truncate">{follower.username}</div>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <span className="truncate text-sm font-extrabold text-gray-800">{follower.username}</span>
+                      {isIdentityVerified(follower) ? <IdentityVerifiedIcon compact /> : null}
+                    </div>
                     <div className="text-xs text-gray-400 mt-1">Seviye {follower.level || 1}</div>
                   </div>
                 </Link>
@@ -477,7 +484,10 @@ export default function SellerPage() {
                 >
                   <UserAvatar value={followed.avatar} fallback={defaultAvatar} className="w-12 h-12 rounded-xl bg-surface-100 flex items-center justify-center text-2xl flex-shrink-0" iconSize={22} />
                   <div className="min-w-0">
-                    <div className="text-sm font-extrabold text-gray-800 truncate">{followed.username}</div>
+                    <div className="flex min-w-0 items-center gap-1">
+                      <span className="truncate text-sm font-extrabold text-gray-800">{followed.username}</span>
+                      {isIdentityVerified(followed) ? <IdentityVerifiedIcon compact /> : null}
+                    </div>
                     <div className="text-xs text-gray-400 mt-1">Seviye {followed.level || 1}</div>
                   </div>
                 </Link>

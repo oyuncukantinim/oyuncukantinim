@@ -10,7 +10,8 @@ import { useCart } from '../context/useCart';
 import { useAuth } from '../context/useAuth';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
-import { StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
+import { IdentityVerifiedIcon, StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
+import { isIdentityVerified } from '../lib/identityVerification';
 import UserAvatar from '../components/UserAvatar';
 import Breadcrumb from '../components/Breadcrumb';
 
@@ -475,6 +476,7 @@ export default function ListingDetailPage() {
                       >
                         {listing.seller}
                       </Link>
+                      {isIdentityVerified(listing) ? <IdentityVerifiedIcon compact /> : null}
                       {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
                       {sellerBadges.map((badge) => (
                         <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
@@ -749,9 +751,10 @@ function ListingReviewCard({ review }) {
             <div>
               <Link
                 to={`/p/${review.reviewer_username}`}
-                className="text-sm font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300"
+                className="inline-flex items-center gap-1 text-sm font-black text-slate-900 transition-colors hover:text-violet-600 dark:text-white dark:hover:text-violet-300"
               >
-                {review.reviewer_username || 'Kullanıcı'}
+                <span>{review.reviewer_username || 'Kullanıcı'}</span>
+                {isIdentityVerified(review) ? <IdentityVerifiedIcon compact /> : null}
               </Link>
               <div className="mt-0.5 text-[11px] font-semibold text-slate-400">{formatReviewDate(review.created_at)}</div>
             </div>

@@ -18,7 +18,8 @@ import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBal
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
-import { AchievementCard, VerifiedAchievementCard } from '../components/StoreBadges';
+import { AchievementCard, IdentityVerifiedIcon, VerifiedAchievementCard } from '../components/StoreBadges';
+import { isIdentityVerified } from '../lib/identityVerification';
 import UserAvatar from '../components/UserAvatar';
 import { isImageAvatar } from '../lib/avatar';
 
@@ -1207,7 +1208,10 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-extrabold text-gray-800">{user.username}</h1>
+              <h1 className="inline-flex items-center justify-center gap-1.5 text-2xl font-extrabold text-gray-800 sm:justify-start">
+                <span>{user.username}</span>
+                {isIdentityVerified(user) ? <IdentityVerifiedIcon compact={false} /> : null}
+              </h1>
               <p className="text-gray-400 text-xs flex items-center justify-center sm:justify-start gap-1 mt-1">
                 <Clock size={11} />
                 {user.created_at ? new Date(user.created_at).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) + ' tarihinden beri üye' : 'Üye'}
@@ -1685,7 +1689,14 @@ export default function ProfilePage() {
                               {[1,2,3,4,5].map(n => <Star key={n} size={13} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
                             </div>
                           </div>
-                          <div className="text-xs text-gray-400 mb-1.5">Satıcı: <span className="font-semibold text-gray-600">{r.seller_username}</span> · {fmtDate(r.created_at)}</div>
+                          <div className="mb-1.5 flex flex-wrap items-center gap-1 text-xs text-gray-400">
+                            <span>Satıcı:</span>
+                            <span className="inline-flex min-w-0 items-center gap-1 font-semibold text-gray-600">
+                              <span className="truncate">{r.seller_username}</span>
+                              {isIdentityVerified(r) ? <IdentityVerifiedIcon compact /> : null}
+                            </span>
+                            <span>· {fmtDate(r.created_at)}</span>
+                          </div>
                           {r.comment && <p className="text-xs text-gray-500 italic line-clamp-2">"{r.comment}"</p>}
                           <div className="flex gap-2 mt-2 flex-wrap">
                             {[{l:'Güvenilirlik',v:r.reliability},{l:'Memnuniyet',v:r.satisfaction},{l:'Hız',v:r.speed},{l:'Hizmet',v:r.service_quality}].map(c => (
