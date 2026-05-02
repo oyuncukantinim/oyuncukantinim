@@ -13,7 +13,6 @@ import {
   TrendingUp,
   TrendingDown,
   Clock,
-  Mail,
   FileText,
   CheckCircle2,
   Globe,
@@ -1020,7 +1019,7 @@ export default function AdminUsers() {
                       className={inputClass}
                     />
                   </FormField>
-                  <FormField label="E-posta">
+                  <FormField label={<span className="inline-flex items-center gap-1.5">E-posta <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} /></span>}>
                     <input
                       type="email"
                       value={generalForm.email}
@@ -1188,11 +1187,6 @@ export default function AdminUsers() {
                 </div>
 
                 <div className="grid gap-3 sm:grid-cols-2">
-                  <InfoRow
-                    icon={Mail}
-                    label={<span className="inline-flex items-center gap-1.5">E-POSTA <EmailStatusBadge verified={Boolean(detailUser.email_verified_at)} /></span>}
-                    value={detailUser.email}
-                  />
                   <InfoRow icon={Clock} label="Kayıt Tarihi" value={fmtDateTime(detailUser.created_at)} />
                   <InfoRow icon={Monitor} label="Kayıt IP" value={detailUser.registration_ip || '—'} />
                   <InfoRow icon={Globe} label="Kayıt Ülke" value={detailUser.registration_country || '—'} />
