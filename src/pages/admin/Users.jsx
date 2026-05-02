@@ -828,6 +828,9 @@ export default function AdminUsers() {
                           <div>
                             <div className="flex items-center gap-1.5 font-bold text-gray-800">
                               <span>{u.username}</span>
+                              {u.identity_status === 'approved' && (
+                                <CheckCircle2 size={14} className="shrink-0 text-blue-500" aria-label="Kimlik onaylı" />
+                              )}
                               {u.identity_status === 'pending' && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
                                   <AlertTriangle size={11} /> Kimlik
@@ -1546,12 +1549,6 @@ export default function AdminUsers() {
                   <SummaryCard compact icon={Clock} label="Başvuru Tarihi" value={detailUser.identity_application?.created_at ? fmtDateTime(detailUser.identity_application.created_at) : '—'} tone="border-slate-100 bg-slate-50/70" />
                   <SummaryCard compact icon={CheckCircle2} label="Onay Tarihi" value={detailUser.identity_verified_at ? fmtDateTime(detailUser.identity_verified_at) : '—'} tone="border-emerald-100 bg-emerald-50/70" />
                   <SummaryCard compact icon={AlertTriangle} label="Red Tarihi" value={detailUser.identity_rejected_at ? fmtDateTime(detailUser.identity_rejected_at) : '—'} tone="border-rose-100 bg-rose-50/70" />
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <InfoRow icon={FileText} label="Ad Soyad" value={detailUser.full_name} />
-                  <InfoRow icon={Key} label="Kimlik No" value={detailUser.identity_summary?.identity_number || '—'} />
-                  <InfoRow icon={Clock} label="Doğum Tarihi" value={detailUser.birth_date || '—'} />
                 </div>
 
                 <div className="rounded-2xl border border-slate-100 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
