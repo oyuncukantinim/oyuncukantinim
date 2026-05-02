@@ -21,8 +21,6 @@ import { getListingCoverImage } from '../lib/listingMedia';
 import SiteBrand from './SiteBrand';
 import ThemeToggle from './ThemeToggle';
 import UserAvatar from './UserAvatar';
-import { isIdentityVerified } from '../lib/identityVerification';
-import { IdentityVerifiedIcon } from './StoreBadges';
 
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
@@ -77,7 +75,6 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const desktopSearchInputRef = useRef(null);
   const mobileSearchInputRef = useRef(null);
   const debounceRef = useRef(null);
-  const currentUserIdentityVerified = isIdentityVerified(user);
 
   const loadSearchSeeds = useCallback(() => {
     if (searchSeedsLoaded) return;
@@ -584,10 +581,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   iconSize={18}
                 />
                 <div className="text-left">
-                  <div className="flex max-w-[120px] items-center gap-1 text-xs font-semibold text-slate-500">
-                    <span className="truncate">{user.username}</span>
-                    {currentUserIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
-                  </div>
+                  <div className="max-w-[120px] truncate text-xs font-semibold text-slate-500">{user.username}</div>
                   <div className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</div>
                 </div>
               </Link>
@@ -754,10 +748,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center justify-between rounded-2xl border border-violet-100 bg-violet-50/70 px-4 py-3"
                   >
-                    <span className="inline-flex min-w-0 items-center gap-1 text-sm font-semibold text-slate-700">
-                      <span className="truncate">{user.username}</span>
-                      {currentUserIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
-                    </span>
+                    <span className="text-sm font-semibold text-slate-700">{user.username}</span>
                     <span className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</span>
                   </Link>
                 </>

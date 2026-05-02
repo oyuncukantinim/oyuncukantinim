@@ -38,16 +38,16 @@ export function VerifiedStoreIcon({ compact = false }) {
 }
 
 export function IdentityVerifiedIcon({ compact = false }) {
-  const sizeClass = compact ? 'h-5 w-5' : 'h-6 w-6';
-  const iconSize = compact ? 13 : 15;
+  const sizeClass = compact ? 'h-4 w-4' : 'h-5 w-5';
+  const iconSize = compact ? 15 : 18;
 
   return (
     <span
-      className={`inline-flex ${sizeClass} shrink-0 items-center justify-center rounded-full border border-sky-200 bg-sky-50 text-sky-600 shadow-sm shadow-sky-100 dark:border-sky-400/30 dark:bg-sky-500/10 dark:text-sky-300 dark:shadow-sky-950/40`}
+      className={`inline-flex ${sizeClass} shrink-0 items-center justify-center text-sky-500 dark:text-sky-300`}
       title="Kimlik Bilgileri Doğrulandı"
       aria-label="Kimlik Bilgileri Doğrulandı"
     >
-      <CheckCircle2 size={iconSize} className="fill-sky-500 text-white" />
+      <CheckCircle2 size={iconSize} className="fill-current text-white [filter:drop-shadow(0_0_3px_rgba(14,165,233,0.55))]" />
     </span>
   );
 }
