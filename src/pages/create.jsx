@@ -153,6 +153,7 @@ export default function CreatePage() {
     selectedDopings.featured ? { type: 'featured', option: findDopingOption(featuredOptions, selectedDopings.featured) } : null,
   ].filter((entry) => entry?.option);
   const selectedDopingPrice = selectedDopingEntries.reduce((sum, entry) => sum + Number(entry.option.price || 0), 0);
+  const validImages = images.filter(Boolean);
 
   const handlePriceChange = (value) => {
     if (value === '') {
@@ -181,6 +182,7 @@ export default function CreatePage() {
   const canProceedFromInfo = () => {
     const infoValid = !!title.trim() && !!price && priceNum > 0;
     if (!infoValid) return false;
+    if (validImages.length < 1) return false;
     if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
     if (siteMaxPrice !== null && priceNum > siteMaxPrice) return false;
     const attributesValid = catAttrs.filter(a => a.is_required).every(a => {
@@ -211,13 +213,16 @@ export default function CreatePage() {
       if (deliveryType === 'stock' && validStocks.length > stockItemMaxCount) {
         throw new Error('İzin verilen stok satırı sınırını aşıyorsun.');
       }
+      if (validImages.length < 1) {
+        throw new Error('En az 1 ilan görseli eklemelisin.');
+      }
       const res = await addListing({
         title,
         price: priceNum,
         description,
         category:    selectedCategory?.slug || '',
         category_id: selectedCategory?.id   || null,
-        images:      images.filter(Boolean),
+        images:      validImages,
         cover_index: coverIndex,
         delivery_type:  deliveryType,
         delivery_hours: deliveryHours,
@@ -392,7 +397,7 @@ export default function CreatePage() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-bold text-gray-700">Görseller</label>
-                <span className="text-xs text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
+                <span className={`text-xs font-semibold ${validImages.length < 1 ? 'text-red-500' : 'text-gray-400'}`}>{validImages.length}/{maxImages}</span>
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {images.map((img, idx) => (
@@ -441,18 +446,17 @@ export default function CreatePage() {
                 )}
               </div>
               <p className="mt-1.5 text-xs text-gray-400">Görseller dosya olarak yüklenir; sunucuda WebP'ye çevrilip Oyuncu Kantinim filigranı eklenir. Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
+              {validImages.length < 1 && (
+                <p className="mt-2 text-xs font-bold text-red-500">En az 1 ilan görseli eklemelisin.</p>
+              )}
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-              <div className="mb-4">
-                <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
-                <p className="mt-1 text-xs text-slate-500">Kategoriye özel bilgileri ilan detaylarıyla birlikte buradan girebilirsiniz.</p>
-              </div>
-              {catAttrs.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-400">
-                  Bu kategori için özel özellik tanımlanmamış.
+            {catAttrs.length > 0 && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                <div className="mb-4">
+                  <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
+                  <p className="mt-1 text-xs text-slate-500">Kategoriye özel bilgileri ilan detaylarıyla birlikte buradan girebilirsiniz.</p>
                 </div>
-              ) : (
                 <div className="space-y-5">
                   {catAttrs.map(attr => (
                     <div key={attr.slug}>
@@ -510,8 +514,8 @@ export default function CreatePage() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
               <div className="mb-4 flex items-start gap-3">
