@@ -14,10 +14,10 @@ export function VerifiedStoreBadge({ compact = false }) {
       className={`inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 font-black text-emerald-700 shadow-sm shadow-emerald-100 ${
         compact ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs'
       }`}
-      title="Onaylı Mağaza"
+      title="Onaylı Satıcı"
     >
       <CheckCircle2 size={compact ? 12 : 14} className="fill-emerald-500 text-white" />
-      Onaylı Mağaza
+      Onaylı Satıcı
     </span>
   );
 }
@@ -29,8 +29,8 @@ export function VerifiedStoreIcon({ compact = false }) {
   return (
     <span
       className={`inline-flex ${sizeClass} items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100`}
-      title="Onaylı Mağaza"
-      aria-label="Onaylı Mağaza"
+      title="Onaylı Satıcı"
+      aria-label="Onaylı Satıcı"
     >
       <CheckCircle2 size={iconSize} className="fill-emerald-500 text-white" />
     </span>
@@ -102,7 +102,7 @@ export function VerifiedAchievementCard({ isVerified = false, forceUnlocked = fa
         Bilgileri doğrulanmış satıcı.
       </p>
       <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-emerald-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
-        Mağaza Onayı
+        Kimlik Onayı
       </div>
       <Gamepad2 size={16} className={`absolute bottom-3 right-3 ${unlocked ? 'text-emerald-400' : 'text-slate-300'}`} />
     </div>

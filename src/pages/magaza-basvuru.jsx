@@ -33,7 +33,7 @@ const statusMeta = {
 };
 
 const benefits = [
-  { icon: ShieldCheck, title: 'Güven Rozeti', text: 'Yeşil Onaylı Mağaza rozetiyle satıcı kartlarında güçlü güven sinyali.', accent: 'from-emerald-500 to-teal-500' },
+  { icon: ShieldCheck, title: 'Güven Rozeti', text: 'Yeşil Onaylı Satıcı rozetiyle satıcı kartlarında güçlü güven sinyali.', accent: 'from-emerald-500 to-teal-500' },
   { icon: ArrowUpWideNarrow, title: 'Daha Üst Görünürlük', text: 'Pazar alanında standart üyelere göre öne çıkan konumlandırma.', accent: 'from-sky-500 to-indigo-500' },
   { icon: Crown, title: 'Satış Rütbeleri', text: 'Satış başarına göre özel rütbe rozetleri ve prestij seviyeleri.', accent: 'from-amber-500 to-orange-500' },
   { icon: Sparkles, title: 'Özel Rozetler', text: 'Admin tarafından oluşturulan oyuncu temalı özel rozet koleksiyonu.', accent: 'from-violet-500 to-fuchsia-500' },
@@ -119,7 +119,7 @@ export default function StoreApplicationPage() {
   const application = overview?.application;
   const appMeta = application ? statusMeta[application.status] : null;
   const AppIcon = appMeta?.icon || Clock;
-  const isVerified = Boolean(overview?.is_verified_store);
+  const isVerified = Boolean(overview?.identity_verified_at || overview?.identity_status === 'approved');
   const identityStatus = overview?.identity_status || 'none';
   const identityApproved = identityStatus === 'approved';
   const isPending = application?.status === 'pending';
@@ -197,7 +197,7 @@ export default function StoreApplicationPage() {
               <Gamepad2 size={14} /> Mağaza güçlendirme merkezi
             </div>
             <h1 className="mb-fade-up max-w-5xl bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text pb-1 text-3xl font-black leading-[1.15] text-transparent sm:text-5xl" style={{ animationDelay: '.05s' }}>
-              Onaylı Mağaza ol,{' '}
+              Onaylı Satıcı ol,{' '}
               <span className="mb-gradient-x inline-block bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300 bg-clip-text pb-1 text-transparent">
                 profesyonel görün
               </span>
@@ -286,7 +286,7 @@ export default function StoreApplicationPage() {
           <div className="mb-4 flex items-end justify-between">
             <div>
               <div className="text-[11px] font-black uppercase tracking-widest text-violet-600">Avantajlar</div>
-              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Onaylı mağaza olmanın getirileri</h2>
+              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Onaylı satıcı olmanın getirileri</h2>
             </div>
           </div>
           <div className="mb-stagger grid gap-4 md:grid-cols-2 xl:grid-cols-3">

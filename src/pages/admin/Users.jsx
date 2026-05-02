@@ -960,7 +960,7 @@ export default function AdminUsers() {
                     )}
                     {Number(detailUser.is_verified_store) === 1 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
-                        <CheckCircle2 size={13} /> Onaylı Mağaza
+                        <CheckCircle2 size={13} /> Onaylı Satıcı
                       </span>
                     )}
                     {Number(detailUser.is_banned) === 1 && (
@@ -1643,7 +1643,7 @@ export default function AdminUsers() {
                   <label className="admin-verified-store-card rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-bold text-slate-900">Onaylı Mağaza</div>
+                        <div className="text-sm font-bold text-slate-900">Onaylı Satıcı</div>
                         <div className="mt-1 text-xs text-slate-500">Kullanıcının profil onayını verir veya kaldırır.</div>
                       </div>
                       <input

@@ -281,10 +281,10 @@ export default function AdminStoreManagement() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">
-                <ShieldCheck size={14} /> Onaylı Mağaza
+                <ShieldCheck size={14} /> Onaylı Satıcı
               </div>
               <h1 className="mt-3 text-2xl font-black text-slate-900">Mağaza Yönetimi</h1>
-              <p className="mt-1 text-sm font-semibold text-slate-500">Onaylı mağaza başvuruları, satış rütbeleri ve özel üye rozetleri.</p>
+              <p className="mt-1 text-sm font-semibold text-slate-500">Onaylı satıcı başvuruları, satış rütbeleri ve özel üye rozetleri.</p>
             </div>
             <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-black text-amber-700">
               {data.pending_count || 0} bekleyen başvuru
@@ -395,7 +395,7 @@ export default function AdminStoreManagement() {
         <div className="rounded-3xl border border-slate-100 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-100 p-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="font-black text-slate-900">Onaylı Mağaza Başvuruları</h2>
+              <h2 className="font-black text-slate-900">Onaylı Satıcı Başvuruları</h2>
               <p className="mt-1 text-xs font-semibold text-slate-400">Kimlik ve selfie görselleri sadece yetkili admin isteğiyle güvenli olarak açılır.</p>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
