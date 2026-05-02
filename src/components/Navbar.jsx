@@ -48,7 +48,7 @@ function formatNotificationTime(value) {
 }
 
 export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', siteLogoText = '' }) {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { cart } = useCart();
   const { defaultAvatar, defaultListingImage } = useSiteBrand();
   const location = useLocation();
@@ -95,6 +95,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   }, [searchSeedsLoaded]);
 
   useEffect(() => {
+    if (authLoading) return undefined;
     if (!user) {
       setUnreadNotif(0);
       setUnreadMessageThreads(0);
@@ -127,10 +128,10 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [user]);
+  }, [authLoading, user]);
 
   useEffect(() => {
-    if (!user || !location.pathname.startsWith('/messages')) return;
+    if (authLoading || !user || !location.pathname.startsWith('/messages')) return;
 
     const timer = setTimeout(() => {
       getUnreadCount()
@@ -139,7 +140,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
     }, 700);
 
     return () => clearTimeout(timer);
-  }, [location.pathname, user]);
+  }, [authLoading, location.pathname, user]);
 
   useEffect(() => {
     if (location.pathname === '/notifications' && user) {
@@ -585,6 +586,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                   <div className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</div>
                 </div>
               </Link>
+            ) : authLoading ? (
+              <div className="h-[62px] w-[144px] animate-pulse rounded-2xl border border-slate-200 bg-slate-100/70" />
             ) : (
               <Link
                 to="/login"
@@ -752,6 +755,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                     <span className="text-sm font-black text-emerald-600">{formatPrice(user.balance || 0)}</span>
                   </Link>
                 </>
+              ) : authLoading ? (
+                <div className="h-12 animate-pulse rounded-2xl border border-slate-200 bg-slate-100/70" />
               ) : (
                 <Link
                   to="/login"

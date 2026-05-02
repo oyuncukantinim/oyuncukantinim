@@ -3,6 +3,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
+import { useAuth } from './context/useAuth';
 import { useAdminAuth } from './context/useAdminAuth';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -125,6 +126,13 @@ function AdminRoute({ children }) {
   const { adminUser, loading, checked } = useAdminAuth();
   if (!checked || loading) return <PageLoader />;
   if (!adminUser) return <Navigate to="/admin/login" replace />;
+  return children;
+}
+
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -275,18 +283,18 @@ function SiteLayout() {
             <Route path="/product/:slug" element={<ProductDetailPage />} />
             <Route path="/cart" element={<CartPage />} />
                 <Route path="/login" element={<LoginPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/gift-balance-coupon" element={<GiftBalanceCouponPage />} />
-                <Route path="/create" element={<CreatePage />} />
-            <Route path="/messages" element={<MessagesPage />} />
-            <Route path="/messages/:userId" element={<MessagesPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/support" element={<SupportPage />} />
+                <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+                <Route path="/gift-balance-coupon" element={<ProtectedRoute><GiftBalanceCouponPage /></ProtectedRoute>} />
+                <Route path="/create" element={<ProtectedRoute><CreatePage /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+            <Route path="/messages/:userId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
+            <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
+            <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
             <Route path="/p/:username" element={<SellerPage />} />
-            <Route path="/finance" element={<FinancePage />} />
-            <Route path="/magaza-basvuru" element={<StoreApplicationPage />} />
+            <Route path="/finance" element={<ProtectedRoute><FinancePage /></ProtectedRoute>} />
+            <Route path="/magaza-basvuru" element={<ProtectedRoute><StoreApplicationPage /></ProtectedRoute>} />
             <Route path="/403" element={<Error403Page />} />
             <Route path="/404" element={<Error404Page />} />
             <Route path="*" element={<Error404Page />} />
