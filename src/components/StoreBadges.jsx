@@ -43,11 +43,14 @@ export function IdentityVerifiedIcon({ compact = false }) {
 
   return (
     <span
-      className={`inline-flex ${sizeClass} shrink-0 items-center justify-center`}
-      title="Kimlik Bilgileri Doğrulandı"
+      className={`group/identity relative inline-flex ${sizeClass} shrink-0 items-center justify-center overflow-visible`}
       aria-label="Kimlik Bilgileri Doğrulandı"
     >
       <CheckCircle2 size={iconSize} className="fill-sky-500 text-white [filter:drop-shadow(0_0_3px_rgba(14,165,233,0.65))] dark:fill-sky-400" />
+      <span className="pointer-events-none absolute left-1/2 bottom-full z-50 mb-2 w-max max-w-[210px] -translate-x-1/2 translate-y-1 scale-95 rounded-xl border border-sky-200 bg-white px-3 py-2 text-[11px] font-black leading-4 text-sky-700 opacity-0 shadow-xl shadow-sky-900/10 transition-all duration-150 group-hover/identity:translate-y-0 group-hover/identity:scale-100 group-hover/identity:opacity-100 dark:border-sky-400/25 dark:bg-slate-950 dark:text-sky-200 dark:shadow-black/40">
+        Kimlik Bilgileri Doğrulandı
+        <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-sky-200 bg-white dark:border-sky-400/25 dark:bg-slate-950" />
+      </span>
     </span>
   );
 }
