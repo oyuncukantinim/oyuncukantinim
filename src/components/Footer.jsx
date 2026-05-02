@@ -1,14 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
-import SiteBrand from './SiteBrand';
 import { getContractPages } from '../lib/api';
 
 export default function Footer({
-  siteName = 'Oyuncu Kantinim',
-  siteLogo = '',
-  siteLogoText = '',
-  footerTagline = 'Oyuncular için güvenli alım satım platformu.',
   footerCopyright = '© Oyuncu Kantinim. Tüm hakları saklıdır.',
 }) {
   const [contractPages, setContractPages] = useState([]);
@@ -28,22 +23,9 @@ export default function Footer({
   }, []);
 
   return (
-    <footer className="mt-16 border-t border-gray-200 bg-white py-12 dark:border-slate-800 dark:bg-slate-950">
+    <footer className="mt-16 border-t border-gray-200 bg-white py-10 dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_220px_260px_minmax(180px,auto)] md:items-start">
-          <div className="max-w-md">
-            <SiteBrand
-              to="/"
-              siteName={siteName}
-              siteLogo={siteLogo}
-              siteLogoText={siteLogoText}
-              imageClassName="h-10 w-auto max-w-[220px] object-contain"
-              iconWrapperClassName="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
-              titleClassName="text-xl font-black tracking-tight bg-gradient-to-r from-neon-purple to-neon-cyan bg-clip-text text-transparent"
-            />
-            <div className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">{footerTagline}</div>
-          </div>
-
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[220px_minmax(260px,1fr)] lg:items-start">
           <div>
             <div className="mb-3 text-xs font-black uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500">Site</div>
             <div className="space-y-2 text-sm font-semibold text-gray-500 dark:text-slate-400">
@@ -70,10 +52,10 @@ export default function Footer({
           ) : (
             <div />
           )}
+        </div>
 
-          <div className="text-sm font-medium text-gray-500 dark:text-slate-400 md:text-right">
-            {footerCopyright}
-          </div>
+        <div className="mt-8 border-t border-gray-100 pt-5 text-center text-xs font-semibold text-gray-400 dark:border-slate-800 dark:text-slate-500">
+          {footerCopyright}
         </div>
       </div>
     </footer>
