@@ -12,6 +12,7 @@ import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
 import { IdentityVerifiedIcon, StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
 import { isIdentityVerified } from '../lib/identityVerification';
+import { buildListingSeo, useSeo } from '../hooks/useSeo';
 import UserAvatar from '../components/UserAvatar';
 import Breadcrumb from '../components/Breadcrumb';
 
@@ -36,6 +37,11 @@ export default function ListingDetailPage() {
   const [reviewsHasMore, setReviewsHasMore] = useState(false);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [sellerListings, setSellerListings] = useState([]);
+  const listingSeo = useMemo(
+    () => listing ? buildListingSeo(listing) : { title: 'Oyuncu İlanı', canonical: `/listing/${slug}` },
+    [listing, slug],
+  );
+  useSeo(listingSeo);
 
   useEffect(() => {
     let cancelled = false;

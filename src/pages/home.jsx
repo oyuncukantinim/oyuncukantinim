@@ -14,6 +14,7 @@ import ProductCard from '../components/ProductCard';
 import HeroSlider from '../components/HeroSlider';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { hasListingDopingType } from '../lib/doping';
+import { useSeo } from '../hooks/useSeo';
 
 const LISTING_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
 const PRODUCT_GRID_CLASS = 'grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6';
@@ -192,6 +193,24 @@ function HomeAdBanner({ imageUrl, linkUrl, altText }) {
 /* =========  Main  ========= */
 
 export default function Home() {
+  useSeo({
+    title: 'Oyuncu Kantinim - Oyun Dünyasının Yeni Kantini',
+    description: 'E-pin, oyun ürünleri, güvenilir oyuncu pazarı ve hızlı teslimat fırsatlarını Oyuncu Kantinim’de keşfet.',
+    canonical: '/',
+    image: '/og-image.png',
+    jsonLd: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Oyuncu Kantinim',
+      url: 'https://beta.oyuncukantinim.com.tr/',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://beta.oyuncukantinim.com.tr/market?search={search_term_string}',
+        'query-input': 'required name=search_term_string',
+      },
+    },
+  });
+
   const {
     defaultListingImage,
     homeAdBannerImageUrl,

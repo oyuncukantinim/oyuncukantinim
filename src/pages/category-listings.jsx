@@ -7,6 +7,7 @@ import ListingCard from '../components/ListingCard';
 import ProductCard from '../components/ProductCard';
 import Breadcrumb from '../components/Breadcrumb';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { buildCategorySeo, useSeo } from '../hooks/useSeo';
 
 function buildCatSlug(cat) {
   return cat.slug || cat.id;
@@ -130,6 +131,11 @@ export default function CategoryListingsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('newest');
+  const categorySeo = useMemo(
+    () => category ? buildCategorySeo(category) : { title: 'Kategori', canonical: `/categories/${catSlug}` },
+    [category, catSlug],
+  );
+  useSeo(categorySeo);
 
   useEffect(() => {
     if (!catSlug) return;

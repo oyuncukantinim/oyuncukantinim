@@ -27,6 +27,7 @@ import ListingCard from '../components/ListingCard';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { AchievementCard, IdentityVerifiedIcon, VerifiedAchievementCard } from '../components/StoreBadges';
 import { isIdentityVerified } from '../lib/identityVerification';
+import { useSeo } from '../hooks/useSeo';
 import UserAvatar from '../components/UserAvatar';
 
 function StarRating({ value, onChange, readonly = false }) {
@@ -104,6 +105,12 @@ export default function SellerPage() {
   const [activeTab, setActiveTab] = useState('listings');
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  useSeo({
+    title: `${seller?.username || username} Mağazası`,
+    description: `${seller?.username || username} satıcısının ilanlarını, değerlendirmelerini ve profil bilgilerini Oyuncu Kantinim’de incele.`,
+    canonical: `/p/${username}`,
+    image: seller?.banner_image || seller?.avatar || '/og-image.png',
+  });
 
   useEffect(() => {
     setLoading(true);

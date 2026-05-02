@@ -10,7 +10,9 @@ Disallow: /messages
 Disallow: /notifications
 Disallow: /cart
 Disallow: /support
+Disallow: /gift-balance-coupon
 
 # Internal/search-like pages that don't need indexing
 Disallow: /finance
 
+Sitemap: https://beta.oyuncukantinim.com.tr/sitemap.xml

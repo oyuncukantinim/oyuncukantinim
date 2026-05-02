@@ -16,6 +16,7 @@ import { getProduct, idFromSlug, productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
 import Breadcrumb from '../components/Breadcrumb';
 import useSiteBrand from '../hooks/useSiteBrand';
+import { buildProductSeo, useSeo } from '../hooks/useSeo';
 
 const PRODUCT_TYPE_META = {
   digital_code: { label: 'Dijital Kod', icon: Tag },
@@ -55,6 +56,11 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const productSeo = useMemo(
+    () => product ? buildProductSeo(product) : { title: 'Oyun Ürünü Satın Al', canonical: `/product/${slug}` },
+    [product, slug],
+  );
+  useSeo(productSeo);
 
   useEffect(() => {
     let cancelled = false;
