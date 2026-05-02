@@ -73,7 +73,6 @@ export default function PaymentManagement() {
   const [withdrawalSearch, setWithdrawalSearch] = useState('');
   const [accountSearch, setAccountSearch] = useState('');
   const [expandedWithdrawalId, setExpandedWithdrawalId] = useState(null);
-  const [notes, setNotes] = useState({});
   const [references, setReferences] = useState({});
   const [settingsForm, setSettingsForm] = useState({
     withdrawal_enabled: true,
@@ -168,7 +167,6 @@ export default function PaymentManagement() {
       await adminUpdatePaymentAccount({
         account_id: accountId,
         status,
-        admin_note: (notes[`account-${accountId}`] || '').trim(),
       });
       showToast('Hesap durumu güncellendi.');
       loadData();
@@ -202,7 +200,6 @@ export default function PaymentManagement() {
       await adminUpdateWithdrawal({
         withdrawal_id: withdrawalId,
         status,
-        admin_note: (notes[`withdrawal-${withdrawalId}`] || '').trim(),
         payment_reference: paymentReference,
       });
       showToast('Çekim talebi güncellendi.');
@@ -474,11 +471,6 @@ export default function PaymentManagement() {
                                           <span className="font-black">Dekont:</span> {request.payment_reference}
                                         </div>
                                       ) : null}
-                                      {request.admin_note ? (
-                                        <div className="rounded-2xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600">
-                                          <span className="font-black">Admin notu:</span> {request.admin_note}
-                                        </div>
-                                      ) : null}
                                     </div>
                                   </div>
 
@@ -490,13 +482,6 @@ export default function PaymentManagement() {
                                           onChange={(event) => setReferences((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
                                           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                                           placeholder="Dekont / işlem referansı"
-                                        />
-                                        <textarea
-                                          value={notes[`withdrawal-${request.id}`] || ''}
-                                          onChange={(event) => setNotes((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
-                                          rows={2}
-                                          className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
-                                          placeholder="Admin notu, opsiyonel"
                                         />
                                         <div className="grid grid-cols-3 gap-2">
                                           {request.status === 'pending' ? (
@@ -610,12 +595,6 @@ export default function PaymentManagement() {
                           <div className="flex min-w-[250px] flex-col gap-2">
                             {account.status === 'pending' ? (
                               <>
-                                <input
-                                  value={notes[`account-${account.id}`] || ''}
-                                  onChange={(event) => setNotes((prev) => ({ ...prev, [`account-${account.id}`]: event.target.value }))}
-                                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold focus:border-violet-400 focus:outline-none"
-                                  placeholder="Admin notu, opsiyonel"
-                                />
                                 <div className="flex gap-2">
                                   <button
                                     disabled={saving}
@@ -642,11 +621,6 @@ export default function PaymentManagement() {
                               </>
                             ) : (
                               <div className="flex flex-wrap gap-2">
-                                {account.admin_note ? (
-                                  <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
-                                    {account.admin_note}
-                                  </div>
-                                ) : null}
                                 <button
                                   disabled={saving}
                                   onClick={() => deleteAccount(account.id)}
