@@ -183,7 +183,7 @@ export default function SellerPage() {
     { id: 'following', label: `Takip (${seller.following_count ?? 0})` },
   ];
   const visibleAchievements = (seller.store_badges || []).filter((badge) => Boolean(badge?.is_unlocked));
-  const hasVisibleAchievements = Boolean(seller.is_verified_store) || visibleAchievements.length > 0;
+  const canShowPublicAchievements = Boolean(seller.is_verified_store);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -313,16 +313,29 @@ export default function SellerPage() {
             </div>
           </div>
 
-          {hasVisibleAchievements ? (
+          {canShowPublicAchievements ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {seller.is_verified_store ? <VerifiedAchievementCard isVerified /> : null}
+              <VerifiedAchievementCard isVerified />
               {visibleAchievements.map((badge) => (
                 <AchievementCard key={badge.id} badge={badge} />
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl border border-slate-100 bg-white p-8 text-center text-sm font-semibold text-slate-400 shadow-sm">
-              Bu satıcının henüz görünür bir başarımı bulunmuyor.
+            <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-50 p-8 text-center shadow-sm">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-200/30 blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-12 left-10 h-28 w-28 rounded-full bg-violet-200/30 blur-2xl" />
+              <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-violet-100 bg-white text-violet-600 shadow-sm">
+                <Trophy size={26} />
+              </div>
+              <h3 className="relative mt-4 text-lg font-black text-slate-900">Rozet vitrini Onaylı Satıcılar için açılır</h3>
+              <p className="relative mx-auto mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-500">
+                Satıcı kimliği ve mağaza onayı tamamlandığında başarımlar herkese açık şekilde burada sergilenir. Güven rozeti, satış rütbeleri ve özel başarımlar profili daha profesyonel gösterir.
+              </p>
+              {isOwnProfile ? (
+                <Link to="/magaza-basvuru" className="relative mt-5 inline-flex items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-[0_14px_28px_-16px_rgba(124,58,237,0.7)] transition-all hover:-translate-y-0.5 hover:bg-violet-500">
+                  <BadgeCheck size={15} /> Onaylı Satıcı Ol
+                </Link>
+              ) : null}
             </div>
           )}
         </div>
