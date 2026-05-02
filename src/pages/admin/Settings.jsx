@@ -31,9 +31,6 @@ import {
   FOOTER_CONTACT_TYPES,
   FOOTER_SOCIAL_TYPES,
   footerListToSetting,
-  normalizeFooterContactItems,
-  normalizeFooterLinks,
-  normalizeFooterSocialLinks,
 } from '../../lib/footerConfig';
 
 const DEFAULT_LISTING_IMAGE_WIDTH = 1500;
@@ -351,6 +348,42 @@ function isUploadedSiteImage(url) {
   } catch {
     return String(url).startsWith('/uploads/');
   }
+}
+
+function parseFooterSettingList(value, fallback = []) {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value.trim()) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
+function getFooterLinksForEditor(value, fallback = []) {
+  return parseFooterSettingList(value, fallback).map((item) => ({
+    label: String(item?.label || ''),
+    url: String(item?.url || ''),
+  }));
+}
+
+function getFooterSocialForEditor(value, fallback = []) {
+  return parseFooterSettingList(value, fallback).map((item) => ({
+    type: String(item?.type || 'instagram'),
+    url: String(item?.url || ''),
+  }));
+}
+
+function getFooterContactForEditor(value, fallback = []) {
+  return parseFooterSettingList(value, fallback).map((item) => ({
+    type: String(item?.type || 'support'),
+    label: String(item?.label || ''),
+    value: String(item?.value || ''),
+    url: String(item?.url || ''),
+  }));
 }
 
 const loadImageFile = (file) =>
@@ -752,10 +785,10 @@ function FooterContactEditor({ items, onChange }) {
 }
 
 function FooterSettingsPanel({ settings, set }) {
-  const popularLinks = normalizeFooterLinks(settings.footer_popular_links, DEFAULT_FOOTER_POPULAR_LINKS);
-  const quickLinks = normalizeFooterLinks(settings.footer_quick_links, DEFAULT_FOOTER_QUICK_LINKS);
-  const socialLinks = normalizeFooterSocialLinks(settings.footer_social_links, DEFAULT_FOOTER_SOCIAL_LINKS);
-  const contactItems = normalizeFooterContactItems(settings.footer_contact_items, DEFAULT_FOOTER_CONTACT_ITEMS);
+  const popularLinks = getFooterLinksForEditor(settings.footer_popular_links, DEFAULT_FOOTER_POPULAR_LINKS);
+  const quickLinks = getFooterLinksForEditor(settings.footer_quick_links, DEFAULT_FOOTER_QUICK_LINKS);
+  const socialLinks = getFooterSocialForEditor(settings.footer_social_links, DEFAULT_FOOTER_SOCIAL_LINKS);
+  const contactItems = getFooterContactForEditor(settings.footer_contact_items, DEFAULT_FOOTER_CONTACT_ITEMS);
 
   return (
     <div className="space-y-4">
