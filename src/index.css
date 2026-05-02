@@ -141,23 +141,23 @@ html.theme-dark .card:hover {
 html.theme-dark .ok-vitrine-card,
 html.theme-dark .ok-vitrine-card:hover {
   border-color: rgba(250, 204, 21, 0.95) !important;
-  --tw-ring-color: rgba(250, 204, 21, 0.82) !important;
+  --tw-ring-color: rgba(250, 204, 21, 0.46) !important;
   --tw-ring-offset-color: var(--ok-panel) !important;
   box-shadow:
-    0 0 0 1px rgba(250, 204, 21, 0.88),
-    0 0 18px rgba(250, 204, 21, 0.52),
-    0 0 36px rgba(245, 158, 11, 0.34),
-    0 18px 46px -24px rgba(180, 83, 9, 0.72) !important;
+    0 0 0 1px rgba(250, 204, 21, 0.62),
+    0 0 10px rgba(250, 204, 21, 0.24),
+    0 0 22px rgba(245, 158, 11, 0.16),
+    0 16px 34px -26px rgba(180, 83, 9, 0.46) !important;
 }
 
 html.theme-dark .ok-vitrine-card,
 html.theme-dark .ok-vitrine-card:hover {
   --tw-ring-offset-color: var(--ok-bg) !important;
   box-shadow:
-    0 0 0 1px rgba(250, 204, 21, 0.95),
-    0 0 20px rgba(250, 204, 21, 0.72),
-    0 0 44px rgba(245, 158, 11, 0.46),
-    0 20px 56px -24px rgba(250, 204, 21, 0.62) !important;
+    0 0 0 1px rgba(250, 204, 21, 0.72),
+    0 0 12px rgba(250, 204, 21, 0.34),
+    0 0 26px rgba(245, 158, 11, 0.22),
+    0 18px 42px -26px rgba(250, 204, 21, 0.38) !important;
 }
 
 .seller-achievements-hero {

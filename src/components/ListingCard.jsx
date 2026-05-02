@@ -8,7 +8,7 @@ import { isIdentityVerified } from '../lib/identityVerification';
 import { IdentityVerifiedIcon } from './StoreBadges';
 
 const DOPING_META = {
-  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'border-yellow-300/95 ring-amber-300/85 ring-offset-2 ring-offset-white shadow-[0_0_0_1px_rgba(251,191,36,0.95),0_0_20px_-4px_rgba(245,158,11,0.95),0_18px_46px_-22px_rgba(180,83,9,0.95)] dark:border-yellow-300/95 dark:ring-yellow-300/90 dark:ring-offset-slate-950 dark:shadow-[0_0_0_1px_rgba(250,204,21,0.9),0_0_24px_-3px_rgba(250,204,21,0.95),0_20px_50px_-24px_rgba(250,204,21,0.85)]' },
+  vitrine: { label: 'Vitrin', Icon: Star, strip: 'bg-amber-700/85', ring: 'border-yellow-300/85 ring-amber-300/45 ring-offset-2 ring-offset-white shadow-[0_0_0_1px_rgba(251,191,36,0.55),0_0_12px_-5px_rgba(245,158,11,0.55),0_16px_34px_-26px_rgba(180,83,9,0.55)] dark:border-yellow-300/80 dark:ring-yellow-300/45 dark:ring-offset-slate-950 dark:shadow-[0_0_0_1px_rgba(250,204,21,0.58),0_0_14px_-5px_rgba(250,204,21,0.55),0_18px_38px_-28px_rgba(250,204,21,0.48)]' },
   featured: { label: 'Öne Çıkar', Icon: Zap, strip: 'bg-violet-600', ring: 'ring-violet-500/60' },
 };
 
