@@ -209,6 +209,150 @@ html.theme-dark select {
   color-scheme: dark;
 }
 
+.page-content {
+  color: var(--ok-text);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.page-content > * + * {
+  margin-top: 1rem;
+}
+
+.page-content h2,
+.page-content h3,
+.page-content h4 {
+  color: var(--ok-heading);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.page-content h2 {
+  margin-top: 2rem;
+  font-size: 1.75rem;
+}
+
+.page-content h3 {
+  margin-top: 1.6rem;
+  font-size: 1.35rem;
+}
+
+.page-content h4 {
+  margin-top: 1.35rem;
+  font-size: 1.1rem;
+}
+
+.page-content p {
+  color: var(--ok-text);
+}
+
+.page-content a {
+  color: #7c3aed;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.page-content a:hover {
+  text-decoration: underline;
+}
+
+.page-content ul,
+.page-content ol {
+  padding-left: 1.35rem;
+}
+
+.page-content ul {
+  list-style: disc;
+}
+
+.page-content ol {
+  list-style: decimal;
+}
+
+.page-content li + li {
+  margin-top: 0.35rem;
+}
+
+.page-content blockquote {
+  border-left: 4px solid #8b5cf6;
+  border-radius: 0.75rem;
+  background: rgba(139, 92, 246, 0.07);
+  padding: 1rem 1.1rem;
+  color: var(--ok-muted);
+  font-weight: 600;
+}
+
+.page-content hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid var(--ok-border);
+}
+
+.page-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  border: 1px solid var(--ok-border);
+  background: var(--ok-panel-soft);
+}
+
+.page-content figure {
+  margin: 1.5rem 0;
+}
+
+.page-content figcaption {
+  margin-top: 0.5rem;
+  text-align: center;
+  color: var(--ok-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.page-content table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+  border-radius: 1rem;
+  font-size: 0.95rem;
+}
+
+.page-content th,
+.page-content td {
+  border: 1px solid var(--ok-border);
+  padding: 0.8rem 0.9rem;
+  vertical-align: top;
+}
+
+.page-content th {
+  background: var(--ok-panel-muted);
+  color: var(--ok-heading);
+  font-weight: 900;
+}
+
+.page-content iframe,
+.page-content div[data-youtube-video] iframe {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+  border: 0;
+  border-radius: 1rem;
+  background: #020617;
+}
+
+.page-editor-content {
+  padding: 1.25rem;
+}
+
+.page-editor-content .ProseMirror-selectednode {
+  outline: 3px solid rgba(139, 92, 246, 0.35);
+  outline-offset: 3px;
+}
+
+.page-editor-content table .selectedCell {
+  background: rgba(139, 92, 246, 0.12);
+}
+
 html.theme-dark [class~="bg-surface-50"],
 html.theme-dark [class~="bg-gray-50"],
 html.theme-dark [class~="bg-gray-50/30"],

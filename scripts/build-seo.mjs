@@ -62,6 +62,10 @@ function categoryPath(category) {
   return `/categories/${category.slug || category.id}`;
 }
 
+function pagePath(page) {
+  return `/${page.slug}`;
+}
+
 async function api(action, query = {}) {
   const url = new URL(API_URL);
   url.searchParams.set('action', action);
@@ -94,9 +98,10 @@ function flattenCategories(rows = []) {
 }
 
 async function fetchSeoData() {
-  const [categoryTree, firstListings] = await Promise.all([
+  const [categoryTree, firstListings, customPages] = await Promise.all([
     api('get_categories_tree').catch(() => []),
     api('get_listings', { limit: 100, offset: 0, paginate: 1, sort: 'newest' }).catch(() => null),
+    api('get_pages').catch(() => []),
   ]);
   const categories = flattenCategories(Array.isArray(categoryTree) ? categoryTree : []);
 
@@ -128,7 +133,7 @@ async function fetchSeoData() {
     }));
 
   const products = Array.from(productMap.values());
-  return { categories, listings, products };
+  return { categories, listings, products, pages: Array.isArray(customPages) ? customPages : [] };
 }
 
 function baseMeta() {
@@ -225,6 +230,15 @@ function sellerMeta(username) {
   };
 }
 
+function pageMeta(page) {
+  return {
+    title: page.seo_title || `${page.title} - ${SITE_NAME}`,
+    description: clampText(page.seo_description || page.excerpt || `${page.title} sayfasını Oyuncu Kantinim üzerinde incele.`),
+    path: pagePath(page),
+    image: DEFAULT_IMAGE,
+  };
+}
+
 function metaTags(meta) {
   const title = meta.title?.includes(SITE_NAME) ? meta.title : `${meta.title} - ${SITE_NAME}`;
   const description = clampText(meta.description || baseMeta().description);
@@ -283,7 +297,7 @@ function sitemapEntry(path, lastmod, priority = '0.7', changefreq = 'weekly') {
 
 async function main() {
   const template = await readFile(join(distDir, 'index.html'), 'utf8');
-  let data = { categories: [], listings: [], products: [] };
+  let data = { categories: [], listings: [], products: [], pages: [] };
   try {
     data = await fetchSeoData();
   } catch (error) {
@@ -294,6 +308,7 @@ async function main() {
   const productMetas = data.products.map(productMeta);
   const listingMetas = data.listings.map(listingMeta);
   const sellerMetas = Array.from(new Set(data.listings.map((listing) => listing.seller).filter(Boolean))).map(sellerMeta);
+  const pageMetas = data.pages.filter((page) => page.slug).map(pageMeta);
   const staticMetas = [
     baseMeta(),
     { title: `Oyuncu Pazarı - ${SITE_NAME}`, description: 'Oyuncu ilanlarını, hesapları ve dijital ürünleri güvenli alışveriş sistemiyle keşfet.', path: '/market', image: DEFAULT_IMAGE },
@@ -306,6 +321,7 @@ async function main() {
     ...productMetas.slice(0, MAX_PRERENDER_PRODUCTS),
     ...listingMetas.slice(0, MAX_PRERENDER_LISTINGS),
     ...sellerMetas.slice(0, MAX_PRERENDER_SELLERS),
+    ...pageMetas,
   ];
 
   for (const meta of prerenderMetas) {
@@ -318,6 +334,7 @@ async function main() {
     ...data.products.map((product) => sitemapEntry(productPath(product), product.updated_at || product.created_at, '0.9', 'daily')),
     ...data.listings.map((listing) => sitemapEntry(listingPath(listing), listing.updated_at || listing.created_at, '0.7', 'daily')),
     ...sellerMetas.map((meta) => sitemapEntry(meta.path, new Date(), '0.5', 'weekly')),
+    ...data.pages.map((page) => sitemapEntry(pagePath(page), page.updated_at, page.is_contract ? '0.5' : '0.6', 'monthly')),
   ];
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapRows.join('\n')}\n</urlset>\n`;
   await writeFile(join(distDir, 'sitemap.xml'), sitemap, 'utf8');

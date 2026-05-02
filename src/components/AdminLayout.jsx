@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
+  FileText,
   Gift,
   Images,
   LayoutDashboard,
@@ -56,6 +57,7 @@ const navGroups = [
       { path: '/admin/product-orders', label: 'Urun Siparisleri', icon: Package, accent: 'from-cyan-500 to-blue-500' },
       { path: '/admin/categories', label: 'Kategoriler', icon: Tag, accent: 'from-fuchsia-500 to-pink-500' },
       { path: '/admin/hero-slides', label: 'Ana Sayfa Slider', icon: Images, accent: 'from-violet-500 via-fuchsia-500 to-cyan-500' },
+      { path: '/admin/pages', label: 'Sayfalar', icon: FileText, accent: 'from-blue-500 to-cyan-500' },
       { path: '/admin/listings', label: 'İlanlar', icon: ShoppingBag, accent: 'from-emerald-500 to-teal-500' },
       { path: '/admin/orders', label: 'Siparişler', icon: Package, accent: 'from-lime-500 to-green-500' },
       { path: '/admin/reviews', label: 'Yorumlar', icon: Star, accent: 'from-yellow-500 to-amber-500' },

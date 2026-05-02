@@ -220,6 +220,18 @@ export function getHeroBackgrounds() {
   return request('get_hero_backgrounds', { ttl: 60 * 1000 });
 }
 
+export function getContractPages() {
+  return request('get_contract_pages', { ttl: 5 * 60 * 1000 });
+}
+
+export function getPages() {
+  return request('get_pages', { ttl: 5 * 60 * 1000 });
+}
+
+export function getPage(slug) {
+  return request('get_page', { query: { slug }, ttl: 5 * 60 * 1000 });
+}
+
 // --- PROFILE ---
 export function updateProfile(payload) {
   return request('update_profile', { method: 'POST', body: payload, auth: true });

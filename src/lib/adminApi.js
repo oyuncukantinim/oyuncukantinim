@@ -29,6 +29,10 @@ const PUBLIC_CACHE_INVALIDATION = {
   admin_delete_category_type: ['get_categories_tree'],
 
   admin_save_settings: ['get_site_settings', HOME_DATA_ACTION],
+  admin_save_page: ['get_contract_pages', 'get_pages', 'get_page'],
+  admin_delete_page: ['get_contract_pages', 'get_pages', 'get_page'],
+  admin_upload_page_image: [],
+  admin_delete_page_image: ['get_page'],
   admin_save_popular_games: ['get_popular_games', 'get_categories_tree', HOME_DATA_ACTION],
   admin_save_hero_slides: ['get_hero_slides'],
   admin_save_hero_backgrounds: ['get_hero_backgrounds'],
@@ -210,6 +214,20 @@ export const adminDeleteCategoryAttribute = (attribute_id) =>
 export const adminGetSettings = () => adminRequest('admin_get_settings');
 export const adminSaveSettings = (body) =>
   adminRequest('admin_save_settings', { method: 'POST', body });
+
+// Pages
+export const adminGetPages = (params = {}) =>
+  adminRequest('admin_get_pages', { query: { ...params, _t: Date.now() }, cache: 'no-store' });
+export const adminGetPage = (id) =>
+  adminRequest('admin_get_page', { query: { id, _t: Date.now() }, cache: 'no-store' });
+export const adminSavePage = (body) =>
+  adminRequest('admin_save_page', { method: 'POST', body, invalidateActions: ['get_contract_pages', 'get_pages', 'get_page'] });
+export const adminDeletePage = (id) =>
+  adminRequest('admin_delete_page', { method: 'POST', body: { id }, invalidateActions: ['get_contract_pages', 'get_pages', 'get_page'] });
+export const adminDeletePageImage = (url, pageId = 0) =>
+  adminRequest('admin_delete_page_image', { method: 'POST', body: { url, page_id: pageId }, invalidateActions: ['get_page'] });
+export const adminUploadPageImage = (file) =>
+  adminUploadRequest('admin_upload_page_image', file, {}, ['get_page']).then((json) => json.data?.url || '');
 
 // Broadcast
 export const adminBroadcast = (body) =>

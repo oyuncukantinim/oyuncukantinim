@@ -31,6 +31,7 @@ const CategoriesPage      = lazy(() => import('./pages/categories'));
 const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
 const FinancePage         = lazy(() => import('./pages/finance'));
 const StoreApplicationPage = lazy(() => import('./pages/magaza-basvuru'));
+const PagePage            = lazy(() => import('./pages/page'));
 const Error403Page        = lazy(() => import('./pages/error-403'));
 const Error404Page        = lazy(() => import('./pages/error-404'));
 
@@ -50,6 +51,7 @@ const AdminMessages      = lazy(() => import('./pages/admin/Messages'));
 const AdminSupport       = lazy(() => import('./pages/admin/Support'));
 const AdminSettings      = lazy(() => import('./pages/admin/Settings'));
 const AdminHeroSlides    = lazy(() => import('./pages/admin/HeroSlides'));
+const AdminPages         = lazy(() => import('./pages/admin/Pages'));
 const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
 const AdminBalanceCoupons = lazy(() => import('./pages/admin/BalanceCoupons'));
 const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
@@ -297,6 +299,7 @@ function SiteLayout() {
             <Route path="/magaza-basvuru" element={<ProtectedRoute><StoreApplicationPage /></ProtectedRoute>} />
             <Route path="/403" element={<Error403Page />} />
             <Route path="/404" element={<Error404Page />} />
+            <Route path="/:slug" element={<PagePage />} />
             <Route path="*" element={<Error404Page />} />
           </Routes>
         </Suspense>
@@ -336,6 +339,7 @@ export default function App() {
                   <Route path="/admin/support" element={<AdminRoute><AdminSupport /></AdminRoute>} />
                   <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
                   <Route path="/admin/hero-slides" element={<AdminRoute><AdminHeroSlides /></AdminRoute>} />
+                  <Route path="/admin/pages" element={<AdminRoute><AdminPages /></AdminRoute>} />
                   <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
                   <Route path="/admin/balance-coupons" element={<AdminRoute><AdminBalanceCoupons /></AdminRoute>} />
                 <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
