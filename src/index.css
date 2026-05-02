@@ -17,16 +17,16 @@
   }
 
   html.theme-dark {
-    --ok-bg: #162033;
-    --ok-panel: #202c42;
-    --ok-panel-soft: #2a3852;
-    --ok-panel-muted: #35445f;
+    --ok-bg: #1d293d;
+    --ok-panel: #29364f;
+    --ok-panel-soft: #34445f;
+    --ok-panel-muted: #40516f;
     --ok-text: #f1f5f9;
     --ok-heading: #ffffff;
-    --ok-muted: #c1cad8;
-    --ok-subtle: #95a4b8;
-    --ok-border: rgba(184, 196, 214, 0.27);
-    --ok-border-soft: rgba(184, 196, 214, 0.17);
+    --ok-muted: #cbd5e1;
+    --ok-subtle: #a7b5c8;
+    --ok-border: rgba(203, 213, 225, 0.30);
+    --ok-border-soft: rgba(203, 213, 225, 0.20);
   }
 
   body {
@@ -152,7 +152,7 @@ html.theme-dark .ok-vitrine-card:hover {
 
 html.theme-dark .ok-vitrine-card,
 html.theme-dark .ok-vitrine-card:hover {
-  --tw-ring-offset-color: #162033 !important;
+  --tw-ring-offset-color: var(--ok-bg) !important;
   box-shadow:
     0 0 0 1px rgba(250, 204, 21, 0.95),
     0 0 20px rgba(250, 204, 21, 0.72),
@@ -412,6 +412,37 @@ html.theme-dark [class~="bg-slate-200"] {
   background-color: var(--ok-panel-muted) !important;
 }
 
+html.theme-dark [class~="dark:bg-slate-950"],
+html.theme-dark [class~="dark:bg-slate-950/95"],
+html.theme-dark [class~="dark:bg-slate-950/90"],
+html.theme-dark [class~="dark:bg-slate-950/80"],
+html.theme-dark [class~="dark:bg-slate-950/70"],
+html.theme-dark [class~="dark:bg-gray-950"],
+html.theme-dark [class~="dark:bg-zinc-950"] {
+  background-color: var(--ok-panel) !important;
+}
+
+html.theme-dark [class~="dark:bg-slate-900"],
+html.theme-dark [class~="dark:bg-slate-900/95"],
+html.theme-dark [class~="dark:bg-slate-900/90"],
+html.theme-dark [class~="dark:bg-slate-900/80"],
+html.theme-dark [class~="dark:bg-slate-900/70"],
+html.theme-dark [class~="dark:bg-slate-900/60"],
+html.theme-dark [class~="dark:bg-gray-900"],
+html.theme-dark [class~="dark:bg-zinc-900"] {
+  background-color: var(--ok-panel-soft) !important;
+}
+
+html.theme-dark [class~="dark:bg-slate-800"],
+html.theme-dark [class~="dark:bg-slate-800/90"],
+html.theme-dark [class~="dark:bg-slate-800/80"],
+html.theme-dark [class~="dark:bg-slate-800/70"],
+html.theme-dark [class~="dark:bg-slate-800/60"],
+html.theme-dark [class~="dark:bg-gray-800"],
+html.theme-dark [class~="dark:bg-zinc-800"] {
+  background-color: var(--ok-panel-muted) !important;
+}
+
 html.theme-dark [class~="border-gray-50"],
 html.theme-dark [class~="border-gray-100"],
 html.theme-dark [class~="border-gray-100/80"],
@@ -426,6 +457,19 @@ html.theme-dark [class~="border-white"],
 html.theme-dark [class~="border-t-white"],
 html.theme-dark [class~="border-violet-100"],
 html.theme-dark [class~="border-l-violet-50"] {
+  border-color: var(--ok-border) !important;
+}
+
+html.theme-dark [class~="dark:border-slate-950"],
+html.theme-dark [class~="dark:border-slate-900"],
+html.theme-dark [class~="dark:border-slate-900/80"],
+html.theme-dark [class~="dark:border-slate-800"],
+html.theme-dark [class~="dark:border-slate-800/90"],
+html.theme-dark [class~="dark:border-slate-800/80"],
+html.theme-dark [class~="dark:border-slate-800/70"],
+html.theme-dark [class~="dark:border-slate-700"],
+html.theme-dark [class~="dark:border-slate-700/80"],
+html.theme-dark [class~="dark:border-slate-700/70"] {
   border-color: var(--ok-border) !important;
 }
 
