@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck, Wallet } from 'lucide-react';
+import { CheckCircle, Clock, Copy, Gift, RotateCcw, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
 import { cancelBalanceCoupon, createBalanceCoupon, getBalanceCoupons, redeemBalanceCoupon } from '../lib/api';
@@ -249,9 +249,6 @@ export default function GiftBalanceCouponPage() {
             <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-300">
               Kullanıcı adına özel kupon oluştur, bakiye 24 saat boyunca güvenli şekilde rezerve edilsin. Alıcı kullanmazsa tutar otomatik olarak sana döner.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 text-sm font-black text-emerald-200">
-              <Wallet size={15} /> Bakiyen: {formatMoney(user.balance)}
-            </div>
           </div>
 
           <form onSubmit={handleCreate} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur sm:p-5">
@@ -288,7 +285,7 @@ export default function GiftBalanceCouponPage() {
                 disabled={busy || !verified}
                 className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400 px-5 text-sm font-black text-white shadow-lg shadow-violet-950/30 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <Send size={16} /> Hediye Kuponu Gönder
+                <Send size={16} /> Kuponu Gönder
               </button>
             </div>
           </form>
