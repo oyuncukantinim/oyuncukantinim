@@ -106,7 +106,7 @@ export default function RichPageEditor({ value, onChange, onUploadImage, onDelet
     content: value || '',
     editorProps: {
       attributes: {
-        class: 'page-editor-content page-content min-h-[460px] focus:outline-none',
+        class: 'page-editor-content page-content focus:outline-none',
       },
     },
     onUpdate: ({ editor: currentEditor }) => {

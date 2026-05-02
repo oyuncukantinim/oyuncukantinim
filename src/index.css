@@ -348,7 +348,12 @@ html.theme-dark select {
 }
 
 .page-editor-content {
+  min-height: 460px;
+  max-height: min(640px, 62vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1rem;
+  scrollbar-gutter: stable;
 }
 
 .page-editor-content .ProseMirror-selectednode {
