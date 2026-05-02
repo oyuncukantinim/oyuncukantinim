@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Copy, Edit3, Eye, FileText, Globe2, Plus, Save, Search, ShieldCheck, Trash2 } from 'lucide-react';
+import { Copy, Eye, FileText, Globe2, Plus, Save, Search, ShieldCheck, Trash2 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import RichPageEditor from '../../components/RichPageEditor';
 import {
@@ -125,6 +125,8 @@ export default function AdminPages() {
       const payload = {
         ...form,
         slug: makeSlug(form.slug || form.title),
+        seo_title: form.title,
+        seo_description: form.excerpt,
         is_contract: form.is_contract ? 1 : 0,
         is_active: form.is_active ? 1 : 0,
         sort_order: Number(form.sort_order || 0),
@@ -362,33 +364,6 @@ export default function AdminPages() {
               onUploadImage={adminUploadPageImage}
               onDeleteManagedImage={adminDeletePageImage}
             />
-
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-950">
-              <div className="mb-4 flex items-center gap-2">
-                <Edit3 size={18} className="text-violet-500" />
-                <h2 className="text-sm font-black uppercase tracking-[0.16em] text-slate-500 dark:text-slate-300">SEO</h2>
-              </div>
-              <div className="grid gap-4 lg:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.16em] text-slate-400">SEO Başlığı</label>
-                  <input
-                    value={form.seo_title}
-                    onChange={(event) => updateField('seo_title', event.target.value)}
-                    placeholder={form.title || 'Sayfa başlığı kullanılır'}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.16em] text-slate-400">SEO Açıklaması</label>
-                  <input
-                    value={form.seo_description}
-                    onChange={(event) => updateField('seo_description', event.target.value)}
-                    placeholder="Google açıklama metni"
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 outline-none transition focus:border-violet-400 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-            </div>
 
             <div className="sticky bottom-4 z-20 flex flex-col gap-3 rounded-3xl border border-slate-200 bg-white/90 p-4 shadow-2xl shadow-slate-900/10 backdrop-blur dark:border-slate-700 dark:bg-slate-950/90 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
