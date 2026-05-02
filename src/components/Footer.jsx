@@ -23,7 +23,8 @@ export default function Footer({
   }, []);
 
   return (
-    <footer className="mt-16 border-t border-gray-200 bg-white py-10 dark:border-slate-800 dark:bg-slate-950">
+    <footer className="relative mt-16 bg-gradient-to-b from-slate-100/45 via-white to-white py-10 dark:from-slate-900/45 dark:via-slate-950 dark:to-slate-950">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-200/35 to-transparent dark:from-slate-700/20" />
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[220px_minmax(260px,1fr)] lg:items-start">
           <div>
