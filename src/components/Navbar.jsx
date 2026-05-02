@@ -285,6 +285,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               siteName={siteName}
               siteLogo={siteLogo}
               siteLogoText={siteLogoText}
+              showTitle={false}
               containerClassName="items-center gap-3"
               imageClassName="h-12 w-auto max-w-[260px] object-contain transition-transform group-hover:scale-[1.02]"
               iconWrapperClassName="rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2.5 text-white shadow-[0_10px_30px_rgba(124,58,237,0.24)] transition-transform group-hover:rotate-6"

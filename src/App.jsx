@@ -147,6 +147,7 @@ function MaintenancePage({ siteName, siteLogo, siteLogoText, maintenanceTitle, m
             siteName={siteName}
             siteLogo={siteLogo}
             siteLogoText={siteLogoText}
+            showTitle={false}
             containerClassName="justify-center"
             imageClassName="h-16 w-auto max-w-[280px] object-contain"
             iconWrapperClassName="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan shadow-neon-purple"
@@ -157,9 +158,6 @@ function MaintenancePage({ siteName, siteLogo, siteLogoText, maintenanceTitle, m
         <p className="mb-6 text-lg text-gray-500">
           {maintenanceMessage || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.'}
         </p>
-        <div className="rounded-2xl border border-violet-100 bg-white/70 px-6 py-4 text-sm font-semibold text-violet-700 backdrop-blur">
-          {siteName} yakında tekrar burada.
-        </div>
       </div>
     </div>
   );

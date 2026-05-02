@@ -14,11 +14,12 @@ export default function SiteBrand({
   titleClassName = '',
   subtitleClassName = '',
   showNameWithLogo = false,
+  showTitle = true,
 }) {
   const FallbackIcon = fallback === 'shield' ? Shield : Gamepad2;
   const hasLogo = Boolean(siteLogo);
   const visibleTitle = siteLogoText || siteName;
-  const shouldShowTitle = !hasLogo || showNameWithLogo || Boolean(subtitle) || Boolean(siteLogoText);
+  const shouldShowTitle = showTitle && (!hasLogo || showNameWithLogo || Boolean(subtitle) || Boolean(siteLogoText));
 
   const content = (
     <div className={`flex items-center gap-3 ${containerClassName}`.trim()}>

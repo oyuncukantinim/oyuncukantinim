@@ -191,7 +191,7 @@ export default function LoginPage() {
         ? 'Kaldığın yerden devam et.'
         : awaitingVerification
           ? `${email} adresine gelen kodu gir.`
-          : `${siteName} topluluğuna katıl.`;
+          : 'Oyuncu topluluğuna katıl.';
 
   const submitLabel = loading
     ? ''
@@ -220,7 +220,7 @@ export default function LoginPage() {
                 siteName={siteName}
                 siteLogo={siteLogo}
                 siteLogoText={siteLogoText}
-                showNameWithLogo
+                showTitle={false}
                 containerClassName="justify-center"
                 imageClassName="h-14 w-auto max-w-[240px] object-contain"
                 iconWrapperClassName="rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2 shadow-neon-purple"

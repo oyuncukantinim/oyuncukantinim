@@ -92,9 +92,7 @@ function AdminSidebar({
   onLogout,
   adminUser,
   defaultAvatar,
-  siteName,
   siteLogo,
-  siteLogoText,
   collapsed,
   onToggleCollapse,
   isMobile = false,
@@ -123,20 +121,21 @@ function AdminSidebar({
       {/* Brand */}
       <div className="relative flex items-center gap-3 border-b border-white/5 px-4 py-4">
         <Link to="/admin" onClick={onClose} className="group flex min-w-0 items-center gap-3">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 text-white shadow-lg shadow-violet-900/40 transition-transform group-hover:scale-105">
-            {siteLogo ? (
-              <img src={siteLogo} alt={siteName || 'Admin'} className="h-6 w-6 object-contain" />
-            ) : (
+          {siteLogo ? (
+            <div className="relative flex h-11 max-w-[176px] shrink-0 items-center transition-transform group-hover:scale-[1.02]">
+              <img src={siteLogo} alt="Admin" className="h-11 w-auto max-w-[176px] object-contain" />
+            </div>
+          ) : (
+            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500 text-white shadow-lg shadow-violet-900/40 transition-transform group-hover:scale-105">
               <Shield size={20} strokeWidth={2.4} />
-            )}
-            <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
-              <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-400" />
-            </span>
-          </div>
+              <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-70" />
+                <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-400" />
+              </span>
+            </div>
+          )}
           {!collapsed ? (
             <div className="min-w-0">
-              <div className="truncate text-sm font-black leading-none text-white">{siteLogoText || siteName || 'Admin'}</div>
               <div className="mt-1 inline-flex items-center gap-1 rounded-full border border-violet-400/30 bg-violet-500/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-violet-200">
                 <Shield size={9} /> Panel
               </div>
@@ -282,7 +281,7 @@ export default function AdminLayout({ children }) {
   const [collapsed, setCollapsed] = useState(() => {
     try { return localStorage.getItem('admin_sidebar_collapsed') === '1'; } catch { return false; }
   });
-  const { siteName, siteLogo, siteLogoText, defaultAvatar } = useSiteBrand();
+  const { siteLogo, defaultAvatar } = useSiteBrand();
 
   useEffect(() => {
     try {
@@ -315,9 +314,7 @@ export default function AdminLayout({ children }) {
           onLogout={handleLogout}
           adminUser={adminUser || {}}
           defaultAvatar={defaultAvatar}
-          siteName={siteName}
           siteLogo={siteLogo}
-          siteLogoText={siteLogoText}
           collapsed={collapsed}
           onToggleCollapse={() => setCollapsed((v) => !v)}
         />
@@ -333,9 +330,7 @@ export default function AdminLayout({ children }) {
               onLogout={handleLogout}
               adminUser={adminUser || {}}
               defaultAvatar={defaultAvatar}
-              siteName={siteName}
               siteLogo={siteLogo}
-              siteLogoText={siteLogoText}
               collapsed={false}
               onToggleCollapse={() => {}}
               isMobile
