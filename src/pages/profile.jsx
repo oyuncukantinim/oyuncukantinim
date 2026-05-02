@@ -3141,6 +3141,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
+  const [stockItemContentMax, setStockItemContentMax] = useState(300);
   const [uploadingIdx, setUploadingIdx] = useState(null);
   const [pendingDeleteImages, setPendingDeleteImages] = useState([]);
   const [catAttrs, setCatAttrs] = useState([]);
@@ -3162,6 +3163,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           if (j.data.listing_title_max)  setTitleMax(Number(j.data.listing_title_max));
           if (j.data.listing_desc_max)   setDescMax(Number(j.data.listing_desc_max));
           if (j.data.stock_item_max_count) setStockItemMaxCount(Number(j.data.stock_item_max_count));
+          if (j.data.stock_item_content_max) setStockItemContentMax(Number(j.data.stock_item_content_max));
         }
       })
       .catch(() => {});
@@ -3233,7 +3235,11 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
     setStocks((current) => [...current, { content: '' }]);
   };
   const removeStock = (idx) => setStocks((current) => current.filter((_, j) => j !== idx));
-  const setStockField = (idx, field, val) => setStocks((current) => current.map((stock, j) => j === idx ? { ...stock, [field]: val } : stock));
+  const setStockField = (idx, field, val) => setStocks((current) => current.map((stock, j) => {
+    if (j !== idx) return stock;
+    const nextValue = field === 'content' ? String(val).slice(0, stockItemContentMax) : val;
+    return { ...stock, [field]: nextValue };
+  }));
   const setAttr = (slug, val) => setAttrValues((current) => ({ ...current, [slug]: val }));
   const toggleMulti = (slug, opt) => {
     const current = attrValues[slug] || [];
@@ -3255,7 +3261,11 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       cover_index: coverIndex,
       delivery_hours: deliveryHours,
       attributes: attrValues,
-      stocks: deliveryType === 'stock' ? stocks.filter((stock) => stock.content.trim()) : [],
+      stocks: deliveryType === 'stock'
+        ? stocks
+            .map((stock) => ({ ...stock, content: String(stock.content || '').slice(0, stockItemContentMax) }))
+            .filter((stock) => stock.content.trim())
+        : [],
       removed_images: pendingDeleteImages,
     });
   };
@@ -3460,7 +3470,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                         </button>
                       ) : null}
                     </div>
-                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
+                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
                   </div>
                 ))}
               </div>

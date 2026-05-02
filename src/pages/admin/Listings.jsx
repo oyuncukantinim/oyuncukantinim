@@ -63,6 +63,7 @@ function fmtMoney(value) {
 }
 
 function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
+  const { stockItemContentMax = 300 } = useSiteBrand();
   const [stocks, setStocks] = useState([]);
   const [stocksLoading, setStocksLoading] = useState(false);
   const [stockInput, setStockInput] = useState('');
@@ -88,6 +89,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
 
   const availableStockCount = stocks.filter((stock) => Number(stock.is_sold) !== 1).length;
   const soldStockCount = stocks.filter((stock) => Number(stock.is_sold) === 1).length;
+  const limitStockLines = (value) => value.split('\n').map((line) => line.slice(0, stockItemContentMax)).join('\n');
 
   const handleAddStocks = async () => {
     const parsedStocks = stockInput
@@ -184,7 +186,7 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
               <label className="mb-1.5 block text-xs font-bold text-gray-600">Yeni Stok Ekle</label>
               <textarea
                 value={stockInput}
-                onChange={(e) => setStockInput(e.target.value)}
+                onChange={(e) => setStockInput(limitStockLines(e.target.value))}
                 rows={5}
                 placeholder={'Her satıra bir stok gir.\nİstersen Etiket|İçerik formatını kullan.'}
                 className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
@@ -224,7 +226,8 @@ function StockManagerModal({ listing, onClose, onRefresh, showToast }) {
                           {editingStockId === stock.id ? (
                             <textarea
                               value={editingStockContent}
-                              onChange={(e) => setEditingStockContent(e.target.value)}
+                              onChange={(e) => setEditingStockContent(e.target.value.slice(0, stockItemContentMax))}
+                              maxLength={stockItemContentMax}
                               rows={2}
                               className="w-full resize-none rounded-lg border border-violet-300 px-2 py-1.5 text-xs focus:border-violet-500 focus:outline-none"
                               autoFocus

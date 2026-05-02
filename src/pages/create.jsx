@@ -68,6 +68,7 @@ export default function CreatePage() {
     maxListingsPerUser,
     manualDeliveryMaxHours: defaultManualDeliveryMaxHours,
     stockItemMaxCount: defaultStockItemMaxCount,
+    stockItemContentMax: defaultStockItemContentMax,
     dopingVitrineOptions: defaultVitrineOptions,
     dopingFeaturedOptions: defaultFeaturedOptions,
   } = useSiteBrand();
@@ -102,6 +103,7 @@ export default function CreatePage() {
   const [siteMaxPrice, setSiteMaxPrice] = useState(defaultMaxListingPrice);
   const [manualDeliveryMaxHours, setManualDeliveryMaxHours] = useState(defaultManualDeliveryMaxHours);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(defaultStockItemMaxCount);
+  const [stockItemContentMax, setStockItemContentMax] = useState(defaultStockItemContentMax);
 
   useEffect(() => {
     if (!user) { navigate('/login'); return; }
@@ -121,6 +123,9 @@ export default function CreatePage() {
           }
           if (j.data.stock_item_max_count) {
             setStockItemMaxCount(Number(j.data.stock_item_max_count));
+          }
+          if (j.data.stock_item_content_max) {
+            setStockItemContentMax(Number(j.data.stock_item_content_max));
           }
           setVitrineOptions(normalizeDopingOptions(j.data.listing_doping_vitrine_options, 'vitrine'));
           setFeaturedOptions(normalizeDopingOptions(j.data.listing_doping_featured_options, 'featured'));
@@ -203,7 +208,9 @@ export default function CreatePage() {
   const handleSubmit = async () => {
     setSaving(true);
     try {
-      const validStocks = stocks.filter(s => s.content.trim() !== '');
+      const validStocks = stocks
+        .map(s => ({ ...s, content: String(s.content || '').slice(0, stockItemContentMax) }))
+        .filter(s => s.content.trim() !== '');
       if (siteMaxPrice !== null && priceNum > siteMaxPrice) {
         throw new Error(`Maksimum ilan fiyatı ${siteMaxPrice}₺ olabilir.`);
       }
@@ -299,7 +306,11 @@ export default function CreatePage() {
     setStocks(s => [...s, { content: '' }]);
   };
   const removeStock    = (idx) => setStocks(s => s.filter((_, j) => j !== idx));
-  const setStockField  = (idx, field, val) => setStocks(s => s.map((x, j) => j === idx ? { ...x, [field]: val } : x));
+  const setStockField  = (idx, field, val) => setStocks(s => s.map((x, j) => {
+    if (j !== idx) return x;
+    const nextValue = field === 'content' ? String(val).slice(0, stockItemContentMax) : val;
+    return { ...x, [field]: nextValue };
+  }));
 
   const setAttr     = (slug, val) => setAttrValues(v => ({ ...v, [slug]: val }));
   const toggleMulti = (slug, opt) => {
@@ -445,7 +456,6 @@ export default function CreatePage() {
                   </button>
                 )}
               </div>
-              <p className="mt-1.5 text-xs text-gray-400">Görseller dosya olarak yüklenir; sunucuda WebP'ye çevrilip Oyuncu Kantinim filigranı eklenir. Kamera ikonuna tıklayarak kapak görselini seçebilirsiniz.</p>
               {validImages.length < 1 && (
                 <p className="mt-2 text-xs font-bold text-red-500">En az 1 ilan görseli eklemelisin.</p>
               )}
@@ -524,7 +534,6 @@ export default function CreatePage() {
                 </span>
                 <div>
                   <h3 className="text-sm font-extrabold text-slate-800">Teslimat Bilgileri</h3>
-                  <p className="mt-1 text-xs text-slate-500">İlanın teslimat şeklini ve teslim süresini ilan bilgileriyle birlikte belirleyin.</p>
                 </div>
               </div>
 
@@ -561,7 +570,7 @@ export default function CreatePage() {
                 {deliveryType === 'stock' && (
                   <div>
                     <div className="mb-3 flex items-center justify-between">
-                      <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
+                      <label className="text-sm font-bold text-gray-700">Stoklar</label>
                     </div>
                     <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
                       {stocks.map((stock, idx) => (
@@ -570,7 +579,7 @@ export default function CreatePage() {
                             <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
                             {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="rounded-lg p-1 text-red-400 hover:bg-red-50"><Trash2 size={13} /></button>}
                           </div>
-                          <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="input-field w-full resize-none font-mono text-xs" />
+                          <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="input-field w-full resize-none font-mono text-xs" />
                         </div>
                       ))}
                     </div>

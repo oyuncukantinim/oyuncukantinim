@@ -170,6 +170,7 @@ const SETTINGS_TABS = [
           { key: 'manual_delivery_max_hours', label: 'Manuel Teslimat Üst Sınırı (saat)', type: 'number', placeholder: '72' },
           { key: 'dispute_window_hours', label: 'Anlaşmazlık Açma Süresi (saat)', type: 'number', placeholder: '72' },
           { key: 'stock_item_max_count', label: 'Maks. Stok Satırı / İlan', type: 'number', placeholder: '500' },
+          { key: 'stock_item_content_max', label: 'Stok Hücresi Karakter Limiti', type: 'number', placeholder: '300' },
         ],
       },
     ],
