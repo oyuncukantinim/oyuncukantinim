@@ -252,6 +252,11 @@ html.theme-dark select {
   margin-bottom: 0.45rem;
 }
 
+.page-content p:empty,
+.page-content p:has(> br:only-child) {
+  min-height: 1.55em;
+}
+
 .page-content a {
   color: #7c3aed;
   font-weight: 800;

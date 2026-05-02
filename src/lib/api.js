@@ -221,15 +221,15 @@ export function getHeroBackgrounds() {
 }
 
 export function getContractPages() {
-  return request('get_contract_pages', { ttl: 5 * 60 * 1000 });
+  return request('get_contract_pages', { query: { _t: Date.now() }, cache: 'no-store' });
 }
 
 export function getPages() {
-  return request('get_pages', { ttl: 5 * 60 * 1000 });
+  return request('get_pages', { query: { _t: Date.now() }, cache: 'no-store' });
 }
 
 export function getPage(slug) {
-  return request('get_page', { query: { slug }, ttl: 5 * 60 * 1000 });
+  return request('get_page', { query: { slug, _t: Date.now() }, cache: 'no-store' });
 }
 
 // --- PROFILE ---
