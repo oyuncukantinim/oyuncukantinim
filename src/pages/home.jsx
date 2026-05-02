@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ChevronRight,
   Flame,
+  Rocket,
   ShoppingBag,
   ShieldCheck,
   Sparkles,
@@ -190,6 +191,43 @@ function HomeAdBanner({ imageUrl, linkUrl, altText }) {
   );
 }
 
+function VitrineAdCard() {
+  return (
+    <Link
+      to="/support"
+      className="ok-vitrine-card group relative flex h-full min-h-[260px] flex-col overflow-hidden rounded-2xl border border-amber-300 bg-slate-950 p-0 shadow-sm ring-1 ring-amber-300/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_55px_-24px_rgba(245,158,11,0.72)]"
+      aria-label="Vitrin reklam alanı hakkında bilgi al"
+    >
+      <div className="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-indigo-500 via-violet-600 to-sky-500">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_16%,rgba(255,255,255,0.22),transparent_18%),radial-gradient(circle_at_82%_20%,rgba(251,191,36,0.26),transparent_16%),linear-gradient(140deg,rgba(255,255,255,0.12),transparent_48%)]" />
+        <div className="absolute inset-0 opacity-70" style={CATEGORY_STAR_FIELD_STYLE} />
+        <span className="absolute left-8 top-12 h-2 w-2 rotate-45 bg-amber-200 shadow-[0_0_18px_rgba(251,191,36,0.95)]" />
+        <span className="absolute right-8 top-8 h-2 w-2 rotate-45 bg-white shadow-[0_0_18px_rgba(255,255,255,0.95)]" />
+        <span className="absolute right-12 bottom-10 h-1.5 w-1.5 rotate-45 bg-amber-100 shadow-[0_0_14px_rgba(254,243,199,0.9)]" />
+
+        <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 rotate-12 items-center justify-center rounded-[2rem] bg-white/10 shadow-[0_20px_48px_rgba(15,23,42,0.35)] ring-1 ring-white/20 backdrop-blur-sm transition-transform duration-500 group-hover:-translate-y-[54%] group-hover:rotate-[18deg]">
+          <Rocket size={58} className="fill-cyan-200/30 text-cyan-100 drop-shadow-[0_12px_20px_rgba(15,23,42,0.55)]" strokeWidth={1.8} />
+        </div>
+        <span className="absolute bottom-7 left-[30%] h-10 w-2 -rotate-[140deg] rounded-full bg-gradient-to-t from-orange-500 via-amber-300 to-transparent blur-[1px]" />
+        <span className="absolute bottom-5 left-[36%] h-14 w-3 -rotate-[140deg] rounded-full bg-gradient-to-t from-rose-500 via-yellow-300 to-transparent blur-[1px]" />
+      </div>
+
+      <div className="flex flex-1 flex-col items-center justify-center bg-gradient-to-b from-violet-700 to-indigo-700 px-3 py-4 text-center">
+        <div className="mb-2 inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-amber-100">
+          <Sparkles size={10} />
+          Vitrin Alanı
+        </div>
+        <div className="text-[13px] font-black uppercase leading-5 text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]">
+          Bu alanı sizin için ayırdık.
+        </div>
+        <div className="mt-1 text-[11px] font-bold text-violet-100">
+          Detaylı bilgi için tıklayın.
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 /* =========  Main  ========= */
 
 export default function Home() {
@@ -263,6 +301,8 @@ export default function Home() {
     () => listings.filter((listing) => hasListingDopingType(listing, 'vitrine')),
     [listings],
   );
+  const vitrinePreviewListings = useMemo(() => vitrineListings.slice(0, 15), [vitrineListings]);
+  const vitrineAdPosition = Math.min(5, vitrinePreviewListings.length);
   const recentListings = useMemo(
     () => listings.filter((listing) => !hasListingDopingType(listing, 'vitrine')),
     [listings],
@@ -352,7 +392,11 @@ export default function Home() {
           <div className="min-h-[260px]">
             {vitrineListings.length > 0 ? (
               <div className={LISTING_GRID_CLASS}>
-                {vitrineListings.slice(0, 16).map((listing) => (
+                {vitrinePreviewListings.slice(0, vitrineAdPosition).map((listing) => (
+                  <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
+                ))}
+                <VitrineAdCard />
+                {vitrinePreviewListings.slice(vitrineAdPosition).map((listing) => (
                   <ListingCard key={listing.id} listing={listing} fallbackImage={defaultListingImage} />
                 ))}
               </div>
