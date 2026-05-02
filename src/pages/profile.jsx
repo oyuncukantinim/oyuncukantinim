@@ -1238,76 +1238,51 @@ export default function ProfilePage() {
 
       {/* Tabs */}
       <div className="flex flex-col md:flex-row gap-5">
-        <div className="w-full md:w-64 flex-shrink-0">
-          <aside className="sticky top-4 overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
-            <div className="relative overflow-hidden bg-slate-950 px-4 py-4 text-white">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(34,211,238,0.2),transparent_26%),radial-gradient(circle_at_88%_20%,rgba(139,92,246,0.24),transparent_30%)]" />
-              <div className="relative flex items-center gap-3">
-                <UserAvatar
-                  value={user.avatar}
-                  fallback={defaultAvatar}
-                  className="h-11 w-11 shrink-0 rounded-2xl border border-white/15 bg-white/10 object-cover"
-                  iconSize={22}
-                />
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-black">{user.username}</p>
-                  <p className="mt-0.5 text-xs font-semibold text-cyan-100/80">Seviye {user.level || 1}</p>
-                </div>
-              </div>
-            </div>
-
-            <nav className="space-y-4 p-3">
-              {[
-                { title: 'İşlemler', ids: ['listings', 'orders', 'sales', 'finance', 'withdrawals'] },
-                { title: 'Bilgiler', ids: ['favorites', 'achievements', 'reviews'] },
-                { title: 'Hesap', ids: ['balance', 'profile', 'personal'] },
-              ].map((section) => (
-                <div key={section.title} className="space-y-1">
-                  <p className="px-2 text-[10px] font-black uppercase tracking-[0.18em] text-gray-300">{section.title}</p>
-                  {tabs.filter((tab) => section.ids.includes(tab.id)).map((tab) => {
-                    const active = activeTab === tab.id;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTabClick(tab.id)}
-                        className={`group relative flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-black transition-all ${
-                          active
-                            ? 'bg-violet-50 text-violet-700 shadow-sm ring-1 ring-violet-100'
-                            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
-                        }`}
-                      >
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition ${
-                          active ? 'bg-gradient-to-br from-violet-600 to-cyan-500 text-white shadow-md shadow-violet-500/20' : 'bg-gray-100 text-gray-400 group-hover:bg-white group-hover:text-violet-500'
-                        }`}>
-                          <tab.icon size={15} />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate">{tab.label}</span>
-                        {active ? <span className="h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_0_4px_rgba(34,211,238,0.14)]" /> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
-
-              <div className="space-y-1 border-t border-gray-100 pt-3">
-                <Link
-                  to="/gift-balance-coupon"
-                  className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-800"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-400 transition group-hover:bg-white group-hover:text-violet-500">
-                    <Gift size={15} />
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">Bakiye Kuponu</span>
-                </Link>
-                <button onClick={handleLogout} className="group flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-black text-red-400 transition-all hover:bg-red-50 hover:text-red-600">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-400 transition group-hover:bg-white group-hover:text-red-600">
-                    <LogOut size={15} />
-                  </span>
-                  <span>Çıkış Yap</span>
-                </button>
-              </div>
-            </nav>
-          </aside>
+        <div className="w-full md:w-56 flex-shrink-0">
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-3 space-y-0.5 sticky top-4">
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">İşlemler</p>
+            {tabs.filter(t => ['listings','orders','sales','finance','withdrawals'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-gray-100 my-2" />
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Bilgiler</p>
+            {tabs.filter(t => ['favorites','achievements','reviews'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <div className="border-t border-gray-100 my-2" />
+            <p className="px-3 pt-1 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-300">Hesap</p>
+            {tabs.filter(t => ['balance','profile','personal'].includes(t.id)).map(tab => (
+              <button key={tab.id} onClick={() => handleTabClick(tab.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  activeTab === tab.id ? 'bg-gradient-to-r from-violet-600 to-violet-500 text-white shadow-md shadow-violet-500/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                }`}
+              >
+                <tab.icon size={16} /> {tab.label}
+              </button>
+            ))}
+            <Link
+              to="/gift-balance-coupon"
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-gray-500 transition-all hover:bg-gray-50 hover:text-gray-700"
+            >
+              <Gift size={16} /> Bakiye Kuponu
+            </Link>
+            <div className="border-t border-gray-100 my-2" />
+            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm text-red-400 hover:bg-red-50 transition-all">
+              <LogOut size={16} /> Çıkış Yap
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 rounded-2xl border border-gray-100 bg-white shadow-sm p-5 sm:p-6 min-h-[400px]">
