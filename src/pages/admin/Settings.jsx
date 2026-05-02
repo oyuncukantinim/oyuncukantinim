@@ -23,6 +23,18 @@ import {
 import AdminLayout from '../../components/AdminLayout';
 import { adminDeleteUploadedImage, adminGetSettings, adminSaveSettings, adminUploadImage } from '../../lib/adminApi';
 import { formatDopingDuration, getDopingTypeMeta, normalizeDopingOptions } from '../../lib/doping';
+import {
+  DEFAULT_FOOTER_CONTACT_ITEMS,
+  DEFAULT_FOOTER_POPULAR_LINKS,
+  DEFAULT_FOOTER_QUICK_LINKS,
+  DEFAULT_FOOTER_SOCIAL_LINKS,
+  FOOTER_CONTACT_TYPES,
+  FOOTER_SOCIAL_TYPES,
+  footerListToSetting,
+  normalizeFooterContactItems,
+  normalizeFooterLinks,
+  normalizeFooterSocialLinks,
+} from '../../lib/footerConfig';
 
 const DEFAULT_LISTING_IMAGE_WIDTH = 1500;
 const DEFAULT_LISTING_IMAGE_HEIGHT = 1000;
@@ -109,14 +121,13 @@ const SETTINGS_TABS = [
           { key: 'default_listing_image', label: 'Varsayılan İlan Görseli', type: 'image', placeholder: 'https://...', desc: 'Görseli olmayan ilanlarda gösterilir. Yüklenen görsel 1500x1000 px WebP olarak hazırlanır.' },
         ],
       },
-      {
-        section: 'Footer ve Yasal Metinler',
-        fields: [
-          { key: 'footer_copyright', label: 'Footer Telif Metni', type: 'text', placeholder: '© Oyuncu Kantinim. Tüm hakları saklıdır.' },
-          { key: 'footer_tagline', label: 'Footer Alt Metni', type: 'text', placeholder: 'Oyuncular için güvenli alım satım platformu.' },
-        ],
-      },
     ],
+  },
+  {
+    id: 'footer',
+    label: 'Footer Ayarları',
+    icon: MessageSquare,
+    sections: [],
   },
   {
     id: 'commerce',
@@ -571,6 +582,228 @@ function SectionCard({ section, settings, set, onUpload, onRemove, imageUploadin
   );
 }
 
+function FooterLinksEditor({ title, description, items, onChange, labelPlaceholder = 'Link başlığı', urlPlaceholder = '/sayfa-linki' }) {
+  const updateItem = (index, patch) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  };
+
+  const removeItem = (index) => {
+    onChange(items.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-5 py-4">
+        <div className="text-sm font-black text-slate-900">{title}</div>
+        <div className="mt-1 text-xs font-semibold leading-5 text-slate-400">{description}</div>
+      </div>
+      <div className="space-y-3 p-5">
+        {items.map((item, index) => (
+          <div key={index} className="grid gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <input
+              value={item.label || ''}
+              onChange={(event) => updateItem(index, { label: event.target.value })}
+              placeholder={labelPlaceholder}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <input
+              value={item.url || ''}
+              onChange={(event) => updateItem(index, { url: event.target.value })}
+              placeholder={urlPlaceholder}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <button
+              type="button"
+              onClick={() => removeItem(index)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-600 transition hover:bg-rose-50"
+            >
+              <Trash2 size={14} />
+              Sil
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { label: '', url: '' }])}
+          className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
+        >
+          <Plus size={14} />
+          Link Ekle
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FooterSocialEditor({ items, onChange }) {
+  const updateItem = (index, patch) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-5 py-4">
+        <div className="text-sm font-black text-slate-900">Sosyal Medya</div>
+        <div className="mt-1 text-xs font-semibold leading-5 text-slate-400">Frontendde platform adı görünmez; sadece seçilen ikon tıklanabilir.</div>
+      </div>
+      <div className="space-y-3 p-5">
+        {items.map((item, index) => (
+          <div key={index} className="grid gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 md:grid-cols-[180px_minmax(0,1fr)_auto]">
+            <select
+              value={item.type || 'instagram'}
+              onChange={(event) => updateItem(index, { type: event.target.value })}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-black text-slate-700 outline-none transition focus:border-violet-400"
+            >
+              {FOOTER_SOCIAL_TYPES.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <input
+              value={item.url || ''}
+              onChange={(event) => updateItem(index, { url: event.target.value })}
+              placeholder="https://..."
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-600 transition hover:bg-rose-50"
+            >
+              <Trash2 size={14} />
+              Sil
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { type: 'instagram', url: '' }])}
+          className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
+        >
+          <Plus size={14} />
+          Sosyal Medya Ekle
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FooterContactEditor({ items, onChange }) {
+  const updateItem = (index, patch) => {
+    onChange(items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  };
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-5 py-4">
+        <div className="text-sm font-black text-slate-900">İletişim</div>
+        <div className="mt-1 text-xs font-semibold leading-5 text-slate-400">Destek, WhatsApp, telefon, mail veya özel link satırlarını buradan yönet.</div>
+      </div>
+      <div className="space-y-3 p-5">
+        {items.map((item, index) => (
+          <div key={index} className="grid gap-2 rounded-2xl border border-slate-100 bg-slate-50/80 p-3 xl:grid-cols-[150px_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+            <select
+              value={item.type || 'support'}
+              onChange={(event) => updateItem(index, { type: event.target.value })}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-black text-slate-700 outline-none transition focus:border-violet-400"
+            >
+              {FOOTER_CONTACT_TYPES.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+            <input
+              value={item.label || ''}
+              onChange={(event) => updateItem(index, { label: event.target.value })}
+              placeholder="Başlık"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <input
+              value={item.value || ''}
+              onChange={(event) => updateItem(index, { value: event.target.value })}
+              placeholder="Alt bilgi"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <input
+              value={item.url || ''}
+              onChange={(event) => updateItem(index, { url: event.target.value })}
+              placeholder="/support, mailto:, tel: veya https://"
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+            />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, itemIndex) => itemIndex !== index))}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-black text-rose-600 transition hover:bg-rose-50"
+            >
+              <Trash2 size={14} />
+              Sil
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { type: 'support', label: '', value: '', url: '' }])}
+          className="inline-flex items-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-xs font-black text-violet-700 transition hover:bg-violet-100"
+        >
+          <Plus size={14} />
+          İletişim Satırı Ekle
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FooterSettingsPanel({ settings, set }) {
+  const popularLinks = normalizeFooterLinks(settings.footer_popular_links, DEFAULT_FOOTER_POPULAR_LINKS);
+  const quickLinks = normalizeFooterLinks(settings.footer_quick_links, DEFAULT_FOOTER_QUICK_LINKS);
+  const socialLinks = normalizeFooterSocialLinks(settings.footer_social_links, DEFAULT_FOOTER_SOCIAL_LINKS);
+  const contactItems = normalizeFooterContactItems(settings.footer_contact_items, DEFAULT_FOOTER_CONTACT_ITEMS);
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aktif Sekme</div>
+            <h2 className="mt-1 text-2xl font-black text-slate-950">Footer Ayarları</h2>
+          </div>
+          <div className="text-xs leading-5 text-slate-400">
+            Popüler linkler en fazla 4 sütun halinde görünür. Sosyal medya alanında kullanıcıya sadece ikon gösterilir.
+          </div>
+        </div>
+        <div className="mt-4">
+          <label className="mb-1.5 block text-sm font-semibold text-slate-700">Footer Telif Metni</label>
+          <input
+            value={settings.footer_copyright || ''}
+            onChange={(event) => set('footer_copyright', event.target.value)}
+            placeholder="© Oyuncu Kantinim. Tüm hakları saklıdır."
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold outline-none transition focus:border-violet-400"
+          />
+        </div>
+      </div>
+
+      <FooterLinksEditor
+        title="Popüler Linkler"
+        description="Footer üst bölümünde gösterilir; masaüstünde otomatik olarak max 4 sütuna yayılır."
+        items={popularLinks}
+        onChange={(items) => set('footer_popular_links', footerListToSetting(items))}
+      />
+      <FooterLinksEditor
+        title="Hızlı Erişim"
+        description="Footer alt bölümünün ilk sütununda gösterilir."
+        items={quickLinks}
+        onChange={(items) => set('footer_quick_links', footerListToSetting(items))}
+      />
+      <FooterSocialEditor
+        items={socialLinks}
+        onChange={(items) => set('footer_social_links', footerListToSetting(items))}
+      />
+      <FooterContactEditor
+        items={contactItems}
+        onChange={(items) => set('footer_contact_items', footerListToSetting(items))}
+      />
+    </div>
+  );
+}
+
 function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUpload, onOptionImageRemove }) {
   const setOptions = (type, nextOptions) => {
     set(`listing_doping_${type}_options`, JSON.stringify(nextOptions));
@@ -904,36 +1137,42 @@ export default function AdminSettings() {
           </aside>
 
           <section className="space-y-4">
-            <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aktif Sekme</div>
-                  <h2 className="mt-1 text-2xl font-black text-slate-950">{activeTabConfig.label}</h2>
+            {activeTab === 'footer' ? (
+              <FooterSettingsPanel settings={settings} set={set} />
+            ) : (
+              <>
+                <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex flex-col gap-2 border-b border-slate-100 pb-4 md:flex-row md:items-end md:justify-between">
+                    <div>
+                      <div className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Aktif Sekme</div>
+                      <h2 className="mt-1 text-2xl font-black text-slate-950">{activeTabConfig.label}</h2>
+                    </div>
+                    <div className="text-xs leading-5 text-slate-400">
+                      Bu sekmedeki ayarlar topluca kaydedilir. Değişiklikler kaydedildikten sonra site davranışına yansır.
+                    </div>
+                  </div>
                 </div>
-                <div className="text-xs leading-5 text-slate-400">
-                  Bu sekmedeki ayarlar topluca kaydedilir. Değişiklikler kaydedildikten sonra site davranışına yansır.
-                </div>
-              </div>
-            </div>
 
-            {activeTabConfig._note ? (
-              <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs text-violet-700 font-semibold">
-                <span className="font-extrabold">Kullanılabilir değişkenler: </span>
-                {activeTabConfig._note}
-              </div>
-            ) : null}
+                {activeTabConfig._note ? (
+                  <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs text-violet-700 font-semibold">
+                    <span className="font-extrabold">Kullanılabilir değişkenler: </span>
+                    {activeTabConfig._note}
+                  </div>
+                ) : null}
 
-            {activeTabConfig.sections.map((section) => (
-              <SectionCard
-                key={section.section}
-                section={section}
-                settings={settings}
-                set={set}
-                onUpload={handleUpload}
-                onRemove={handleRemoveImage}
-                imageUploading={imageUploading}
-              />
-            ))}
+                {activeTabConfig.sections.map((section) => (
+                  <SectionCard
+                    key={section.section}
+                    section={section}
+                    settings={settings}
+                    set={set}
+                    onUpload={handleUpload}
+                    onRemove={handleRemoveImage}
+                    imageUploading={imageUploading}
+                  />
+                ))}
+              </>
+            )}
           </section>
         </div>
       </div>

@@ -197,6 +197,10 @@ function SiteLayout() {
     maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
     footerTagline: 'Oyuncular için güvenli alım satım platformu.',
     footerCopyright: '© Oyuncu Kantinim. Tüm hakları saklıdır.',
+    footerPopularLinks: [],
+    footerQuickLinks: [],
+    footerSocialLinks: [],
+    footerContactItems: [],
   });
 
   useEffect(() => {
@@ -218,6 +222,10 @@ function SiteLayout() {
           maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
           footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
           footerCopyright: data.footer_copyright || '© Oyuncu Kantinim. Tüm hakları saklıdır.',
+          footerPopularLinks: data.footer_popular_links || [],
+          footerQuickLinks: data.footer_quick_links || [],
+          footerSocialLinks: data.footer_social_links || [],
+          footerContactItems: data.footer_contact_items || [],
         });
       })
       .catch(() => {
@@ -310,6 +318,10 @@ function SiteLayout() {
         siteLogoText={siteState.siteLogoText}
         footerTagline={siteState.footerTagline}
         footerCopyright={siteState.footerCopyright}
+        footerPopularLinks={siteState.footerPopularLinks}
+        footerQuickLinks={siteState.footerQuickLinks}
+        footerSocialLinks={siteState.footerSocialLinks}
+        footerContactItems={siteState.footerContactItems}
       />
       <Toast />
     </div>
