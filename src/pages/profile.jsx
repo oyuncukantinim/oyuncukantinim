@@ -3140,6 +3140,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   const [maxImages, setMaxImages] = useState(5);
   const [titleMax, setTitleMax] = useState(100);
   const [descMax, setDescMax] = useState(2000);
+  const [manualDeliveryMaxHours, setManualDeliveryMaxHours] = useState(72);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(500);
   const [stockItemContentMax, setStockItemContentMax] = useState(300);
   const [uploadingIdx, setUploadingIdx] = useState(null);
@@ -3162,6 +3163,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           if (j.data.max_listing_images) setMaxImages(Number(j.data.max_listing_images));
           if (j.data.listing_title_max)  setTitleMax(Number(j.data.listing_title_max));
           if (j.data.listing_desc_max)   setDescMax(Number(j.data.listing_desc_max));
+          if (j.data.manual_delivery_max_hours) setManualDeliveryMaxHours(Number(j.data.manual_delivery_max_hours));
           if (j.data.stock_item_max_count) setStockItemMaxCount(Number(j.data.stock_item_max_count));
           if (j.data.stock_item_content_max) setStockItemContentMax(Number(j.data.stock_item_content_max));
         }
@@ -3250,6 +3252,22 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
   };
 
   const deliveryType = listing.delivery_type === 'stock' ? 'stock' : 'manual';
+  const validImages = images.filter(Boolean);
+  const validStocks = stocks
+    .map((stock) => ({ ...stock, content: String(stock.content || '').slice(0, stockItemContentMax) }))
+    .filter((stock) => stock.content.trim());
+  const requiredAttrsValid = catAttrs.filter((attr) => attr.is_required).every((attr) => {
+    const value = attrValues[attr.slug];
+    return value !== '' && value !== undefined && !(Array.isArray(value) && value.length === 0);
+  });
+  const canSaveListing = Boolean(
+    title.trim()
+    && price
+    && validImages.length >= 1
+    && requiredAttrsValid
+    && (deliveryType !== 'stock' || validStocks.length > 0)
+    && (deliveryType !== 'manual' || deliveryHours <= manualDeliveryMaxHours)
+  );
 
   const handleSave = () => {
     onSave({
@@ -3257,15 +3275,11 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
       title: title.trim(),
       price: parseFloat(price) || 0,
       description: description.trim(),
-      images: images.filter(Boolean),
+      images: validImages,
       cover_index: coverIndex,
       delivery_hours: deliveryHours,
       attributes: attrValues,
-      stocks: deliveryType === 'stock'
-        ? stocks
-            .map((stock) => ({ ...stock, content: String(stock.content || '').slice(0, stockItemContentMax) }))
-            .filter((stock) => stock.content.trim())
-        : [],
+      stocks: deliveryType === 'stock' ? validStocks : [],
       removed_images: pendingDeleteImages,
     });
   };
@@ -3285,7 +3299,7 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="rounded-xl border border-violet-100 bg-violet-50 px-4 py-3">
               <div className="text-[11px] font-bold uppercase tracking-wide text-violet-500">Kategori</div>
-              <div className="mt-1 text-sm font-extrabold text-violet-800">{listing.category || 'Kategori yok'}</div>
+              <div className="mt-1 text-sm font-extrabold text-violet-800">{listing.category_name || listing.category || 'Kategori yok'}</div>
             </div>
             <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3">
               <div className="text-[11px] font-bold uppercase tracking-wide text-cyan-500">Teslimat Türü</div>
@@ -3318,22 +3332,21 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
               className={inputCls + ' resize-none' + (description.length >= descMax ? ' border-orange-300' : '')} placeholder="İlanı detaylı açıklayın..." />
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <div>
-              <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
-              <p className="mt-1 text-xs text-slate-500">Kategoriye ait özellikleri ilan düzenleme sırasında da güncelleyebilirsin.</p>
-            </div>
-            {catAttrs.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-4 text-sm text-slate-400">
-                Bu kategori için özel özellik tanımlanmamış.
+          {catAttrs.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="mb-4">
+                <h3 className="text-sm font-extrabold text-slate-800">Özellikler</h3>
+                <p className="mt-1 text-xs text-slate-500">Kategoriye özel bilgileri ilan detaylarıyla birlikte buradan girebilirsiniz.</p>
               </div>
-            ) : (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {catAttrs.map((attr) => (
                   <div key={attr.slug}>
-                    <label className="mb-1.5 block text-xs font-bold text-gray-600">
+                    <label className="mb-1.5 block text-sm font-bold text-gray-700">
                       {attr.name}
-                      {attr.is_required ? <span className="ml-1 text-red-500">*</span> : null}
+                      {attr.is_required
+                        ? <span className="ml-1 text-red-500">*</span>
+                        : <span className="ml-1 text-xs font-normal text-gray-400">(opsiyonel)</span>
+                      }
                     </label>
                     {attr.type === 'text' && (
                       <input value={attrValues[attr.slug] || ''} onChange={(e) => setAttr(attr.slug, e.target.value)} className={inputCls} />
@@ -3382,14 +3395,14 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Görseller */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-gray-600">Görseller</label>
-              <span className="text-[11px] text-gray-400">{images.filter(Boolean).length}/{maxImages}</span>
+              <span className={`text-[11px] font-semibold ${validImages.length < 1 ? 'text-red-500' : 'text-gray-400'}`}>{validImages.length}/{maxImages}</span>
             </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {images.map((img, idx) => (
@@ -3434,52 +3447,84 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
                 </button>
               )}
             </div>
-            <p className="mt-1.5 text-[11px] text-gray-400">Yeni yüklenen görseller WebP'ye çevrilir ve filigranlı kaydedilir. Eski URL görselleri görünmeye devam eder; değiştirdiğinde dosya olarak yenilenir.</p>
+            {validImages.length < 1 && (
+              <p className="mt-2 text-xs font-bold text-red-500">En az 1 ilan görseli eklemelisin.</p>
+            )}
           </div>
 
-          {deliveryType === 'manual' && (
-            <div>
-              <label className="block text-xs font-bold text-gray-600 mb-1.5">Teslimat Süresi</label>
-              <div className="flex flex-wrap gap-2">
-                {DELIVERY_HOURS_OPTS.map(h => (
-                  <button key={h} onClick={() => setDelHours(h)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                    {h < 24 ? `${h}s` : `${h / 24}g`}
-                  </button>
-                ))}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+            <div className="mb-4 flex items-start gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                <Truck size={18} />
+              </span>
+              <div>
+                <h3 className="text-sm font-extrabold text-slate-800">Teslimat Bilgileri</h3>
               </div>
             </div>
-          )}
 
-          {deliveryType === 'stock' && (
-            <div className="space-y-3 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-extrabold text-cyan-900">Stoklar</h3>
-                  <p className="text-xs text-cyan-700 mt-0.5">Satılmış stoklar korunur, burada aktif stoklar düzenlenir.</p>
+            <div className="space-y-5">
+              <div className="rounded-2xl border-2 border-violet-500 bg-violet-50 p-4 text-left">
+                {deliveryType === 'stock' ? (
+                  <Package size={22} className="mb-2 text-violet-600" />
+                ) : (
+                  <Clock size={22} className="mb-2 text-violet-600" />
+                )}
+                <div className="text-sm font-bold text-violet-800">{deliveryType === 'stock' ? 'Stoklu (Otomatik)' : 'Manuel Teslimat'}</div>
+                <div className="mt-0.5 text-xs leading-relaxed text-gray-500">
+                  {deliveryType === 'stock'
+                    ? 'Ödeme anında sistem otomatik teslim eder'
+                    : 'Alıcı ödedikten sonra belirttiğin sürede teslim edersin'}
                 </div>
               </div>
-              <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
-                {stocks.map((stock, idx) => (
-                  <div key={idx} className="relative rounded-xl border border-cyan-100 bg-white shadow-sm transition-colors focus-within:border-cyan-300 focus-within:bg-cyan-50/40">
-                    {stocks.length > 1 && (
-                      <button onClick={() => removeStock(idx)} className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500">
-                        <Trash2 size={13} />
-                      </button>
-                    )}
-                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400" />
-                  </div>
-                ))}
-              </div>
-              {stocks.length < stockItemMaxCount ? (
-                <button onClick={addStock} className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-cyan-300 rounded-xl text-cyan-700 font-bold text-sm hover:bg-cyan-50 transition-colors">
-                  <Plus size={16} /> Stok Ekle
-                </button>
-              ) : null}
-            </div>
-          )}
 
-          <button onClick={() => handleSave()} disabled={saving || !title.trim() || !price}
+              {deliveryType === 'manual' && (
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-gray-700">Teslimat Süresi</label>
+                  <div className="flex flex-wrap gap-2">
+                    {DELIVERY_HOURS_OPTS.filter((h) => h <= manualDeliveryMaxHours).map(h => (
+                      <button key={h} onClick={() => setDelHours(h)}
+                        className={`rounded-xl border px-4 py-2 text-sm font-bold transition-all ${deliveryHours === h ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300'}`}>
+                        {h < 24 ? `${h} saat` : `${h / 24} gün`}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+                    Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir. En yüksek süre: {manualDeliveryMaxHours} saat.
+                  </div>
+                </div>
+              )}
+
+              {deliveryType === 'stock' && (
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <label className="text-sm font-bold text-gray-700">Stoklar</label>
+                  </div>
+                  <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                    {stocks.map((stock, idx) => (
+                      <div key={idx} className="relative rounded-xl border border-gray-200 bg-white shadow-sm transition-colors focus-within:border-violet-300 focus-within:bg-violet-50/30">
+                        {stocks.length > 1 && (
+                          <button onClick={() => removeStock(idx)} className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500">
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                        <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400" />
+                      </div>
+                    ))}
+                  </div>
+                  {stocks.length < stockItemMaxCount ? (
+                    <button onClick={addStock} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-300 py-2.5 text-sm font-bold text-violet-600 transition-colors hover:bg-violet-50">
+                      <Plus size={16} /> Stok Ekle
+                    </button>
+                  ) : null}
+                  <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-700">
+                    Stok bitince ilan otomatik kapanır. Yeni stok ekleyerek tekrar aktifleştirebilirsiniz.
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <button onClick={() => handleSave()} disabled={saving || !canSaveListing}
             className="w-full bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
             {saving ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet'}
           </button>
