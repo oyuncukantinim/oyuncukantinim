@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CheckCircle2, Gamepad2, Lock, Trophy } from 'lucide-react';
 
 const badgeRequirementLabels = {
@@ -40,18 +42,63 @@ export function VerifiedStoreIcon({ compact = false }) {
 export function IdentityVerifiedIcon({ compact = false }) {
   const sizeClass = compact ? 'h-4 w-4' : 'h-5 w-5';
   const iconSize = compact ? 15 : 18;
+  const anchorRef = useRef(null);
+  const [tooltipPosition, setTooltipPosition] = useState(null);
+
+  const updateTooltipPosition = useCallback(() => {
+    const rect = anchorRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setTooltipPosition({
+      left: rect.left + rect.width / 2,
+      top: rect.top - 8,
+    });
+  }, []);
+
+  const showTooltip = () => {
+    updateTooltipPosition();
+  };
+
+  const hideTooltip = () => {
+    setTooltipPosition(null);
+  };
+
+  useEffect(() => {
+    if (!tooltipPosition) return undefined;
+    window.addEventListener('scroll', updateTooltipPosition, true);
+    window.addEventListener('resize', updateTooltipPosition);
+    return () => {
+      window.removeEventListener('scroll', updateTooltipPosition, true);
+      window.removeEventListener('resize', updateTooltipPosition);
+    };
+  }, [tooltipPosition, updateTooltipPosition]);
 
   return (
-    <span
-      className={`group/identity relative inline-flex ${sizeClass} shrink-0 items-center justify-center overflow-visible`}
-      aria-label="Kimlik Bilgileri Doğrulandı"
-    >
-      <CheckCircle2 size={iconSize} className="fill-sky-500 text-white [filter:drop-shadow(0_0_3px_rgba(14,165,233,0.65))] dark:fill-sky-400" />
-      <span className="pointer-events-none absolute left-1/2 bottom-full z-50 mb-2 w-max max-w-[210px] -translate-x-1/2 translate-y-1 scale-95 rounded-xl border border-sky-200 bg-white px-3 py-2 text-[11px] font-black leading-4 text-sky-700 opacity-0 shadow-xl shadow-sky-900/10 transition-all duration-150 group-hover/identity:translate-y-0 group-hover/identity:scale-100 group-hover/identity:opacity-100 dark:border-sky-400/25 dark:bg-slate-950 dark:text-sky-200 dark:shadow-black/40">
-        Kimlik Bilgileri Doğrulandı
-        <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-sky-200 bg-white dark:border-sky-400/25 dark:bg-slate-950" />
+    <>
+      <span
+        ref={anchorRef}
+        className={`inline-flex ${sizeClass} shrink-0 items-center justify-center`}
+        aria-label="Kimlik Bilgileri Doğrulandı"
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+        onFocus={showTooltip}
+        onBlur={hideTooltip}
+        tabIndex={0}
+      >
+        <CheckCircle2 size={iconSize} className="fill-sky-500 text-white [filter:drop-shadow(0_0_3px_rgba(14,165,233,0.65))] dark:fill-sky-400" />
       </span>
-    </span>
+      {tooltipPosition && typeof document !== 'undefined'
+        ? createPortal(
+          <span
+            className="pointer-events-none fixed z-[9999] w-max max-w-[220px] -translate-x-1/2 -translate-y-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-center text-[11px] font-black leading-4 text-sky-700 opacity-100 shadow-xl shadow-sky-900/15 dark:border-sky-400/25 dark:bg-slate-950 dark:text-sky-200 dark:shadow-black/50"
+            style={{ left: `${tooltipPosition.left}px`, top: `${tooltipPosition.top}px` }}
+          >
+            Kimlik Bilgileri Doğrulandı
+            <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-sky-200 bg-white dark:border-sky-400/25 dark:bg-slate-950" />
+          </span>,
+          document.body,
+        )
+        : null}
+    </>
   );
 }
 
