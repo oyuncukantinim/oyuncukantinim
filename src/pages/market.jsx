@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Clock, Filter, Folder, Grid2X2, KeyRound, List, Plus, RotateCcw,
+  Clock, Filter, Folder, KeyRound, Plus, RotateCcw,
   Search, ShieldCheck, SlidersHorizontal, Star, UserRound, Wifi, X, Zap,
 } from 'lucide-react';
 import { getListings, getCategories } from '../lib/api';
@@ -12,19 +12,7 @@ import useSiteBrand from '../hooks/useSiteBrand';
 
 const PAGE_SIZE = 20;
 
-function ListingSkeleton({ list }) {
-  if (list) {
-    return (
-      <div className="flex animate-pulse gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
-        <div className="h-24 w-24 shrink-0 rounded-xl bg-slate-100 dark:bg-slate-800" />
-        <div className="flex-1 space-y-2 py-1">
-          <div className="h-4 w-1/3 rounded-full bg-slate-100 dark:bg-slate-800" />
-          <div className="h-4 w-2/3 rounded-full bg-slate-100 dark:bg-slate-800" />
-          <div className="h-4 w-1/4 rounded-full bg-slate-100 dark:bg-slate-800" />
-        </div>
-      </div>
-    );
-  }
+function ListingSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="animate-pulse">
@@ -313,7 +301,6 @@ export default function MarketPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
 
-  const [viewMode, setViewMode] = useState('grid');
   const [categories, setCategories] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -486,24 +473,6 @@ export default function MarketPage() {
                   </select>
                 </div>
 
-                <div className="flex rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-slate-700 dark:bg-slate-800">
-                  <button
-                    onClick={() => setViewMode('grid')}
-                    className={`rounded-lg p-1.5 transition-colors ${viewMode === 'grid' ? 'bg-white text-violet-600 shadow dark:bg-slate-700 dark:text-violet-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
-                    title="Grid görünüm"
-                    type="button"
-                  >
-                    <Grid2X2 size={18} />
-                  </button>
-                  <button
-                    onClick={() => setViewMode('list')}
-                    className={`rounded-lg p-1.5 transition-colors ${viewMode === 'list' ? 'bg-white text-violet-600 shadow dark:bg-slate-700 dark:text-violet-200' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'}`}
-                    title="Liste görünüm"
-                    type="button"
-                  >
-                    <List size={18} />
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -525,12 +494,9 @@ export default function MarketPage() {
           </section>
 
           {loading ? (
-            <div className={viewMode === 'grid'
-              ? 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
-              : 'flex flex-col gap-4'
-            }>
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {Array.from({ length: 8 }).map((_, i) => (
-                <ListingSkeleton key={i} list={viewMode === 'list'} />
+                <ListingSkeleton key={i} />
               ))}
             </div>
           ) : listings.length === 0 ? (
@@ -553,16 +519,12 @@ export default function MarketPage() {
             </div>
           ) : (
             <>
-              <div className={viewMode === 'grid'
-                ? 'grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'
-                : 'flex flex-col gap-4'
-              }>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {listings.map((listing) => (
                   <ListingCard
                     key={listing.id}
                     listing={listing}
                     fallbackImage={defaultListingImage}
-                    compact={viewMode === 'list'}
                   />
                 ))}
               </div>

@@ -17,16 +17,16 @@
   }
 
   html.theme-dark {
-    --ok-bg: #1d293d;
-    --ok-panel: #29364f;
-    --ok-panel-soft: #34445f;
-    --ok-panel-muted: #40516f;
+    --ok-bg: #26344c;
+    --ok-panel: #33445f;
+    --ok-panel-soft: #3d506d;
+    --ok-panel-muted: #4a5f7c;
     --ok-text: #f1f5f9;
     --ok-heading: #ffffff;
     --ok-muted: #cbd5e1;
-    --ok-subtle: #a7b5c8;
-    --ok-border: rgba(203, 213, 225, 0.30);
-    --ok-border-soft: rgba(203, 213, 225, 0.20);
+    --ok-subtle: #b5c2d3;
+    --ok-border: rgba(226, 232, 240, 0.34);
+    --ok-border-soft: rgba(226, 232, 240, 0.23);
   }
 
   body {
