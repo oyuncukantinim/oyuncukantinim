@@ -572,14 +572,15 @@ export default function CreatePage() {
                     <div className="mb-3 flex items-center justify-between">
                       <label className="text-sm font-bold text-gray-700">Stoklar</label>
                     </div>
-                    <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                    <div className="max-h-80 overflow-y-auto rounded-xl border border-gray-200 bg-white">
                       {stocks.map((stock, idx) => (
-                        <div key={idx} className="rounded-xl border border-gray-200 bg-white p-3">
-                          <div className="mb-2 flex items-center justify-between">
-                            <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
-                            {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="rounded-lg p-1 text-red-400 hover:bg-red-50"><Trash2 size={13} /></button>}
-                          </div>
-                          <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="input-field w-full resize-none font-mono text-xs" />
+                        <div key={idx} className="relative border-b border-gray-100 last:border-b-0">
+                          {stocks.length > 1 && (
+                            <button onClick={() => removeStock(idx)} className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500">
+                              <Trash2 size={13} />
+                            </button>
+                          )}
+                          <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-violet-50/40" />
                         </div>
                       ))}
                     </div>

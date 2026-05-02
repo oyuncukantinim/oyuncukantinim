@@ -3455,22 +3455,19 @@ function EditListingModal({ listing, onClose, onSave, saving }) {
             <div className="space-y-3 rounded-2xl border border-cyan-100 bg-cyan-50/50 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-extrabold text-cyan-900">Stok Kalemleri</h3>
+                  <h3 className="text-sm font-extrabold text-cyan-900">Stoklar</h3>
                   <p className="text-xs text-cyan-700 mt-0.5">Satılmış stoklar korunur, burada aktif stoklar düzenlenir.</p>
                 </div>
               </div>
-              <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+              <div className="max-h-80 overflow-y-auto rounded-xl border border-cyan-100 bg-white">
                 {stocks.map((stock, idx) => (
-                  <div key={idx} className="bg-white rounded-xl p-3 border border-cyan-100">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
-                      {stocks.length > 1 ? (
-                        <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400">
-                          <Trash2 size={13} />
-                        </button>
-                      ) : null}
-                    </div>
-                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
+                  <div key={idx} className="relative border-b border-cyan-50 last:border-b-0">
+                    {stocks.length > 1 && (
+                      <button onClick={() => removeStock(idx)} className="absolute right-2 top-2 z-10 rounded-lg p-1.5 text-red-400 transition-colors hover:bg-red-50 hover:text-red-500">
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                    <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} maxLength={stockItemContentMax} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="w-full resize-none bg-transparent px-3 py-3 pr-10 font-mono text-xs text-gray-700 outline-none placeholder:text-gray-400 focus:bg-cyan-50/50" />
                   </div>
                 ))}
               </div>
