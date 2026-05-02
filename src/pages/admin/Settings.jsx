@@ -299,14 +299,6 @@ const SETTINGS_TABS = [
         ],
       },
       {
-        section: 'Sipariş Tamamlandı Bildirimi',
-        fields: [
-          { key: 'email_tpl_order_complete_enabled', label: 'Tamamlandı Maili Aktif', type: 'toggle', desc: 'Sipariş onaylandığında satıcıya e-posta gönderilir.' },
-          { key: 'email_tpl_order_complete_subject', label: 'Konu', type: 'text', placeholder: '{site_name} - Ödemeniz Hesabınıza Aktarıldı' },
-          { key: 'email_tpl_order_complete_body', label: 'İçerik (HTML)', type: 'textarea', rows: 6, placeholder: '<p>Merhaba {seller_name},</p><p>Sipariş #{order_id} teslim onaylandı, ödemeniz bakiyenize aktarıldı.</p>' },
-        ],
-      },
-      {
         section: 'Anlaşmazlık Bildirimi',
         fields: [
           { key: 'email_tpl_dispute_enabled', label: 'Anlaşmazlık Maili Aktif', type: 'toggle', desc: 'Anlaşmazlık açıldığında alıcı ve satıcıya e-posta gönderilir.' },
