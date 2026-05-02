@@ -10,7 +10,7 @@ import { useCart } from '../context/useCart';
 import { useAuth } from '../context/useAuth';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { getListingCoverImage, getListingImageSet } from '../lib/listingMedia';
-import { IdentityVerifiedIcon, StoreBadgeIcon, VerifiedStoreIcon } from '../components/StoreBadges';
+import { IdentityVerifiedIcon, StoreBadgeIcon } from '../components/StoreBadges';
 import { isIdentityVerified } from '../lib/identityVerification';
 import { buildListingSeo, useSeo } from '../hooks/useSeo';
 import UserAvatar from '../components/UserAvatar';
@@ -483,7 +483,6 @@ export default function ListingDetailPage() {
                         {listing.seller}
                       </Link>
                       {isIdentityVerified(listing) ? <IdentityVerifiedIcon compact /> : null}
-                      {Number(listing.seller_is_verified_store) === 1 ? <VerifiedStoreIcon compact /> : null}
                       {sellerBadges.map((badge) => (
                         <StoreBadgeIcon key={badge.id || badge.title} badge={badge} />
                       ))}

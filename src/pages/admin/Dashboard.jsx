@@ -342,7 +342,7 @@ export default function AdminDashboard() {
         <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           <Queue title="Çekim Talepleri" value={count(Number(stats?.pending_withdrawals || 0) + Number(stats?.processing_withdrawals || 0))} helper={`${money(stats?.pending_withdrawal_amount)} toplam bekleyen/işlemde tutar.`} icon={Wallet} to="/admin/payment-management" urgent={Number(stats?.pending_withdrawals || 0) > 0} tone="from-emerald-500 to-teal-500" />
           <Queue title="Banka Hesap Onayı" value={count(stats?.pending_payment_accounts)} helper={`${count(stats?.approved_payment_accounts)} onaylı hesap kullanımda.`} icon={CreditCard} to="/admin/payment-management" urgent={Number(stats?.pending_payment_accounts || 0) > 0} tone="from-violet-500 to-fuchsia-500" />
-          <Queue title="Satıcı Başvuruları" value={count(stats?.pending_store_applications)} helper={`${count(stats?.active_store_badges)} aktif rozet ve ${count(stats?.verified_stores)} onaylı satıcı.`} icon={Store} to="/admin/store-management" urgent={Number(stats?.pending_store_applications || 0) > 0} tone="from-cyan-500 to-blue-500" />
+          <Queue title="Mağaza Başvuruları" value={count(stats?.pending_store_applications)} helper={`${count(stats?.active_store_badges)} aktif rozet ve ${count(stats?.verified_stores)} onaylı mağaza.`} icon={Store} to="/admin/store-management" urgent={Number(stats?.pending_store_applications || 0) > 0} tone="from-cyan-500 to-blue-500" />
           <Queue title="Destek Kuyruğu" value={count(stats?.open_support_tickets)} helper={`${count(stats?.unassigned_support_tickets)} talep admin ataması bekliyor.`} icon={LifeBuoy} to="/admin/support" urgent={Number(stats?.open_support_tickets || 0) > 0} tone="from-rose-500 to-orange-500" />
         </section>
 
@@ -393,7 +393,7 @@ export default function AdminDashboard() {
               <WorkItem key={request.id} avatar={request.avatar} title={request.username || 'Kullanıcı yok'} meta={`${request.bank_name || 'Banka yok'} · ${request.account_holder || 'Hesap sahibi yok'}`} value={money(request.total_amount || request.amount)} badge={request.status === 'processing' ? 'İşlemde' : 'Bekliyor'} badgeTone={toneFor(request.status)} />
             )} />
           </Panel>
-          <Panel title="Satıcı Başvuruları" subtitle="Onaylı satıcı modülündeki son başvurular." to="/admin/store-management">
+          <Panel title="Mağaza Başvuruları" subtitle="Onaylı mağaza modülündeki son başvurular." to="/admin/store-management">
             <WorkList items={stats?.recent_store_applications} empty="Mağaza başvurusu yok." render={(application) => (
               <WorkItem key={application.id} avatar={application.avatar} title={application.username || 'Kullanıcı yok'} meta={`${application.email || 'E-posta yok'} · ${dateTime(application.created_at)}`} badge={LABELS.store[application.status] || application.status} badgeTone={toneFor(application.status)} />
             )} />

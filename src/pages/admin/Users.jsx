@@ -758,8 +758,8 @@ export default function AdminUsers() {
               className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-violet-400 focus:outline-none"
             >
               <option value="">Mağaza Durumu</option>
-              <option value="1">Onaylı Kullanıcılar</option>
-              <option value="0">Onaysız Kullanıcılar</option>
+              <option value="1">Onaylı Mağazalar</option>
+              <option value="0">Onaylı Mağaza Olmayanlar</option>
             </select>
             <select
               value={filterIdentityStatus}
@@ -829,7 +829,7 @@ export default function AdminUsers() {
                             <div className="flex items-center gap-1.5 font-bold text-gray-800">
                               <span>{u.username}</span>
                               {u.identity_status === 'approved' && (
-                                <CheckCircle2 size={14} className="shrink-0 text-blue-500" aria-label="Kimlik onaylı" />
+                                <CheckCircle2 size={14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" />
                               )}
                               {u.identity_status === 'pending' && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-600">
@@ -843,7 +843,7 @@ export default function AdminUsers() {
                               )}
                               {Number(u.is_verified_store) === 1 && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-600">
-                                  <CheckCircle2 size={11} /> Onaylı
+                                  <CheckCircle2 size={11} /> Mağaza
                                 </span>
                               )}
                             </div>
@@ -962,7 +962,7 @@ export default function AdminUsers() {
                     )}
                     {Number(detailUser.is_verified_store) === 1 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-bold text-emerald-700">
-                        <CheckCircle2 size={13} /> Onaylı Satıcı
+                        <CheckCircle2 size={13} /> Onaylı Mağaza
                       </span>
                     )}
                     {Number(detailUser.is_banned) === 1 && (
@@ -1628,8 +1628,8 @@ export default function AdminUsers() {
                   <label className="admin-verified-store-card rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-bold text-slate-900">Onaylı Satıcı</div>
-                        <div className="mt-1 text-xs text-slate-500">Kullanıcının profil onayını verir veya kaldırır.</div>
+                        <div className="text-sm font-bold text-slate-900">Onaylı Mağaza</div>
+                        <div className="mt-1 text-xs text-slate-500">Kullanıcının mağaza statüsünü verir veya kaldırır.</div>
                       </div>
                       <input
                         type="checkbox"

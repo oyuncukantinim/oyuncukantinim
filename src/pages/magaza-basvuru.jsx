@@ -33,7 +33,7 @@ const statusMeta = {
 };
 
 const benefits = [
-  { icon: ShieldCheck, title: 'Güven Rozeti', text: 'Yeşil Onaylı Satıcı rozetiyle satıcı kartlarında güçlü güven sinyali.', accent: 'from-emerald-500 to-teal-500' },
+  { icon: ShieldCheck, title: 'Onaylı Mağaza Statüsü', text: 'Mağaza başvurusu onaylandığında rozet koleksiyonu, vitrin ve güven alanlarında daha kurumsal görünüm kazanırsın.', accent: 'from-emerald-500 to-teal-500' },
   { icon: ArrowUpWideNarrow, title: 'Daha Üst Görünürlük', text: 'Pazar alanında standart üyelere göre öne çıkan konumlandırma.', accent: 'from-sky-500 to-indigo-500' },
   { icon: Crown, title: 'Satış Rütbeleri', text: 'Satış başarına göre özel rütbe rozetleri ve prestij seviyeleri.', accent: 'from-amber-500 to-orange-500' },
   { icon: Sparkles, title: 'Özel Rozetler', text: 'Admin tarafından oluşturulan oyuncu temalı özel rozet koleksiyonu.', accent: 'from-violet-500 to-fuchsia-500' },
@@ -197,14 +197,14 @@ export default function StoreApplicationPage() {
               <Gamepad2 size={14} /> Mağaza güçlendirme merkezi
             </div>
             <h1 className="mb-fade-up max-w-5xl bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text pb-1 text-3xl font-black leading-[1.15] text-transparent sm:text-5xl" style={{ animationDelay: '.05s' }}>
-              Onaylı Satıcı ol,{' '}
+              Onaylı Mağaza ol,{' '}
               <span className="mb-gradient-x inline-block bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300 bg-clip-text pb-1 text-transparent">
                 profesyonel görün
               </span>
               .
             </h1>
             <p className="mb-fade-up mt-4 max-w-3xl text-sm font-semibold leading-7 text-white/70 sm:text-base" style={{ animationDelay: '.1s' }}>
-              Yeşil verify rozeti, satış rütbeleri, özel rozetler ve mağaza odaklı avantajlarla satıcı profilini güçlü bir vitrine dönüştür.
+              Mağaza statüsü, satış rütbeleri, özel rozetler ve mağaza odaklı avantajlarla satıcı profilini güçlü bir vitrine dönüştür.
             </p>
             <div className="mb-fade-up mt-6 flex flex-wrap items-center gap-2.5" style={{ animationDelay: '.15s' }}>
               {isVerified ? <VerifiedStoreBadge /> : null}
@@ -259,13 +259,13 @@ export default function StoreApplicationPage() {
               </div>
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-widest text-emerald-700 shadow-sm">
-                  <CheckCircle2 size={12} /> Doğrulanmış satıcı
+                  <CheckCircle2 size={12} /> Onaylı Mağaza
                 </div>
                 <h2 className="mt-2 text-2xl font-black text-slate-900 sm:text-3xl">
                   Mağazan <span className="bg-gradient-to-r from-emerald-600 to-cyan-600 bg-clip-text text-transparent">onaylı</span>
                 </h2>
                 <p className="mt-2 max-w-xl text-sm font-semibold leading-6 text-slate-600">
-                  Tekrar başvuru göndermene gerek yok. Onaylı Satıcı rozeti, özel rütbeler ve mağaza avantajları profilinde aktif durumda.
+                  Tekrar başvuru göndermene gerek yok. Onaylı Mağaza statüsü, özel rütbeler ve mağaza avantajları profilinde aktif durumda.
                 </p>
               </div>
             </div>
@@ -286,7 +286,7 @@ export default function StoreApplicationPage() {
           <div className="mb-4 flex items-end justify-between">
             <div>
               <div className="text-[11px] font-black uppercase tracking-widest text-violet-600">Avantajlar</div>
-              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Onaylı satıcı olmanın getirileri</h2>
+              <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Onaylı mağaza olmanın getirileri</h2>
             </div>
           </div>
           <div className="mb-stagger grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -447,10 +447,10 @@ export default function StoreApplicationPage() {
           </Link>
         </div>
         <div className="mb-stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          <VerifiedAchievementCard isVerified={isVerified} forceUnlocked />
-          {(overview.badges || []).map((badge) => (
+          <VerifiedAchievementCard isVerified={identityApproved} forceUnlocked={identityApproved} />
+          {isVerified ? (overview.badges || []).map((badge) => (
             <AchievementCard key={badge.id} badge={badge} forceUnlocked />
-          ))}
+          )) : null}
           {(!overview.badges || overview.badges.length === 0) ? (
             <div className="rounded-2xl bg-slate-50 p-6 text-center text-sm font-semibold text-slate-400">
               Henüz admin tarafından rozet oluşturulmamış.

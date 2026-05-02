@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Image as ImageIcon, Star, Zap, BadgeCheck } from 'lucide-react';
+import { Image as ImageIcon, Star, Zap } from 'lucide-react';
 import { listingSlug } from '../lib/api';
 import { getListingCoverImage } from '../lib/listingMedia';
 import { getListingActiveDopingTypes } from '../lib/doping';
@@ -29,7 +29,6 @@ export default function ListingCard({ listing, compact = false, dense = false, f
   const activeTypes = getListingActiveDopingTypes(listing);
   const hasDoping = activeTypes.length > 0;
   const listingUrl = listingSlug(listing.title, listing.id);
-  const sellerVerified = Number(listing.seller_is_verified_store) === 1;
   const sellerIdentityVerified = isIdentityVerified(listing);
   const isVitrine = activeTypes.includes('vitrine');
   const categoryLabel = listing.category_name || formatCategoryLabel(listing.category || listing.category_slug || listing.type);
@@ -100,7 +99,6 @@ export default function ListingCard({ listing, compact = false, dense = false, f
               >
                 <span className="truncate">{listing.seller || 'Satıcı'}</span>
                 {sellerIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
-                {sellerVerified ? <BadgeCheck size={12} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
               </Link>
             </div>
             <div className="flex shrink-0 items-center gap-2">
@@ -196,7 +194,6 @@ export default function ListingCard({ listing, compact = false, dense = false, f
         >
           <span className="truncate">{listing.seller || 'Satıcı'}</span>
           {sellerIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
-          {sellerVerified ? <BadgeCheck size={dense ? 11 : 14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
         </Link>
       </div>
 

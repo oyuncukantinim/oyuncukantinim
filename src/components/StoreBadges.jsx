@@ -16,10 +16,10 @@ export function VerifiedStoreBadge({ compact = false }) {
       className={`inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 font-black text-emerald-700 shadow-sm shadow-emerald-100 ${
         compact ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs'
       }`}
-      title="Onaylı Satıcı"
+      title="Onaylı Mağaza"
     >
       <CheckCircle2 size={compact ? 12 : 14} className="fill-emerald-500 text-white" />
-      Onaylı Satıcı
+      Onaylı Mağaza
     </span>
   );
 }
@@ -31,8 +31,8 @@ export function VerifiedStoreIcon({ compact = false }) {
   return (
     <span
       className={`inline-flex ${sizeClass} items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-sm shadow-emerald-100`}
-      title="Onaylı Satıcı"
-      aria-label="Onaylı Satıcı"
+      title="Onaylı Mağaza"
+      aria-label="Onaylı Mağaza"
     >
       <CheckCircle2 size={iconSize} className="fill-emerald-500 text-white" />
     </span>
@@ -77,23 +77,23 @@ export function IdentityVerifiedIcon({ compact = false }) {
       <span
         ref={anchorRef}
         className={`inline-flex ${sizeClass} shrink-0 items-center justify-center`}
-        aria-label="Kimlik Bilgileri Doğrulandı"
+        aria-label="Onaylı Satıcı"
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
         onFocus={showTooltip}
         onBlur={hideTooltip}
         tabIndex={0}
       >
-        <CheckCircle2 size={iconSize} className="fill-sky-500 text-white [filter:drop-shadow(0_0_3px_rgba(14,165,233,0.65))] dark:fill-sky-400" />
+        <CheckCircle2 size={iconSize} className="fill-emerald-500 text-white [filter:drop-shadow(0_0_3px_rgba(16,185,129,0.62))] dark:fill-emerald-400" />
       </span>
       {tooltipPosition && typeof document !== 'undefined'
         ? createPortal(
           <span
-            className="pointer-events-none fixed z-[9999] w-max max-w-[220px] -translate-x-1/2 -translate-y-full rounded-xl border border-sky-200 bg-white px-3 py-2 text-center text-[11px] font-black leading-4 text-sky-700 opacity-100 shadow-xl shadow-sky-900/15 dark:border-sky-400/25 dark:bg-slate-950 dark:text-sky-200 dark:shadow-black/50"
+            className="pointer-events-none fixed z-[9999] w-max max-w-[220px] -translate-x-1/2 -translate-y-full rounded-xl border border-emerald-200 bg-white px-3 py-2 text-center text-[11px] font-black leading-4 text-emerald-700 opacity-100 shadow-xl shadow-emerald-900/15 dark:border-emerald-400/25 dark:bg-slate-950 dark:text-emerald-200 dark:shadow-black/50"
             style={{ left: `${tooltipPosition.left}px`, top: `${tooltipPosition.top}px` }}
           >
-            Kimlik Bilgileri Doğrulandı
-            <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-sky-200 bg-white dark:border-sky-400/25 dark:bg-slate-950" />
+            Onaylı Satıcı
+            <span className="absolute left-1/2 top-full h-2 w-2 -translate-x-1/2 -translate-y-1 rotate-45 border-b border-r border-emerald-200 bg-white dark:border-emerald-400/25 dark:bg-slate-950" />
           </span>,
           document.body,
         )
@@ -109,7 +109,7 @@ export function StoreBadgeIcon({ badge, size = 'md' }) {
   return (
     <span
       className={`group/badge relative inline-flex ${sizeClass} items-center justify-center overflow-visible rounded-full`}
-      aria-label={badge.title || 'Satıcı rozeti'}
+      aria-label={badge.title || 'Mağaza rozeti'}
     >
       <span className={`inline-flex ${sizeClass} items-center justify-center overflow-hidden rounded-full border border-amber-200 bg-white shadow-sm transition-transform duration-200 group-hover/badge:scale-110`}>
         <img src={badge.image_url} alt={badge.title || ''} className="h-full w-full object-cover" />
@@ -186,7 +186,7 @@ export function AchievementCard({ badge, forceUnlocked = false }) {
 
   return (
     <div
-      title={badge.description || badge.title || 'Satış başarım rozeti.'}
+      title={badge.description || badge.title || 'Mağaza başarım rozeti.'}
       className={`achievement-card relative min-h-[190px] overflow-hidden rounded-2xl border p-3 text-center shadow-sm transition-all ${
         unlocked
           ? 'border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-amber-100'
@@ -212,7 +212,7 @@ export function AchievementCard({ badge, forceUnlocked = false }) {
 
       <h3 className={`mt-3 line-clamp-1 text-sm font-black ${unlocked ? 'text-slate-900' : 'text-slate-500'}`}>{badge.title}</h3>
       <p className={`mt-1 line-clamp-2 text-xs font-semibold leading-5 ${unlocked ? 'text-slate-500' : 'text-slate-400'}`}>
-        {badge.description || 'Satış başarım rozeti.'}
+        {badge.description || 'Mağaza başarım rozeti.'}
       </p>
       <div className={`mt-3 inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ${unlocked ? 'bg-white text-amber-700 shadow-sm' : 'bg-slate-200 text-slate-500'}`}>
         {requirementText}

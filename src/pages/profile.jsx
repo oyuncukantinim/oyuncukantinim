@@ -724,6 +724,8 @@ export default function ProfilePage() {
   const identityLockedFields = new Set(identityOverview?.locked_fields || []);
   const identityApproved = identityOverview?.status === 'approved';
   const identityPending = identityOverview?.status === 'pending';
+  const hasVerifiedSellerBadge = identityApproved || isIdentityVerified(user);
+  const hasVerifiedStore = Number(storeOverview?.is_verified_store || user?.is_verified_store) === 1;
   const identityBaseline = identityOverview?.form_values || {};
   const lockedIdentityInputClass = 'input-field disabled:cursor-not-allowed disabled:border-violet-100 disabled:bg-violet-50/80 disabled:text-slate-700 disabled:shadow-inner dark:disabled:border-violet-900/40 dark:disabled:bg-slate-900/80 dark:disabled:text-slate-200';
   const baselineFullName = identityBaseline.full_name ?? (user?.full_name || '');
@@ -1645,11 +1647,16 @@ export default function ProfilePage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                <VerifiedAchievementCard isVerified={Boolean(storeOverview?.is_verified_store)} />
-                {(storeOverview?.badges || []).map((badge) => (
+                <VerifiedAchievementCard isVerified={hasVerifiedSellerBadge} />
+                {hasVerifiedStore ? (storeOverview?.badges || []).map((badge) => (
                   <AchievementCard key={badge.id} badge={badge} />
-                ))}
+                )) : null}
               </div>
+              {!hasVerifiedStore ? (
+                <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-5 text-sm font-semibold leading-6 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+                  Onaylı Satıcı rozeti kimlik doğrulamasıyla açılır. Satış rütbeleri ve özel mağaza rozetleri ise Onaylı Mağaza statüsü aldığında görünür.
+                </div>
+              ) : null}
             </div>
           )}
 

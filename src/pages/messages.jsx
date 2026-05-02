@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag, BadgeCheck } from 'lucide-react';
+import { Send, MessageCircle, Search, Check, CheckCheck, Shield, ArrowLeft, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../context/useAuth';
 import { getConversations, getMessages, getSharedOrders, getSiteSettings, sendMessage } from '../lib/api';
 import UserAvatar from '../components/UserAvatar';
@@ -205,7 +205,6 @@ export default function MessagesPage() {
                       <span className={`font-bold text-sm inline-flex items-center gap-1 ${isActive ? 'text-violet-700' : 'text-gray-800'}`}>
                         {conv.username}
                         {isIdentityVerified(conv) ? <IdentityVerifiedIcon compact /> : null}
-                        {Number(conv.is_verified_store) === 1 ? <BadgeCheck size={13} className="fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
                       </span>
                       <span className="text-[11px] text-gray-400 flex-shrink-0 ml-1">{formatTime(conv.last_message_time)}</span>
                     </div>
@@ -426,7 +425,6 @@ function ChatPanel({ userId, currentUser, activeConversation, onBack, messageMax
             >
               <span className="truncate">{displayName}</span>
               {otherIdentityVerified ? <IdentityVerifiedIcon compact /> : null}
-              {Number(activeConversation?.is_verified_store) === 1 ? <BadgeCheck size={14} className="shrink-0 fill-emerald-500 text-white" aria-label="Onaylı Satıcı" /> : null}
             </Link>
           ) : (
             <div className="font-extrabold text-gray-900 text-sm truncate">{displayName}</div>
