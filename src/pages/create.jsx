@@ -28,7 +28,6 @@ const STEPS = [
   { id: 1, label: 'Kategori',       icon: Tag },
   { id: 2, label: 'İlan Bilgileri', icon: Info },
   { id: 3, label: 'Doping',         icon: Package },
-  { id: 4, label: 'Teslimat',       icon: Truck },
 ];
 
 function StepBar({ current }) {
@@ -176,12 +175,6 @@ export default function CreatePage() {
     if (step === 1) return !!selectedCategory;
     if (step === 2) return canProceedFromInfo();
     if (step === 3) return true;
-    if (step === 4) {
-      if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) return false;
-      if (deliveryType === 'stock' && stocks.length > stockItemMaxCount) return false;
-      if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
-      return true;
-    }
     return true;
   };
 
@@ -190,10 +183,19 @@ export default function CreatePage() {
     if (!infoValid) return false;
     if (effectiveMinPrice !== null && priceNum < effectiveMinPrice) return false;
     if (siteMaxPrice !== null && priceNum > siteMaxPrice) return false;
-    return catAttrs.filter(a => a.is_required).every(a => {
+    const attributesValid = catAttrs.filter(a => a.is_required).every(a => {
       const v = attrValues[a.slug];
       return v !== '' && v !== undefined && !(Array.isArray(v) && v.length === 0);
     });
+    if (!attributesValid) return false;
+    return canProceedFromDelivery();
+  };
+
+  const canProceedFromDelivery = () => {
+    if (deliveryType === 'manual' && deliveryHours > manualDeliveryMaxHours) return false;
+    if (deliveryType === 'stock' && stocks.length > stockItemMaxCount) return false;
+    if (deliveryType === 'stock') return stocks.some(s => s.content.trim() !== '');
+    return true;
   };
 
   const handleSubmit = async () => {
@@ -510,6 +512,74 @@ export default function CreatePage() {
                 </div>
               )}
             </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div className="mb-4 flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                  <Truck size={18} />
+                </span>
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800">Teslimat Bilgileri</h3>
+                  <p className="mt-1 text-xs text-slate-500">İlanın teslimat şeklini ve teslim süresini ilan bilgileriyle birlikte belirleyin.</p>
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {[
+                    { id: 'manual', icon: Clock,   title: 'Manuel Teslimat', desc: 'Alıcı ödedikten sonra belirttiğin sürede teslim edersin' },
+                    { id: 'stock',  icon: Package, title: 'Stoklu (Otomatik)', desc: 'Ödeme anında sistem otomatik teslim eder' },
+                  ].map(opt => (
+                    <button key={opt.id} onClick={() => setDeliveryType(opt.id)} className={`rounded-2xl border-2 p-4 text-left transition-all ${deliveryType === opt.id ? 'border-violet-500 bg-violet-50' : 'border-gray-200 bg-white hover:border-violet-200'}`}>
+                      <opt.icon size={22} className={`mb-2 ${deliveryType === opt.id ? 'text-violet-600' : 'text-gray-400'}`} />
+                      <div className={`text-sm font-bold ${deliveryType === opt.id ? 'text-violet-800' : 'text-gray-700'}`}>{opt.title}</div>
+                      <div className="mt-0.5 text-xs leading-relaxed text-gray-500">{opt.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {deliveryType === 'manual' && (
+                  <div>
+                    <label className="mb-2 block text-sm font-bold text-gray-700">Teslimat Süresi</label>
+                    <div className="flex flex-wrap gap-2">
+                      {DELIVERY_HOURS.filter(h => h <= manualDeliveryMaxHours).map(h => (
+                        <button key={h} onClick={() => setDeliveryHours(h)} className={`rounded-xl border px-4 py-2 text-sm font-bold transition-all ${deliveryHours === h ? 'border-violet-600 bg-violet-600 text-white' : 'border-gray-200 bg-white text-gray-600 hover:border-violet-300'}`}>
+                          {h < 24 ? `${h} saat` : `${h / 24} gün`}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700">
+                      Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir. En yüksek süre: {manualDeliveryMaxHours} saat.
+                    </div>
+                  </div>
+                )}
+
+                {deliveryType === 'stock' && (
+                  <div>
+                    <div className="mb-3 flex items-center justify-between">
+                      <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
+                    </div>
+                    <div className="max-h-80 space-y-3 overflow-y-auto pr-1">
+                      {stocks.map((stock, idx) => (
+                        <div key={idx} className="rounded-xl border border-gray-200 bg-white p-3">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
+                            {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="rounded-lg p-1 text-red-400 hover:bg-red-50"><Trash2 size={13} /></button>}
+                          </div>
+                          <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği - alıcı satın alınca bunu görecek" rows={3} className="input-field w-full resize-none font-mono text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={addStock} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-violet-300 py-2.5 text-sm font-bold text-violet-600 transition-colors hover:bg-violet-50">
+                      <Plus size={16} /> Stok Ekle
+                    </button>
+                    <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs font-medium text-blue-700">
+                      Stok bitince ilan otomatik kapanır. Yeni stok ekleyerek tekrar aktifleştirebilirsiniz.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
         {/* ADIM 3: DOPING */}
@@ -592,65 +662,6 @@ export default function CreatePage() {
                 </div>
               </div>
             ) : null}
-          </div>
-        )}
-
-        {/* ADIM 4: TESLİMAT */}
-        {step === 4 && (
-          <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { id: 'manual', icon: Clock,   title: 'Manuel Teslimat', desc: 'Alıcı ödedikten sonra belirttiğin sürede teslim edersin' },
-                { id: 'stock',  icon: Package, title: 'Stoklu (Otomatik)', desc: 'Ödeme anında sistem otomatik teslim eder' },
-              ].map(opt => (
-                <button key={opt.id} onClick={() => setDeliveryType(opt.id)} className={`p-4 rounded-2xl border-2 text-left transition-all ${deliveryType === opt.id ? 'border-violet-500 bg-violet-50' : 'border-gray-200 hover:border-violet-200'}`}>
-                  <opt.icon size={22} className={`mb-2 ${deliveryType === opt.id ? 'text-violet-600' : 'text-gray-400'}`} />
-                  <div className={`font-bold text-sm ${deliveryType === opt.id ? 'text-violet-800' : 'text-gray-700'}`}>{opt.title}</div>
-                  <div className="text-xs text-gray-500 mt-0.5 leading-relaxed">{opt.desc}</div>
-                </button>
-              ))}
-            </div>
-
-            {deliveryType === 'manual' && (
-              <div>
-                <label className="mb-2 block text-sm font-bold text-gray-700">Teslimat Süresi</label>
-                <div className="flex flex-wrap gap-2">
-                  {DELIVERY_HOURS.filter(h => h <= manualDeliveryMaxHours).map(h => (
-                    <button key={h} onClick={() => setDeliveryHours(h)} className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${deliveryHours === h ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                      {h < 24 ? `${h} saat` : `${h / 24} gün`}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700 font-medium">
-                  ⚠️ Belirlediğiniz sürede teslim etmezseniz hesabınız uyarı alabilir. En yüksek süre: {manualDeliveryMaxHours} saat.
-                </div>
-              </div>
-            )}
-
-            {deliveryType === 'stock' && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-bold text-gray-700">Stok Kalemleri</label>
-                </div>
-                <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                  {stocks.map((stock, idx) => (
-                    <div key={idx} className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-gray-500">Stok kalemi</span>
-                        {stocks.length > 1 && <button onClick={() => removeStock(idx)} className="p-1 hover:bg-red-50 rounded-lg text-red-400"><Trash2 size={13} /></button>}
-                      </div>
-                      <textarea value={stock.content} onChange={e => setStockField(idx, 'content', e.target.value)} placeholder="Stok içeriği — alıcı satın alınca bunu görecek" rows={3} className="input-field text-xs resize-none w-full font-mono" />
-                    </div>
-                  ))}
-                </div>
-                <button onClick={addStock} className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-violet-300 rounded-xl text-violet-600 font-bold text-sm hover:bg-violet-50 transition-colors">
-                  <Plus size={16} /> Stok Ekle
-                </button>
-                <div className="mt-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-xs text-blue-700 font-medium">
-                  💡 Stok bitince ilan otomatik kapanır. Yeni stok ekleyerek tekrar aktifleştirebilirsiniz.
-                </div>
-              </div>
-            )}
           </div>
         )}
 
