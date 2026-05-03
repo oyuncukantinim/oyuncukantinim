@@ -12,6 +12,13 @@ import useSiteBrand from '../hooks/useSiteBrand';
 
 const PAGE_SIZE = 20;
 
+function isMarketListingCategory(category) {
+  if (!category) return false;
+  const nodeType = category.node_type || 'sellable';
+  const contentType = category.content_type || 'listing';
+  return nodeType === 'sellable' && contentType === 'listing';
+}
+
 function ListingSkeleton() {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -295,7 +302,7 @@ export default function MarketPage() {
   useEffect(() => {
     getCategories()
       .then((res) => {
-        const flat = (res.data || []).filter((c) => c.is_active);
+        const flat = (res.data || []).filter((c) => c.is_active && isMarketListingCategory(c));
         const parentIds = new Set(flat.map((c) => c.parent_id).filter(Boolean));
         setCategories(flat.filter((c) => !parentIds.has(c.id)));
       })
