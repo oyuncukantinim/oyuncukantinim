@@ -75,7 +75,13 @@ export default function AdminReviews() {
     }
   };
 
-  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString('tr-TR') : '-');
+  const fmtDate = (d) => (d ? new Date(d).toLocaleString('tr-TR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }) : '-');
   const isProductTab = activeTab === 'product';
 
   return (
