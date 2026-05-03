@@ -41,7 +41,6 @@ const benefits = [
   { icon: Headphones, title: 'Öncelikli Destek', text: 'Mağaza modülü yönetim akışında hızlandırılmış destek.', accent: 'from-cyan-500 to-blue-500' },
   { icon: MessageCircle, title: 'Discord Rolü', text: 'Topluluk sunucusunda Mağaza Üye rolü ve özel kanal erişimi.', accent: 'from-indigo-500 to-purple-500' },
   { icon: Users, title: 'Profesyonel Vitrin', text: 'Başarım, doğrulama ve rütbe alanlarıyla kurumsal görünüm.', accent: 'from-slate-600 to-slate-800' },
-  { icon: Gamepad2, title: 'Oyuncu Teması', text: 'Pazarın oyun odaklı görsel diline uygun özel sergileme.', accent: 'from-lime-500 to-green-600' },
 ];
 
 function ProgressRing({ progress }) {
@@ -289,7 +288,7 @@ export default function StoreApplicationPage() {
               <h2 className="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Onaylı mağaza olmanın getirileri</h2>
             </div>
           </div>
-          <div className="mb-stagger grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mb-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((item) => (
               <div
                 key={item.title}
