@@ -61,7 +61,7 @@
 @layer components {
   .site-navbar {
     position: sticky;
-    overflow: hidden;
+    overflow: visible;
     background:
       linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.62)),
       rgba(255, 255, 255, 0.70) !important;
