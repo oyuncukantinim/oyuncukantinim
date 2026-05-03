@@ -35,6 +35,8 @@ import {
 
 const DEFAULT_LISTING_IMAGE_WIDTH = 1500;
 const DEFAULT_LISTING_IMAGE_HEIGHT = 1000;
+const SITE_BACKGROUND_IMAGE_WIDTH = 1920;
+const SITE_BACKGROUND_IMAGE_HEIGHT = 1080;
 
 const IMAGE_PREVIEW_META = {
   default_avatar: {
@@ -50,6 +52,11 @@ const IMAGE_PREVIEW_META = {
   default_listing_image: {
     recommendedSize: '1500x1000 px',
     frameClass: 'aspect-[3/2] w-full max-w-xs',
+    imageClass: 'h-full w-full object-cover',
+  },
+  site_background_image: {
+    recommendedSize: '1920x1080 px',
+    frameClass: 'aspect-video w-full max-w-md',
     imageClass: 'h-full w-full object-cover',
   },
 };
@@ -116,6 +123,18 @@ const SETTINGS_TABS = [
           { key: 'default_avatar', label: 'Varsayılan Avatar', type: 'image', placeholder: 'https://...', desc: 'Profil fotoğrafı olmayan kullanıcılar için kullanılır.' },
           { key: 'default_profile_banner', label: 'Varsayılan Profil Bannerı', type: 'image', placeholder: 'https://...', desc: 'Banner eklememiş profillerde görünür.' },
           { key: 'default_listing_image', label: 'Varsayılan İlan Görseli', type: 'image', placeholder: 'https://...', desc: 'Görseli olmayan ilanlarda gösterilir. Yüklenen görsel 1500x1000 px WebP olarak hazırlanır.' },
+        ],
+      },
+      {
+        section: 'Site Arkaplan Görseli',
+        fields: [
+          {
+            key: 'site_background_image',
+            label: 'Site Arkaplan Görseli',
+            type: 'image',
+            placeholder: 'https://...',
+            desc: 'Slider altından footer alanına kadar en alt katmanda tekrarlı kullanılır. Yüklenen görsel 1920x1080 px WebP ve %90 kalite ile hazırlanır.',
+          },
         ],
       },
     ],
@@ -399,11 +418,17 @@ const loadImageFile = (file) =>
     img.src = url;
   });
 
-async function resizeDefaultListingImage(file) {
+async function resizeImageToCanvas(file, {
+  width,
+  height,
+  quality = 0.9,
+  fallbackName = 'gorsel',
+  errorMessage = 'Görsel dönüştürülemedi.',
+}) {
   const img = await loadImageFile(file);
   const canvas = document.createElement('canvas');
-  canvas.width = DEFAULT_LISTING_IMAGE_WIDTH;
-  canvas.height = DEFAULT_LISTING_IMAGE_HEIGHT;
+  canvas.width = width;
+  canvas.height = height;
 
   const ctx = canvas.getContext('2d');
   if (!ctx) {
@@ -412,22 +437,42 @@ async function resizeDefaultListingImage(file) {
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0, DEFAULT_LISTING_IMAGE_WIDTH, DEFAULT_LISTING_IMAGE_HEIGHT);
+  ctx.drawImage(img, 0, 0, width, height);
 
-  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 1));
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', quality));
   if (!blob) {
-    throw new Error('Varsayılan ilan görseli 1500x1000 px tuvale dönüştürülemedi.');
+    throw new Error(errorMessage);
   }
 
-  const baseName = String(file.name || 'varsayilan-ilan-gorseli')
+  const baseName = String(file.name || fallbackName)
     .replace(/\.[^.]+$/, '')
     .replace(/[^\w.-]+/g, '-')
     .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '') || 'varsayilan-ilan-gorseli';
+    .replace(/^-|-$/g, '') || fallbackName;
 
   return new File([blob], `${baseName}.webp`, {
     type: 'image/webp',
     lastModified: Date.now(),
+  });
+}
+
+function resizeDefaultListingImage(file) {
+  return resizeImageToCanvas(file, {
+    width: DEFAULT_LISTING_IMAGE_WIDTH,
+    height: DEFAULT_LISTING_IMAGE_HEIGHT,
+    quality: 1,
+    fallbackName: 'varsayilan-ilan-gorseli',
+    errorMessage: 'Varsayılan ilan görseli 1500x1000 px tuvale dönüştürülemedi.',
+  });
+}
+
+function resizeSiteBackgroundImage(file) {
+  return resizeImageToCanvas(file, {
+    width: SITE_BACKGROUND_IMAGE_WIDTH,
+    height: SITE_BACKGROUND_IMAGE_HEIGHT,
+    quality: 0.9,
+    fallbackName: 'site-arkaplan-gorseli',
+    errorMessage: 'Site arkaplan görseli 1920x1080 px tuvale dönüştürülemedi.',
   });
 }
 
@@ -1033,8 +1078,20 @@ export default function AdminSettings() {
   const handleUpload = async (key, file) => {
     setImageUploading(key);
     try {
-      const uploadFile = key === 'default_listing_image' ? await resizeDefaultListingImage(file) : file;
-      const url = await adminUploadImage(uploadFile, 'branding', { preserveOriginal: key === 'site_favicon' });
+      let uploadFile = file;
+      if (key === 'default_listing_image') {
+        uploadFile = await resizeDefaultListingImage(file);
+      } else if (key === 'site_background_image') {
+        uploadFile = await resizeSiteBackgroundImage(file);
+      }
+      const previousUrl = settings[key] || '';
+      const url = await adminUploadImage(uploadFile, 'branding', {
+        preserveOriginal: key === 'site_favicon',
+        variant: key === 'site_background_image' ? 'site_background' : '',
+      });
+      if (previousUrl && previousUrl !== url && isUploadedSiteImage(previousUrl)) {
+        await adminDeleteUploadedImage(previousUrl);
+      }
       set(key, url);
       showToast('Görsel yüklendi.');
     } catch (error) {
@@ -1051,9 +1108,9 @@ export default function AdminSettings() {
         await adminDeleteUploadedImage(url);
       }
       set(key, '');
-      if (key === 'default_listing_image') {
-        await adminSaveSettings({ default_listing_image: '' });
-        setInitialSettings((current) => ({ ...current, default_listing_image: '' }));
+      if (key === 'default_listing_image' || key === 'site_background_image') {
+        await adminSaveSettings({ [key]: '' });
+        setInitialSettings((current) => ({ ...current, [key]: '' }));
       }
       showToast('Görsel kaldırıldı.');
     } catch (error) {

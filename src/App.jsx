@@ -191,6 +191,7 @@ function SiteLayout() {
     siteLogo: '',
     siteLogoText: '',
     siteFavicon: '',
+    siteBackgroundImage: '',
     maintenanceTitle: 'Bakım Çalışması',
     maintenanceMessage: 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
     footerTagline: 'Oyuncular için güvenli alım satım platformu.',
@@ -216,6 +217,7 @@ function SiteLayout() {
           siteLogo: data.site_logo || '',
           siteLogoText: data.site_logo_text || '',
           siteFavicon: data.site_favicon || '',
+          siteBackgroundImage: data.site_background_image || '',
           maintenanceTitle: data.maintenance_title || 'Bakım Çalışması',
           maintenanceMessage: data.maintenance_message || 'Sitemiz şu anda bakımda. Kısa süre içinde yeniden yayında olacağız.',
           footerTagline: data.footer_tagline || 'Oyuncular için güvenli alım satım platformu.',
@@ -275,9 +277,15 @@ function SiteLayout() {
   }
 
   const isHomeRoute = location.pathname === '/';
+  const shellStyle = siteState.siteBackgroundImage
+    ? { '--site-background-image': `url("${siteState.siteBackgroundImage}")` }
+    : undefined;
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-surface-50 font-sans">
+    <div
+      className={`site-public-shell min-h-screen overflow-x-clip bg-surface-50 font-sans ${siteState.siteBackgroundImage ? 'site-public-shell--pattern' : ''}`}
+      style={shellStyle}
+    >
       {siteState.announcement.active && siteState.announcement.text ? (
         <AnnouncementBanner text={siteState.announcement.text} />
       ) : null}

@@ -59,6 +59,29 @@
 }
 
 @layer components {
+  .site-public-shell {
+    background:
+      radial-gradient(circle at top left, rgba(139, 92, 246, 0.08), transparent 34rem),
+      radial-gradient(circle at top right, rgba(6, 182, 212, 0.08), transparent 30rem),
+      var(--ok-bg);
+    color: var(--ok-text);
+  }
+
+  .site-public-shell--pattern {
+    background-image:
+      linear-gradient(180deg, rgba(250, 250, 250, 0.86) 0%, rgba(250, 250, 250, 0.64) 22rem, rgba(250, 250, 250, 0.78) 100%),
+      var(--site-background-image);
+    background-position: center top, center top;
+    background-repeat: no-repeat, repeat-y;
+    background-size: 100% 34rem, min(1920px, 100%) auto;
+  }
+
+  html.theme-dark .site-public-shell--pattern {
+    background-image:
+      linear-gradient(180deg, rgba(38, 52, 76, 0.9) 0%, rgba(38, 52, 76, 0.68) 22rem, rgba(38, 52, 76, 0.82) 100%),
+      var(--site-background-image);
+  }
+
   .card {
     @apply bg-white border border-gray-100 rounded-2xl shadow-sm transition-all duration-300;
     background-color: var(--ok-panel);
