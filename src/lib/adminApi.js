@@ -184,6 +184,8 @@ export const adminUpdateProductOrder = (body) =>
 // Reviews
 export const adminGetReviews = (params = {}) =>
   adminRequest('admin_get_reviews', { query: params });
+export const adminUpdateReviewStatus = (body) =>
+  adminRequest('admin_update_review_status', { method: 'POST', body });
 export const adminDeleteReview = (review_id) =>
   adminRequest('admin_delete_review', { method: 'POST', body: { review_id } });
 

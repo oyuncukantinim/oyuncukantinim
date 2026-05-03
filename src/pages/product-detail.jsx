@@ -8,11 +8,12 @@ import {
   Plus,
   ShoppingCart,
   Sparkles,
+  Star,
   Tag,
   User,
   Wrench,
 } from 'lucide-react';
-import { getProduct, idFromSlug, productPath } from '../lib/api';
+import { getProduct, getProductReviews, idFromSlug, productPath } from '../lib/api';
 import { useCart } from '../context/useCart';
 import Breadcrumb from '../components/Breadcrumb';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -56,6 +57,8 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
+  const [reviews, setReviews] = useState([]);
+  const [reviewSummary, setReviewSummary] = useState({ total: 0, avg_rating: 0 });
   const productSeo = useMemo(
     () => product ? buildProductSeo(product) : { title: 'Oyun Ürünü Satın Al', canonical: `/product/${slug}` },
     [product, slug],
@@ -83,6 +86,31 @@ export default function ProductDetailPage() {
       cancelled = true;
     };
   }, [id, navigate]);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!id) return undefined;
+
+    getProductReviews(id, { limit: 20 })
+      .then((response) => {
+        if (cancelled) return;
+        setReviews(response.data?.reviews || []);
+        setReviewSummary({
+          total: Number(response.data?.total || 0),
+          avg_rating: Number(response.data?.avg_rating || 0),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setReviews([]);
+          setReviewSummary({ total: 0, avg_rating: 0 });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   const images = useMemo(() => {
     if (!product) return [];
@@ -276,6 +304,60 @@ export default function ProductDetailPage() {
         <div className="mt-5 whitespace-pre-line text-sm font-medium leading-7 text-slate-600 dark:text-slate-300 sm:text-[15px]">
           {product.description || 'Detaylı açıklama yakında burada görünecek.'}
         </div>
+      </section>
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-black text-slate-900 dark:text-white sm:text-xl">Oyuncu Kantinim Yorumları</h2>
+            <div className="mt-3 h-[2px] w-12 rounded-full bg-emerald-500" />
+          </div>
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/70">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <Star
+                  key={n}
+                  size={15}
+                  className={n <= Math.round(reviewSummary.avg_rating || 0) ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+              {reviewSummary.total ? `${reviewSummary.avg_rating || 0} / 5` : 'Yeni'}
+            </span>
+          </div>
+        </div>
+
+        {reviews.length === 0 ? (
+          <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm font-semibold text-slate-500 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-400">
+            Bu ürün için onaylanmış yorum yok.
+          </div>
+        ) : (
+          <div className="mt-6 grid gap-3">
+            {reviews.map((review) => {
+              const avg = Math.round((Number(review.reliability || 5) + Number(review.satisfaction || 5) + Number(review.speed || 5) + Number(review.service_quality || 5)) / 4);
+              return (
+                <article key={review.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-950/55">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-black text-slate-900 dark:text-white">{review.reviewer_username || 'Oyuncu'}</div>
+                      <div className="mt-1 text-xs font-semibold text-slate-400">
+                        {review.created_at ? new Date(review.created_at).toLocaleDateString('tr-TR') : ''}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <Star key={n} size={15} className={n <= avg ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'} />
+                      ))}
+                    </div>
+                  </div>
+                  {review.comment ? (
+                    <p className="mt-3 text-sm font-medium leading-6 text-slate-600 dark:text-slate-300">{review.comment}</p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
     </div>
   );

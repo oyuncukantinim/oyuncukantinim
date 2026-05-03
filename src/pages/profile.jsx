@@ -293,11 +293,15 @@ function ReviewModal({ order, onClose, onSuccess }) {
     setLoading(true);
     setError('');
     try {
+      const isProductOrder = order.order_kind === 'product';
+      const payload = isProductOrder
+        ? { order_kind: 'product', product_order_item_id: order.product_order_item_id || order.id, ...ratings, comment }
+        : { order_id: order.id, ...ratings, comment };
       const res = await fetch('https://api.oyuncukantinim.com.tr/api.php?action=add_review', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ order_id: order.id, ...ratings, comment }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (json.status !== 'success') throw new Error(json.message);
@@ -357,14 +361,17 @@ function ReviewModal({ order, onClose, onSuccess }) {
   );
 }
 
-function MyReviewViewModal({ orderId, onClose }) {
+function MyReviewViewModal({ order, onClose }) {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_review_by_order&order_id=${orderId}`, {
+    const query = order?.order_kind === 'product'
+      ? `product_order_item_id=${order.product_order_item_id || order.id}`
+      : `order_id=${order.id}`;
+    fetch(`https://api.oyuncukantinim.com.tr/api.php?action=get_review_by_order&${query}`, {
       credentials: 'include',
     }).then(r => r.json()).then(j => setReview(j.data || null)).catch(() => {}).finally(() => setLoading(false));
-  }, [orderId]);
+  }, [order]);
 
   const avg = review ? Math.round((+review.reliability + +review.satisfaction + +review.speed + +review.service_quality) / 4) : 0;
   return (
@@ -396,6 +403,11 @@ function MyReviewViewModal({ orderId, onClose }) {
                 </div>
               ))}
             </div>
+            {review.status && review.status !== 'approved' && (
+              <div className={`rounded-xl px-3 py-2 text-xs font-bold ${review.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
+                {review.status === 'pending' ? 'Admin onayı bekliyor.' : 'Yorum yayına alınmadı.'}
+              </div>
+            )}
             {review.comment && <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 italic">"{review.comment}"</div>}
           </div>
         )}
@@ -433,8 +445,8 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
   return (
     <>
     {showLogs && <OrderLogsModal order={order} onClose={() => setShowLogs(false)} />}
-    {showReview && <ReviewModal order={order} onClose={() => setShowReview(false)} onSuccess={() => { showToast('Değerlendirme gönderildi!'); onRefresh(); }} />}
-    {showMyReview && <MyReviewViewModal orderId={order.id} onClose={() => setShowMyReview(false)} />}
+    {showReview && <ReviewModal order={order} onClose={() => setShowReview(false)} onSuccess={() => { showToast(isProductOrder ? 'Yorum onaya gönderildi!' : 'Değerlendirme gönderildi!'); onRefresh(); }} />}
+    {showMyReview && <MyReviewViewModal order={order} onClose={() => setShowMyReview(false)} />}
     <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
       <div className="p-4 flex items-center gap-3">
         <div className="w-14 h-14 bg-gray-50 rounded-xl overflow-hidden flex items-center justify-center text-2xl flex-shrink-0 border border-gray-100">
@@ -521,22 +533,17 @@ function OrderCard({ order, isSellerView, onRefresh, showToast }) {
           {status === 2 && !order.seller_paid && (
             <div className="text-xs text-orange-500 bg-orange-50 p-2 rounded-lg"> Ödeme bekleniyor (onay sürecinde)</div>
           )}
-          {!isSellerView && !isProductOrder && status === 2 && !order.has_reviewed && (
+          {!isSellerView && status === 2 && !order.has_reviewed && (
             <button onClick={() => setShowReview(true)}
               className="flex items-center gap-1.5 bg-violet-50 hover:bg-violet-100 text-violet-700 border border-violet-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
               <MessageSquarePlus size={13}/> Değerlendir
             </button>
           )}
-          {!isSellerView && !isProductOrder && status === 2 && order.has_reviewed == 1 && (
+          {!isSellerView && status === 2 && order.has_reviewed == 1 && (
             <button onClick={() => setShowMyReview(true)}
               className="flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors">
               <Star size={13} className="fill-yellow-500 text-yellow-500"/> Değerlendirmem
             </button>
-          )}
-          {!isSellerView && isProductOrder && (
-            <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-              Bu sipariş site ürünü akışında yönetilir. Teslimat geçmişi ve notlar için “Geçmiş” alanını kullanabilirsin.
-            </div>
           )}
 
           {/* Anlaşmazlık formu */}

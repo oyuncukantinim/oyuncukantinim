@@ -362,6 +362,13 @@ export function getProduct(id) {
   return request('get_product', { query: { id }, ttl: 60 * 1000 });
 }
 
+export function getProductReviews(productId, params = {}) {
+  return request('get_product_reviews', {
+    query: { product_id: productId, ...params },
+    ttl: 20 * 1000,
+  });
+}
+
 export function getMyListings() {
   return request('get_my_listings', { auth: true });
 }
