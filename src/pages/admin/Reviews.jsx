@@ -148,7 +148,6 @@ export default function AdminReviews() {
                     <td className="px-4 py-3 font-semibold text-gray-800">{r.reviewer || '-'}</td>
                     <td className="px-4 py-3 text-gray-600">
                       <div className="max-w-[220px] truncate font-semibold">{isProductTab ? (r.item_title || '-') : (r.seller || '-')}</div>
-                      {isProductTab ? <div className="text-[11px] font-bold text-gray-400">Oyuncu Kantinim</div> : null}
                     </td>
                     <td className="hidden px-4 py-3 sm:table-cell">
                       <div className="flex items-center gap-1">
