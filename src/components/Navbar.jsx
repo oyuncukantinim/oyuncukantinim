@@ -248,28 +248,28 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
   const buildCategorySlug = (category) => category.slug || category.id;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-[0_6px_22px_rgba(15,23,42,0.05)]">
-      <div className="hidden border-b border-slate-200 bg-slate-950 text-slate-200 md:block">
+    <nav className="site-navbar sticky top-0 z-50 border-b border-slate-200 bg-white/80 shadow-[0_6px_22px_rgba(15,23,42,0.05)] backdrop-blur-xl">
+      <div className="site-navbar-strip hidden border-b border-slate-200/70 bg-white/55 text-slate-600 backdrop-blur-xl md:block">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-between px-4 py-2 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 lg:gap-5">
             {TOP_STRIPS.map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5 text-[11px] font-medium text-slate-300">
-                <item.icon size={13} className="text-cyan-300" />
+              <div key={item.label} className="flex items-center gap-1.5 text-[11px] font-medium text-slate-600">
+                <item.icon size={13} className="text-cyan-600" />
                 <span>{item.label}</span>
               </div>
             ))}
           </div>
 
           <div className="flex items-center gap-4 text-[11px] font-semibold">
-            <Link to="/support" className="text-slate-300 transition-colors hover:text-white">
+            <Link to="/support" className="text-slate-600 transition-colors hover:text-slate-900">
               Destek Merkezi
             </Link>
-            <Link to="/magaza-basvuru" className="text-slate-300 transition-colors hover:text-white">
+            <Link to="/magaza-basvuru" className="text-slate-600 transition-colors hover:text-slate-900">
               Onaylı Mağaza Ol
             </Link>
-            <ThemeToggle iconSize={14} className="h-5 w-5 min-h-5 min-w-5 gap-0 rounded-sm border-slate-700/50 bg-transparent p-0 text-slate-300 hover:border-slate-500 hover:bg-white/10 hover:text-white [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0" />
+            <ThemeToggle iconSize={14} className="h-5 w-5 min-h-5 min-w-5 gap-0 rounded-sm border-slate-300/70 bg-transparent p-0 text-slate-600 hover:border-slate-400 hover:bg-white/40 hover:text-slate-900 [&_svg]:h-3.5 [&_svg]:w-3.5 [&_svg]:shrink-0" />
             {!user ? (
-              <Link to="/login" className="text-slate-300 transition-colors hover:text-white">
+              <Link to="/login" className="text-slate-600 transition-colors hover:text-slate-900">
                 Giriş Yap / Kayıt Ol
               </Link>
             ) : null}
