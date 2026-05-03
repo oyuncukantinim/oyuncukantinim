@@ -1648,15 +1648,13 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 <VerifiedAchievementCard isVerified={hasVerifiedSellerBadge} />
-                {hasVerifiedStore ? (storeOverview?.badges || []).map((badge) => (
-                  <AchievementCard key={badge.id} badge={badge} />
-                )) : null}
+                {(storeOverview?.badges || []).map((badge) => (
+                  <AchievementCard
+                    key={badge.id}
+                    badge={{ ...badge, is_unlocked: hasVerifiedStore ? badge.is_unlocked : false }}
+                  />
+                ))}
               </div>
-              {!hasVerifiedStore ? (
-                <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-5 text-sm font-semibold leading-6 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Onaylı Satıcı rozeti kimlik doğrulamasıyla açılır. Satış rütbeleri ve özel mağaza rozetleri ise Onaylı Mağaza statüsü aldığında görünür.
-                </div>
-              ) : null}
             </div>
           )}
 

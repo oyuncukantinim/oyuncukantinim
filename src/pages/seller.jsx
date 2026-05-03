@@ -323,19 +323,12 @@ export default function SellerPage() {
           </div>
 
           {canShowPublicAchievements ? (
-            <>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                <VerifiedAchievementCard isVerified />
-                {visibleAchievements.map((badge) => (
-                  <AchievementCard key={badge.id} badge={badge} />
-                ))}
-              </div>
-              {Number(seller.is_verified_store) !== 1 ? (
-                <div className="rounded-3xl border border-emerald-100 bg-emerald-50/70 p-5 text-sm font-semibold leading-6 text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
-                  Bu kullanıcı Onaylı Satıcı statüsünde. Mağaza başarımları ve özel rozetler Onaylı Mağaza statüsü alındığında burada sergilenir.
-                </div>
-              ) : null}
-            </>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <VerifiedAchievementCard isVerified />
+              {visibleAchievements.map((badge) => (
+                <AchievementCard key={badge.id} badge={badge} />
+              ))}
+            </div>
           ) : (
             <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-white via-violet-50 to-cyan-50 p-8 text-center shadow-sm dark:border-violet-500/20 dark:from-slate-950 dark:via-violet-950/55 dark:to-cyan-950/40 dark:shadow-black/25">
               <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-cyan-200/30 blur-2xl dark:bg-cyan-400/15" />
