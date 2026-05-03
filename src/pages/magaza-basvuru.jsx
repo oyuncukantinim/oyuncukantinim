@@ -178,55 +178,84 @@ export default function StoreApplicationPage() {
       `}</style>
 
       {/* HERO */}
-      <section className="mb-fade-up relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-slate-950 via-violet-950 to-cyan-900 p-6 text-white shadow-2xl sm:p-10">
-        <div className="pointer-events-none absolute inset-0 opacity-60">
-          <div className="mb-float-a absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/25 blur-3xl" />
-          <div className="mb-float-b absolute -bottom-20 left-6 h-64 w-64 rounded-full bg-violet-400/25 blur-3xl" />
-          <div className="mb-float-c absolute left-1/3 top-1/4 h-40 w-40 rounded-full bg-fuchsia-400/20 blur-3xl" />
+      <section className="mb-fade-up relative overflow-hidden rounded-[2rem] border border-fuchsia-200/25 bg-[linear-gradient(135deg,#25105a_0%,#7434db_42%,#109bd7_100%)] p-5 text-white shadow-[0_28px_80px_-38px_rgba(124,58,237,0.95)] sm:p-8 lg:p-10">
+        <div className="pointer-events-none absolute inset-0">
+          <div className="mb-float-a absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-300/35 blur-3xl" />
+          <div className="mb-float-b absolute -bottom-20 left-6 h-64 w-64 rounded-full bg-pink-400/35 blur-3xl" />
+          <div className="mb-float-c absolute left-1/3 top-1/4 h-44 w-44 rounded-full bg-amber-300/20 blur-3xl" />
         </div>
-        <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0)', backgroundSize: '28px 28px' }} />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.18) 1px, transparent 0)', backgroundSize: '26px 26px' }} />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/14 to-transparent" />
+        <Sparkles size={18} className="mb-sparkle absolute left-7 top-8 text-yellow-200" />
+        <Star size={14} className="mb-sparkle absolute right-14 top-10 fill-cyan-100 text-cyan-100" style={{ animationDelay: '.55s' }} />
+        <Sparkles size={16} className="mb-sparkle absolute bottom-10 left-[45%] text-pink-100" style={{ animationDelay: '1.2s' }} />
 
-        <div className="relative grid gap-8 xl:grid-cols-[1.6fr_0.4fr] xl:items-center">
+        <div className="relative grid gap-7 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)] xl:items-center">
           <div>
-            <div className="mb-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-black text-cyan-100 backdrop-blur">
+            <div className="mb-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3.5 py-1.5 text-xs font-black text-cyan-50 shadow-lg shadow-violet-950/15 backdrop-blur">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime-300 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-lime-300" />
               </span>
               <Gamepad2 size={14} /> Mağaza güçlendirme merkezi
             </div>
-            <h1 className="mb-fade-up max-w-5xl bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text pb-1 text-3xl font-black leading-[1.15] text-transparent sm:text-5xl" style={{ animationDelay: '.05s' }}>
+            <h1 className="mb-fade-up max-w-5xl text-3xl font-black leading-[1.12] tracking-tight text-white drop-shadow-[0_8px_22px_rgba(36,10,74,0.45)] sm:text-5xl" style={{ animationDelay: '.05s' }}>
               Onaylı Mağaza ol,{' '}
-              <span className="mb-gradient-x inline-block bg-gradient-to-r from-emerald-300 via-cyan-300 to-violet-300 bg-clip-text pb-1 text-transparent">
+              <span className="mb-gradient-x inline-block bg-gradient-to-r from-yellow-200 via-pink-100 to-cyan-100 bg-clip-text pb-1 text-transparent">
                 profesyonel görün
               </span>
               .
             </h1>
-            <p className="mb-fade-up mt-4 max-w-3xl text-sm font-semibold leading-7 text-white/70 sm:text-base" style={{ animationDelay: '.1s' }}>
+            <p className="mb-fade-up mt-4 max-w-3xl text-sm font-semibold leading-7 text-white/82 sm:text-base" style={{ animationDelay: '.1s' }}>
               Mağaza statüsü, satış rütbeleri, özel rozetler ve mağaza odaklı avantajlarla satıcı profilini güçlü bir vitrine dönüştür.
             </p>
             <div className="mb-fade-up mt-6 flex flex-wrap items-center gap-2.5" style={{ animationDelay: '.15s' }}>
               {isVerified ? <VerifiedStoreBadge /> : null}
               {application ? (
-                <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-black ring-4 ${appMeta.className} ${appMeta.ring}`}>
+                <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-black shadow-lg ring-4 ${appMeta.className} ${appMeta.ring}`}>
                   <AppIcon size={14} /> Başvuru: {appMeta.label}
                 </span>
               ) : null}
               {!application && !isVerified ? (
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-black text-white/80">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 px-3 py-1.5 text-xs font-black text-white shadow-lg shadow-violet-950/15 backdrop-blur">
                   <Sparkles size={14} /> Başvuru: Henüz gönderilmedi
                 </span>
               ) : null}
             </div>
+            <div className="mb-fade-up mt-6 grid max-w-2xl gap-2 sm:grid-cols-3" style={{ animationDelay: '.2s' }}>
+              {[
+                ['Rozetler', Sparkles, 'from-yellow-300 to-orange-300'],
+                ['Rütbeler', Crown, 'from-pink-300 to-fuchsia-400'],
+                ['Vitrin', Star, 'from-cyan-300 to-sky-400'],
+              ].map(([label, Icon, color]) => (
+                <div key={label} className="rounded-2xl border border-white/16 bg-white/12 p-3 shadow-lg shadow-violet-950/10 backdrop-blur">
+                  <div className={`mb-2 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${color} text-slate-950 shadow-lg`}>
+                    <Icon size={16} />
+                  </div>
+                  <div className="text-xs font-black uppercase tracking-[0.16em] text-white/90">{label}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="mb-fade-up relative rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-xl" style={{ animationDelay: '.2s' }}>
-            <div className="flex items-center gap-4">
+          <div className="mb-fade-up relative overflow-hidden rounded-[1.75rem] border border-white/20 bg-white/16 p-5 shadow-2xl shadow-violet-950/20 backdrop-blur-xl" style={{ animationDelay: '.25s' }}>
+            <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-yellow-200/25 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-12 -left-8 h-32 w-32 rounded-full bg-cyan-200/24 blur-2xl" />
+            <div className="relative mb-4 flex items-center gap-3 rounded-2xl border border-white/12 bg-slate-950/18 p-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-yellow-200 to-pink-300 text-slate-950 shadow-lg shadow-pink-950/20">
+                <Gamepad2 size={24} />
+              </div>
+              <div>
+                <div className="text-xs font-black uppercase tracking-[0.16em] text-white/60">Seviye Atla</div>
+                <div className="text-sm font-black text-white">Mağaza paneli hazır</div>
+              </div>
+            </div>
+            <div className="relative flex items-center gap-4">
               <ProgressRing progress={criteriaProgress} />
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-black uppercase tracking-widest text-white/60">İlerleme</div>
-                <div className="mt-0.5 text-base font-black">{criteria.passed_count} / {criteria.total_count} kriter</div>
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-300/30 bg-emerald-400/15 px-2.5 py-1 text-[11px] font-black text-emerald-200">
+                <div className="text-[10px] font-black uppercase tracking-widest text-white/65">Kriter İlerlemesi</div>
+                <div className="mt-0.5 text-lg font-black">{criteria.passed_count} / {criteria.total_count}</div>
+                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-lime-200/35 bg-lime-300/18 px-2.5 py-1 text-[11px] font-black text-lime-100">
                   <Zap size={12} />
                   {criteria.eligible ? 'Başvuruya hazır' : 'Devam ediyor'}
                 </div>
