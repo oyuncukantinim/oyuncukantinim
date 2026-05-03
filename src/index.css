@@ -17,10 +17,10 @@
   }
 
   html.theme-dark {
-    --ok-bg: #26344c;
-    --ok-panel: #33445f;
-    --ok-panel-soft: #3d506d;
-    --ok-panel-muted: #4a5f7c;
+    --ok-bg: #1f2b40;
+    --ok-panel: #2b3a54;
+    --ok-panel-soft: #344762;
+    --ok-panel-muted: #405674;
     --ok-text: #f1f5f9;
     --ok-heading: #ffffff;
     --ok-muted: #cbd5e1;
@@ -78,7 +78,7 @@
 
   html.theme-dark .site-public-shell--pattern {
     background-image:
-      linear-gradient(180deg, rgba(38, 52, 76, 0.9) 0%, rgba(38, 52, 76, 0.68) 22rem, rgba(38, 52, 76, 0.82) 100%),
+      linear-gradient(180deg, rgba(31, 43, 64, 0.9) 0%, rgba(31, 43, 64, 0.68) 22rem, rgba(31, 43, 64, 0.82) 100%),
       var(--site-background-image);
   }
 
