@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
@@ -1685,6 +1685,12 @@ export default function ProfilePage() {
                     const avg = Math.round((+r.reliability + +r.satisfaction + +r.speed + +r.service_quality) / 4);
                     const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '';
                     const coverImage = r.item_image || defaultListingImage;
+                    const productId = r.review_product_id || r.product_id;
+                    const listingId = r.listing_id;
+                    const itemUrl = r.review_type === 'product'
+                      ? (productId ? productPath({ id: productId, slug: r.product_slug, title: r.product_title || r.item_title }) : null)
+                      : (listingId ? listingSlug(r.listing_title || r.item_title, listingId) : null);
+                    const categoryUrl = r.item_category_slug ? `/categories/${r.item_category_slug}` : itemUrl;
                     return (
                       <div key={r.id} className="grid gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 sm:grid-cols-[minmax(0,1.05fr)_minmax(240px,0.95fr)] sm:items-center">
                         <div className="flex min-w-0 items-center gap-3">
@@ -1699,12 +1705,22 @@ export default function ProfilePage() {
                           </div>
                           <div className="min-w-0">
                             <div className="mb-1 flex flex-wrap items-center gap-2">
-                              <span className="max-w-full truncate rounded-lg border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-600">
-                                {r.item_category_name || (r.review_type === 'product' ? 'Site Ürünü' : 'İlan')}
-                              </span>
+                              {categoryUrl ? (
+                                <Link to={categoryUrl} className="max-w-full truncate rounded-lg border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-600 transition hover:border-violet-200 hover:text-violet-700">
+                                  {r.item_category_name || (r.review_type === 'product' ? 'Site Ürünü' : 'İlan')}
+                                </Link>
+                              ) : (
+                                <span className="max-w-full truncate rounded-lg border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-600">
+                                  {r.item_category_name || (r.review_type === 'product' ? 'Site Ürünü' : 'İlan')}
+                                </span>
+                              )}
                               <span className="text-[11px] font-semibold text-gray-400">{fmtDate(r.created_at)}</span>
                             </div>
-                            <div className="line-clamp-1 text-sm font-black text-gray-800">{r.item_title || 'İlan'}</div>
+                            {itemUrl ? (
+                              <Link to={itemUrl} className="line-clamp-1 text-sm font-black text-gray-800 transition hover:text-violet-600">{r.item_title || 'İlan'}</Link>
+                            ) : (
+                              <div className="line-clamp-1 text-sm font-black text-gray-800">{r.item_title || 'İlan'}</div>
+                            )}
                             <div className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-gray-500">
                               <span className="truncate">{r.seller_username || 'Oyuncu Kantinim'}</span>
                               {isIdentityVerified(r) ? <IdentityVerifiedIcon compact /> : null}
