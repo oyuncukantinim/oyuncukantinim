@@ -403,11 +403,6 @@ function MyReviewViewModal({ order, onClose }) {
                 </div>
               ))}
             </div>
-            {review.status && review.status !== 'approved' && (
-              <div className={`rounded-xl px-3 py-2 text-xs font-bold ${review.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
-                {review.status === 'pending' ? 'Admin onayı bekliyor.' : 'Yorum yayına alınmadı.'}
-              </div>
-            )}
             {review.comment && <div className="bg-gray-50 rounded-xl p-3 text-sm text-gray-600 italic">"{review.comment}"</div>}
           </div>
         )}
