@@ -1684,32 +1684,44 @@ export default function ProfilePage() {
                   {myReviews.filter(r => reviewStarFilter === 0 || Math.round((+r.reliability + +r.satisfaction + +r.speed + +r.service_quality) / 4) === reviewStarFilter).map(r => {
                     const avg = Math.round((+r.reliability + +r.satisfaction + +r.speed + +r.service_quality) / 4);
                     const fmtDate = (d) => d ? new Date(d).toLocaleDateString('tr-TR') : '';
+                    const coverImage = r.item_image || defaultListingImage;
                     return (
-                      <div key={r.id} className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex gap-3">
-                        {r.item_image && (
-                          <img src={r.item_image} alt="" className="w-14 h-11 rounded-xl object-cover flex-shrink-0 border border-gray-200"/>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2 mb-1">
-                            <span className="text-sm font-bold text-gray-700 line-clamp-1">{r.item_title || 'İlan'}</span>
-                            <div className="flex gap-0.5 flex-shrink-0">
-                              {[1,2,3,4,5].map(n => <Star key={n} size={13} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'}/>)}
+                      <div key={r.id} className="grid gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-3 sm:grid-cols-[minmax(0,1.05fr)_minmax(240px,0.95fr)] sm:items-center">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="h-16 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white">
+                            {coverImage ? (
+                              <img src={coverImage} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center text-gray-300">
+                                <ImageIcon size={22} />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="mb-1 flex flex-wrap items-center gap-2">
+                              <span className="max-w-full truncate rounded-lg border border-violet-100 bg-white px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-violet-600">
+                                {r.item_category_name || (r.review_type === 'product' ? 'Site Ürünü' : 'İlan')}
+                              </span>
+                              <span className="text-[11px] font-semibold text-gray-400">{fmtDate(r.created_at)}</span>
+                            </div>
+                            <div className="line-clamp-1 text-sm font-black text-gray-800">{r.item_title || 'İlan'}</div>
+                            <div className="mt-1 flex min-w-0 items-center gap-1 text-xs font-semibold text-gray-500">
+                              <span className="truncate">{r.seller_username || 'Oyuncu Kantinim'}</span>
+                              {isIdentityVerified(r) ? <IdentityVerifiedIcon compact /> : null}
                             </div>
                           </div>
-                          <div className="mb-1.5 flex flex-wrap items-center gap-1 text-xs text-gray-400">
-                            <span>Satıcı:</span>
-                            <span className="inline-flex min-w-0 items-center gap-1 font-semibold text-gray-600">
-                              <span className="truncate">{r.seller_username}</span>
-                              {isIdentityVerified(r) ? <IdentityVerifiedIcon compact /> : null}
-                            </span>
-                            <span>· {fmtDate(r.created_at)}</span>
-                          </div>
-                          {r.comment && <p className="text-xs text-gray-500 italic line-clamp-2">"{r.comment}"</p>}
-                          <div className="flex gap-2 mt-2 flex-wrap">
-                            {[{l:'Güvenilirlik',v:r.reliability},{l:'Memnuniyet',v:r.satisfaction},{l:'Hız',v:r.speed},{l:'Hizmet',v:r.service_quality}].map(c => (
-                              <span key={c.l} className="text-[10px] bg-white border border-gray-200 rounded-lg px-2 py-0.5 font-semibold text-gray-500">{c.l}: <span className="text-violet-600 font-extrabold">{c.v}</span></span>
+                        </div>
+                        <div className="min-w-0 rounded-xl border border-gray-100 bg-white px-4 py-3">
+                          <div className="mb-2 flex items-center gap-0.5">
+                            {[1,2,3,4,5].map(n => (
+                              <Star key={n} size={13} className={n <= avg ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 fill-gray-200'} />
                             ))}
                           </div>
+                          {r.comment ? (
+                            <p className="line-clamp-3 text-xs font-semibold leading-5 text-gray-500">"{r.comment}"</p>
+                          ) : (
+                            <p className="text-xs font-semibold text-gray-400">Yorum metni eklenmemiş.</p>
+                          )}
                         </div>
                       </div>
                     );
