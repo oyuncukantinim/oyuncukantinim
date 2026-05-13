@@ -278,8 +278,8 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
       </div>
 
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-[78px] items-center gap-4 py-4">
-          <div className="shrink-0">
+        <div className="flex min-h-[64px] items-center gap-2 py-3 md:min-h-[78px] md:gap-4 md:py-4">
+          <div className="min-w-0 flex-1 md:flex-none">
             <SiteBrand
               to="/"
               siteName={siteName}
@@ -287,7 +287,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               siteLogoText={siteLogoText}
               showTitle={false}
               containerClassName="items-center gap-3"
-              imageClassName="h-12 w-auto max-w-[260px] object-contain transition-transform group-hover:scale-[1.02]"
+              imageClassName="h-10 w-auto max-w-[150px] object-contain transition-transform group-hover:scale-[1.02] sm:h-12 sm:max-w-[260px]"
               iconWrapperClassName="rounded-2xl bg-gradient-to-tr from-neon-purple to-neon-cyan p-2.5 text-white shadow-[0_10px_30px_rgba(124,58,237,0.24)] transition-transform group-hover:rotate-6"
               titleClassName="hidden text-xl font-black tracking-tight bg-gradient-to-r from-neon-purple to-neon-cyan bg-clip-text text-transparent lg:inline"
             />
@@ -597,7 +597,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
             )}
           </div>
 
-          <div className="ml-auto flex items-center gap-2 md:hidden">
+          <div className="ml-auto flex shrink-0 items-center gap-1.5 md:hidden">
             <button
               type="button"
               aria-label="Aramayı aç"
@@ -606,16 +606,16 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
                 setMobileOpen(true);
                 setTimeout(() => mobileSearchInputRef.current?.focus(), 50);
               }}
-              className="rounded-2xl border border-slate-200 p-3 text-slate-500"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500"
             >
               <Search size={19} />
             </button>
-            <ThemeToggle />
+            <ThemeToggle iconSize={18} className="h-10 w-10 rounded-xl p-0" />
             <Link
               to="/cart"
               aria-label="Sepete git"
               title="Sepet"
-              className="relative rounded-2xl border border-slate-200 p-3 text-slate-500"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500"
             >
               <ShoppingCart size={19} />
               {cartCount > 0 ? (
@@ -629,7 +629,7 @@ export default function Navbar({ siteName = 'Oyuncu Kantinim', siteLogo = '', si
               aria-label={mobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
               title={mobileOpen ? 'Menüyü kapat' : 'Menüyü aç'}
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="rounded-2xl border border-slate-200 p-3 text-slate-500"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500"
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
