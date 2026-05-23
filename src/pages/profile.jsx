@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  List, Package, Settings, LogOut, Plus, ShieldCheck,
+  List, Package, Settings, LogOut, Plus, ShieldCheck, CreditCard,
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
@@ -564,6 +564,7 @@ export default function ProfilePage() {
     defaultProfileBanner,
     defaultListingImage,
     balanceAddEnabled,
+    shopierDisplayName,
     registrationEmailCodeExpiryMinutes,
     dopingVitrineOptions,
     dopingFeaturedOptions,
@@ -843,7 +844,7 @@ export default function ProfilePage() {
     if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
     setSaving(true);
     try {
-      const res = await addBalance(amt);
+      const res = await addBalance(amt, 'shopier');
       const redirectUrl = res.data?.redirect_url;
       if (!redirectUrl) throw new Error('Ödeme bağlantısı oluşturulamadı.');
       showToast(res.message || 'Ödeme sayfasına yönlendiriliyorsunuz.');
@@ -1800,6 +1801,18 @@ export default function ProfilePage() {
                     </div>
                     <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
                       placeholder="Özel tutar (₺)..." className="input-field" />
+                    <div className="flex items-center justify-between rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-violet-600">
+                          <CreditCard size={16} />
+                        </span>
+                        <div>
+                          <div className="text-sm font-black text-gray-800">{shopierDisplayName || 'Kredi Kartı (Shopier)'}</div>
+                          <div className="text-xs font-semibold text-gray-400">Güvenli ödeme yöntemi</div>
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-600">Aktif</span>
+                    </div>
                     <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
                       <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
                     </button>

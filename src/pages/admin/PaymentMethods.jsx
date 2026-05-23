@@ -21,11 +21,13 @@ const DEFAULT_FRONTEND_URL = 'https://beta.oyuncukantinim.com.tr';
 const PAYMENT_METHODS = [
   {
     id: 'shopier',
-    name: 'Shopier',
-    defaultDisplayName: 'Kredi Kartı',
+    name: 'Kredi Kartı (Shopier)',
+    providerName: 'Shopier',
+    defaultCategory: 'Kredi Kartı',
+    defaultDisplayName: 'Kredi Kartı (Shopier)',
     icon: CreditCard,
     accent: 'from-cyan-500 to-violet-600',
-    description: 'Bakiye yükleme ödemeleri Shopier güvenli ödeme sayfası üzerinden alınır.',
+    description: 'Kredi kartı ödemeleri Shopier güvenli ödeme sayfası üzerinden alınır.',
   },
 ];
 
@@ -132,6 +134,7 @@ export default function PaymentMethods() {
 
   const methodState = useMemo(() => ({
     methodName: value(settings, 'shopier_method_name', selected.name),
+    category: value(settings, 'shopier_payment_category', selected.defaultCategory),
     displayName: value(settings, 'shopier_display_name', selected.defaultDisplayName),
     enabled: boolValue(settings, 'shopier_enabled'),
     apiKey: value(settings, 'shopier_api_key'),
@@ -151,6 +154,7 @@ export default function PaymentMethods() {
     try {
       const payload = {
         shopier_method_name: methodState.methodName,
+        shopier_payment_category: methodState.category,
         shopier_display_name: methodState.displayName,
         shopier_enabled: methodState.enabled ? '1' : '0',
         shopier_api_key: methodState.apiKey,
@@ -174,6 +178,7 @@ export default function PaymentMethods() {
 
   const dirty = JSON.stringify({
     shopier_method_name: settings.shopier_method_name ?? '',
+    shopier_payment_category: settings.shopier_payment_category ?? '',
     shopier_display_name: settings.shopier_display_name ?? '',
     shopier_enabled: settings.shopier_enabled ?? '',
     shopier_api_key: settings.shopier_api_key ?? '',
@@ -185,6 +190,7 @@ export default function PaymentMethods() {
     shopier_commission_value: settings.shopier_commission_value ?? '',
   }) !== JSON.stringify({
     shopier_method_name: initialSettings.shopier_method_name ?? '',
+    shopier_payment_category: initialSettings.shopier_payment_category ?? '',
     shopier_display_name: initialSettings.shopier_display_name ?? '',
     shopier_enabled: initialSettings.shopier_enabled ?? '',
     shopier_api_key: initialSettings.shopier_api_key ?? '',
@@ -277,7 +283,7 @@ export default function PaymentMethods() {
                   </span>
                   <div>
                     <h2 className="text-xl font-black">{selected.name}</h2>
-                    <p className="text-sm font-semibold text-white/75">Ödeme methodu düzenle</p>
+                    <p className="text-sm font-semibold text-white/75">Sağlayıcı: {selected.providerName}</p>
                   </div>
                 </div>
                 <button
@@ -293,8 +299,9 @@ export default function PaymentMethods() {
 
             <div className="space-y-6 p-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Yöntem Kodu" value={methodState.methodName} onChange={(next) => set('shopier_method_name', next)} placeholder="Shopier" helper="Panel içinde ödeme yöntemini ayırt etmek için kullanılır." />
-                <Field label="Kullanıcıya Görünen Ad" value={methodState.displayName} onChange={(next) => set('shopier_display_name', next)} placeholder="Kredi Kartı" helper="Bakiye yükleme ekranında kullanıcıya gösterilecek ödeme adı." />
+                <Field label="Yöntem Kodu" value={methodState.methodName} onChange={(next) => set('shopier_method_name', next)} placeholder="Kredi Kartı (Shopier)" helper="Panel içinde ödeme yöntemini ayırt etmek için kullanılır." />
+                <Field label="Ödeme Türü" value={methodState.category} onChange={(next) => set('shopier_payment_category', next)} placeholder="Kredi Kartı" helper="İleride farklı kredi kartı sağlayıcıları eklenirse aynı tür altında gruplanır." />
+                <Field label="Kullanıcıya Görünen Ad" value={methodState.displayName} onChange={(next) => set('shopier_display_name', next)} placeholder="Kredi Kartı (Shopier)" helper="Bakiye yükleme ekranında kullanıcıya gösterilecek ödeme adı." />
                 <Field label="Shopier API Anahtarı" value={methodState.apiKey} onChange={(next) => set('shopier_api_key', next)} placeholder="Shopier API Key" />
                 <Field label="Shopier API Şifresi" value={methodState.apiSecret} onChange={(next) => set('shopier_api_secret', next)} placeholder="Shopier API Secret" secret />
                 <Field label="Shopier Website Index" value={methodState.websiteIndex} onChange={(next) => set('shopier_website_index', next)} type="number" placeholder="1" />
