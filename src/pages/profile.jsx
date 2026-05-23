@@ -16,6 +16,7 @@ import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
 import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
+import { DELIVERY_STATUS } from '../lib/orderStatus';
 import useSiteBrand from '../hooks/useSiteBrand';
 import { findDopingOption, formatDopingDuration, getDopingTypeMeta, getDopingRemainingLabel, getListingActiveDopingTypes } from '../lib/doping';
 import { AchievementCard, IdentityVerifiedIcon, VerifiedAchievementCard } from '../components/StoreBadges';
@@ -39,18 +40,11 @@ async function apiAuth(action, body = null) {
   return json.data;
 }
 
-const DELIVERY_STATUS = {
-  0: { label: 'Teslimat Bekleniyor', color: 'bg-orange-100 text-orange-700', icon: Clock },
-  1: { label: 'Teslim Edildi', color: 'bg-blue-100 text-blue-700', icon: Truck },
-  2: { label: 'Tamamlandı', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
-  3: { label: 'Anlaşmazlık', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
-};
-
 function DeliveryBadge({ status }) {
   const s = DELIVERY_STATUS[status] || DELIVERY_STATUS[0];
   const Icon = s.icon;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${s.color}`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${s.badge}`}>
       <Icon size={11} /> {s.label}
     </span>
   );

@@ -16,36 +16,13 @@ import {
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetProductOrderLogs, adminGetProductOrders, adminUpdateProductOrder } from '../../lib/adminApi';
 import useSiteBrand from '../../hooks/useSiteBrand';
-
-const DELIVERY_STATUS_MAP = {
-  0: { label: 'Teslimat Bekleniyor', color: 'orange', icon: Clock },
-  1: { label: 'Teslim Edildi', color: 'blue', icon: Truck },
-  2: { label: 'Tamamlandi', color: 'emerald', icon: CheckCircle },
-  3: { label: 'Sorunlu', color: 'amber', icon: AlertTriangle },
-  4: { label: 'Iptal', color: 'rose', icon: XCircle },
-};
-
-const ORDER_STATUS_OPTIONS = [
-  { value: 'pending', label: 'Islemde' },
-  { value: 'completed', label: 'Tamamlandi' },
-  { value: 'cancelled', label: 'Iptal Edildi' },
-];
-
-const DELIVERY_TONE_MAP = {
-  orange: 'bg-orange-50 text-orange-700',
-  blue: 'bg-blue-50 text-blue-700',
-  emerald: 'bg-emerald-50 text-emerald-700',
-  amber: 'bg-amber-50 text-amber-700',
-  rose: 'bg-rose-50 text-rose-700',
-  slate: 'bg-slate-100 text-slate-700',
-};
+import { DELIVERY_STATUS as DELIVERY_STATUS_MAP, ORDER_STATUS_OPTIONS } from '../../lib/orderStatus';
 
 function DeliveryBadge({ status }) {
   const meta = DELIVERY_STATUS_MAP[status] || DELIVERY_STATUS_MAP[0];
   const Icon = meta.icon;
-  const tone = DELIVERY_TONE_MAP[meta.color] || DELIVERY_TONE_MAP.slate;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black ${tone}`}>
+    <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-black ${meta.badge}`}>
       <Icon size={11} /> {meta.label}
     </span>
   );

@@ -2,27 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronLeft, ChevronRight, Eye, X, RefreshCw, CheckCircle, AlertTriangle, Clock, Truck, XCircle, History } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminGetOrders, adminUpdateOrder, adminGetOrderLogs } from '../../lib/adminApi';
-
-const DELIVERY_STATUS_MAP = {
-  0: { label: 'Teslimat Bekleniyor', color: 'orange',  icon: Clock },
-  1: { label: 'Teslim Edildi',       color: 'blue',    icon: Truck },
-  2: { label: 'Tamamlandı',          color: 'emerald', icon: CheckCircle },
-  3: { label: 'Anlaşmazlık',         color: 'red',     icon: AlertTriangle },
-  4: { label: 'İptal & İade',        color: 'gray',    icon: XCircle },
-};
-
-const ORDER_STATUS_OPTIONS = [
-  { value: 'pending', label: 'İşlemde' },
-  { value: 'completed', label: 'Tamamlandı' },
-  { value: 'cancelled', label: 'İptal Edildi' },
-  { value: 'refunded', label: 'İade Edildi' },
-];
+import { DELIVERY_STATUS as DELIVERY_STATUS_MAP, ORDER_STATUS_OPTIONS } from '../../lib/orderStatus';
 
 function DeliveryBadge({ status }) {
   const s = DELIVERY_STATUS_MAP[status] ?? DELIVERY_STATUS_MAP[0];
   const Icon = s.icon;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg bg-${s.color}-50 text-${s.color}-700`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${s.badge}`}>
       <Icon size={11} /> {s.label}
     </span>
   );
@@ -160,7 +146,7 @@ function OrderDetailModal({ order, onClose, onRefresh, showToast }) {
                         onClick={() => update({ delivery_status: parseInt(val) })}
                         className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border transition-all disabled:opacity-40 ${
                           ds === parseInt(val)
-                            ? `bg-${info.color}-100 text-${info.color}-700 border-${info.color}-300`
+                            ? info.activeBtn
                             : parseInt(val) === 4
                             ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
                             : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'
