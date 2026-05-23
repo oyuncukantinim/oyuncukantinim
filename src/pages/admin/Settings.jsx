@@ -422,7 +422,7 @@ async function resizeImageToCanvas(file, {
   width,
   height,
   quality = 0.9,
-  fallbackName = 'gorsel',
+  fallbackName = 'görsel',
   errorMessage = 'Görsel dönüştürülemedi.',
 }) {
   const img = await loadImageFile(file);
@@ -461,7 +461,7 @@ function resizeDefaultListingImage(file) {
     width: DEFAULT_LISTING_IMAGE_WIDTH,
     height: DEFAULT_LISTING_IMAGE_HEIGHT,
     quality: 1,
-    fallbackName: 'varsayilan-ilan-gorseli',
+    fallbackName: 'varsayilan-ilan-görseli',
     errorMessage: 'Varsayılan ilan görseli 1500x1000 px tuvale dönüştürülemedi.',
   });
 }
@@ -471,7 +471,7 @@ function resizeSiteBackgroundImage(file) {
     width: SITE_BACKGROUND_IMAGE_WIDTH,
     height: SITE_BACKGROUND_IMAGE_HEIGHT,
     quality: 0.9,
-    fallbackName: 'site-arkaplan-gorseli',
+    fallbackName: 'site-arkaplan-görseli',
     errorMessage: 'Site arkaplan görseli 1920x1080 px tuvale dönüştürülemedi.',
   });
 }
@@ -961,7 +961,7 @@ function DopingSettingsPanel({ settings, set, imageUploading, onOptionImageUploa
 
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Sure (saat)</label>
+                      <label className="mb-1.5 block text-xs font-bold text-slate-600">Süre (saat)</label>
                       <input
                         type="number"
                         min="1"

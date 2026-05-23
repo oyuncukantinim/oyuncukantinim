@@ -59,7 +59,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
         delivery_note: deliveryNote,
         delivery_content: deliveryContent,
       });
-      showToast('Urun siparisi guncellendi.');
+      showToast('Ürün siparişi güncellendi.');
       onRefresh();
       onClose();
     } catch (error) {
@@ -77,7 +77,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
       <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900">Urun Siparisi #{order.id}</h2>
+            <h2 className="text-lg font-extrabold text-gray-900">Ürün Siparişi #{order.id}</h2>
             <p className="mt-1 text-xs font-semibold text-gray-400">{fmtDate(order.order_created_at)}</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-gray-100">
@@ -103,7 +103,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 <div className="min-w-0 flex-1">
                   <h3 className="text-base font-extrabold text-gray-900">{order.product_title}</h3>
                   <div className="mt-1 flex flex-wrap items-center gap-2 text-xs font-bold text-gray-500">
-                    <span>{order.buyer_name || 'Alici yok'}</span>
+                    <span>{order.buyer_name || 'Alıcı yok'}</span>
                     <span>•</span>
                     <span>{order.product_type}</span>
                     <span>•</span>
@@ -112,7 +112,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
                   <div className="mt-3 flex items-center gap-2">
                     <DeliveryBadge status={deliveryStatus} />
                     <span className="rounded-full bg-slate-900 px-2.5 py-1 text-[10px] font-black text-white">
-                      Site Urunu
+                      Site Ürünü
                     </span>
                   </div>
                 </div>
@@ -123,7 +123,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
                   <div className="text-lg font-black text-emerald-600">{Number(order.amount || 0).toFixed(2)} ₺</div>
                 </div>
                 <div className="rounded-xl bg-white px-3 py-2">
-                  <div className="text-xs font-bold text-gray-400">Siparis Durumu</div>
+                  <div className="text-xs font-bold text-gray-400">Sipariş Durumu</div>
                   <div className="text-sm font-black text-slate-700">{order.order_status || 'pending'}</div>
                 </div>
               </div>
@@ -152,7 +152,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-gray-600">Teslimat Icerigi</label>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Teslimat İçeriği</label>
                 <textarea
                   value={deliveryContent}
                   onChange={(e) => setDeliveryContent(e.target.value)}
@@ -167,7 +167,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
             <div className="rounded-2xl border border-gray-100 p-4">
               <div className="mb-3 flex items-center gap-2">
                 <History size={15} className="text-gray-400" />
-                <h3 className="font-extrabold text-gray-800">Teslimat Gecmisi</h3>
+                <h3 className="font-extrabold text-gray-800">Teslimat Geçmişi</h3>
               </div>
               {logsLoading ? (
                 <div className="flex justify-center py-6">
@@ -175,7 +175,7 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
                 </div>
               ) : logs.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-center text-sm text-gray-400">
-                  Henuz urun siparisi logu yok.
+                  Henuz ürün siparişi logu yok.
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -192,10 +192,10 @@ function ProductOrderDetailModal({ order, onClose, onRefresh, showToast }) {
 
             <div className="rounded-2xl border border-gray-100 bg-slate-950 p-4 text-white">
               <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.22em] text-white/45">
-                <ShieldCheck size={13} /> Resmi Islem
+                <ShieldCheck size={13} /> Resmi İşlem
               </div>
               <p className="mt-3 text-sm font-semibold text-white/70">
-                Bu alan kullanici ilan siparislerinden ayridir. Teslimat ve not guncellemesi sadece site urununu etkiler.
+                Bu alan kullanıcı ilan siparislerinden ayridir. Teslimat ve not guncellemesi sadece site urununu etkiler.
               </p>
             </div>
           </div>
@@ -267,12 +267,12 @@ export default function ProductOrders() {
         <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h1 className="text-2xl font-extrabold text-gray-900">Site Urunu Siparisleri</h1>
+              <h1 className="text-2xl font-extrabold text-gray-900">Site Ürünü Siparişleri</h1>
               <p className="mt-1 text-sm font-semibold text-gray-400">
-                Resmi urun siparislerini kullanıcı ilan siparislerinden ayrı yonetin.
+                Resmi ürün siparislerini kullanıcı ilan siparislerinden ayrı yonetin.
               </p>
             </div>
-            <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-700">{total} siparis</div>
+            <div className="rounded-2xl bg-slate-100 px-4 py-3 text-sm font-black text-slate-700">{total} sipariş</div>
           </div>
         </div>
 
@@ -283,18 +283,18 @@ export default function ProductOrders() {
               <input
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                placeholder="Alici veya urun ara..."
+                placeholder="Alıcı veya ürün ara..."
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
               />
             </div>
             <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
-              <option value="">Tum siparis durumlari</option>
+              <option value="">Tüm sipariş durumlari</option>
               {ORDER_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
             <select value={deliveryFilter} onChange={(e) => { setDeliveryFilter(e.target.value); setPage(1); }} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
-              <option value="">Tum teslimat durumlari</option>
+              <option value="">Tüm teslimat durumlari</option>
               {Object.entries(DELIVERY_STATUS_MAP).map(([value, meta]) => (
                 <option key={value} value={value}>{meta.label}</option>
               ))}
@@ -308,23 +308,23 @@ export default function ProductOrders() {
               <thead>
                 <tr className="bg-gray-50">
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500">#</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500">Urun</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden md:table-cell">Alici</th>
-                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden md:table-cell">Siparis</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500">Ürün</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden md:table-cell">Alıcı</th>
+                  <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden md:table-cell">Sipariş</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500">Tutar</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden lg:table-cell">Teslimat</th>
                   <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wide text-gray-500 hidden xl:table-cell">Tarih</th>
-                  <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-gray-500">Islem</th>
+                  <th className="px-4 py-3 text-right text-xs font-black uppercase tracking-wide text-gray-500">İşlem</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-gray-400">Yukleniyor...</td>
+                    <td colSpan={8} className="px-4 py-10 text-center text-gray-400">Yükleniyor...</td>
                   </tr>
                 ) : orders.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-gray-400">Urun siparisi bulunamadi.</td>
+                    <td colSpan={8} className="px-4 py-10 text-center text-gray-400">Ürün siparişi bulunamadi.</td>
                   </tr>
                 ) : orders.map((order) => (
                   <tr key={order.id} className="border-t border-gray-50 hover:bg-gray-50/60">
@@ -332,7 +332,7 @@ export default function ProductOrders() {
                     <td className="px-4 py-3">
                       <div className="font-bold text-gray-800">{order.product_title}</div>
                       <div className="mt-1 inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-600">
-                        Site Urunu
+                        Site Ürünü
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell text-gray-600">{order.buyer_name || '—'}</td>

@@ -255,11 +255,11 @@ export default function AdminHeroSlides() {
       throw new Error('Görsel 1350x440px tuvale dönüştürülemedi.');
     }
 
-    const baseName = String(file.name || 'slider-gorseli')
+    const baseName = String(file.name || 'slider-görseli')
       .replace(/\.[^.]+$/, '')
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '') || 'slider-gorseli';
+      .replace(/^-|-$/g, '') || 'slider-görseli';
     const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
     const outputExt = outputType === 'image/jpeg'
       ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')
@@ -329,11 +329,11 @@ export default function AdminHeroSlides() {
       throw new Error('Sekme görseli 48x48px tuvale dönüştürülemedi.');
     }
 
-    const baseName = String(file.name || 'slider-sekme-gorseli')
+    const baseName = String(file.name || 'slider-sekme-görseli')
       .replace(/\.[^.]+$/, '')
       .replace(/[^\w.-]+/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '') || 'slider-sekme-gorseli';
+      .replace(/^-|-$/g, '') || 'slider-sekme-görseli';
     const originalExt = String(file.name || '').match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase();
     const outputExt = outputType === 'image/jpeg'
       ? (originalExt === 'jpeg' ? 'jpeg' : 'jpg')

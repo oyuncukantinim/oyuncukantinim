@@ -26,7 +26,7 @@ const PRODUCT_TYPE_OPTIONS = [
   { value: 'digital_code', label: 'Dijital Kod' },
   { value: 'account', label: 'Hesap' },
   { value: 'item', label: 'Item / Paket' },
-  { value: 'service', label: 'Servis / Manuel Islem' },
+  { value: 'service', label: 'Servis / Manuel İşlem' },
 ];
 
 const DELIVERY_TYPE_OPTIONS = [
@@ -38,7 +38,7 @@ const PRODUCT_STATUS_OPTIONS = [
   { value: 'active', label: 'Aktif', tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { value: 'passive', label: 'Pasif', tone: 'bg-slate-100 text-slate-600 border-slate-200' },
   { value: 'draft', label: 'Taslak', tone: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'sold_out', label: 'Tukendi', tone: 'bg-rose-50 text-rose-700 border-rose-200' },
+  { value: 'sold_out', label: 'Tükendi', tone: 'bg-rose-50 text-rose-700 border-rose-200' },
 ];
 
 const DEFAULT_FORM = {
@@ -89,7 +89,7 @@ function InventoryRowEditor({ row, onChange, onRemove }) {
           <option value="code">Kod</option>
           <option value="account">Hesap</option>
           <option value="manual">Manuel</option>
-          <option value="custom">Ozel</option>
+          <option value="custom">Özel</option>
         </select>
         <input
           value={row.label}
@@ -101,7 +101,7 @@ function InventoryRowEditor({ row, onChange, onRemove }) {
           value={row.payloadText}
           onChange={(e) => onChange({ ...row, payloadText: e.target.value })}
           rows={3}
-          placeholder="Teslim edilecek icerik"
+          placeholder="Teslim edilecek içerik"
           className="min-h-[92px] rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:border-violet-400 focus:outline-none resize-y"
         />
         <div className="flex flex-col gap-2">
@@ -124,7 +124,7 @@ function InventoryRowEditor({ row, onChange, onRemove }) {
             </button>
           ) : (
             <span className="rounded-xl bg-slate-100 px-3 py-2 text-center text-[11px] font-black text-slate-500">
-              Satildi
+              Satıldı
             </span>
           )}
         </div>
@@ -216,7 +216,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
   const uploadGallery = async (files) => {
     if (!files?.length) return;
     if (remainingGallerySlots <= 0) {
-      showToast('En fazla 5 galeri gorseli ekleyebilirsin.');
+      showToast('En fazla 5 galeri görseli ekleyebilirsin.');
       return;
     }
     setUploadingGallery(true);
@@ -237,7 +237,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
       });
       showToast(
         files.length > remainingGallerySlots
-          ? `Ilk ${remainingGallerySlots} gorsel eklendi. Galeri en fazla 5 adet olabilir.`
+          ? `Ilk ${remainingGallerySlots} görsel eklendi. Galeri en fazla 5 adet olabilir.`
           : 'Galeri gorselleri eklendi.',
       );
     } catch (error) {
@@ -275,7 +275,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
     try {
       await adminDeleteUploadedImage(removedImage);
     } catch (error) {
-      showToast(error.message || 'Gorsel dosyasi silinemedi.');
+      showToast(error.message || 'Görsel dosyasi silinemedi.');
     }
   };
 
@@ -287,8 +287,8 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
       <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl">
         <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900">{product ? 'Site Urunu Duzenle' : 'Yeni Site Urunu'}</h2>
-            <p className="mt-0.5 text-xs font-semibold text-gray-400">Stok ve teslimat alanlari urunun kendi icinde yonetilir.</p>
+            <h2 className="text-lg font-extrabold text-gray-900">{product ? 'Site Ürünü Düzenle' : 'Yeni Site Ürünü'}</h2>
+            <p className="mt-0.5 text-xs font-semibold text-gray-400">Stok ve teslimat alanlari ürünün kendi icinde yonetilir.</p>
           </div>
           <button type="button" onClick={onClose} className="rounded-xl p-1.5 hover:bg-gray-100">
             <X size={18} />
@@ -300,7 +300,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h3 className="font-extrabold text-gray-800">Galeri</h3>
-                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">En fazla 5 gorsel ekleyebilir, kapagi bunlardan secebilirsin.</p>
+                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">En fazla 5 görsel ekleyebilir, kapagi bunlardan secebilirsin.</p>
               </div>
               <button
                 type="button"
@@ -309,7 +309,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                 className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-[11px] font-black text-gray-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {uploadingGallery ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-                Gorsel Ekle
+                Görsel Ekle
               </button>
             </div>
             <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadGallery(e.target.files)} />
@@ -338,7 +338,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                       <span className={`absolute left-1.5 top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-black ${
                         form.cover_image === image ? 'bg-violet-600 text-white' : 'bg-black/65 text-white'
                       }`}>
-                        {form.cover_image === image ? 'Kapak' : 'Sec'}
+                        {form.cover_image === image ? 'Kapak' : 'Seç'}
                       </span>
                       <button type="button" onClick={() => removeGalleryImage(index)} className="absolute right-1.5 top-1.5 rounded-lg bg-black/70 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100">
                         <X size={12} />
@@ -356,7 +356,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
           <div className="space-y-5">
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-gray-600">Urun Basligi *</label>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Ürün Başlığı *</label>
                 <input
                   value={form.title}
                   onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value, slug: slugify(e.target.value) }))}
@@ -393,7 +393,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Urun Tipi</label>
+                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Ürün Tipi</label>
                   <select
                     value={form.product_type}
                     onChange={(e) => setForm((prev) => ({ ...prev, product_type: e.target.value }))}
@@ -432,7 +432,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Kisa Aciklama</label>
+                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Kisa Açıklama</label>
                   <input
                     value={form.short_description}
                     onChange={(e) => setForm((prev) => ({ ...prev, short_description: e.target.value }))}
@@ -444,14 +444,14 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                   <input
                     value={form.badge_text}
                     onChange={(e) => setForm((prev) => ({ ...prev, badge_text: e.target.value }))}
-                    placeholder="Orn: Resmi Satis"
+                    placeholder="Orn: Resmi Satış"
                     className="w-full rounded-2xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="mb-1.5 block text-xs font-bold text-gray-600">Detay Aciklama</label>
+                <label className="mb-1.5 block text-xs font-bold text-gray-600">Detay Açıklama</label>
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
@@ -479,7 +479,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Sira</label>
+                  <label className="mb-1.5 block text-xs font-bold text-gray-600">Sıra</label>
                   <input type="number" value={form.sort_order} onChange={(e) => setForm((prev) => ({ ...prev, sort_order: e.target.value }))} className="w-full rounded-2xl border border-gray-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none" />
                 </div>
                 <div>
@@ -510,8 +510,8 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
             <div className="rounded-2xl border border-gray-100 p-4 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="font-extrabold text-gray-800">Stok / Teslimat Icerigi</h3>
-                  <p className="mt-1 text-xs text-gray-400">Her sey bu urunun icinde yonetilir; ayri stok sayfasi yok.</p>
+                  <h3 className="font-extrabold text-gray-800">Stok / Teslimat İçeriği</h3>
+                  <p className="mt-1 text-xs text-gray-400">Her sey bu ürünün icinde yonetilir; ayri stok sayfasi yok.</p>
                 </div>
                 <button type="button" onClick={addInventoryRow} className="inline-flex items-center gap-1 rounded-xl bg-violet-600 px-3 py-2 text-xs font-black text-white hover:bg-violet-500">
                   <Plus size={13} /> Satir Ekle
@@ -522,7 +522,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
                 <div className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-400">
                   {form.delivery_type === 'automatic'
                     ? 'Otomatik teslim urunlerinde en az bir aktif satir bulunmali.'
-                    : 'Manuel teslim urunleri icin istersen teslim satirlari veya notlar ekleyebilirsin.'}
+                    : 'Manuel teslim ürünleri icin istersen teslim satirlari veya notlar ekleyebilirsin.'}
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -552,7 +552,7 @@ function ProductModal({ open, onClose, onSave, product, categories, showToast, s
           </button>
           <button type="button" onClick={save} disabled={saving || uploadingGallery} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-5 py-2.5 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-60">
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Edit3 size={15} />}
-            {product ? 'Urunu Kaydet' : 'Urunu Olustur'}
+            {product ? 'Ürünü Kaydet' : 'Ürünü Oluştur'}
           </button>
         </div>
       </div>
@@ -619,7 +619,7 @@ function ProductListCard({ product, onEdit, onDelete, fallbackImage = '' }) {
                     onClick={() => onEdit(product)}
                     className="inline-flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[10px] font-black text-violet-700 hover:bg-violet-100"
                   >
-                    <Edit3 size={13} /> Duzenle
+                    <Edit3 size={13} /> Düzenle
                   </button>
                   <button
                     type="button"
@@ -716,14 +716,14 @@ export default function AdminProducts() {
 
   const handleSave = async (payload) => {
     if (!payload.title?.trim() || !payload.slug?.trim() || !payload.category_id || !payload.price) {
-      showToast('Baslik, URL, kategori ve fiyat zorunlu.');
+      showToast('Başlık, URL, kategori ve fiyat zorunlu.');
       return;
     }
 
     setSaving(true);
     try {
       await adminSaveProduct(payload);
-      showToast(selectedProduct ? 'Urun guncellendi.' : 'Urun olusturuldu.');
+      showToast(selectedProduct ? 'Ürün güncellendi.' : 'Ürün oluşturuldu.');
       setModalOpen(false);
       setSelectedProduct(null);
       loadProducts();
@@ -738,7 +738,7 @@ export default function AdminProducts() {
     if (!confirm(`"${product.title}" urununu silmek istiyor musun?`)) return;
     try {
       await adminDeleteProduct(product.id);
-      showToast('Urun silindi.');
+      showToast('Ürün silindi.');
       loadProducts();
     } catch (error) {
       showToast(error.message);
@@ -764,24 +764,24 @@ export default function AdminProducts() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                placeholder="Urun ara..."
+                placeholder="Ürün ara..."
                 className="w-full rounded-2xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm focus:border-violet-400 focus:outline-none"
               />
             </div>
             <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
-              <option value="">Tum durumlar</option>
+              <option value="">Tüm durumlar</option>
               {PRODUCT_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
             <select value={typeFilter} onChange={(e) => { setTypeFilter(e.target.value); setPage(1); }} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
-              <option value="">Tum urun tipleri</option>
+              <option value="">Tüm ürün tipleri</option>
               {PRODUCT_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
             <select value={deliveryFilter} onChange={(e) => { setDeliveryFilter(e.target.value); setPage(1); }} className="rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none">
-              <option value="">Tum teslim tipleri</option>
+              <option value="">Tüm teslim tipleri</option>
               {DELIVERY_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -791,13 +791,13 @@ export default function AdminProducts() {
               onClick={openCreate}
               className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white shadow-lg shadow-violet-200 transition-colors hover:bg-violet-500"
             >
-              <Plus size={16} /> Urun Ekle
+              <Plus size={16} /> Ürün Ekle
             </button>
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-bold text-gray-400">
-            <span>{total} urun</span>
+            <span>{total} ürün</span>
             <span>{'\u2022'}</span>
-            <span>{productCategories.length} site urunu kategorisi</span>
+            <span>{productCategories.length} site ürünü kategorisi</span>
           </div>
         </div>
 
@@ -810,12 +810,12 @@ export default function AdminProducts() {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-violet-500">
               <Package size={28} />
             </div>
-            <h2 className="text-xl font-extrabold text-gray-800">Henuz site urunu yok</h2>
+            <h2 className="text-xl font-extrabold text-gray-800">Henuz site ürünü yok</h2>
             <p className="mt-2 text-sm font-semibold text-gray-400">
-              Ilk urunu ekledikten sonra stok, teslimat ve siparis akisi ayni yerden yonetilecek.
+              Ilk ürünü ekledikten sonra stok, teslimat ve sipariş akisi ayni yerden yonetilecek.
             </p>
             <button type="button" onClick={openCreate} className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white hover:bg-violet-500">
-              <Plus size={15} /> Ilk site urununu olustur
+              <Plus size={15} /> Ilk site urununu oluştur
             </button>
           </div>
         ) : (
