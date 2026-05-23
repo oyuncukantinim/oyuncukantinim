@@ -76,7 +76,7 @@ function Field({ label, value: fieldValue, onChange, type = 'text', placeholder,
   );
 }
 
-function ReadonlyUrl({ label, url, displayUrl }) {
+function ReadonlyUrl({ label, url }) {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -93,7 +93,7 @@ function ReadonlyUrl({ label, url, displayUrl }) {
     <div>
       <div className="mb-1.5 text-sm font-black text-slate-700">{label}</div>
       <div className="flex min-h-[44px] items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3">
-        <code className="min-w-0 flex-1 truncate text-xs font-bold text-violet-700">{displayUrl || url}</code>
+        <code className="min-w-0 flex-1 truncate text-xs font-bold text-violet-700">{url}</code>
         <button
           type="button"
           onClick={copy}
@@ -309,8 +309,8 @@ export default function PaymentMethods() {
 
               <div className="grid gap-4 border-y border-slate-100 py-5 lg:grid-cols-2">
                 <ReadonlyUrl label="Ödeme Başlatma URL" url={paymentStartUrl} />
-                <ReadonlyUrl label="Shopier Bildirim URL / OSB Bildirim Adresi" url={callbackUrl} displayUrl="/api.php?action=shopier_balance_callback" />
-                <ReadonlyUrl label="Ödeme Sonrası Kullanıcı Dönüş URL" url={returnUrl} displayUrl="/profile?tab=balance" />
+                <ReadonlyUrl label="Shopier Bildirim URL / OSB Bildirim Adresi" url={callbackUrl} />
+                <ReadonlyUrl label="Ödeme Sonrası Kullanıcı Dönüş URL" url={returnUrl} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
