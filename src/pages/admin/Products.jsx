@@ -19,7 +19,7 @@ import {
   adminSaveProduct,
   adminUploadImage,
 } from '../../lib/adminApi';
-import { productSlug } from '../../lib/api';
+import { makeSlug as slugify, productSlug } from '../../lib/api';
 import useSiteBrand from '../../hooks/useSiteBrand';
 
 const PRODUCT_TYPE_OPTIONS = [
@@ -64,19 +64,6 @@ const DEFAULT_FORM = {
   seo_description: '',
   inventory_entries: [],
 };
-
-function slugify(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/\u0131/g, 'i')
-    .replace(/\u011f/g, 'g')
-    .replace(/\u00fc/g, 'u')
-    .replace(/\u015f/g, 's')
-    .replace(/\u00f6/g, 'o')
-    .replace(/\u00e7/g, 'c')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
 
 function money(value) {
   return `${Number(value || 0).toFixed(2)} \u20BA`;

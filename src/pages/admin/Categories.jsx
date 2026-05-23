@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import PopularGamesManager from '../../components/admin/PopularGamesManager';
+import { makeSlug as slugify } from '../../lib/api';
 import {
   adminGetCategories, adminSaveCategory, adminDeleteCategory,
   adminGetCategoryAttributes, adminSaveCategoryAttribute, adminDeleteCategoryAttribute,
@@ -73,12 +74,6 @@ function getTypeColorMeta(value) {
   };
 }
 
-function slugify(str) {
-  return str.toLowerCase()
-    .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ü/g,'u').replace(/Ş/g,'s').replace(/Ö/g,'o').replace(/Ç/g,'c')
-    .replace(/ğ/g,'g').replace(/ü/g,'u').replace(/ş/g,'s').replace(/ı/g,'i').replace(/ö/g,'o').replace(/ç/g,'c')
-    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-}
 
 function getCategoryRoleMeta(category = {}) {
   if (category.node_type === 'container') {

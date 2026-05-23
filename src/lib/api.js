@@ -79,7 +79,10 @@ export function invalidatePublicCache(actions = []) {
   }
 }
 
-function makeSlug(title) {
+// Canonical slug generator — exported as the single source of truth so admin
+// pages (categories, products, pages) and the public path builders all produce
+// identical slugs. NFD normalization strips every Turkish diacritic.
+export function makeSlug(title) {
   return String(title || '')
     .replace(/İ/g, 'i')
     .replace(/I/g, 'i')
