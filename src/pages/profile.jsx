@@ -1119,7 +1119,7 @@ export default function ProfilePage() {
     { id: 'favorites',     label: 'Favorilerim',       icon: Heart },
     { id: 'achievements',  label: 'Başarımlar',        icon: Trophy },
     { id: 'reviews',       label: 'Değerlendirmeler',  icon: Star },
-    ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye', icon: Wallet }] : []),
+    ...(balanceAddEnabled ? [{ id: 'balance', label: 'Bakiye Yükle', icon: Wallet }] : []),
     { id: 'profile',       label: 'Profil',            icon: User },
     { id: 'personal',      label: 'Kişisel Bilgiler',  icon: MapPin },
   ];
