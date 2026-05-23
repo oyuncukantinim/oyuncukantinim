@@ -339,9 +339,7 @@ export default function SellerPage() {
 
                 {seller.bio ? (
                   <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-white/72">{seller.bio}</p>
-                ) : (
-                  <p className="mt-3 max-w-3xl text-sm font-semibold leading-6 text-white/58">Oyuncu Kantinim satıcı vitrini.</p>
-                )}
+                ) : null}
 
                 <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold text-white/62">
                   <span className="inline-flex items-center gap-1.5">
