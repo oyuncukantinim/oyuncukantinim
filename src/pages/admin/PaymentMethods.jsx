@@ -293,22 +293,22 @@ export default function PaymentMethods() {
 
             <div className="space-y-6 p-5">
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Method adı" value={methodState.methodName} onChange={(next) => set('shopier_method_name', next)} placeholder="Shopier" />
-                <Field label="Görünür adı" value={methodState.displayName} onChange={(next) => set('shopier_display_name', next)} placeholder="Kredi Kartı" />
-                <Field label="Shopier API" value={methodState.apiKey} onChange={(next) => set('shopier_api_key', next)} placeholder="Shopier API Key" />
-                <Field label="Shopier API Şifre" value={methodState.apiSecret} onChange={(next) => set('shopier_api_secret', next)} placeholder="Shopier API Secret" secret />
+                <Field label="Yöntem Kodu" value={methodState.methodName} onChange={(next) => set('shopier_method_name', next)} placeholder="Shopier" helper="Panel içinde ödeme yöntemini ayırt etmek için kullanılır." />
+                <Field label="Kullanıcıya Görünen Ad" value={methodState.displayName} onChange={(next) => set('shopier_display_name', next)} placeholder="Kredi Kartı" helper="Bakiye yükleme ekranında kullanıcıya gösterilecek ödeme adı." />
+                <Field label="Shopier API Anahtarı" value={methodState.apiKey} onChange={(next) => set('shopier_api_key', next)} placeholder="Shopier API Key" />
+                <Field label="Shopier API Şifresi" value={methodState.apiSecret} onChange={(next) => set('shopier_api_secret', next)} placeholder="Shopier API Secret" secret />
                 <Field label="Shopier Website Index" value={methodState.websiteIndex} onChange={(next) => set('shopier_website_index', next)} type="number" placeholder="1" />
               </div>
 
               <div className="grid gap-4 border-y border-slate-100 py-5 lg:grid-cols-2">
-                <ReadonlyUrl label="Shopier Ödeme Adresi" url={paymentStartUrl} />
-                <ReadonlyUrl label="Shopier Callback / Dönüş Adresi" url={callbackUrl} />
-                <ReadonlyUrl label="Kullanıcı Dönüş Adresi" url={returnUrl} />
+                <ReadonlyUrl label="Ödeme Başlatma URL" url={paymentStartUrl} />
+                <ReadonlyUrl label="Shopier Bildirim URL / OSB Bildirim Adresi" url={callbackUrl} />
+                <ReadonlyUrl label="Ödeme Sonrası Kullanıcı Dönüş URL" url={returnUrl} />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Shopier OSB API" value={methodState.osbApi} onChange={(next) => set('shopier_osb_api', next)} placeholder="OSB API" />
-                <Field label="Shopier OSB Şifre" value={methodState.osbSecret} onChange={(next) => set('shopier_osb_secret', next)} placeholder="OSB Şifre" secret />
+                <Field label="Shopier OSB API Anahtarı" value={methodState.osbApi} onChange={(next) => set('shopier_osb_api', next)} placeholder="OSB API" />
+                <Field label="Shopier OSB Şifresi" value={methodState.osbSecret} onChange={(next) => set('shopier_osb_secret', next)} placeholder="OSB Şifre" secret />
               </div>
 
               <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr]">
