@@ -128,7 +128,7 @@ export default function PaymentMethods() {
 
   const selected = PAYMENT_METHODS.find((method) => method.id === selectedMethod) || PAYMENT_METHODS[0];
   const frontendBaseUrl = String(value(settings, 'frontend_base_url', DEFAULT_FRONTEND_URL)).replace(/\/+$/, '');
-  const callbackUrl = `${API_BASE}?action=shopier_balance_callback`;
+  const callbackUrl = `${API_BASE}?callback=shopier`;
   const paymentStartUrl = `${API_BASE}?action=shopier_balance_pay`;
   const returnUrl = `${frontendBaseUrl}/profile?tab=balance`;
 
