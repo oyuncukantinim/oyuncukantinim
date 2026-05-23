@@ -1,19 +1,51 @@
 <!doctype html>
-<html lang="tr" data-beasties-container>
+<html lang="tr" class="theme-dark dark" data-theme="dark" style="color-scheme: dark;" data-beasties-container>
   <head>
     <meta charset="UTF-8">
-    <link rel="preconnect" href="https://api.oyuncukantinim.com.tr" crossorigin>
+    <!-- Keep API DNS warm without opening an early connection Lighthouse may flag as unused. -->
+    <link rel="dns-prefetch" href="//api.oyuncukantinim.com.tr">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oyuncu Kantinim - Oyun Dunyasinin Yeni Kantini</title>
-    <meta name="description" content="En uygun fiyatli E-Pinler, guvenilir oyuncu pazari ve aninda teslimat garantisi.">
-    <script type="module" crossorigin src="/assets/index-BnwVXZ1j.js"></script>
+
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('ok_theme_mode');
+          var theme = stored === 'light' ? 'light' : 'dark';
+          var root = document.documentElement;
+          root.classList.toggle('theme-dark', theme === 'dark');
+          root.classList.toggle('dark', theme === 'dark');
+          root.dataset.theme = theme;
+          root.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+        } catch (e) {
+          document.documentElement.classList.add('theme-dark', 'dark');
+          document.documentElement.dataset.theme = 'dark';
+          document.documentElement.style.colorScheme = 'dark';
+        }
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-Bf5YHkS0.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/rolldown-runtime-DF2fYuay.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-lucide-BFmGzwvl.js">
-    <link rel="modulepreload" crossorigin href="/assets/chunk-UVKPFVEO-JvGBujgm.js">
-    <link rel="modulepreload" crossorigin href="/assets/vendor-react-pvvhLRUF.js">
-    <link rel="modulepreload" crossorigin href="/assets/api-D_0dmpNW.js">
-    <style>*,:before,:after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#3b82f680;--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border:0 solid #e5e7eb}:before,:after{--tw-content:""}html{-webkit-text-size-adjust:100%;tab-size:4;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;line-height:1.5}body{line-height:inherit;margin:0}:root{--ok-bg:#fafafa;--ok-panel:#fff;--ok-panel-soft:#f8fafc;--ok-panel-muted:#f1f5f9;--ok-text:#1f2937;--ok-heading:#0f172a;--ok-muted:#64748b;--ok-subtle:#94a3b8;--ok-border:#e5e7eb;--ok-border-soft:#f1f5f9}body{--tw-bg-opacity:1;background-color:rgb(250 250 250/var(--tw-bg-opacity,1));--tw-text-opacity:1;color:var(--ok-text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background:radial-gradient(circle at top left, #8b5cf614, transparent 34rem), radial-gradient(circle at top right, #06b6d414, transparent 30rem), var(--ok-bg);font-family:Inter,system-ui,-apple-system,sans-serif;transition:background-color .18s,color .18s}</style><link rel="preload" crossorigin href="/assets/index-C6N1atNU.css" onload="this.rel='stylesheet'" as="style"><noscript><link rel="stylesheet" crossorigin href="/assets/index-C6N1atNU.css"></noscript>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-lucide-pnbydRdg.js">
+    <link rel="modulepreload" crossorigin href="/assets/chunk-UVKPFVEO-3VqH9vCf.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-CzeDjkck.js">
+    <link rel="modulepreload" crossorigin href="/assets/api-CMde-ob7.js">
+    <style>*,:before,:after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:#3b82f680;--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }*,:before,:after{box-sizing:border-box;border:0 solid #e5e7eb}:before,:after{--tw-content:""}html{-webkit-text-size-adjust:100%;tab-size:4;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;line-height:1.5}body{line-height:inherit;margin:0}:root{--ok-bg:#fafafa;--ok-panel:#fff;--ok-panel-soft:#f8fafc;--ok-panel-muted:#f1f5f9;--ok-text:#1f2937;--ok-heading:#0f172a;--ok-muted:#64748b;--ok-subtle:#94a3b8;--ok-border:#e5e7eb;--ok-border-soft:#f1f5f9}body{--tw-bg-opacity:1;background-color:rgb(250 250 250/var(--tw-bg-opacity,1));--tw-text-opacity:1;color:var(--ok-text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background:radial-gradient(circle at top left, #8b5cf614, transparent 34rem), radial-gradient(circle at top right, #06b6d414, transparent 30rem), var(--ok-bg);font-family:Inter,system-ui,-apple-system,sans-serif;transition:background-color .18s,color .18s}</style><link rel="preload" crossorigin href="/assets/index-Bic2U4jF.css" onload="this.rel='stylesheet'" as="style"><noscript><link rel="stylesheet" crossorigin href="/assets/index-Bic2U4jF.css"></noscript>
+      <link rel="preload" as="image" fetchpriority="high" href="https://api.oyuncukantinim.com.tr/uploads/hero-slider-bg/img_69f25e0525dd99.22651598.webp">
+      <title>Oyuncu Kantinim - Yenilikçi Oyuncu Alışveriş Platformu</title>
+    <meta name="description" content="E-pin, oyun ürünleri, güvenilir oyuncu pazarı ve hızlı teslimat fırsatlarını Oyuncu Kantinim’de keşfet." />
+    <link rel="canonical" href="https://beta.oyuncukantinim.com.tr/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Oyuncu Kantinim" />
+    <meta property="og:title" content="Oyuncu Kantinim - Yenilikçi Oyuncu Alışveriş Platformu" />
+    <meta property="og:description" content="E-pin, oyun ürünleri, güvenilir oyuncu pazarı ve hızlı teslimat fırsatlarını Oyuncu Kantinim’de keşfet." />
+    <meta property="og:url" content="https://beta.oyuncukantinim.com.tr/" />
+    <meta property="og:image" content="https://beta.oyuncukantinim.com.tr/og-image.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Oyuncu Kantinim - Yenilikçi Oyuncu Alışveriş Platformu" />
+    <meta name="twitter:description" content="E-pin, oyun ürünleri, güvenilir oyuncu pazarı ve hızlı teslimat fırsatlarını Oyuncu Kantinim’de keşfet." />
+    <meta name="twitter:image" content="https://beta.oyuncukantinim.com.tr/og-image.png" />
+    <script id="ok-page-jsonld" type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Oyuncu Kantinim","url":"https://beta.oyuncukantinim.com.tr/","potentialAction":{"@type":"SearchAction","target":"https://beta.oyuncukantinim.com.tr/market?search={search_term_string}","query-input":"required name=search_term_string"}}</script>
   </head>
   <body>
     <div id="root"></div>
