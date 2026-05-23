@@ -103,6 +103,9 @@ export default function CreatePage() {
   const [siteMaxPrice, setSiteMaxPrice] = useState(defaultMaxListingPrice);
   const [manualDeliveryMaxHours, setManualDeliveryMaxHours] = useState(defaultManualDeliveryMaxHours);
   const [stockItemMaxCount, setStockItemMaxCount] = useState(defaultStockItemMaxCount);
+  // Site-wide commission rate from admin settings — used as the fallback when a
+  // category has no commission of its own (previously hardcoded to 10%).
+  const [siteCommission, setSiteCommission] = useState(10);
   const [stockItemContentMax, setStockItemContentMax] = useState(defaultStockItemContentMax);
 
   useEffect(() => {
@@ -132,6 +135,9 @@ export default function CreatePage() {
           if (j.data.min_listing_price !== undefined && j.data.min_listing_price !== null && j.data.min_listing_price !== '') {
             setSiteMinPrice(Number(j.data.min_listing_price));
           }
+          if (j.data.commission_rate !== undefined && j.data.commission_rate !== null && j.data.commission_rate !== '') {
+            setSiteCommission(Number(j.data.commission_rate));
+          }
         }
       })
       .catch(() => {});
@@ -151,7 +157,7 @@ export default function CreatePage() {
   const effectiveCommission = selectedCategory?.effective_commission ?? selectedCategory?.commission_rate ?? null;
   const effectiveMinPrice   = selectedCategory?.effective_min_price ?? selectedCategory?.min_price ?? siteMinPrice;
   const priceNum   = parseFloat(price) || 0;
-  const commission = priceNum * ((effectiveCommission ?? 10) / 100);
+  const commission = priceNum * ((effectiveCommission ?? siteCommission) / 100);
   const earnings   = priceNum - commission;
   const selectedDopingEntries = [
     selectedDopings.vitrine ? { type: 'vitrine', option: findDopingOption(vitrineOptions, selectedDopings.vitrine) } : null,
