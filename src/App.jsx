@@ -56,6 +56,7 @@ const AdminHeroSlides    = lazy(() => import('./pages/admin/HeroSlides'));
 const AdminPages         = lazy(() => import('./pages/admin/Pages'));
 const AdminFinance       = lazy(() => import('./pages/admin/Finance'));
 const AdminBalanceCoupons = lazy(() => import('./pages/admin/BalanceCoupons'));
+const AdminPaymentMethods = lazy(() => import('./pages/admin/PaymentMethods'));
 const AdminPaymentManagement = lazy(() => import('./pages/admin/PaymentManagement'));
 const AdminDevNotes      = lazy(() => import('./pages/admin/DevNotes'));
 const AdminLogs          = lazy(() => import('./pages/admin/AdminLogs'));
@@ -364,6 +365,7 @@ export default function App() {
                   <Route path="/admin/pages" element={<AdminRoute><AdminPages /></AdminRoute>} />
                   <Route path="/admin/finance" element={<AdminRoute><AdminFinance /></AdminRoute>} />
                   <Route path="/admin/balance-coupons" element={<AdminRoute><AdminBalanceCoupons /></AdminRoute>} />
+                  <Route path="/admin/payment-methods" element={<AdminRoute><AdminPaymentMethods /></AdminRoute>} />
                 <Route path="/admin/payment-management" element={<AdminRoute><AdminPaymentManagement /></AdminRoute>} />
                 <Route path="/admin/store-management" element={<AdminRoute><AdminStoreManagement /></AdminRoute>} />
                 <Route path="/admin/xp-management" element={<AdminRoute><AdminXpManagement /></AdminRoute>} />

@@ -1,7 +1,6 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BellRing,
-  CreditCard,
   Image as ImageIcon,
   LayoutTemplate,
   LifeBuoy,
@@ -13,6 +12,7 @@ import {
   Save,
   Settings as SettingsIcon,
   Shield,
+  ShoppingBag,
   ToggleLeft,
   ToggleRight,
   Trash2,
@@ -148,29 +148,8 @@ const SETTINGS_TABS = [
   {
     id: 'commerce',
     label: 'Ticari',
-    icon: CreditCard,
+    icon: ShoppingBag,
     sections: [
-      {
-        section: 'Bakiye Yükleme ve Shopier',
-        fields: [
-          { key: 'shopier_enabled', label: 'Shopier Ödeme', type: 'toggle', desc: 'Açıksa kullanıcılar bakiye yükleme için Shopier ödeme sayfasına yönlendirilir.' },
-          { key: 'shopier_api_key', label: 'Shopier API Key', type: 'text', placeholder: 'Shopier API Key' },
-          { key: 'shopier_api_secret', label: 'Shopier API Secret', type: 'password', placeholder: 'Shopier API Secret' },
-          { key: 'shopier_website_index', label: 'Shopier Website Index', type: 'number', placeholder: '1' },
-          {
-            key: 'shopier_commission_type',
-            label: 'Shopier Komisyon Tipi',
-            type: 'select',
-            options: [
-              { value: 'none', label: 'Komisyon yok' },
-              { value: 'fixed', label: 'Sabit TL' },
-              { value: 'percent', label: 'Yüzde (%)' },
-            ],
-            desc: 'Komisyon kullanıcıdan tahsil edilir, kullanıcının bakiyesine sadece yüklemek istediği ana tutar eklenir.',
-          },
-          { key: 'shopier_commission_value', label: 'Shopier Komisyon Değeri', type: 'number', placeholder: '0' },
-        ],
-      },
       {
         section: 'Fiyat ve Komisyon',
         fields: [
