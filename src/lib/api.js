@@ -141,14 +141,26 @@ async function request(action, options = {}) {
     if (pending) return pending;
   }
 
-  const headers = { 'Content-Type': 'application/json' };
+  // Only attach a Content-Type when there's an actual JSON body. A GET has no
+  // body, and sending `Content-Type: application/json` on a cross-origin GET
+  // makes it a "non-simple" request that triggers a CORS preflight (OPTIONS)
+  // before every read — adding ~100-300ms to each call. Dropping it lets
+  // public GETs stay simple and skip the preflight entirely.
+  const headers = {};
+  if (body) headers['Content-Type'] = 'application/json';
+
   const requestCache = cache ?? (auth || method !== 'GET' ? 'no-store' : 'default');
+
+  // Authenticated requests and all writes need the session cookie. Public GET
+  // reads do not — omitting credentials keeps them "simple" (no preflight) and
+  // lets the responses be cached by the browser/CDN.
+  const credentialsMode = auth || method !== 'GET' ? 'include' : 'omit';
 
   const doRequest = async () => {
     const fetchOptions = {
       method,
       cache: requestCache,
-      credentials: 'include',
+      credentials: credentialsMode,
       headers,
       body: body ? JSON.stringify(body) : undefined,
     };
