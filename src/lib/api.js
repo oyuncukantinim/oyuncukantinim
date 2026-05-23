@@ -79,6 +79,31 @@ export function invalidatePublicCache(actions = []) {
   }
 }
 
+// Wipe the ENTIRE public API cache (memory + sessionStorage). Only touches the
+// `ok_public_api_v2:` keys — never the auth cookie or the user snapshot, so
+// calling this can never log anyone out. Used by the cache-version sync: when
+// the backend reports a newer content version, we drop stale public reads and
+// the next render fetches fresh data.
+export function clearPublicCache() {
+  memoryCache.clear();
+  pendingRequests.clear();
+  try {
+    if (typeof sessionStorage === 'undefined') return;
+    for (let index = sessionStorage.length - 1; index >= 0; index -= 1) {
+      const key = sessionStorage.key(index);
+      if (key && key.startsWith(PUBLIC_CACHE_PREFIX)) sessionStorage.removeItem(key);
+    }
+  } catch {
+    // Ignore storage access errors.
+  }
+}
+
+// Tiny, never-cached endpoint that returns the current content version. The
+// backend bumps it whenever an admin mutation changes public data.
+export function getCacheVersion() {
+  return request('get_cache_version', { cache: 'no-store' });
+}
+
 // Canonical slug generator — exported as the single source of truth so admin
 // pages (categories, products, pages) and the public path builders all produce
 // identical slugs. NFD normalization strips every Turkish diacritic.

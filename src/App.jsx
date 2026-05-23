@@ -5,6 +5,7 @@ import { AdminAuthProvider } from './context/AdminAuthContext';
 import { CartProvider } from './context/CartContext';
 import { useAuth } from './context/useAuth';
 import { useAdminAuth } from './context/useAdminAuth';
+import useCacheSync from './hooks/useCacheSync';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
@@ -182,6 +183,7 @@ function AnnouncementBanner({ text }) {
 
 function SiteLayout() {
   const location = useLocation();
+  useCacheSync();
   const { adminUser, loading: adminLoading, checked: adminChecked, refreshAdmin } = useAdminAuth();
   const [siteState, setSiteState] = useState({
     checked: true,
