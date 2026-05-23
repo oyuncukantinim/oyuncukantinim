@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import { useAuth } from './context/useAuth';
 import { useAdminAuth } from './context/useAdminAuth';
 import useCacheSync from './hooks/useCacheSync';
+import ScrollToTop from './components/ScrollToTop';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
@@ -339,6 +340,7 @@ function SiteLayout() {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AdminAuthProvider>
         <AuthProvider>
           <CartProvider>
