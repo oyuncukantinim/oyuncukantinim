@@ -841,12 +841,17 @@ export default function ProfilePage() {
     }
     const amt = parseFloat(balanceAmount);
     if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
+    setSaving(true);
     try {
       const res = await addBalance(amt);
-      updateUser({ ...user, balance: res.data.new_balance });
-      setBalanceAmount('');
-      showToast(amt.toFixed(2) + ' ₺ yüklendi!');
-    } catch (err) { showToast(err.message); }
+      const redirectUrl = res.data?.redirect_url;
+      if (!redirectUrl) throw new Error('Ödeme bağlantısı oluşturulamadı.');
+      showToast(res.message || 'Ödeme sayfasına yönlendiriliyorsunuz.');
+      window.location.assign(redirectUrl);
+    } catch (err) {
+      showToast(err.message);
+      setSaving(false);
+    }
   };
 
   const handleRedeemBalanceCoupon = async () => {
@@ -1795,10 +1800,10 @@ export default function ProfilePage() {
                     </div>
                     <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
                       placeholder="Özel tutar (₺)..." className="input-field" />
-                    <button onClick={handleAddBalance} className="btn-primary w-full">
+                    <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
                       <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
                     </button>
-                    <p className="text-xs text-gray-400 text-center">Test aşamasında anlık yüklenir. Gerçek ödeme entegrasyonu yakında.</p>
+                    <p className="text-xs text-gray-400 text-center">Ödeme Shopier güvenli ödeme sayfasında tamamlanır.</p>
                   </>
                 ) : (
                   <>

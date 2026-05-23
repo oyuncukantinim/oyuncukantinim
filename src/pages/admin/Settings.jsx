@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   BellRing,
+  CreditCard,
   Image as ImageIcon,
   LayoutTemplate,
   LifeBuoy,
@@ -12,7 +13,6 @@ import {
   Save,
   Settings as SettingsIcon,
   Shield,
-  ShoppingBag,
   ToggleLeft,
   ToggleRight,
   Trash2,
@@ -148,8 +148,29 @@ const SETTINGS_TABS = [
   {
     id: 'commerce',
     label: 'Ticari',
-    icon: ShoppingBag,
+    icon: CreditCard,
     sections: [
+      {
+        section: 'Bakiye Yükleme ve Shopier',
+        fields: [
+          { key: 'shopier_enabled', label: 'Shopier Ödeme', type: 'toggle', desc: 'Açıksa kullanıcılar bakiye yükleme için Shopier ödeme sayfasına yönlendirilir.' },
+          { key: 'shopier_api_key', label: 'Shopier API Key', type: 'text', placeholder: 'Shopier API Key' },
+          { key: 'shopier_api_secret', label: 'Shopier API Secret', type: 'password', placeholder: 'Shopier API Secret' },
+          { key: 'shopier_website_index', label: 'Shopier Website Index', type: 'number', placeholder: '1' },
+          {
+            key: 'shopier_commission_type',
+            label: 'Shopier Komisyon Tipi',
+            type: 'select',
+            options: [
+              { value: 'none', label: 'Komisyon yok' },
+              { value: 'fixed', label: 'Sabit TL' },
+              { value: 'percent', label: 'Yüzde (%)' },
+            ],
+            desc: 'Komisyon kullanıcıdan tahsil edilir, kullanıcının bakiyesine sadece yüklemek istediği ana tutar eklenir.',
+          },
+          { key: 'shopier_commission_value', label: 'Shopier Komisyon Değeri', type: 'number', placeholder: '0' },
+        ],
+      },
       {
         section: 'Fiyat ve Komisyon',
         fields: [
@@ -610,6 +631,24 @@ function SettingField({ field, value, onChange, onUpload, onRemove, imageUploadi
           placeholder={field.placeholder}
           className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
         />
+      </div>
+    );
+  }
+
+  if (field.type === 'select') {
+    return (
+      <div className="border-b border-slate-100 py-3 last:border-0">
+        <label className="mb-1.5 block text-sm font-semibold text-slate-700">{field.label}</label>
+        {field.desc ? <div className="mb-2 text-xs leading-5 text-slate-400">{field.desc}</div> : null}
+        <select
+          value={value || field.options?.[0]?.value || ''}
+          onChange={(event) => onChange(event.target.value)}
+          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-violet-400 focus:outline-none"
+        >
+          {(field.options || []).map((option) => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
       </div>
     );
   }

@@ -497,7 +497,7 @@ export function getOrders() {
 
 // --- BALANCE ---
 export function addBalance(amount) {
-  return request('add_balance', { method: 'POST', body: { amount }, auth: true });
+  return request('create_balance_payment', { method: 'POST', body: { amount }, auth: true });
 }
 
 export function getBalanceCoupons() {
