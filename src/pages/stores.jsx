@@ -95,7 +95,7 @@ function Section({ icon: Icon, title, subtitle, accent, glow, stores, loading })
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-[72px] animate-pulse rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" />
           ))}
@@ -105,7 +105,7 @@ function Section({ icon: Icon, title, subtitle, accent, glow, stores, loading })
           Bu kategoride henüz mağaza yok.
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {stores.map((store, i) => (
             <StoreCard key={store.id} store={store} place={i + 1} />
           ))}
