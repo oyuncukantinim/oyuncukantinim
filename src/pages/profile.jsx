@@ -1822,39 +1822,43 @@ export default function ProfilePage() {
                 </div>
 
                 {balanceInnerTab === 'card' ? (
-                  <div className="rounded-2xl border border-violet-100 bg-white p-4">
-                    {topupPackagesLoading ? (
-                      <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center text-sm font-bold text-gray-400">
-                        Bakiye paketleri yükleniyor...
-                      </div>
-                    ) : topupPackages.length === 0 ? (
-                      <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center text-sm font-bold text-gray-400">
-                        Aktif Shopier bakiye paketi bulunmuyor.
-                      </div>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {topupPackages.map((pkg) => (
-                          <a
-                            key={pkg.id}
-                            href={pkg.shopier_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={() => setTopupNoticeForm((current) => ({ ...current, package_id: String(pkg.id || '') }))}
-                            className="inline-flex min-w-[96px] items-center justify-center rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-500"
-                          >
-                            {Number(pkg.balance_amount || 0).toFixed(0)} ₺
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setTopupNoticeOpen(true)}
-                      disabled={topupPackages.length === 0}
-                      className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <Send size={15} /> Ödeme Bildir Formu
-                    </button>
+                  <div className="space-y-3">
+                    <div className="rounded-2xl border border-violet-100 bg-white p-4">
+                      {topupPackagesLoading ? (
+                        <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center text-sm font-bold text-gray-400">
+                          Bakiye paketleri yükleniyor...
+                        </div>
+                      ) : topupPackages.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center text-sm font-bold text-gray-400">
+                          Aktif Shopier bakiye paketi bulunmuyor.
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {topupPackages.map((pkg) => (
+                            <a
+                              key={pkg.id}
+                              href={pkg.shopier_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              onClick={() => setTopupNoticeForm((current) => ({ ...current, package_id: String(pkg.id || '') }))}
+                              className="inline-flex min-w-[116px] items-center justify-center rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-500"
+                            >
+                              {Number(pkg.balance_amount || 0).toFixed(0)} TL Bakiye
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                      <button
+                        type="button"
+                        onClick={() => setTopupNoticeOpen(true)}
+                        disabled={topupPackages.length === 0}
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Send size={15} /> Ödeme Bildir Formu
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4">
