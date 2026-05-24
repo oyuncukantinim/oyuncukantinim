@@ -1832,7 +1832,7 @@ export default function ProfilePage() {
                         Aktif Shopier bakiye paketi bulunmuyor.
                       </div>
                     ) : (
-                      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      <div className="flex flex-wrap gap-2">
                         {topupPackages.map((pkg) => (
                           <a
                             key={pkg.id}
@@ -1840,9 +1840,9 @@ export default function ProfilePage() {
                             target="_blank"
                             rel="noreferrer"
                             onClick={() => setTopupNoticeForm((current) => ({ ...current, package_id: String(pkg.id || '') }))}
-                            className="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-3 text-sm font-black text-white transition hover:bg-violet-500"
+                            className="inline-flex min-w-[96px] items-center justify-center rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-500"
                           >
-                            {Number(pkg.payable_amount || pkg.balance_amount || 0).toFixed(0)} ₺
+                            {Number(pkg.balance_amount || 0).toFixed(0)} ₺
                           </a>
                         ))}
                       </div>
@@ -1896,7 +1896,7 @@ export default function ProfilePage() {
 
                     <div className="space-y-3">
                       <label className="block">
-                        <span className="mb-1.5 block text-xs font-black text-gray-500">Tutar</span>
+                        <span className="mb-1.5 block text-xs font-black text-gray-500">Eklenecek Bakiye</span>
                         <select
                           value={topupNoticeForm.package_id}
                           onChange={(event) => setTopupNoticeForm((current) => ({ ...current, package_id: event.target.value }))}
@@ -1904,7 +1904,7 @@ export default function ProfilePage() {
                         >
                           {topupPackages.map((pkg) => (
                             <option key={pkg.id} value={pkg.id}>
-                              {Number(pkg.payable_amount || pkg.balance_amount || 0).toFixed(2)} ₺
+                              {Number(pkg.balance_amount || 0).toFixed(2)} ₺
                             </option>
                           ))}
                         </select>
