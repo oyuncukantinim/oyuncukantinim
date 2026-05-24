@@ -597,6 +597,7 @@ export default function ProfilePage() {
   const profileBannerInputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [balanceCouponCode, setBalanceCouponCode] = useState('');
+  const [balanceInnerTab, setBalanceInnerTab] = useState('card');
   const [topupPackages, setTopupPackages] = useState([]);
   const [topupPackagesLoading, setTopupPackagesLoading] = useState(false);
   const [topupNoticeOpen, setTopupNoticeOpen] = useState(false);
@@ -1799,89 +1800,113 @@ export default function ProfilePage() {
             <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
 
-              <div className="mb-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="flex items-start gap-3">
-                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-600">
-                      <CreditCard size={20} />
-                    </span>
-                    <div>
-                      <h3 className="text-base font-black text-gray-900">Shopier Bakiye Paketleri</h3>
-                      <p className="mt-1 text-xs font-semibold leading-5 text-gray-400">
-                        Paketi seçip Shopier sayfasında ödeme yapın. Ardından ödeme bildirimi gönderin, admin kontrolünden sonra bakiyeniz eklenir.
-                      </p>
+              <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                <div className="mb-4 grid gap-2 sm:grid-cols-2">
+                  {[
+                    { id: 'card', label: 'Kredi Kartı', icon: CreditCard },
+                    { id: 'coupon', label: 'Bakiye Kuponu', icon: TicketPercent },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setBalanceInnerTab(tab.id)}
+                      className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black transition-all ${
+                        balanceInnerTab === tab.id
+                          ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
+                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                      }`}
+                    >
+                      <tab.icon size={16} /> {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {balanceInnerTab === 'card' ? (
+                  <div className="rounded-2xl border border-violet-100 bg-white p-4">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                      <div className="flex items-start gap-3">
+                        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                          <CreditCard size={20} />
+                        </span>
+                        <div>
+                          <h3 className="text-base font-black text-gray-900">Shopier Bakiye Paketleri</h3>
+                          <p className="mt-1 text-xs font-semibold leading-5 text-gray-400">
+                            Paketi seçip Shopier sayfasında ödeme yapın. Ardından ödeme bildirimi gönderin, admin kontrolünden sonra bakiyeniz eklenir.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setTopupNoticeOpen(true)}
+                        disabled={topupPackages.length === 0}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Send size={15} /> Ödeme Bildir Formu
+                      </button>
+                    </div>
+
+                    <div className="mt-4">
+                      {topupPackagesLoading ? (
+                        <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
+                          Bakiye paketleri yükleniyor...
+                        </div>
+                      ) : topupPackages.length === 0 ? (
+                        <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
+                          Aktif Shopier bakiye paketi bulunmuyor.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                          {topupPackages.map((pkg) => (
+                            <div key={pkg.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <div className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                    {pkg.code}
+                                  </div>
+                                  <h4 className="mt-2 text-sm font-black text-gray-900">{pkg.title}</h4>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-lg font-black text-violet-700">{Number(pkg.balance_amount || 0).toFixed(0)} ₺</div>
+                                  <div className="text-[11px] font-bold text-gray-400">Ödeme: {Number(pkg.payable_amount || 0).toFixed(2)} ₺</div>
+                                </div>
+                              </div>
+                              {pkg.description ? (
+                                <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-gray-400">{pkg.description}</p>
+                              ) : null}
+                              <a
+                                href={pkg.shopier_url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white transition hover:bg-violet-500"
+                              >
+                                Shopier ile Öde <ExternalLink size={13} />
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setTopupNoticeOpen(true)}
-                    disabled={topupPackages.length === 0}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <Send size={15} /> Ödeme Bildir Formu
-                  </button>
-                </div>
-
-                <div className="mt-4">
-                  {topupPackagesLoading ? (
-                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
-                      Bakiye paketleri yükleniyor...
+                ) : (
+                  <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
+                      <input
+                        type="text"
+                        value={balanceCouponCode}
+                        onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
+                        placeholder="OK-XXXX-XXXX-XXXX"
+                        className="input-field font-mono font-black"
+                      />
                     </div>
-                  ) : topupPackages.length === 0 ? (
-                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
-                      Aktif Shopier bakiye paketi bulunmuyor.
-                    </div>
-                  ) : (
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                      {topupPackages.map((pkg) => (
-                        <div key={pkg.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <div className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">
-                                {pkg.code}
-                              </div>
-                              <h4 className="mt-2 text-sm font-black text-gray-900">{pkg.title}</h4>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-lg font-black text-violet-700">{Number(pkg.balance_amount || 0).toFixed(0)} ₺</div>
-                              <div className="text-[11px] font-bold text-gray-400">Ödeme: {Number(pkg.payable_amount || 0).toFixed(2)} ₺</div>
-                            </div>
-                          </div>
-                          {pkg.description ? (
-                            <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-gray-400">{pkg.description}</p>
-                          ) : null}
-                          <a
-                            href={pkg.shopier_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white transition hover:bg-violet-500"
-                          >
-                            Shopier ile Öde <ExternalLink size={13} />
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <div>
-                  <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
-                  <input
-                    type="text"
-                    value={balanceCouponCode}
-                    onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
-                    placeholder="OK-XXXX-XXXX-XXXX"
-                    className="input-field font-mono font-black"
-                  />
-                </div>
-                <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
-                  <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
-                </button>
-                <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
-                  <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
-                </Link>
+                    <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
+                      <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
+                    </button>
+                    <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
+                      <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
+                    </Link>
+                  </div>
+                )}
               </div>
 
               {topupNoticeOpen && (
