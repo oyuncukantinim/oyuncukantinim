@@ -1785,8 +1785,8 @@ export default function ProfilePage() {
               <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
                 <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                   {[
-                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: `Komisyon: ${commissionLabel}`, icon: CreditCard },
-                    { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
+                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: shopierUserDescription || 'Kart ile bakiye yükle', icon: CreditCard, badge: commissionType !== 'none' ? commissionLabel : null },
+                    { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent, badge: null },
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -1799,10 +1799,15 @@ export default function ProfilePage() {
                       <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${balancePanelTab === tab.id ? 'bg-violet-50 text-violet-600' : 'bg-white text-gray-400'}`}>
                         <tab.icon size={17} />
                       </span>
-                      <span className="min-w-0">
+                      <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-black">{tab.label}</span>
                         <span className="block truncate text-xs font-semibold text-gray-400">{tab.desc}</span>
                       </span>
+                      {tab.badge ? (
+                        <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-black text-violet-700">
+                          {tab.badge}
+                        </span>
+                      ) : null}
                     </button>
                   ))}
                 </div>
@@ -1821,22 +1826,20 @@ export default function ProfilePage() {
                       <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
                         placeholder="Özel tutar (₺)..." className="input-field" />
 
-                      {topupAmount > 0 ? (
-                        <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-semibold text-gray-500">Yüklenecek bakiye</span>
-                            <span className="font-black text-gray-800">{topupAmount.toFixed(2)} ₺</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-semibold text-gray-500">Komisyon ({commissionLabel})</span>
-                            <span className="font-black text-gray-800">{commissionAmount.toFixed(2)} ₺</span>
-                          </div>
-                          <div className="flex items-center justify-between border-t border-violet-100 pt-2">
-                            <span className="text-sm font-black text-violet-700">Karttan çekilecek</span>
-                            <span className="text-lg font-black text-violet-700">{payableAmount.toFixed(2)} ₺</span>
-                          </div>
+                      <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold text-gray-500">Yüklenecek bakiye</span>
+                          <span className="font-black text-gray-800">{topupAmount.toFixed(2)} ₺</span>
                         </div>
-                      ) : null}
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold text-gray-500">Komisyon ({commissionLabel})</span>
+                          <span className="font-black text-gray-800">{commissionAmount.toFixed(2)} ₺</span>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-violet-100 pt-2">
+                          <span className="text-sm font-black text-violet-700">Karttan çekilecek</span>
+                          <span className="text-lg font-black text-violet-700">{payableAmount.toFixed(2)} ₺</span>
+                        </div>
+                      </div>
 
                       <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
                         <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
