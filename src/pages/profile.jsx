@@ -1770,20 +1770,26 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="mb-4 inline-flex rounded-2xl border border-gray-200 bg-gray-50 p-1">
+              <div className="mb-4 space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                 {[
-                  { id: 'topup', label: 'Bakiye Yükle', icon: Wallet },
-                  { id: 'coupon', label: 'Kupon Kullan', icon: TicketPercent },
+                  { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: 'Kart ile bakiye yükle', icon: CreditCard },
+                  { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setBalancePanelTab(tab.id)}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black transition-all ${
-                      balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                      balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:bg-white/70 hover:text-gray-700'
                     }`}
                   >
-                    <tab.icon size={15} /> {tab.label}
+                    <span className={`grid h-9 w-9 place-items-center rounded-lg ${balancePanelTab === tab.id ? 'bg-violet-50 text-violet-600' : 'bg-white text-gray-400'}`}>
+                      <tab.icon size={17} />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-black">{tab.label}</span>
+                      <span className="block text-xs font-semibold text-gray-400">{tab.desc}</span>
+                    </span>
                   </button>
                 ))}
               </div>
@@ -1801,18 +1807,6 @@ export default function ProfilePage() {
                     </div>
                     <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
                       placeholder="Özel tutar (₺)..." className="input-field" />
-                    <div className="flex items-center justify-between rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <span className="grid h-8 w-8 place-items-center rounded-lg bg-white text-violet-600">
-                          <CreditCard size={16} />
-                        </span>
-                        <div>
-                          <div className="text-sm font-black text-gray-800">{shopierDisplayName || 'Kredi Kartı (Shopier)'}</div>
-                          <div className="text-xs font-semibold text-gray-400">Güvenli ödeme yöntemi</div>
-                        </div>
-                      </div>
-                      <span className="rounded-full bg-white px-2 py-1 text-[10px] font-black text-violet-600">Aktif</span>
-                    </div>
                     <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
                       <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
                     </button>
