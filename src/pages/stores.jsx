@@ -161,90 +161,101 @@ export default function StoresPage() {
   return (
     <div className="space-y-8">
       {/* ============ HERO ============ */}
-      <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-slate-950 via-violet-950 to-slate-950 p-6 text-white shadow-2xl sm:p-9">
-        <div className="pointer-events-none absolute inset-0 opacity-70">
-          <div className="absolute -left-12 -top-12 h-56 w-56 rounded-full bg-violet-500/25 blur-3xl" />
-          <div className="absolute -right-10 bottom-0 h-64 w-64 rounded-full bg-cyan-500/20 blur-3xl" />
+      <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0a0a18] p-6 text-white shadow-2xl sm:p-10">
+        <style>{`
+          @keyframes mv-aurora { 0%,100%{transform:translate(0,0) scale(1);opacity:.7} 50%{transform:translate(40px,-30px) scale(1.25);opacity:1} }
+          @keyframes mv-aurora2 { 0%,100%{transform:translate(0,0) scale(1);opacity:.55} 50%{transform:translate(-35px,25px) scale(1.2);opacity:.9} }
+          @keyframes mv-spin { to { transform: rotate(360deg) } }
+          @keyframes mv-grad { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+          @keyframes mv-float { 0%,100%{transform:translate(-50%,0)} 50%{transform:translate(-50%,-6px)} }
+          .mv-aurora{animation:mv-aurora 9s ease-in-out infinite}
+          .mv-aurora2{animation:mv-aurora2 11s ease-in-out infinite}
+          .mv-spin{animation:mv-spin 6s linear infinite}
+          .mv-grad{background-size:200% 200%;animation:mv-grad 6s ease infinite}
+          .mv-float{animation:mv-float 3.2s ease-in-out infinite}
+        `}</style>
+        {/* animasyonlu aurora arka plan */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="mv-aurora absolute -left-16 -top-20 h-72 w-72 rounded-full bg-violet-600/30 blur-[90px]" />
+          <div className="mv-aurora2 absolute -right-12 bottom-[-60px] h-80 w-80 rounded-full bg-cyan-500/25 blur-[90px]" />
+          <div className="mv-aurora absolute left-1/3 top-1/4 h-44 w-44 rounded-full bg-fuchsia-500/20 blur-[80px]" />
         </div>
-        <div className="pointer-events-none absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)', backgroundSize: '26px 26px' }} />
-        <div className="relative grid gap-6 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0)', backgroundSize: '26px 26px' }} />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(180deg, #fff 0 1px, transparent 1px 4px)' }} />
+        <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-cyan-100 backdrop-blur">
               <Store size={14} /> Mağazalar
             </div>
-            <h1 className="bg-gradient-to-r from-white via-cyan-100 to-violet-200 bg-clip-text text-3xl font-black leading-[1.1] text-transparent sm:text-5xl">
+            <h1 className="mv-grad bg-gradient-to-r from-cyan-300 via-violet-200 to-fuchsia-300 bg-clip-text text-4xl font-black leading-[1.05] text-transparent sm:text-6xl">
               Mağaza Vitrini
             </h1>
             <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-white/60">
               Satış liderleri, öne çıkanlar, en yüksek puanlılar ve yeni açılanlar — hepsi tek sayfada.
             </p>
-            <div className="mt-5 flex gap-3">
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-center backdrop-blur">
-                <div className="text-xl font-black text-cyan-300">{approxPlus(stats.store_count)}</div>
-                <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Mağaza</div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <div className="inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-300"><Store size={17} /></span>
+                <div>
+                  <div className="text-lg font-black leading-none text-white">{approxPlus(stats.store_count)}</div>
+                  <div className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Mağaza</div>
+                </div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-center backdrop-blur">
-                <div className="text-xl font-black text-emerald-300">{approxPlus(stats.total_sales)}</div>
-                <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/50">Satış</div>
+              <div className="inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-300"><ShoppingBag size={17} /></span>
+                <div>
+                  <div className="text-lg font-black leading-none text-white">{approxPlus(stats.total_sales)}</div>
+                  <div className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Satış</div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Zirvedeki satıcı — özel hover spotlight */}
+          {/* Zirvedeki satıcı — şampiyon sahnesi */}
           {topSeller ? (
             <Link
               to={`/p/${topSeller.username}`}
-              className="group/spot relative block overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-500/15 via-white/5 to-violet-500/10 p-5 backdrop-blur transition-all duration-300 hover:-translate-y-1.5 hover:scale-[1.02] hover:border-amber-300/60"
-              style={{ boxShadow: '0 0 38px -14px rgba(245,158,11,0.55)' }}
+              className="group/spot relative flex flex-col items-center overflow-hidden rounded-[28px] border border-amber-300/25 bg-gradient-to-b from-amber-500/10 via-white/[0.03] to-violet-500/10 px-6 pb-6 pt-8 text-center backdrop-blur transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-300/60"
+              style={{ boxShadow: '0 0 50px -16px rgba(245,158,11,0.55)' }}
             >
               {/* shimmer sweep */}
-              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover/spot:translate-x-[120%]" />
-              {/* hover'da büyüyen halo */}
-              <span className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-amber-400/20 blur-2xl transition-all duration-500 group-hover/spot:scale-150 group-hover/spot:bg-amber-400/35" />
+              <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover/spot:translate-x-[120%]" />
 
-              <div className="relative mb-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-950">
+              <div className="relative mb-5 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-950 shadow">
                 <Crown size={13} strokeWidth={3} /> Zirvedeki Satıcı
               </div>
 
-              <div className="relative flex items-center gap-3">
-                <div className="rounded-2xl ring-4 ring-amber-400/50 transition group-hover/spot:ring-amber-300/80">
-                  <UserAvatar
-                    value={topSeller.avatar}
-                    className="h-16 w-16 rounded-2xl bg-slate-800 text-2xl text-white"
-                    imageClassName="h-full w-full rounded-2xl object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5 text-lg font-black text-white">
-                    <span className="truncate">{topSeller.username}</span>
-                    <ShieldCheck size={15} className="shrink-0 fill-emerald-500 text-slate-900" />
-                  </div>
-                  <span
-                    className={`mt-1 inline-flex items-center gap-1 rounded-md bg-gradient-to-r ${getRank(topSeller.total_sales).color} px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950`}
-                  >
-                    <Medal size={11} strokeWidth={3} /> {getRank(topSeller.total_sales).label}
-                  </span>
-                </div>
+              {/* yüzen taç + dönen rainbow ring + avatar */}
+              <div className="relative mb-4 h-24 w-24">
+                <Crown size={22} className="mv-float absolute -top-7 left-1/2 z-10 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.85)]" />
+                <span className="mv-spin absolute -inset-2 rounded-full" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
+                <span className="absolute -inset-2 rounded-full opacity-40 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
+                <UserAvatar
+                  value={topSeller.avatar}
+                  className="absolute inset-0 h-24 w-24 rounded-full border-4 border-[#0a0a18] bg-slate-800 text-3xl text-white"
+                  imageClassName="h-full w-full rounded-full object-cover"
+                />
               </div>
 
-              <div className="relative mt-4 grid grid-cols-2 gap-2 text-center">
-                <div className="rounded-xl border border-white/10 bg-white/5 py-2">
-                  <div className="text-base font-black text-emerald-300">{formatCount(topSeller.total_sales)}</div>
+              <div className="relative flex items-center justify-center gap-1.5 text-xl font-black text-white">
+                <span className="max-w-[180px] truncate">{topSeller.username}</span>
+                <ShieldCheck size={16} className="shrink-0 fill-emerald-500 text-slate-900" />
+              </div>
+              <span className={`relative mt-2 inline-flex items-center gap-1 rounded-md bg-gradient-to-r ${getRank(topSeller.total_sales).color} px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.14em] text-slate-950`}>
+                <Medal size={11} strokeWidth={3} /> {getRank(topSeller.total_sales).label}
+              </span>
+
+              <div className="relative mt-5 grid w-full grid-cols-2 gap-2.5">
+                <div className="rounded-2xl border border-white/10 bg-white/5 py-2.5">
+                  <div className="text-lg font-black text-emerald-300">{formatCount(topSeller.total_sales)}</div>
                   <div className="text-[9px] font-black uppercase tracking-widest text-white/45">Satış</div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/5 py-2">
-                  <div className="flex items-center justify-center gap-1 text-base font-black text-amber-300">
-                    <Star size={13} className="fill-amber-400 text-amber-400" /> {Number(topSeller.avg_rating || 0).toFixed(1)}
+                <div className="rounded-2xl border border-white/10 bg-white/5 py-2.5">
+                  <div className="flex items-center justify-center gap-1 text-lg font-black text-amber-300">
+                    <Star size={14} className="fill-amber-400 text-amber-400" /> {Number(topSeller.avg_rating || 0).toFixed(1)}
                   </div>
                   <div className="text-[9px] font-black uppercase tracking-widest text-white/45">Puan</div>
                 </div>
-              </div>
-
-              {/* hover'da açılan satır */}
-              <div className="relative mt-0 max-h-0 overflow-hidden text-center opacity-0 transition-all duration-300 group-hover/spot:mt-3 group-hover/spot:max-h-10 group-hover/spot:opacity-100">
-                <span className="inline-flex items-center gap-1 text-xs font-black text-amber-200">
-                  <Trophy size={12} /> Mağazanın profilini gör →
-                </span>
               </div>
             </Link>
           ) : null}
