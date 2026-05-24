@@ -565,6 +565,7 @@ export default function ProfilePage() {
     defaultListingImage,
     balanceAddEnabled,
     shopierDisplayName,
+    shopierUserDescription,
     registrationEmailCodeExpiryMinutes,
     dopingVitrineOptions,
     dopingFeaturedOptions,
@@ -1773,7 +1774,7 @@ export default function ProfilePage() {
               <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
                 <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                   {[
-                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: 'Kart ile bakiye yükle', icon: CreditCard },
+                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: shopierUserDescription || 'Kart ile bakiye yükle', icon: CreditCard },
                     { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
                   ].map((tab) => (
                     <button
