@@ -1800,11 +1800,11 @@ export default function ProfilePage() {
                         <tab.icon size={17} />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-black">{tab.label}</span>
-                        <span className="block truncate text-xs font-semibold text-gray-400">{tab.desc}</span>
+                        <span className="block truncate text-[13px] font-black leading-tight">{tab.label}</span>
+                        <span className="block truncate text-[11px] font-semibold leading-tight text-gray-400">{tab.desc}</span>
                       </span>
                       {tab.badge ? (
-                        <span className="shrink-0 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-black text-violet-700">
+                        <span className="shrink-0 rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-black text-violet-700">
                           {tab.badge}
                         </span>
                       ) : null}
