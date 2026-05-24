@@ -1760,7 +1760,7 @@ export default function ProfilePage() {
 
           {/* BAKİYE */}
           {activeTab === 'balance' && (
-            <div className="max-w-2xl">
+            <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
               <div className="bg-gradient-to-br from-slate-950 via-violet-950 to-slate-950 rounded-3xl p-5 sm:p-6 border border-violet-200/20 mb-5 text-white overflow-hidden relative">
                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_82%_0%,rgba(168,85,247,0.18),transparent_30%)]" />
@@ -1770,68 +1770,70 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <div className="mb-4 space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
-                {[
-                  { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: 'Kart ile bakiye yükle', icon: CreditCard },
-                  { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setBalancePanelTab(tab.id)}
-                    className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                      balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:bg-white/70 hover:text-gray-700'
-                    }`}
-                  >
-                    <span className={`grid h-9 w-9 place-items-center rounded-lg ${balancePanelTab === tab.id ? 'bg-violet-50 text-violet-600' : 'bg-white text-gray-400'}`}>
-                      <tab.icon size={17} />
-                    </span>
-                    <span>
-                      <span className="block text-sm font-black">{tab.label}</span>
-                      <span className="block text-xs font-semibold text-gray-400">{tab.desc}</span>
-                    </span>
-                  </button>
-                ))}
-              </div>
+              <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
+                <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
+                  {[
+                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: 'Kart ile bakiye yükle', icon: CreditCard },
+                    { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setBalancePanelTab(tab.id)}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
+                        balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:bg-white/70 hover:text-gray-700'
+                      }`}
+                    >
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${balancePanelTab === tab.id ? 'bg-violet-50 text-violet-600' : 'bg-white text-gray-400'}`}>
+                        <tab.icon size={17} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-black">{tab.label}</span>
+                        <span className="block truncate text-xs font-semibold text-gray-400">{tab.desc}</span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
 
-              <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                {balancePanelTab === 'topup' ? (
-                  <>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[50, 100, 250, 500, 1000, 2500].map(amt => (
-                        <button key={amt} onClick={() => setBalanceAmount(String(amt))}
-                          className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                          {amt} ₺
-                        </button>
-                      ))}
-                    </div>
-                    <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
-                      placeholder="Özel tutar (₺)..." className="input-field" />
-                    <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
-                      <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
-                    </button>
-                    <p className="text-xs text-gray-400 text-center">Ödeme Shopier güvenli ödeme sayfasında tamamlanır.</p>
-                  </>
-                ) : (
-                  <>
-                    <div>
-                      <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
-                      <input
-                        type="text"
-                        value={balanceCouponCode}
-                        onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
-                        placeholder="OK-XXXX-XXXX-XXXX"
-                        className="input-field font-mono font-black"
-                      />
-                    </div>
-                    <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
-                      <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
-                    </button>
-                    <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
-                      <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
-                    </Link>
-                  </>
-                )}
+                <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4">
+                  {balancePanelTab === 'topup' ? (
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[50, 100, 250, 500, 1000, 2500].map(amt => (
+                          <button key={amt} onClick={() => setBalanceAmount(String(amt))}
+                            className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
+                            {amt} ₺
+                          </button>
+                        ))}
+                      </div>
+                      <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
+                        placeholder="Özel tutar (₺)..." className="input-field" />
+                      <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
+                        <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
+                      </button>
+                      <p className="text-xs text-gray-400 text-center">Ödeme Shopier güvenli ödeme sayfasında tamamlanır.</p>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
+                        <input
+                          type="text"
+                          value={balanceCouponCode}
+                          onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
+                          placeholder="OK-XXXX-XXXX-XXXX"
+                          className="input-field font-mono font-black"
+                        />
+                      </div>
+                      <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
+                        <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
+                      </button>
+                      <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
+                        <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
+                      </Link>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           )}
