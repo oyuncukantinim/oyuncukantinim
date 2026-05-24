@@ -566,6 +566,8 @@ export default function ProfilePage() {
     balanceAddEnabled,
     shopierDisplayName,
     shopierUserDescription,
+    shopierCommissionType,
+    shopierCommissionValue,
     registrationEmailCodeExpiryMinutes,
     dopingVitrineOptions,
     dopingFeaturedOptions,
@@ -600,6 +602,22 @@ export default function ProfilePage() {
   const [showPassword, setShowPassword] = useState(false);
   const [balanceAmount, setBalanceAmount] = useState('');
   const [balancePanelTab, setBalancePanelTab] = useState('topup');
+
+  // Shopier komisyon hesabı — yöntem etiketinde ve "karttan çekilecek" kutusunda kullanılır.
+  const topupAmount = Math.max(0, parseFloat(balanceAmount) || 0);
+  const commissionType = shopierCommissionType || 'none';
+  const commissionValue = Number(shopierCommissionValue || 0);
+  const commissionAmount = commissionType === 'fixed'
+    ? commissionValue
+    : commissionType === 'percent'
+      ? (topupAmount * commissionValue) / 100
+      : 0;
+  const payableAmount = topupAmount + commissionAmount;
+  const commissionLabel = commissionType === 'percent'
+    ? `%${commissionValue}`
+    : commissionType === 'fixed'
+      ? `${commissionValue.toFixed(2)} ₺`
+      : 'Komisyonsuz';
   const [balanceCouponCode, setBalanceCouponCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
@@ -1767,7 +1785,7 @@ export default function ProfilePage() {
               <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
                 <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                   {[
-                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: shopierUserDescription || 'Kart ile bakiye yükle', icon: CreditCard },
+                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: `Komisyon: ${commissionLabel}`, icon: CreditCard },
                     { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent },
                   ].map((tab) => (
                     <button
@@ -1802,6 +1820,24 @@ export default function ProfilePage() {
                       </div>
                       <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
                         placeholder="Özel tutar (₺)..." className="input-field" />
+
+                      {topupAmount > 0 ? (
+                        <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-semibold text-gray-500">Yüklenecek bakiye</span>
+                            <span className="font-black text-gray-800">{topupAmount.toFixed(2)} ₺</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-semibold text-gray-500">Komisyon ({commissionLabel})</span>
+                            <span className="font-black text-gray-800">{commissionAmount.toFixed(2)} ₺</span>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-violet-100 pt-2">
+                            <span className="text-sm font-black text-violet-700">Karttan çekilecek</span>
+                            <span className="text-lg font-black text-violet-700">{payableAmount.toFixed(2)} ₺</span>
+                          </div>
+                        </div>
+                      ) : null}
+
                       <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
                         <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
                       </button>
