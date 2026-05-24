@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  List, Package, Settings, LogOut, Plus, ShieldCheck,
+  List, Package, Settings, LogOut, Plus, ShieldCheck, CreditCard, ExternalLink, Send,
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { applyListingDoping, getMyListings, updateProfile, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, getBalanceTopupPackages, submitBalanceTopupRequest, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import { DELIVERY_STATUS } from '../lib/orderStatus';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -597,6 +597,15 @@ export default function ProfilePage() {
   const profileBannerInputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [balanceCouponCode, setBalanceCouponCode] = useState('');
+  const [topupPackages, setTopupPackages] = useState([]);
+  const [topupPackagesLoading, setTopupPackagesLoading] = useState(false);
+  const [topupNoticeOpen, setTopupNoticeOpen] = useState(false);
+  const [topupNoticeForm, setTopupNoticeForm] = useState({
+    package_id: '',
+    shopier_order_no: '',
+    payer_name: '',
+    user_note: '',
+  });
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
   const [personalInfo, setPersonalInfo] = useState({ full_name: '', identity_number: '', birth_date: '', country: '', city: '', district: '', address: '' });
@@ -1145,6 +1154,56 @@ export default function ProfilePage() {
       setActiveTab('finance');
     }
   }, [activeTab, balanceAddEnabled]);
+
+  useEffect(() => {
+    if (activeTab !== 'balance' || !balanceAddEnabled) return;
+    setTopupPackagesLoading(true);
+    getBalanceTopupPackages()
+      .then((response) => {
+        const packages = response.data?.packages || [];
+        setTopupPackages(packages);
+        setTopupNoticeForm((current) => ({
+          ...current,
+          package_id: current.package_id || String(packages[0]?.id || ''),
+        }));
+      })
+      .catch((error) => showToast(error.message || 'Bakiye paketleri yüklenemedi.'))
+      .finally(() => setTopupPackagesLoading(false));
+  }, [activeTab, balanceAddEnabled, showToast]);
+
+  const handleSubmitTopupNotice = async (event) => {
+    event.preventDefault();
+    if (!topupNoticeForm.package_id) {
+      showToast('Bakiye paketi seçin.');
+      return;
+    }
+    if (!topupNoticeForm.shopier_order_no.trim()) {
+      showToast('Shopier sipariş numarasını girin.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await submitBalanceTopupRequest({
+        package_id: Number(topupNoticeForm.package_id),
+        shopier_order_no: topupNoticeForm.shopier_order_no.trim(),
+        payer_name: topupNoticeForm.payer_name.trim(),
+        user_note: topupNoticeForm.user_note.trim(),
+      });
+      showToast(response.message || 'Ödeme bildirimi alındı.');
+      setTopupNoticeOpen(false);
+      setTopupNoticeForm({
+        package_id: String(topupPackages[0]?.id || ''),
+        shopier_order_no: '',
+        payer_name: '',
+        user_note: '',
+      });
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!user) return null;
   const totalXp = Number(user.xp || 0);
@@ -1740,6 +1799,72 @@ export default function ProfilePage() {
             <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
 
+              <div className="mb-4 rounded-2xl border border-violet-100 bg-white p-4 shadow-sm">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="flex items-start gap-3">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-violet-50 text-violet-600">
+                      <CreditCard size={20} />
+                    </span>
+                    <div>
+                      <h3 className="text-base font-black text-gray-900">Shopier Bakiye Paketleri</h3>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-gray-400">
+                        Paketi seçip Shopier sayfasında ödeme yapın. Ardından ödeme bildirimi gönderin, admin kontrolünden sonra bakiyeniz eklenir.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setTopupNoticeOpen(true)}
+                    disabled={topupPackages.length === 0}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Send size={15} /> Ödeme Bildir Formu
+                  </button>
+                </div>
+
+                <div className="mt-4">
+                  {topupPackagesLoading ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
+                      Bakiye paketleri yükleniyor...
+                    </div>
+                  ) : topupPackages.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-gray-200 py-8 text-center text-sm font-bold text-gray-400">
+                      Aktif Shopier bakiye paketi bulunmuyor.
+                    </div>
+                  ) : (
+                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      {topupPackages.map((pkg) => (
+                        <div key={pkg.id} className="rounded-2xl border border-gray-100 bg-gray-50 p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="inline-flex rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                {pkg.code}
+                              </div>
+                              <h4 className="mt-2 text-sm font-black text-gray-900">{pkg.title}</h4>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-black text-violet-700">{Number(pkg.balance_amount || 0).toFixed(0)} ₺</div>
+                              <div className="text-[11px] font-bold text-gray-400">Ödeme: {Number(pkg.payable_amount || 0).toFixed(2)} ₺</div>
+                            </div>
+                          </div>
+                          {pkg.description ? (
+                            <p className="mt-2 line-clamp-2 text-xs font-semibold leading-5 text-gray-400">{pkg.description}</p>
+                          ) : null}
+                          <a
+                            href={pkg.shopier_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-3 py-2.5 text-xs font-black text-white transition hover:bg-violet-500"
+                          >
+                            Shopier ile Öde <ExternalLink size={13} />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
                 <div>
                   <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
@@ -1758,6 +1883,77 @@ export default function ProfilePage() {
                   <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
                 </Link>
               </div>
+
+              {topupNoticeOpen && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center px-4 py-6 sm:items-center">
+                  <div className="absolute inset-0 bg-black/50" onClick={() => setTopupNoticeOpen(false)} />
+                  <form onSubmit={handleSubmitTopupNotice} className="relative w-full max-w-lg rounded-3xl bg-white p-5 shadow-2xl">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-black text-gray-900">Ödeme Bildir Formu</h3>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-gray-400">
+                          Spam koruması nedeniyle her kullanıcı 1 dakikada yalnızca 1 bildirim gönderebilir.
+                        </p>
+                      </div>
+                      <button type="button" onClick={() => setTopupNoticeOpen(false)} className="rounded-xl p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                        <X size={17} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-black text-gray-500">Bakiye Paketi</span>
+                        <select
+                          value={topupNoticeForm.package_id}
+                          onChange={(event) => setTopupNoticeForm((current) => ({ ...current, package_id: event.target.value }))}
+                          className="input-field"
+                        >
+                          {topupPackages.map((pkg) => (
+                            <option key={pkg.id} value={pkg.id}>
+                              {pkg.code} - {pkg.title} / {Number(pkg.balance_amount || 0).toFixed(2)} ₺
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-black text-gray-500">Shopier Sipariş Numarası</span>
+                        <input
+                          value={topupNoticeForm.shopier_order_no}
+                          onChange={(event) => setTopupNoticeForm((current) => ({ ...current, shopier_order_no: event.target.value }))}
+                          maxLength={120}
+                          placeholder="Örn: 123456789"
+                          className="input-field font-mono font-black"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-black text-gray-500">Ödeme Yapan Ad Soyad</span>
+                        <input
+                          value={topupNoticeForm.payer_name}
+                          onChange={(event) => setTopupNoticeForm((current) => ({ ...current, payer_name: event.target.value }))}
+                          maxLength={160}
+                          placeholder="Shopier ödeme bilgisindeki ad soyad"
+                          className="input-field"
+                        />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1.5 block text-xs font-black text-gray-500">Not</span>
+                        <textarea
+                          value={topupNoticeForm.user_note}
+                          onChange={(event) => setTopupNoticeForm((current) => ({ ...current, user_note: event.target.value }))}
+                          maxLength={700}
+                          rows={3}
+                          placeholder="Varsa ödeme açıklaması veya ek bilgi"
+                          className="input-field resize-none"
+                        />
+                      </label>
+                    </div>
+
+                    <button type="submit" disabled={saving} className="btn-primary mt-4 w-full disabled:opacity-60">
+                      <Send size={16} className="mr-2 inline" /> Bildirimi Gönder
+                    </button>
+                  </form>
+                </div>
+              )}
             </div>
           )}
 

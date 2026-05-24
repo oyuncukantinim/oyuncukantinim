@@ -3,7 +3,10 @@ import {
   CheckCircle,
   Clock,
   CreditCard,
+  Edit3,
+  ExternalLink,
   Landmark,
+  Plus,
   RefreshCw,
   Save,
   Search,
@@ -18,31 +21,52 @@ import {
   adminDeletePaymentAccount,
   adminGetPaymentManagement,
   adminGetSettings,
+  adminSaveBalanceTopupPackage,
   adminSaveSettings,
+  adminDeleteBalanceTopupPackage,
+  adminUpdateBalanceTopupRequest,
   adminUpdatePaymentAccount,
   adminUpdateWithdrawal,
 } from '../../lib/adminApi';
 
 const ACCOUNT_STATUS = {
   pending: { label: 'Onay bekliyor', className: 'bg-amber-50 text-amber-700 border-amber-100' },
-  approved: { label: 'Onaylandı', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  approved: { label: 'OnaylandÄ±', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
   rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-100' },
 };
 
 const WITHDRAWAL_STATUS = {
   pending: { label: 'Beklemede', className: 'bg-amber-50 text-amber-700 border-amber-100' },
-  processing: { label: 'İşleniyor', className: 'bg-blue-50 text-blue-700 border-blue-100' },
-  completed: { label: 'Tamamlandı', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  processing: { label: 'Ä°ÅŸleniyor', className: 'bg-blue-50 text-blue-700 border-blue-100' },
+  completed: { label: 'TamamlandÄ±', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
   rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-100' },
-  cancelled: { label: 'İptal edildi', className: 'bg-slate-50 text-slate-600 border-slate-100' },
+  cancelled: { label: 'Ä°ptal edildi', className: 'bg-slate-50 text-slate-600 border-slate-100' },
+};
+
+const TOPUP_STATUS = {
+  pending: { label: 'Onay bekliyor', className: 'bg-amber-50 text-amber-700 border-amber-100' },
+  approved: { label: 'OnaylandÄ±', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
+  rejected: { label: 'Reddedildi', className: 'bg-rose-50 text-rose-700 border-rose-100' },
+};
+
+const EMPTY_TOPUP_PACKAGE = {
+  id: 0,
+  code: '',
+  title: '',
+  description: '',
+  balance_amount: '',
+  payable_amount: '',
+  shopier_url: '',
+  is_active: true,
+  sort_order: '0',
 };
 
 function fmtMoney(value) {
-  return `${Number(value || 0).toFixed(2)} ₺`;
+  return `${Number(value || 0).toFixed(2)} â‚º`;
 }
 
 function fmtDate(value) {
-  return value ? new Date(value).toLocaleString('tr-TR') : '—';
+  return value ? new Date(value).toLocaleString('tr-TR') : 'â€”';
 }
 
 function StatusPill({ status, map }) {
@@ -62,18 +86,22 @@ function normalizeBankList(rawValue) {
 }
 
 export default function PaymentManagement() {
-  const [activeTab, setActiveTab] = useState('withdrawals');
+  const [activeTab, setActiveTab] = useState('topups');
   const [loading, setLoading] = useState(true);
   const [settingsLoading, setSettingsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
-  const [data, setData] = useState({ withdrawals: [], accounts: [], summary: {} });
+  const [data, setData] = useState({ withdrawals: [], accounts: [], topup_requests: [], topup_packages: [], summary: {} });
   const [withdrawalStatus, setWithdrawalStatus] = useState('');
   const [accountStatus, setAccountStatus] = useState('');
+  const [topupStatus, setTopupStatus] = useState('pending');
   const [withdrawalSearch, setWithdrawalSearch] = useState('');
   const [accountSearch, setAccountSearch] = useState('');
+  const [topupSearch, setTopupSearch] = useState('');
   const [expandedWithdrawalId, setExpandedWithdrawalId] = useState(null);
   const [references, setReferences] = useState({});
+  const [topupNotes, setTopupNotes] = useState({});
+  const [packageForm, setPackageForm] = useState(EMPTY_TOPUP_PACKAGE);
   const [settingsForm, setSettingsForm] = useState({
     withdrawal_enabled: true,
     withdrawal_min_amount: '50',
@@ -93,11 +121,12 @@ export default function PaymentManagement() {
     adminGetPaymentManagement({
       withdrawal_status: withdrawalStatus,
       account_status: accountStatus,
+      topup_status: topupStatus,
     })
-      .then((response) => setData(response.data || { withdrawals: [], accounts: [], summary: {} }))
+      .then((response) => setData(response.data || { withdrawals: [], accounts: [], topup_requests: [], topup_packages: [], summary: {} }))
       .catch((error) => showToast(error.message))
       .finally(() => setLoading(false));
-  }, [withdrawalStatus, accountStatus, showToast]);
+  }, [withdrawalStatus, accountStatus, topupStatus, showToast]);
 
   const loadSettings = useCallback(() => {
     setSettingsLoading(true);
@@ -126,6 +155,8 @@ export default function PaymentManagement() {
 
   const withdrawals = useMemo(() => data.withdrawals || [], [data.withdrawals]);
   const accounts = useMemo(() => data.accounts || [], [data.accounts]);
+  const topupRequests = useMemo(() => data.topup_requests || [], [data.topup_requests]);
+  const topupPackages = useMemo(() => data.topup_packages || [], [data.topup_packages]);
   const summary = data.summary || {};
 
   const filteredWithdrawals = useMemo(() => {
@@ -161,6 +192,23 @@ export default function PaymentManagement() {
     });
   }, [accounts, accountSearch]);
 
+  const filteredTopupRequests = useMemo(() => {
+    const query = topupSearch.trim().toLocaleLowerCase('tr-TR');
+    if (!query) return topupRequests;
+    return topupRequests.filter((request) => {
+      const haystack = [
+        request.id,
+        request.username,
+        request.email,
+        request.package_code,
+        request.package_title,
+        request.shopier_order_no,
+        request.payer_name,
+      ].join(' ').toLocaleLowerCase('tr-TR');
+      return haystack.includes(query);
+    });
+  }, [topupRequests, topupSearch]);
+
   const updateAccount = async (accountId, status) => {
     setSaving(true);
     try {
@@ -168,7 +216,7 @@ export default function PaymentManagement() {
         account_id: accountId,
         status,
       });
-      showToast('Hesap durumu güncellendi.');
+      showToast('Hesap durumu gÃ¼ncellendi.');
       loadData();
     } catch (error) {
       showToast(error.message);
@@ -178,11 +226,11 @@ export default function PaymentManagement() {
   };
 
   const deleteAccount = async (accountId) => {
-    if (!confirm('Bu banka hesabını silmek istiyor musun?')) return;
+    if (!confirm('Bu banka hesabÄ±nÄ± silmek istiyor musun?')) return;
     setSaving(true);
     try {
       await adminDeletePaymentAccount(accountId);
-      showToast('Banka hesabı silindi.');
+      showToast('Banka hesabÄ± silindi.');
       setExpandedWithdrawalId(null);
       loadData();
     } catch (error) {
@@ -202,8 +250,76 @@ export default function PaymentManagement() {
         status,
         payment_reference: paymentReference,
       });
-      showToast('Çekim talebi güncellendi.');
+      showToast('Ã‡ekim talebi gÃ¼ncellendi.');
       setExpandedWithdrawalId(null);
+      loadData();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const editPackage = (pkg) => {
+    setPackageForm({
+      id: pkg.id || 0,
+      code: pkg.code || '',
+      title: pkg.title || '',
+      description: pkg.description || '',
+      balance_amount: String(pkg.balance_amount ?? ''),
+      payable_amount: String(pkg.payable_amount ?? ''),
+      shopier_url: pkg.shopier_url || '',
+      is_active: String(pkg.is_active ?? '1') !== '0',
+      sort_order: String(pkg.sort_order ?? '0'),
+    });
+    setActiveTab('topup-packages');
+  };
+
+  const resetPackageForm = () => {
+    setPackageForm(EMPTY_TOPUP_PACKAGE);
+  };
+
+  const saveTopupPackage = async () => {
+    setSaving(true);
+    try {
+      await adminSaveBalanceTopupPackage({
+        ...packageForm,
+        is_active: packageForm.is_active ? '1' : '0',
+      });
+      showToast('Bakiye paketi kaydedildi.');
+      resetPackageForm();
+      loadData();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const deleteTopupPackage = async (packageId) => {
+    if (!confirm('Bu bakiye paketini silmek istiyor musun?')) return;
+    setSaving(true);
+    try {
+      await adminDeleteBalanceTopupPackage(packageId);
+      showToast('Bakiye paketi silindi.');
+      if (Number(packageForm.id) === Number(packageId)) resetPackageForm();
+      loadData();
+    } catch (error) {
+      showToast(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateTopupRequest = async (requestId, status) => {
+    setSaving(true);
+    try {
+      await adminUpdateBalanceTopupRequest({
+        request_id: requestId,
+        status,
+        admin_note: topupNotes[`topup-${requestId}`] || '',
+      });
+      showToast(status === 'approved' ? 'Bakiye bildirimi onaylandÄ±.' : 'Bakiye bildirimi reddedildi.');
       loadData();
     } catch (error) {
       showToast(error.message);
@@ -242,7 +358,7 @@ export default function PaymentManagement() {
         withdrawal_fee_value: settingsForm.withdrawal_fee_value || '0',
         withdrawal_bank_options: JSON.stringify(settingsForm.banks),
       });
-      showToast('Çekim ayarları kaydedildi.');
+      showToast('Ã‡ekim ayarlarÄ± kaydedildi.');
       loadSettings();
     } catch (error) {
       showToast(error.message);
@@ -266,11 +382,11 @@ export default function PaymentManagement() {
             <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-bold text-cyan-100">
-                  <ShieldCheck size={13} /> Banka odaklı manuel ödeme operasyonu
+                  <ShieldCheck size={13} /> Banka odaklÄ± manuel Ã¶deme operasyonu
                 </div>
-                <h1 className="text-2xl font-black">Ödeme Yönetimi</h1>
+                <h1 className="text-2xl font-black">Ã–deme YÃ¶netimi</h1>
                 <p className="mt-1 max-w-2xl text-sm font-semibold text-slate-300">
-                  Çekim taleplerini, kullanıcı banka hesaplarını ve çekim ayarlarını tek ekrandan yönet.
+                  Ã‡ekim taleplerini, kullanÄ±cÄ± banka hesaplarÄ±nÄ± ve Ã§ekim ayarlarÄ±nÄ± tek ekrandan yÃ¶net.
                 </p>
               </div>
               <button
@@ -286,13 +402,14 @@ export default function PaymentManagement() {
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
           {[
-            { label: 'Bekleyen Çekim', value: summary.pending_withdrawals || 0, icon: Clock, tone: 'text-amber-600 bg-amber-50' },
-            { label: 'İşleme Alınan', value: summary.processing_withdrawals || 0, icon: RefreshCw, tone: 'text-blue-600 bg-blue-50' },
-            { label: 'Banka Hesabı Onayı', value: summary.pending_accounts || 0, icon: CreditCard, tone: 'text-violet-600 bg-violet-50' },
+            { label: 'Bekleyen Ã‡ekim', value: summary.pending_withdrawals || 0, icon: Clock, tone: 'text-amber-600 bg-amber-50' },
+            { label: 'Ä°ÅŸleme AlÄ±nan', value: summary.processing_withdrawals || 0, icon: RefreshCw, tone: 'text-blue-600 bg-blue-50' },
+            { label: 'Banka HesabÄ± OnayÄ±', value: summary.pending_accounts || 0, icon: CreditCard, tone: 'text-violet-600 bg-violet-50' },
+            { label: 'Bakiye Bildirimi', value: summary.pending_topup_requests || 0, icon: Wallet, tone: 'text-cyan-600 bg-cyan-50' },
             { label: 'Bekleyen Toplam', value: fmtMoney(summary.pending_amount), icon: Wallet, tone: 'text-rose-600 bg-rose-50' },
-            { label: 'Bugün Tamamlanan', value: fmtMoney(summary.completed_amount_today), icon: CheckCircle, tone: 'text-emerald-600 bg-emerald-50' },
+            { label: 'BugÃ¼n Tamamlanan', value: fmtMoney(summary.completed_amount_today), icon: CheckCircle, tone: 'text-emerald-600 bg-emerald-50' },
           ].map((item) => (
             <div key={item.label} className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3">
@@ -309,10 +426,12 @@ export default function PaymentManagement() {
         </div>
 
         <div className="rounded-3xl border border-gray-100 bg-white p-3 shadow-sm">
-          <div className="grid gap-2 md:grid-cols-3">
+          <div className="grid gap-2 md:grid-cols-5">
             {[
-              { id: 'withdrawals', label: 'Çekim Talepleri', count: Number(summary.pending_withdrawals || 0) + Number(summary.processing_withdrawals || 0) },
-              { id: 'accounts', label: 'Çekim Talebi Hesapları', count: summary.pending_accounts || 0 },
+              { id: 'topups', label: 'Bakiye Bildirimleri', count: summary.pending_topup_requests || 0 },
+              { id: 'topup-packages', label: 'Bakiye Paketleri', count: topupPackages.length },
+              { id: 'withdrawals', label: 'Ã‡ekim Talepleri', count: Number(summary.pending_withdrawals || 0) + Number(summary.processing_withdrawals || 0) },
+              { id: 'accounts', label: 'Ã‡ekim Talebi HesaplarÄ±', count: summary.pending_accounts || 0 },
               { id: 'settings', label: 'Ayarlar' },
             ].map((tab) => (
               <button
@@ -331,30 +450,30 @@ export default function PaymentManagement() {
           </div>
         </div>
 
-        {activeTab === 'withdrawals' && (
+        {activeTab === 'topups' && (
           <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-gray-100 p-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-lg font-black text-gray-900">Çekim Talepleri</h2>
-                <p className="text-xs font-semibold text-gray-400">Dekont alanı sadece admin tarafında görünür.</p>
+                <h2 className="text-lg font-black text-gray-900">Bakiye Ödeme Bildirimleri</h2>
+                <p className="text-xs font-semibold text-gray-400">Kullanıcının Shopier sipariş numarasını panelden kontrol edip onayla.</p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <label className="relative">
                   <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
                   <input
-                    value={withdrawalSearch}
-                    onChange={(event) => setWithdrawalSearch(event.target.value)}
-                    placeholder="Kullanıcı, banka, IBAN ara"
-                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm font-semibold focus:border-violet-400 focus:outline-none sm:w-64"
+                    value={topupSearch}
+                    onChange={(event) => setTopupSearch(event.target.value)}
+                    placeholder="Kullanıcı, paket, sipariş no ara"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm font-semibold focus:border-violet-400 focus:outline-none sm:w-72"
                   />
                 </label>
                 <select
-                  value={withdrawalStatus}
-                  onChange={(event) => setWithdrawalStatus(event.target.value)}
+                  value={topupStatus}
+                  onChange={(event) => setTopupStatus(event.target.value)}
                   className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                 >
                   <option value="">Tüm durumlar</option>
-                  {Object.entries(WITHDRAWAL_STATUS).map(([key, meta]) => (
+                  {Object.entries(TOPUP_STATUS).map(([key, meta]) => (
                     <option key={key} value={key}>{meta.label}</option>
                   ))}
                 </select>
@@ -363,21 +482,275 @@ export default function PaymentManagement() {
 
             {loading ? (
               <div className="py-12 text-center text-sm font-semibold text-gray-400">Yükleniyor...</div>
+            ) : filteredTopupRequests.length === 0 ? (
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">Ödeme bildirimi bulunamadı.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-[1100px] w-full text-left text-sm">
+                  <thead className="border-b border-gray-100 bg-gray-50/80 text-[11px] uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-4 py-3 font-black">Bildirim</th>
+                      <th className="px-4 py-3 font-black">Kullanıcı</th>
+                      <th className="px-4 py-3 font-black">Paket</th>
+                      <th className="px-4 py-3 font-black">Shopier Sipariş</th>
+                      <th className="px-4 py-3 font-black">Tutar</th>
+                      <th className="px-4 py-3 font-black">Durum</th>
+                      <th className="px-4 py-3 font-black">Tarih</th>
+                      <th className="px-4 py-3 text-right font-black">İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredTopupRequests.map((request) => {
+                      const canProcess = request.status === 'pending';
+                      return (
+                        <tr key={request.id} className="align-top hover:bg-slate-50/70">
+                          <td className="px-4 py-3">
+                            <p className="font-black text-gray-900">#{request.id}</p>
+                            <p className="mt-0.5 text-[11px] font-bold text-gray-400">{request.payer_name || 'Ad soyad yok'}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="max-w-[150px] truncate font-extrabold text-gray-800">{request.username || '-'}</p>
+                            <p className="mt-0.5 max-w-[190px] truncate text-xs font-semibold text-gray-400">{request.email || '-'}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-black text-violet-700">{request.package_code || '-'}</p>
+                            <p className="mt-0.5 max-w-[220px] truncate text-xs font-semibold text-gray-500">{request.package_title || '-'}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-mono text-xs font-black text-gray-800">{request.shopier_order_no || '-'}</p>
+                            {request.user_note ? <p className="mt-1 max-w-[260px] text-xs font-semibold text-gray-400">{request.user_note}</p> : null}
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="font-black text-gray-900">{fmtMoney(request.balance_amount)}</p>
+                            <p className="mt-0.5 text-[11px] font-bold text-gray-400">Ödeme: {fmtMoney(request.payable_amount)}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <StatusPill status={request.status} map={TOPUP_STATUS} />
+                          </td>
+                          <td className="px-4 py-3 text-xs font-semibold text-gray-500">
+                            {fmtDate(request.created_at)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {canProcess ? (
+                              <div className="ml-auto flex min-w-[260px] flex-col gap-2">
+                                <input
+                                  value={topupNotes[`topup-${request.id}`] || ''}
+                                  onChange={(event) => setTopupNotes((prev) => ({ ...prev, [`topup-${request.id}`]: event.target.value }))}
+                                  placeholder="Admin notu"
+                                  className="rounded-xl border border-gray-200 px-3 py-2 text-xs font-semibold focus:border-violet-400 focus:outline-none"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <button
+                                    disabled={saving}
+                                    onClick={() => updateTopupRequest(request.id, 'approved')}
+                                    className="rounded-xl bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+                                  >
+                                    Onayla
+                                  </button>
+                                  <button
+                                    disabled={saving}
+                                    onClick={() => updateTopupRequest(request.id, 'rejected')}
+                                    className="rounded-xl bg-rose-50 px-3 py-2 text-xs font-black text-rose-700 hover:bg-rose-100 disabled:opacity-50"
+                                  >
+                                    Reddet
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-xs font-bold text-gray-400">
+                                {request.processed_by_username ? `İşleyen: ${request.processed_by_username}` : 'Sonuçlandı'}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'topup-packages' && (
+          <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
+            <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-black text-gray-900">{packageForm.id ? 'Paketi Düzenle' : 'Yeni Bakiye Paketi'}</h2>
+                  <p className="text-xs font-semibold text-gray-400">Shopier ürün linkini pakete bağla.</p>
+                </div>
+                <button type="button" onClick={resetPackageForm} className="rounded-xl bg-slate-100 p-2 text-slate-500 hover:bg-slate-200">
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <input
+                  value={packageForm.code}
+                  onChange={(event) => setPackageForm((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))}
+                  placeholder="Paket kodu: OK250"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
+                />
+                <input
+                  value={packageForm.title}
+                  onChange={(event) => setPackageForm((prev) => ({ ...prev, title: event.target.value }))}
+                  placeholder="Paket adı: 250 TL Bakiye"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
+                />
+                <textarea
+                  value={packageForm.description}
+                  onChange={(event) => setPackageForm((prev) => ({ ...prev, description: event.target.value }))}
+                  placeholder="Kısa açıklama"
+                  rows={3}
+                  className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={packageForm.balance_amount}
+                    onChange={(event) => setPackageForm((prev) => ({ ...prev, balance_amount: event.target.value }))}
+                    placeholder="Eklenecek bakiye"
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={packageForm.payable_amount}
+                    onChange={(event) => setPackageForm((prev) => ({ ...prev, payable_amount: event.target.value }))}
+                    placeholder="Shopier ödeme"
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
+                  />
+                </div>
+                <input
+                  value={packageForm.shopier_url}
+                  onChange={(event) => setPackageForm((prev) => ({ ...prev, shopier_url: event.target.value }))}
+                  placeholder="https://www.shopier.com/..."
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    value={packageForm.sort_order}
+                    onChange={(event) => setPackageForm((prev) => ({ ...prev, sort_order: event.target.value }))}
+                    placeholder="Sıra"
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
+                  />
+                  <label className="flex items-center justify-between gap-3 rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold text-gray-700">
+                    Aktif
+                    <input
+                      type="checkbox"
+                      checked={packageForm.is_active}
+                      onChange={(event) => setPackageForm((prev) => ({ ...prev, is_active: event.target.checked }))}
+                      className="h-4 w-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  onClick={saveTopupPackage}
+                  disabled={saving}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-black text-white hover:bg-violet-500 disabled:opacity-50"
+                >
+                  <Save size={15} /> Paketi Kaydet
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
+              <div className="border-b border-gray-100 p-4">
+                <h2 className="text-lg font-black text-gray-900">Shopier Bakiye Paketleri</h2>
+                <p className="text-xs font-semibold text-gray-400">Kullanıcı tarafında aktif paketler görünecek.</p>
+              </div>
+              {loading ? (
+                <div className="py-12 text-center text-sm font-semibold text-gray-400">Yükleniyor...</div>
+              ) : topupPackages.length === 0 ? (
+                <div className="py-12 text-center text-sm font-semibold text-gray-400">Henüz paket yok.</div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {topupPackages.map((pkg) => (
+                    <div key={pkg.id} className="grid gap-3 p-4 md:grid-cols-[1fr_180px_150px] md:items-center">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">{pkg.code}</span>
+                          <StatusPill status={pkg.is_active ? 'approved' : 'rejected'} map={{ approved: { label: 'Aktif', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' }, rejected: { label: 'Pasif', className: 'bg-slate-50 text-slate-500 border-slate-100' } }} />
+                        </div>
+                        <p className="mt-2 font-black text-gray-900">{pkg.title}</p>
+                        <p className="mt-0.5 text-xs font-semibold text-gray-400">{pkg.description || 'Açıklama yok'}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-black text-gray-900">{fmtMoney(pkg.balance_amount)}</p>
+                        <p className="text-xs font-bold text-gray-400">Ödeme: {fmtMoney(pkg.payable_amount)}</p>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <a href={pkg.shopier_url} target="_blank" rel="noreferrer" className="rounded-xl bg-cyan-50 p-2 text-cyan-700 hover:bg-cyan-100">
+                          <ExternalLink size={15} />
+                        </a>
+                        <button type="button" onClick={() => editPackage(pkg)} className="rounded-xl bg-violet-50 p-2 text-violet-700 hover:bg-violet-100">
+                          <Edit3 size={15} />
+                        </button>
+                        <button type="button" onClick={() => deleteTopupPackage(pkg.id)} className="rounded-xl bg-rose-50 p-2 text-rose-700 hover:bg-rose-100">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'withdrawals' && (
+          <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
+            <div className="flex flex-col gap-3 border-b border-gray-100 p-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-lg font-black text-gray-900">Ã‡ekim Talepleri</h2>
+                <p className="text-xs font-semibold text-gray-400">Dekont alanÄ± sadece admin tarafÄ±nda gÃ¶rÃ¼nÃ¼r.</p>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <label className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={15} />
+                  <input
+                    value={withdrawalSearch}
+                    onChange={(event) => setWithdrawalSearch(event.target.value)}
+                    placeholder="KullanÄ±cÄ±, banka, IBAN ara"
+                    className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm font-semibold focus:border-violet-400 focus:outline-none sm:w-64"
+                  />
+                </label>
+                <select
+                  value={withdrawalStatus}
+                  onChange={(event) => setWithdrawalStatus(event.target.value)}
+                  className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
+                >
+                  <option value="">TÃ¼m durumlar</option>
+                  {Object.entries(WITHDRAWAL_STATUS).map(([key, meta]) => (
+                    <option key={key} value={key}>{meta.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {loading ? (
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">YÃ¼kleniyor...</div>
             ) : filteredWithdrawals.length === 0 ? (
-              <div className="py-12 text-center text-sm font-semibold text-gray-400">Çekim talebi bulunamadı.</div>
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">Ã‡ekim talebi bulunamadÄ±.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-[1100px] w-full text-left text-sm">
                   <thead className="border-b border-gray-100 bg-gray-50/80 text-[11px] uppercase tracking-wide text-gray-500">
                     <tr>
                       <th className="px-4 py-3 font-black">Talep</th>
-                      <th className="px-4 py-3 font-black">Kullanıcı</th>
+                      <th className="px-4 py-3 font-black">KullanÄ±cÄ±</th>
                       <th className="px-4 py-3 font-black">Banka / IBAN</th>
                       <th className="px-4 py-3 font-black">Tutar</th>
                       <th className="px-4 py-3 font-black">Masraf</th>
                       <th className="px-4 py-3 font-black">Durum</th>
                       <th className="px-4 py-3 font-black">Tarih</th>
-                      <th className="px-4 py-3 text-right font-black">İşlem</th>
+                      <th className="px-4 py-3 text-right font-black">Ä°ÅŸlem</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -409,7 +782,7 @@ export default function PaymentManagement() {
                             <td className="px-4 py-3">
                               <p className="text-xs font-bold text-gray-600">{fmtDate(request.created_at)}</p>
                               {request.processed_at ? (
-                                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">Son işlem: {fmtDate(request.processed_at)}</p>
+                                <p className="mt-0.5 text-[11px] font-semibold text-gray-400">Son iÅŸlem: {fmtDate(request.processed_at)}</p>
                               ) : null}
                             </td>
                             <td className="px-4 py-3 text-right">
@@ -422,7 +795,7 @@ export default function PaymentManagement() {
                                     : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
                                 }`}
                               >
-                                {isExpanded ? 'Kapat' : 'İşlem'}
+                                {isExpanded ? 'Kapat' : 'Ä°ÅŸlem'}
                               </button>
                             </td>
                           </tr>
@@ -434,7 +807,7 @@ export default function PaymentManagement() {
                                   <div className="space-y-3">
                                     <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                                       <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
-                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Kullanıcı</p>
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">KullanÄ±cÄ±</p>
                                         <p className="mt-1 text-sm font-black text-gray-900">{request.username || '-'}</p>
                                         <p className="mt-0.5 truncate text-xs font-semibold text-gray-500">{request.email || '-'}</p>
                                       </div>
@@ -446,10 +819,10 @@ export default function PaymentManagement() {
                                       <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
                                         <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Banka</p>
                                         <p className="mt-1 text-sm font-black text-gray-900">{request.bank_name || request.account_label || '-'}</p>
-                                        <p className="mt-0.5 text-xs font-semibold text-emerald-600">Toplam düşülen: {fmtMoney(totalAmount)}</p>
+                                        <p className="mt-0.5 text-xs font-semibold text-emerald-600">Toplam dÃ¼ÅŸÃ¼len: {fmtMoney(totalAmount)}</p>
                                       </div>
                                       <div className="rounded-2xl border border-white bg-white px-3 py-2 shadow-sm">
-                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Güncelleme</p>
+                                        <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">GÃ¼ncelleme</p>
                                         <p className="mt-1 text-sm font-black text-gray-900">{fmtDate(request.updated_at)}</p>
                                         <p className="mt-0.5 text-xs font-semibold text-gray-500">Talep: {fmtDate(request.created_at)}</p>
                                       </div>
@@ -463,7 +836,7 @@ export default function PaymentManagement() {
                                     <div className="grid gap-2 md:grid-cols-3">
                                       {request.user_note ? (
                                         <div className="rounded-2xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 shadow-sm">
-                                          <span className="font-black text-slate-400">Kullanıcı notu:</span> {request.user_note}
+                                          <span className="font-black text-slate-400">KullanÄ±cÄ± notu:</span> {request.user_note}
                                         </div>
                                       ) : null}
                                       {request.payment_reference ? (
@@ -481,7 +854,7 @@ export default function PaymentManagement() {
                                           value={references[`withdrawal-${request.id}`] || ''}
                                           onChange={(event) => setReferences((prev) => ({ ...prev, [`withdrawal-${request.id}`]: event.target.value }))}
                                           className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
-                                          placeholder="Dekont / işlem referansı"
+                                          placeholder="Dekont / iÅŸlem referansÄ±"
                                         />
                                         <div className="grid grid-cols-3 gap-2">
                                           {request.status === 'pending' ? (
@@ -490,7 +863,7 @@ export default function PaymentManagement() {
                                               onClick={() => updateWithdrawal(request.id, 'processing')}
                                               className="rounded-xl bg-blue-50 px-2 py-2 text-xs font-black text-blue-700 hover:bg-blue-100 disabled:opacity-50"
                                             >
-                                              İşleme Al
+                                              Ä°ÅŸleme Al
                                             </button>
                                           ) : (
                                             <div />
@@ -513,7 +886,7 @@ export default function PaymentManagement() {
                                       </div>
                                     ) : (
                                       <div className="flex h-full min-h-[116px] items-center justify-center rounded-2xl bg-gray-50 p-4 text-center text-xs font-bold text-gray-400">
-                                        Bu talep sonuçlandı.
+                                        Bu talep sonuÃ§landÄ±.
                                       </div>
                                     )}
                                   </div>
@@ -535,8 +908,8 @@ export default function PaymentManagement() {
           <div className="rounded-3xl border border-gray-100 bg-white shadow-sm">
             <div className="flex flex-col gap-3 border-b border-gray-100 p-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h2 className="text-lg font-black text-gray-900">Çekim Talebi Hesapları</h2>
-                <p className="text-xs font-semibold text-gray-400">Kullanıcıların banka hesaplarını yatay listede yönet.</p>
+                <h2 className="text-lg font-black text-gray-900">Ã‡ekim Talebi HesaplarÄ±</h2>
+                <p className="text-xs font-semibold text-gray-400">KullanÄ±cÄ±larÄ±n banka hesaplarÄ±nÄ± yatay listede yÃ¶net.</p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <label className="relative">
@@ -544,7 +917,7 @@ export default function PaymentManagement() {
                   <input
                     value={accountSearch}
                     onChange={(event) => setAccountSearch(event.target.value)}
-                    placeholder="Kullanıcı, banka, IBAN ara"
+                    placeholder="KullanÄ±cÄ±, banka, IBAN ara"
                     className="w-full rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm font-semibold focus:border-violet-400 focus:outline-none sm:w-64"
                   />
                 </label>
@@ -553,7 +926,7 @@ export default function PaymentManagement() {
                   onChange={(event) => setAccountStatus(event.target.value)}
                   className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                 >
-                  <option value="">Tüm durumlar</option>
+                  <option value="">TÃ¼m durumlar</option>
                   {Object.entries(ACCOUNT_STATUS).map(([key, meta]) => (
                     <option key={key} value={key}>{meta.label}</option>
                   ))}
@@ -562,21 +935,21 @@ export default function PaymentManagement() {
             </div>
 
             {loading ? (
-              <div className="py-12 text-center text-sm font-semibold text-gray-400">Yükleniyor...</div>
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">YÃ¼kleniyor...</div>
             ) : filteredAccounts.length === 0 ? (
-              <div className="py-12 text-center text-sm font-semibold text-gray-400">Banka hesabı bulunamadı.</div>
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">Banka hesabÄ± bulunamadÄ±.</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full text-left text-sm">
                   <thead className="border-b border-gray-100 bg-gray-50/80 text-xs uppercase tracking-wide text-gray-500">
                     <tr>
-                      <th className="px-4 py-3 font-black">Kullanıcı</th>
+                      <th className="px-4 py-3 font-black">KullanÄ±cÄ±</th>
                       <th className="px-4 py-3 font-black">Banka</th>
                       <th className="px-4 py-3 font-black">Ad Soyad</th>
                       <th className="px-4 py-3 font-black">IBAN</th>
                       <th className="px-4 py-3 font-black">Durum</th>
                       <th className="px-4 py-3 font-black">Tarih</th>
-                      <th className="px-4 py-3 font-black">İşlem</th>
+                      <th className="px-4 py-3 font-black">Ä°ÅŸlem</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -644,13 +1017,13 @@ export default function PaymentManagement() {
         {activeTab === 'settings' && (
           <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm">
             {settingsLoading ? (
-              <div className="py-12 text-center text-sm font-semibold text-gray-400">Ayarlar yükleniyor...</div>
+              <div className="py-12 text-center text-sm font-semibold text-gray-400">Ayarlar yÃ¼kleniyor...</div>
             ) : (
               <div className="space-y-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <h2 className="text-lg font-black text-gray-900">Çekim Ayarları</h2>
-                    <p className="text-sm font-semibold text-gray-400">Banka listesi, minimum çekim ve komisyon tipini buradan yönet.</p>
+                    <h2 className="text-lg font-black text-gray-900">Ã‡ekim AyarlarÄ±</h2>
+                    <p className="text-sm font-semibold text-gray-400">Banka listesi, minimum Ã§ekim ve komisyon tipini buradan yÃ¶net.</p>
                   </div>
                   <div className="rounded-2xl bg-violet-50 p-3 text-violet-600">
                     <Settings2 size={20} />
@@ -661,8 +1034,8 @@ export default function PaymentManagement() {
                   <label className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <div className="text-sm font-bold text-slate-900">Para Çekimi Aktif</div>
-                        <div className="mt-1 text-xs text-slate-400">Kapalıysa kullanıcı yeni çekim talebi oluşturamaz.</div>
+                        <div className="text-sm font-bold text-slate-900">Para Ã‡ekimi Aktif</div>
+                        <div className="mt-1 text-xs text-slate-400">KapalÄ±ysa kullanÄ±cÄ± yeni Ã§ekim talebi oluÅŸturamaz.</div>
                       </div>
                       <input
                         type="checkbox"
@@ -674,7 +1047,7 @@ export default function PaymentManagement() {
                   </label>
 
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Minimum Çekim Tutarı</div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Minimum Ã‡ekim TutarÄ±</div>
                     <input
                       type="number"
                       min="0"
@@ -693,12 +1066,12 @@ export default function PaymentManagement() {
                       className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                     >
                       <option value="fixed">Sabit TL</option>
-                      <option value="percent">Yüzde</option>
+                      <option value="percent">YÃ¼zde</option>
                     </select>
                   </div>
 
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Komisyon Değeri</div>
+                    <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Komisyon DeÄŸeri</div>
                     <input
                       type="number"
                       min="0"
@@ -708,20 +1081,20 @@ export default function PaymentManagement() {
                       className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                     />
                     <p className="mt-2 text-xs font-semibold text-slate-400">
-                      {settingsForm.withdrawal_fee_type === 'percent' ? 'Örnek: 2.5 girersen %2.5 kesilir.' : 'Örnek: 15 girersen her talepte 15 TL kesilir.'}
+                      {settingsForm.withdrawal_fee_type === 'percent' ? 'Ã–rnek: 2.5 girersen %2.5 kesilir.' : 'Ã–rnek: 15 girersen her talepte 15 TL kesilir.'}
                     </p>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <div className="mb-3 flex items-center gap-2 text-sm font-black text-slate-900">
-                    <Landmark size={16} className="text-violet-500" /> Kullanıcıların seçebileceği bankalar
+                    <Landmark size={16} className="text-violet-500" /> KullanÄ±cÄ±larÄ±n seÃ§ebileceÄŸi bankalar
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
                       value={newBankName}
                       onChange={(event) => setNewBankName(event.target.value)}
-                      placeholder="Banka adı ekle"
+                      placeholder="Banka adÄ± ekle"
                       className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold focus:border-violet-400 focus:outline-none"
                     />
                     <button
@@ -736,7 +1109,7 @@ export default function PaymentManagement() {
                   <div className="mt-4 flex flex-wrap gap-2">
                     {settingsForm.banks.length === 0 ? (
                       <div className="rounded-xl border border-dashed border-slate-200 px-4 py-3 text-sm font-semibold text-slate-400">
-                        Henüz banka eklenmedi.
+                        HenÃ¼z banka eklenmedi.
                       </div>
                     ) : settingsForm.banks.map((bank) => (
                       <div key={bank} className="inline-flex items-center gap-2 rounded-full border border-violet-100 bg-white px-3 py-2 text-sm font-bold text-slate-700">
@@ -755,7 +1128,7 @@ export default function PaymentManagement() {
                     disabled={saving}
                     className="inline-flex items-center gap-2 rounded-2xl bg-violet-600 px-4 py-3 text-sm font-black text-white shadow-lg shadow-violet-500/20 hover:bg-violet-500 disabled:opacity-50"
                   >
-                    <Save size={15} /> Ayarları Kaydet
+                    <Save size={15} /> AyarlarÄ± Kaydet
                   </button>
                 </div>
               </div>

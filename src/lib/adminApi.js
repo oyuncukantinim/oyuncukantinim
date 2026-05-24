@@ -268,6 +268,12 @@ export const adminDeletePaymentAccount = (account_id) =>
   adminRequest('admin_delete_payment_account', { method: 'POST', body: { account_id } });
 export const adminUpdateWithdrawal = (body) =>
   adminRequest('admin_update_withdrawal', { method: 'POST', body });
+export const adminSaveBalanceTopupPackage = (body) =>
+  adminRequest('admin_save_balance_topup_package', { method: 'POST', body, invalidateActions: ['get_site_settings'] });
+export const adminDeleteBalanceTopupPackage = (package_id) =>
+  adminRequest('admin_delete_balance_topup_package', { method: 'POST', body: { package_id }, invalidateActions: ['get_site_settings'] });
+export const adminUpdateBalanceTopupRequest = (body) =>
+  adminRequest('admin_update_balance_topup_request', { method: 'POST', body });
 
 // Admin Logs
 export const adminGetLogs = (params = {}) =>

@@ -495,6 +495,14 @@ export function getOrders() {
   return request('get_orders', { auth: true });
 }
 
+export function getBalanceTopupPackages() {
+  return request('get_balance_topup_packages', { auth: true });
+}
+
+export function submitBalanceTopupRequest(payload) {
+  return request('submit_balance_topup_request', { method: 'POST', body: payload, auth: true });
+}
+
 export function getBalanceCoupons() {
   return request('get_balance_coupons', { auth: true });
 }
