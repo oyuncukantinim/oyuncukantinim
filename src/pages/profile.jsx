@@ -1782,8 +1782,8 @@ export default function ProfilePage() {
             <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
 
-              <div className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
-                <div className="grid grid-cols-1 gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 sm:grid-cols-2">
+              <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
+                <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
                   {[
                     { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: shopierUserDescription || 'Kart ile bakiye yükle', icon: CreditCard, badge: commissionType !== 'none' ? commissionLabel : null },
                     { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent, badge: null },
