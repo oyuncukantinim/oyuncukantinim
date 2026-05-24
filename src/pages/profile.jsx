@@ -1763,13 +1763,6 @@ export default function ProfilePage() {
           {activeTab === 'balance' && (
             <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
-              <div className="bg-gradient-to-br from-slate-950 via-violet-950 to-slate-950 rounded-3xl p-5 sm:p-6 border border-violet-200/20 mb-5 text-white overflow-hidden relative">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_82%_0%,rgba(168,85,247,0.18),transparent_30%)]" />
-                <div className="relative">
-                  <div className="text-sm text-slate-300 mb-1 font-bold">Mevcut Bakiye</div>
-                  <div className="text-4xl font-extrabold text-emerald-300">{Number(user.balance || 0).toFixed(2)} ₺</div>
-                </div>
-              </div>
 
               <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
                 <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
