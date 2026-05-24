@@ -51,7 +51,6 @@ const TOPUP_STATUS = {
 
 const EMPTY_TOPUP_PACKAGE = {
   id: 0,
-  code: '',
   title: '',
   description: '',
   balance_amount: '',
@@ -200,7 +199,6 @@ export default function PaymentManagement() {
         request.id,
         request.username,
         request.email,
-        request.package_code,
         request.package_title,
         request.shopier_order_no,
         request.payer_name,
@@ -263,7 +261,6 @@ export default function PaymentManagement() {
   const editPackage = (pkg) => {
     setPackageForm({
       id: pkg.id || 0,
-      code: pkg.code || '',
       title: pkg.title || '',
       description: pkg.description || '',
       balance_amount: String(pkg.balance_amount ?? ''),
@@ -513,8 +510,7 @@ export default function PaymentManagement() {
                             <p className="mt-0.5 max-w-[190px] truncate text-xs font-semibold text-gray-400">{request.email || '-'}</p>
                           </td>
                           <td className="px-4 py-3">
-                            <p className="font-black text-violet-700">{request.package_code || '-'}</p>
-                            <p className="mt-0.5 max-w-[220px] truncate text-xs font-semibold text-gray-500">{request.package_title || '-'}</p>
+                            <p className="max-w-[220px] truncate font-black text-violet-700">{request.package_title || '-'}</p>
                           </td>
                           <td className="px-4 py-3">
                             <p className="font-mono text-xs font-black text-gray-800">{request.shopier_order_no || '-'}</p>
@@ -586,12 +582,6 @@ export default function PaymentManagement() {
               </div>
 
               <div className="space-y-3">
-                <input
-                  value={packageForm.code}
-                  onChange={(event) => setPackageForm((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))}
-                  placeholder="Paket kodu: OK250"
-                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold focus:border-violet-400 focus:outline-none"
-                />
                 <input
                   value={packageForm.title}
                   onChange={(event) => setPackageForm((prev) => ({ ...prev, title: event.target.value }))}
@@ -675,7 +665,6 @@ export default function PaymentManagement() {
                     <div key={pkg.id} className="grid gap-3 p-4 md:grid-cols-[1fr_180px_150px] md:items-center">
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-700">{pkg.code}</span>
                           <StatusPill status={pkg.is_active ? 'approved' : 'rejected'} map={{ approved: { label: 'Aktif', className: 'bg-emerald-50 text-emerald-700 border-emerald-100' }, rejected: { label: 'Pasif', className: 'bg-slate-50 text-slate-500 border-slate-100' } }} />
                         </div>
                         <p className="mt-2 font-black text-gray-900">{pkg.title}</p>
