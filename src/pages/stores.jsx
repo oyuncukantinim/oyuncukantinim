@@ -64,62 +64,48 @@ function Stars({ rating }) {
   );
 }
 
-// ============ YENİ SATICI KARTI — banner / yorum / takipçi / ilan YOK ============
-function StoreCard({ store, place }) {
+// ============ MİNİMAL SATICI BLOĞU (yatay satır) ============
+function StoreRow({ store, place }) {
   const rank = getRank(store.total_sales);
   return (
     <Link
       to={`/p/${store.username}`}
-      className="group relative flex flex-col items-center overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900 to-slate-950 p-5 text-center transition-all duration-300 hover:-translate-y-1.5"
-      style={{ '--glow': rank.glow }}
-      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 22px 50px -18px ${rank.glow}, 0 0 0 1px ${rank.glow}`; }}
-      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = ''; }}
+      className="group relative flex items-center gap-3 overflow-hidden rounded-xl border border-slate-200 bg-white px-3 py-2.5 transition-all duration-200 hover:border-violet-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/50 sm:gap-4 sm:px-4 sm:py-3"
     >
-      {/* Rütbe rengine göre üst aksan */}
-      <span className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${rank.color}`} />
-      {/* Arka plan halo */}
-      <span
-        className="pointer-events-none absolute -top-10 left-1/2 h-32 w-32 -translate-x-1/2 rounded-full opacity-30 blur-3xl transition-opacity duration-300 group-hover:opacity-60"
-        style={{ background: `radial-gradient(circle, ${rank.glow}, transparent 70%)` }}
-      />
+      {/* Rütbe rengine göre ince sol aksan */}
+      <span className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${rank.color}`} />
 
       {/* Sıra no */}
-      {place != null ? (
-        <span className="absolute left-3 top-3 text-sm font-black text-white/30">#{place}</span>
-      ) : null}
-      {/* Rütbe rozeti */}
-      <span className="absolute right-3 top-3"><RankBadge sales={store.total_sales} /></span>
+      <span className="w-6 shrink-0 text-center text-sm font-black text-slate-300 dark:text-slate-600">{place}</span>
 
-      {/* Avatar — rütbe renkli ring + glow */}
-      <div className="relative mt-4">
-        <div className={`rounded-2xl ring-4 ${rank.ring}`} style={{ boxShadow: `0 0 26px -6px ${rank.glow}` }}>
-          <UserAvatar
-            value={store.avatar}
-            className="h-20 w-20 rounded-2xl bg-slate-800 text-3xl text-white"
-            imageClassName="h-full w-full rounded-2xl object-cover"
-          />
+      {/* Avatar */}
+      <UserAvatar
+        value={store.avatar}
+        className="h-11 w-11 shrink-0 rounded-xl bg-slate-100 text-lg dark:bg-slate-800"
+        imageClassName="h-full w-full rounded-xl object-cover"
+      />
+
+      {/* İsim + rütbe */}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-1.5">
+          <h3 className="truncate text-sm font-black text-slate-900 transition group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300">
+            {store.username}
+          </h3>
+          <ShieldCheck size={14} className="shrink-0 fill-emerald-500 text-white" />
         </div>
-      </div>
-
-      {/* İsim + onay */}
-      <div className="mt-4 flex items-center justify-center gap-1.5">
-        <h3 className="max-w-[170px] truncate text-base font-black text-white transition group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-300 group-hover:to-violet-300">
-          {store.username}
-        </h3>
-        <ShieldCheck size={16} className="shrink-0 fill-emerald-500 text-slate-900" />
+        <div className="mt-0.5"><RankBadge sales={store.total_sales} /></div>
       </div>
 
       {/* Puan */}
-      <div className="mt-2 flex items-center gap-1.5">
-        <Stars rating={store.avg_rating} />
-        <span className="text-sm font-black text-amber-300">{Number(store.avg_rating || 0).toFixed(1)}</span>
+      <div className="hidden items-center gap-1 sm:flex">
+        <Star size={13} className="fill-amber-400 text-amber-400" />
+        <span className="text-sm font-black text-slate-700 dark:text-slate-200">{Number(store.avg_rating || 0).toFixed(1)}</span>
       </div>
 
-      {/* Tek ana metrik: satış */}
-      <div className="mt-4 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2">
-        <ShoppingBag size={15} className="text-emerald-300" />
-        <span className="text-lg font-black text-white">{formatCount(store.total_sales)}</span>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40">Satış</span>
+      {/* Satış */}
+      <div className="flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-50 px-2.5 py-1.5 dark:bg-slate-950/60">
+        <ShoppingBag size={13} className="text-emerald-500" />
+        <span className="text-sm font-black text-slate-900 dark:text-white">{formatCount(store.total_sales)}</span>
       </div>
     </Link>
   );
@@ -272,9 +258,9 @@ export default function StoresPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="space-y-2">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-64 animate-pulse rounded-2xl border border-white/10 bg-slate-900" />
+              <div key={i} className="h-[68px] animate-pulse rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900" />
             ))}
           </div>
         ) : stores.length === 0 ? (
@@ -283,10 +269,10 @@ export default function StoresPage() {
             <p className="text-lg font-extrabold text-slate-700 dark:text-slate-200">Henüz onaylı mağaza yok.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="space-y-2">
             {/* Top 3 zaten podyumda — listede #4'ten devam, podyum yoksa baştan */}
             {(podium.length >= 3 ? rest : stores).map((store, i) => (
-              <StoreCard key={store.id} store={store} place={(podium.length >= 3 ? i + 4 : i + 1)} />
+              <StoreRow key={store.id} store={store} place={(podium.length >= 3 ? i + 4 : i + 1)} />
             ))}
           </div>
         )}
