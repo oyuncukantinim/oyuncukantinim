@@ -258,7 +258,7 @@ export default function StoresPage() {
       />
       <Section
         icon={Flame}
-        title="Öne Çıkan Mağazalar"
+        title="Fenomen Mağazalar"
         subtitle="En çok takip edilen popüler mağazalar"
         accent="from-rose-500 to-fuchsia-500"
         glow="rgba(217,70,239,0.5)"
