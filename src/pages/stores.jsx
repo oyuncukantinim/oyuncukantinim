@@ -161,7 +161,7 @@ export default function StoresPage() {
   return (
     <div className="space-y-8">
       {/* ============ HERO ============ */}
-      <section className="relative overflow-hidden rounded-[32px] border border-white/10 bg-[#0a0a18] p-6 text-white shadow-2xl sm:p-10">
+      <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0a0a18] p-5 text-white shadow-2xl sm:p-7">
         <style>{`
           @keyframes mv-aurora { 0%,100%{transform:translate(0,0) scale(1);opacity:.7} 50%{transform:translate(40px,-30px) scale(1.25);opacity:1} }
           @keyframes mv-aurora2 { 0%,100%{transform:translate(0,0) scale(1);opacity:.55} 50%{transform:translate(-35px,25px) scale(1.2);opacity:.9} }
@@ -182,30 +182,30 @@ export default function StoresPage() {
         </div>
         <div className="pointer-events-none absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.07) 1px, transparent 0)', backgroundSize: '26px 26px' }} />
         <div className="pointer-events-none absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'repeating-linear-gradient(180deg, #fff 0 1px, transparent 1px 4px)' }} />
-        <div className="relative grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div className="relative grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-cyan-100 backdrop-blur">
               <Store size={14} /> Mağazalar
             </div>
-            <h1 className="mv-grad bg-gradient-to-r from-cyan-300 via-violet-200 to-fuchsia-300 bg-clip-text text-4xl font-black leading-[1.05] text-transparent sm:text-6xl">
+            <h1 className="mv-grad bg-gradient-to-r from-cyan-300 via-violet-200 to-fuchsia-300 bg-clip-text text-2xl font-black leading-[1.1] text-transparent sm:text-4xl">
               Mağaza Vitrini
             </h1>
-            <p className="mt-3 max-w-xl text-sm font-semibold leading-7 text-white/60">
+            <p className="mt-2 max-w-xl text-xs font-semibold leading-6 text-white/55 sm:text-sm">
               Satış liderleri, öne çıkanlar, en yüksek puanlılar ve yeni açılanlar — hepsi tek sayfada.
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <div className="inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-300"><Store size={17} /></span>
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-400/15 text-cyan-300"><Store size={15} /></span>
                 <div>
-                  <div className="text-lg font-black leading-none text-white">{approxPlus(stats.store_count)}</div>
-                  <div className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Mağaza</div>
+                  <div className="text-base font-black leading-none text-white">{approxPlus(stats.store_count)}</div>
+                  <div className="mt-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/45">Mağaza</div>
                 </div>
               </div>
-              <div className="inline-flex items-center gap-2.5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/15 text-emerald-300"><ShoppingBag size={17} /></span>
+              <div className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-400/15 text-emerald-300"><ShoppingBag size={15} /></span>
                 <div>
-                  <div className="text-lg font-black leading-none text-white">{approxPlus(stats.total_sales)}</div>
-                  <div className="mt-0.5 text-[10px] font-black uppercase tracking-[0.18em] text-white/45">Satış</div>
+                  <div className="text-base font-black leading-none text-white">{approxPlus(stats.total_sales)}</div>
+                  <div className="mt-0.5 text-[9px] font-black uppercase tracking-[0.18em] text-white/45">Satış</div>
                 </div>
               </div>
             </div>
@@ -215,44 +215,44 @@ export default function StoresPage() {
           {topSeller ? (
             <Link
               to={`/p/${topSeller.username}`}
-              className="group/spot relative flex flex-col items-center overflow-hidden rounded-[28px] border border-amber-300/25 bg-gradient-to-b from-amber-500/10 via-white/[0.03] to-violet-500/10 px-6 pb-6 pt-8 text-center backdrop-blur transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-300/60"
-              style={{ boxShadow: '0 0 50px -16px rgba(245,158,11,0.55)' }}
+              className="group/spot relative flex flex-col items-center overflow-hidden rounded-2xl border border-amber-300/25 bg-gradient-to-b from-amber-500/10 via-white/[0.03] to-violet-500/10 px-4 pb-4 pt-5 text-center backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:border-amber-300/60"
+              style={{ boxShadow: '0 0 40px -16px rgba(245,158,11,0.55)' }}
             >
               {/* shimmer sweep */}
               <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover/spot:translate-x-[120%]" />
 
-              <div className="relative mb-5 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-slate-950 shadow">
-                <Crown size={13} strokeWidth={3} /> Zirvedeki Satıcı
+              <div className="relative mb-3 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950 shadow">
+                <Crown size={12} strokeWidth={3} /> Zirvedeki Satıcı
               </div>
 
               {/* yüzen taç + dönen rainbow ring + avatar */}
-              <div className="relative mb-4 h-24 w-24">
-                <Crown size={22} className="mv-float absolute -top-7 left-1/2 z-10 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.85)]" />
-                <span className="mv-spin absolute -inset-2 rounded-full" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
-                <span className="absolute -inset-2 rounded-full opacity-40 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
+              <div className="relative mb-3 h-16 w-16">
+                <Crown size={18} className="mv-float absolute -top-6 left-1/2 z-10 text-amber-300 drop-shadow-[0_0_8px_rgba(245,158,11,0.85)]" />
+                <span className="mv-spin absolute -inset-1.5 rounded-full" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
+                <span className="absolute -inset-1.5 rounded-full opacity-40 blur-md" style={{ background: 'conic-gradient(from 0deg, #f59e0b, #f43f5e, #8b5cf6, #22d3ee, #f59e0b)' }} />
                 <UserAvatar
                   value={topSeller.avatar}
-                  className="absolute inset-0 h-24 w-24 rounded-full border-4 border-[#0a0a18] bg-slate-800 text-3xl text-white"
+                  className="absolute inset-0 h-16 w-16 rounded-full border-4 border-[#0a0a18] bg-slate-800 text-2xl text-white"
                   imageClassName="h-full w-full rounded-full object-cover"
                 />
               </div>
 
-              <div className="relative flex items-center justify-center gap-1.5 text-xl font-black text-white">
-                <span className="max-w-[180px] truncate">{topSeller.username}</span>
-                <ShieldCheck size={16} className="shrink-0 fill-emerald-500 text-slate-900" />
+              <div className="relative flex items-center justify-center gap-1.5 text-base font-black text-white">
+                <span className="max-w-[160px] truncate">{topSeller.username}</span>
+                <ShieldCheck size={14} className="shrink-0 fill-emerald-500 text-slate-900" />
               </div>
-              <span className={`relative mt-2 inline-flex items-center gap-1 rounded-md bg-gradient-to-r ${getRank(topSeller.total_sales).color} px-2.5 py-0.5 text-[11px] font-black uppercase tracking-[0.14em] text-slate-950`}>
-                <Medal size={11} strokeWidth={3} /> {getRank(topSeller.total_sales).label}
+              <span className={`relative mt-1.5 inline-flex items-center gap-1 rounded-md bg-gradient-to-r ${getRank(topSeller.total_sales).color} px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950`}>
+                <Medal size={10} strokeWidth={3} /> {getRank(topSeller.total_sales).label}
               </span>
 
-              <div className="relative mt-5 grid w-full grid-cols-2 gap-2.5">
-                <div className="rounded-2xl border border-white/10 bg-white/5 py-2.5">
-                  <div className="text-lg font-black text-emerald-300">{formatCount(topSeller.total_sales)}</div>
+              <div className="relative mt-3 grid w-full grid-cols-2 gap-2">
+                <div className="rounded-xl border border-white/10 bg-white/5 py-2">
+                  <div className="text-base font-black text-emerald-300">{formatCount(topSeller.total_sales)}</div>
                   <div className="text-[9px] font-black uppercase tracking-widest text-white/45">Satış</div>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 py-2.5">
-                  <div className="flex items-center justify-center gap-1 text-lg font-black text-amber-300">
-                    <Star size={14} className="fill-amber-400 text-amber-400" /> {Number(topSeller.avg_rating || 0).toFixed(1)}
+                <div className="rounded-xl border border-white/10 bg-white/5 py-2">
+                  <div className="flex items-center justify-center gap-1 text-base font-black text-amber-300">
+                    <Star size={13} className="fill-amber-400 text-amber-400" /> {Number(topSeller.avg_rating || 0).toFixed(1)}
                   </div>
                   <div className="text-[9px] font-black uppercase tracking-widest text-white/45">Puan</div>
                 </div>
