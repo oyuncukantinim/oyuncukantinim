@@ -14,16 +14,13 @@ import {
 import { getStores } from '../lib/api';
 import UserAvatar from '../components/UserAvatar';
 
-// Rütbe — tamamlanmış satışa göre kartın aksan rengini belirler.
-const RANK_TIERS = [
-  { min: 1500, label: 'Efsane', color: 'from-rose-500 via-fuchsia-500 to-violet-500', glow: 'rgba(217,70,239,0.5)' },
-  { min: 500, label: 'Elmas', color: 'from-cyan-400 via-sky-400 to-blue-500', glow: 'rgba(34,211,238,0.45)' },
-  { min: 150, label: 'Platin', color: 'from-teal-300 via-emerald-400 to-cyan-400', glow: 'rgba(45,212,191,0.4)' },
-  { min: 50, label: 'Altın', color: 'from-amber-400 via-yellow-400 to-orange-500', glow: 'rgba(245,158,11,0.45)' },
-  { min: 10, label: 'Gümüş', color: 'from-slate-300 via-slate-400 to-slate-500', glow: 'rgba(148,163,184,0.4)' },
-  { min: 0, label: 'Bronz', color: 'from-orange-600 via-amber-600 to-yellow-700', glow: 'rgba(180,83,9,0.4)' },
-];
-const getRank = (sales) => RANK_TIERS.find((t) => Number(sales) >= t.min) || RANK_TIERS[RANK_TIERS.length - 1];
+// Sıralama (pozisyon) bazlı etiket — satış rütbesi yok, listedeki sıraya göre.
+const POS_STYLE = {
+  1: { label: 'LİDER', color: 'from-amber-300 to-orange-500', glow: 'rgba(245,158,11,0.5)', icon: Crown },
+  2: { label: '2.', color: 'from-slate-200 to-slate-400', glow: 'rgba(203,213,225,0.45)', icon: Trophy },
+  3: { label: '3.', color: 'from-orange-400 to-amber-600', glow: 'rgba(234,88,12,0.45)', icon: Medal },
+};
+const posStyle = (place) => POS_STYLE[place] || { label: `#${place}`, color: 'from-violet-500 to-fuchsia-500', glow: 'rgba(139,92,246,0.4)', icon: null };
 
 function approxPlus(value) {
   const n = Math.max(0, Number(value) || 0);
@@ -33,39 +30,30 @@ function approxPlus(value) {
 }
 const formatCount = (v) => Number(v || 0).toLocaleString('tr-TR');
 
-const MEDAL_TONE = { 1: 'from-amber-300 to-orange-500', 2: 'from-slate-200 to-slate-400', 3: 'from-orange-400 to-amber-600' };
-
 // ============ KART ============
-function StoreCard({ store, rankNumber, isNew }) {
-  const rank = getRank(store.total_sales);
+function StoreCard({ store, place }) {
+  const ps = posStyle(place);
+  const PosIcon = ps.icon;
   return (
     <Link
       to={`/p/${store.username}`}
       className="group relative flex items-center gap-3 overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900 dark:hover:border-violet-500/50"
     >
-      {/* Rütbe renkli sol aksan */}
-      <span className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${rank.color}`} />
+      {/* Pozisyon renkli sol aksan */}
+      <span className={`absolute inset-y-0 left-0 w-1 bg-gradient-to-b ${ps.color}`} />
 
-      {/* Avatar + (top3 madalya) */}
-      <div className="relative shrink-0">
-        <div className="rounded-xl ring-2 ring-slate-100 dark:ring-white/10" style={{ boxShadow: `0 0 18px -6px ${rank.glow}` }}>
-          <UserAvatar
-            value={store.avatar}
-            className="h-12 w-12 rounded-xl bg-slate-100 text-lg dark:bg-slate-800"
-            imageClassName="h-full w-full rounded-xl object-cover"
-          />
-        </div>
-        {rankNumber && rankNumber <= 3 ? (
-          <span className={`absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-md bg-gradient-to-br ${MEDAL_TONE[rankNumber]} text-[10px] font-black text-slate-950 shadow`}>
-            {rankNumber}
-          </span>
-        ) : null}
+      {/* Avatar */}
+      <div className="shrink-0 rounded-xl ring-2 ring-slate-100 dark:ring-white/10" style={{ boxShadow: `0 0 18px -6px ${ps.glow}` }}>
+        <UserAvatar
+          value={store.avatar}
+          className="h-12 w-12 rounded-xl bg-slate-100 text-lg dark:bg-slate-800"
+          imageClassName="h-full w-full rounded-xl object-cover"
+        />
       </div>
 
       {/* Bilgi */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          {rankNumber && rankNumber > 3 ? <span className="text-xs font-black text-slate-300 dark:text-slate-600">#{rankNumber}</span> : null}
           <span className="truncate text-sm font-black text-slate-900 transition group-hover:text-violet-600 dark:text-white dark:group-hover:text-violet-300">
             {store.username}
           </span>
@@ -82,22 +70,18 @@ function StoreCard({ store, rankNumber, isNew }) {
         </div>
       </div>
 
-      {/* Sağ etiket: YENİ ya da rütbe */}
-      {isNew ? (
-        <span className="shrink-0 rounded-md bg-gradient-to-r from-emerald-400 to-teal-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950">Yeni</span>
-      ) : (
-        <span
-          className={`hidden shrink-0 items-center gap-1 rounded-md bg-gradient-to-r ${rank.color} px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-950 sm:inline-flex`}
-          style={{ boxShadow: `0 0 12px -3px ${rank.glow}` }}
-        >
-          <Medal size={10} strokeWidth={3} /> {rank.label}
-        </span>
-      )}
+      {/* Sıralama badge'i */}
+      <span
+        className={`inline-flex shrink-0 items-center gap-1 rounded-md bg-gradient-to-r ${ps.color} px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-950`}
+        style={{ boxShadow: `0 0 12px -3px ${ps.glow}` }}
+      >
+        {PosIcon ? <PosIcon size={10} strokeWidth={3} /> : null} {ps.label}
+      </span>
     </Link>
   );
 }
 
-function Section({ icon: Icon, title, subtitle, accent, glow, stores, ranked, isNew, loading }) {
+function Section({ icon: Icon, title, subtitle, accent, glow, stores, loading }) {
   return (
     <section>
       <div className="mb-4 flex items-center gap-3">
@@ -123,7 +107,7 @@ function Section({ icon: Icon, title, subtitle, accent, glow, stores, ranked, is
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {stores.map((store, i) => (
-            <StoreCard key={store.id} store={store} rankNumber={ranked ? i + 1 : null} isNew={isNew} />
+            <StoreCard key={store.id} store={store} place={i + 1} />
           ))}
         </div>
       )}
@@ -241,8 +225,8 @@ export default function StoresPage() {
                 <span className="max-w-[160px] truncate">{topSeller.username}</span>
                 <ShieldCheck size={14} className="shrink-0 fill-emerald-500 text-slate-900" />
               </div>
-              <span className={`relative mt-1.5 inline-flex items-center gap-1 rounded-md bg-gradient-to-r ${getRank(topSeller.total_sales).color} px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950`}>
-                <Medal size={10} strokeWidth={3} /> {getRank(topSeller.total_sales).label}
+              <span className="relative mt-1.5 inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-amber-300 to-orange-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.14em] text-slate-950">
+                <Crown size={10} strokeWidth={3} /> Lider
               </span>
 
               <div className="relative mt-3 grid w-full grid-cols-2 gap-2">
@@ -270,7 +254,6 @@ export default function StoresPage() {
         accent="from-amber-400 to-orange-500"
         glow="rgba(245,158,11,0.5)"
         stores={data.sales}
-        ranked
         loading={loading}
       />
       <Section
@@ -298,7 +281,6 @@ export default function StoresPage() {
         accent="from-emerald-400 to-teal-500"
         glow="rgba(16,185,129,0.5)"
         stores={data.newest}
-        isNew
         loading={loading}
       />
     </div>
