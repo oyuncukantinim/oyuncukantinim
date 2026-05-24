@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ChevronLeft,
   ChevronRight,
-  CreditCard,
   FileText,
   Gift,
   Images,
@@ -68,7 +67,6 @@ const navGroups = [
   {
     label: 'Finans',
     items: [
-      { path: '/admin/payment-methods', label: 'Ödeme Yöntemleri', icon: CreditCard, accent: 'from-cyan-500 to-violet-600' },
       { path: '/admin/payment-management', label: 'Ödeme Yönetimi', icon: Wallet, accent: 'from-emerald-500 to-green-600' },
       { path: '/admin/finance', label: 'Finansal', icon: Wallet, accent: 'from-teal-500 to-cyan-600' },
       { path: '/admin/balance-coupons', label: 'Hediye Kuponlar', icon: Gift, accent: 'from-violet-500 to-cyan-500' },

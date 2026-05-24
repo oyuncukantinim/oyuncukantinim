@@ -495,11 +495,6 @@ export function getOrders() {
   return request('get_orders', { auth: true });
 }
 
-// --- BALANCE ---
-export function addBalance(amount, provider = 'shopier') {
-  return request('create_balance_payment', { method: 'POST', body: { amount, provider }, auth: true });
-}
-
 export function getBalanceCoupons() {
   return request('get_balance_coupons', { auth: true });
 }

@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  List, Package, Settings, LogOut, Plus, ShieldCheck, CreditCard,
+  List, Package, Settings, LogOut, Plus, ShieldCheck,
   Wallet, Trash2, Edit3, Image as ImageIcon, Star,
   Truck, CheckCircle, AlertTriangle, Clock, User,
   Eye, EyeOff, Store, X, Check, ChevronDown, ChevronUp,
@@ -14,7 +14,7 @@ const PROFILE_PAGE_SIZE = 20;
 import { getListingCoverImage } from '../lib/listingMedia';
 import { useAuth } from '../context/useAuth';
 import { useCart } from '../context/useCart';
-import { applyListingDoping, getMyListings, updateProfile, addBalance, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
+import { applyListingDoping, getMyListings, updateProfile, redeemBalanceCoupon, deleteListing, updateListing, deleteListingImage, uploadListingImage, listingSlug, productPath, getFavorites, toggleFavorite, getListingPriceHistory, getMyTransactions, sendProfileEmailVerification, verifyProfileEmailCode, getPaymentOverview, addPaymentAccount, deletePaymentAccount, createWithdrawalRequest, cancelWithdrawalRequest, getStoreApplicationOverview, getIdentityOverview, getProductOrderLogs, submitIdentityVerification, uploadProfileAvatar, uploadProfileBanner, deleteProfileMedia } from '../lib/api';
 import { AVATARS } from '../data/catalog';
 import { DELIVERY_STATUS } from '../lib/orderStatus';
 import useSiteBrand from '../hooks/useSiteBrand';
@@ -564,10 +564,6 @@ export default function ProfilePage() {
     defaultProfileBanner,
     defaultListingImage,
     balanceAddEnabled,
-    shopierDisplayName,
-    shopierUserDescription,
-    shopierCommissionType,
-    shopierCommissionValue,
     registrationEmailCodeExpiryMinutes,
     dopingVitrineOptions,
     dopingFeaturedOptions,
@@ -600,24 +596,6 @@ export default function ProfilePage() {
   const profileAvatarInputRef = useRef(null);
   const profileBannerInputRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [balanceAmount, setBalanceAmount] = useState('');
-  const [balancePanelTab, setBalancePanelTab] = useState('topup');
-
-  // Shopier komisyon hesabı — yöntem etiketinde ve "karttan çekilecek" kutusunda kullanılır.
-  const topupAmount = Math.max(0, parseFloat(balanceAmount) || 0);
-  const commissionType = shopierCommissionType || 'none';
-  const commissionValue = Number(shopierCommissionValue || 0);
-  const commissionAmount = commissionType === 'fixed'
-    ? commissionValue
-    : commissionType === 'percent'
-      ? (topupAmount * commissionValue) / 100
-      : 0;
-  const payableAmount = topupAmount + commissionAmount;
-  const commissionLabel = commissionType === 'percent'
-    ? `%${commissionValue}`
-    : commissionType === 'fixed'
-      ? `${commissionValue.toFixed(2)} ₺`
-      : 'Komisyonsuz';
   const [balanceCouponCode, setBalanceCouponCode] = useState('');
   const [saving, setSaving] = useState(false);
   const [editModal, setEditModal] = useState(null); // listing being edited
@@ -852,26 +830,6 @@ export default function ProfilePage() {
       await deleteProfileMedia(normalizedBannerImage, 'banner').catch(() => {});
     }
     setBannerImage('');
-  };
-
-  const handleAddBalance = async () => {
-    if (!balanceAddEnabled) {
-      showToast('Bakiye yükleme şu an kapalı.');
-      return;
-    }
-    const amt = parseFloat(balanceAmount);
-    if (!amt || amt <= 0) { showToast('Geçerli bir tutar girin.'); return; }
-    setSaving(true);
-    try {
-      const res = await addBalance(amt, 'shopier');
-      const redirectUrl = res.data?.redirect_url;
-      if (!redirectUrl) throw new Error('Ödeme bağlantısı oluşturulamadı.');
-      showToast(res.message || 'Ödeme sayfasına yönlendiriliyorsunuz.');
-      window.location.assign(redirectUrl);
-    } catch (err) {
-      showToast(err.message);
-      setSaving(false);
-    }
   };
 
   const handleRedeemBalanceCoupon = async () => {
@@ -1782,91 +1740,23 @@ export default function ProfilePage() {
             <div className="max-w-4xl">
               <h2 className="text-lg font-extrabold text-gray-800 mb-5 flex items-center gap-2"><Wallet size={20} className="text-violet-500" /> Bakiye</h2>
 
-              <div className="grid gap-4 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm md:grid-cols-[240px_1fr]">
-                <div className="space-y-2 rounded-2xl border border-gray-200 bg-gray-50 p-2">
-                  {[
-                    { id: 'topup', label: shopierDisplayName || 'Kredi Kartı (Shopier)', desc: shopierUserDescription || 'Kart ile bakiye yükle', icon: CreditCard, badge: commissionType !== 'none' ? commissionLabel : null },
-                    { id: 'coupon', label: 'Kupon Kullan', desc: 'Bakiye kupon kodu gir', icon: TicketPercent, badge: null },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setBalancePanelTab(tab.id)}
-                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-all ${
-                        balancePanelTab === tab.id ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:bg-white/70 hover:text-gray-700'
-                      }`}
-                    >
-                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${balancePanelTab === tab.id ? 'bg-violet-50 text-violet-600' : 'bg-white text-gray-400'}`}>
-                        <tab.icon size={17} />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-black leading-tight">{tab.label}</span>
-                        <span className="block truncate text-[11px] font-semibold leading-tight text-gray-400">{tab.desc}</span>
-                      </span>
-                      {tab.badge ? (
-                        <span className="shrink-0 rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-black text-violet-700">
-                          {tab.badge}
-                        </span>
-                      ) : null}
-                    </button>
-                  ))}
+              <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <div>
+                  <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
+                  <input
+                    type="text"
+                    value={balanceCouponCode}
+                    onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
+                    placeholder="OK-XXXX-XXXX-XXXX"
+                    className="input-field font-mono font-black"
+                  />
                 </div>
-
-                <div className="space-y-4 rounded-2xl border border-gray-100 bg-white p-4">
-                  {balancePanelTab === 'topup' ? (
-                    <>
-                      <div className="grid grid-cols-3 gap-2">
-                        {[50, 100, 250, 500, 1000, 2500].map(amt => (
-                          <button key={amt} onClick={() => setBalanceAmount(String(amt))}
-                            className={`py-3 rounded-xl font-bold text-sm transition-all border ${balanceAmount === String(amt) ? 'bg-violet-600 text-white border-violet-600' : 'bg-gray-50 text-gray-600 border-gray-200 hover:border-violet-300'}`}>
-                            {amt} ₺
-                          </button>
-                        ))}
-                      </div>
-                      <input type="number" value={balanceAmount} onChange={e => setBalanceAmount(e.target.value)}
-                        placeholder="Özel tutar (₺)..." className="input-field" />
-
-                      <div className="rounded-2xl border border-violet-100 bg-violet-50/60 p-4 space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-semibold text-gray-500">Yüklenecek bakiye</span>
-                          <span className="font-black text-gray-800">{topupAmount.toFixed(2)} ₺</span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="font-semibold text-gray-500">Komisyon ({commissionLabel})</span>
-                          <span className="font-black text-gray-800">{commissionAmount.toFixed(2)} ₺</span>
-                        </div>
-                        <div className="flex items-center justify-between border-t border-violet-100 pt-2">
-                          <span className="text-sm font-black text-violet-700">Karttan çekilecek</span>
-                          <span className="text-lg font-black text-violet-700">{payableAmount.toFixed(2)} ₺</span>
-                        </div>
-                      </div>
-
-                      <button onClick={handleAddBalance} disabled={saving} className="btn-primary w-full disabled:opacity-60">
-                        <Wallet size={16} className="inline mr-2" /> Bakiye Yükle
-                      </button>
-                      <p className="text-xs text-gray-400 text-center">Ödeme Shopier güvenli ödeme sayfasında tamamlanır.</p>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <label className="mb-1.5 block text-sm font-bold text-gray-600">Hediye Bakiye Kuponu</label>
-                        <input
-                          type="text"
-                          value={balanceCouponCode}
-                          onChange={e => setBalanceCouponCode(e.target.value.toUpperCase())}
-                          placeholder="OK-XXXX-XXXX-XXXX"
-                          className="input-field font-mono font-black"
-                        />
-                      </div>
-                      <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
-                        <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
-                      </button>
-                      <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
-                        <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
-                      </Link>
-                    </>
-                  )}
-                </div>
+                <button onClick={handleRedeemBalanceCoupon} disabled={saving} className="btn-primary w-full disabled:opacity-60">
+                  <TicketPercent size={16} className="inline mr-2" /> Kuponu Bakiyeme Ekle
+                </button>
+                <Link to="/gift-balance-coupon" className="flex items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 px-3 py-2.5 text-sm font-black text-violet-700 transition hover:bg-violet-100">
+                  <Gift size={15} /> Hediye Bakiye Kuponu Oluştur
+                </Link>
               </div>
             </div>
           )}
