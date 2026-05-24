@@ -29,6 +29,7 @@ const MessagesPage        = lazy(() => import('./pages/messages'));
 const NotificationsPage   = lazy(() => import('./pages/notifications'));
 const SupportPage         = lazy(() => import('./pages/support'));
 const SellerPage          = lazy(() => import('./pages/seller'));
+const StoresPage          = lazy(() => import('./pages/stores'));
 const CategoriesPage      = lazy(() => import('./pages/categories'));
 const CategoryListingsPage = lazy(() => import('./pages/category-listings'));
 const FinancePage         = lazy(() => import('./pages/finance'));
@@ -310,6 +311,7 @@ function SiteLayout() {
             <Route path="/messages/:userId" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>} />
             <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+            <Route path="/stores" element={<StoresPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/categories/:catSlug" element={<CategoryListingsPage />} />
             <Route path="/p/:username" element={<SellerPage />} />

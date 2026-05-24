@@ -607,6 +607,11 @@ export function closeSupportTicket(ticketId) {
   return request('close_support_ticket', { method: 'POST', body: { ticket_id: ticketId }, auth: true });
 }
 
+// --- STORES ---
+export function getStores(query = {}) {
+  return request('get_stores', { query, ttl: 60 * 1000 });
+}
+
 // --- SELLER PROFILE ---
 export function getSellerProfile(username) {
   return request('get_seller_profile', { query: { username }, auth: true });

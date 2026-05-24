@@ -9,6 +9,7 @@ import {
   Search,
   ShieldCheck,
   ShoppingCart,
+  Store,
   Users,
   X,
   Zap,
@@ -25,6 +26,7 @@ import UserAvatar from './UserAvatar';
 const NAV_LINKS = [
   { to: '/', label: 'Ana Sayfa' },
   { to: '/market', label: 'Pazar', icon: Users },
+  { to: '/stores', label: 'Mağazalar', icon: Store },
   { to: '/categories', label: 'Kategoriler' },
 ];
 
